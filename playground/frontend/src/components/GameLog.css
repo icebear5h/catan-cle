@@ -1,0 +1,165 @@
+.game-log {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 1rem;
+  max-height: 600px;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.game-log h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.log-entries {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-right: 0.5rem;
+}
+
+.log-entries::-webkit-scrollbar {
+  width: 6px;
+}
+
+.log-entries::-webkit-scrollbar-track {
+  background: #0d1117;
+  border-radius: 3px;
+}
+
+.log-entries::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 3px;
+}
+
+.log-entries::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
+
+.log-entry {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  background: #0d1117;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  border-left: 3px solid transparent;
+  transition: background 0.15s ease;
+}
+
+.log-entry:hover {
+  background: #161b22;
+}
+
+.log-entry.dice {
+  border-left-color: #f59e0b;
+}
+
+.log-entry.resource {
+  border-left-color: #10b981;
+}
+
+.log-entry.building {
+  border-left-color: #3b82f6;
+}
+
+.log-entry.trade {
+  border-left-color: #8b5cf6;
+}
+
+.log-entry.robber {
+  border-left-color: #ef4444;
+}
+
+.log-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.log-time {
+  font-family: 'Monaco', 'Menlo', monospace;
+  color: #6e7681;
+  font-size: 0.7rem;
+  min-width: 60px;
+}
+
+.log-color {
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  min-width: 50px;
+  text-align: center;
+}
+
+.log-color.RED {
+  background: #dc2626;
+  color: white;
+}
+
+.log-color.BLUE {
+  background: #2563eb;
+  color: white;
+}
+
+.log-color.WHITE {
+  background: #f3f4f6;
+  color: #1f2937;
+}
+
+.log-color.ORANGE {
+  background: #ea580c;
+  color: white;
+}
+
+.log-color.BLACK {
+  background: #1f2937;
+  color: white;
+}
+
+.log-color.GREEN {
+  background: #16a34a;
+  color: white;
+}
+
+.log-color.BRONZE {
+  background: #cd7f32;
+  color: white;
+}
+
+.log-color.SILVER {
+  background: #c0c0c0;
+  color: #1f2937;
+}
+
+.log-color.GOLD {
+  background: #ffd700;
+  color: #1f2937;
+}
+
+.log-color.PINK {
+  background: #ec4899;
+  color: white;
+}
+
+.log-color.MYSTIC_BLUE {
+  background: #c7e5fd;
+  color: #1f2937;
+}
+
+.log-message {
+  color: #c9d1d9;
+  flex: 1;
+  line-height: 1.4;
+}

@@ -1,0 +1,5 @@
+{
+  "type": "simple",
+  "win_bonus": 1.0,
+  "lose_penalty": -1.0
+}

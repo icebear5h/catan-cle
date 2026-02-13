@@ -1,0 +1,99 @@
+.game-controls {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.game-controls h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.control-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: #238636;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #2ea043;
+}
+
+.btn-secondary {
+  background: #8b5cf6;
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #9d6ff8;
+}
+
+.btn-action {
+  background: #1f6feb;
+  color: white;
+}
+
+.btn-action:hover:not(:disabled) {
+  background: #388bfd;
+}
+
+.btn-danger {
+  background: #da3633;
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #f85149;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: #0d1117;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: #8b949e;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-indicator.running {
+  background: #3fb950;
+  box-shadow: 0 0 8px #3fb950;
+}
+
+.status-indicator.stopped {
+  background: #f85149;
+}

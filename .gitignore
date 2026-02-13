@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+!cle/env/
+!cle/env/**
+*.egg-info/
+dist/
+build/
+
+# CLE specific
+.cle/
+!.cle/.gitkeep
+*.ckpt
+*.pt
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+logs/
+
+# Modal
+.modal/
+
+# UV
+uv.lock
+
+# macOS
+.DS_Store
+
+# Archives
+*.zip
+
+# Generated images
+example_game_state.json

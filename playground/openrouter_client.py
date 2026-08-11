@@ -1,47 +1,64 @@
 """
-OpenRouter API client for multimodal VLM calls.
+Multi-provider VLM client for OpenRouter and Novita AI.
 
 Supports image+text queries to vision models and text-only judge calls.
-All models accessed via OpenRouter's OpenAI-compatible endpoint.
+Each model entry specifies its provider so calls route to the right API.
 """
 
 import base64
 import json
 import os
 import time
-from typing import Dict, Optional
+from typing import Dict
 
 import httpx
 from dotenv import load_dotenv
 
 load_dotenv()
 
-OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
+# Provider configs: (base_url, env_var_for_key, extra_headers)
+PROVIDERS = {
+    "openrouter": {
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "key_env": "OPENROUTER_API_KEY",
+        "extra_headers": {
+            "HTTP-Referer": "https://github.com/catan-learning",
+            "X-Title": "Catan VLM Benchmark",
+        },
+    },
+    "novita": {
+        "url": "https://api.novita.ai/v3/openai/chat/completions",
+        "key_env": "NOVITA_API_KEY",
+        "extra_headers": {},
+    },
+}
 
-# Verified model IDs on OpenRouter
+# Model registry: model_key -> (provider, model_id)
 MODELS = {
-    "glm_4_6v": "z-ai/glm-4.6v",
-    "glm_4_1v": "thudm/glm-4.1v-9b-thinking",
-    "gemini_judge": "google/gemini-2.5-flash",
+    "glm_4_6v": ("openrouter", "z-ai/glm-4.6v"),
+    "glm_4_6v_novita": ("novita", "zai-org/glm-4.6v"),
+    "sonnet": ("openrouter", "anthropic/claude-sonnet-4"),
+    "gemini_judge": ("openrouter", "google/gemini-2.5-flash"),
 }
 
 
-def _get_api_key() -> str:
-    key = os.getenv("OPENROUTER_API_KEY")
+def _get_provider_config(provider: str) -> tuple:
+    """Return (api_url, api_key, extra_headers) for a provider."""
+    cfg = PROVIDERS[provider]
+    key = os.getenv(cfg["key_env"])
     if not key:
-        raise ValueError(
-            "OPENROUTER_API_KEY not set. Add it to .env or export it."
-        )
-    return key
+        raise ValueError(f"{cfg['key_env']} not set. Add it to .env or export it.")
+    return cfg["url"], key, cfg["extra_headers"]
 
 
-def _build_headers(api_key: str) -> Dict[str, str]:
-    return {
+def _build_headers(api_key: str, extra: Dict[str, str] = None) -> Dict[str, str]:
+    headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://github.com/catan-learning",
-        "X-Title": "Catan VLM Benchmark",
     }
+    if extra:
+        headers.update(extra)
+    return headers
 
 
 def query_vlm(
@@ -52,17 +69,19 @@ def query_vlm(
     temperature: float = 0.3,
     max_tokens: int = 2048,
     timeout: float = 120.0,
+    provider: str = "openrouter",
 ) -> Dict:
-    """Send image + text to a vision model via OpenRouter.
+    """Send image + text to a vision model.
 
     Args:
-        model: OpenRouter model ID (e.g. "z-ai/glm-4.6v")
+        model: Model ID (e.g. "z-ai/glm-4.6v")
         image_bytes: PNG image as bytes
         prompt: Text prompt to send alongside image
         system_prompt: Optional system message
         temperature: Sampling temperature
         max_tokens: Max response tokens
         timeout: Request timeout in seconds
+        provider: API provider ("openrouter" or "novita")
 
     Returns:
         {
@@ -72,8 +91,8 @@ def query_vlm(
             "latency_ms": int,    # Round-trip time
         }
     """
-    api_key = _get_api_key()
-    headers = _build_headers(api_key)
+    api_url, api_key, extra_headers = _get_provider_config(provider)
+    headers = _build_headers(api_key, extra_headers)
 
     b64_image = base64.b64encode(image_bytes).decode("utf-8")
 
@@ -99,15 +118,37 @@ def query_vlm(
         "max_tokens": max_tokens,
     }
 
+    # Debug: print payload (minus base64 image)
+    debug_msgs = []
+    for m in messages:
+        if isinstance(m.get("content"), list):
+            debug_msgs.append({"role": m["role"], "content": [
+                c if c.get("type") != "image_url" else {"type": "image_url", "image_url": "[REDACTED]"}
+                for c in m["content"]
+            ]})
+        else:
+            debug_msgs.append(m)
+    print(f"[DEBUG payload] model={model} msgs={json.dumps(debug_msgs, indent=2)[:2000]}")
+
     start = time.time()
     with httpx.Client(timeout=timeout) as client:
-        resp = client.post(OPENROUTER_API_URL, headers=headers, json=payload)
+        resp = client.post(api_url, headers=headers, json=payload)
+        if resp.status_code >= 400:
+            print(f"[DEBUG] Error {resp.status_code}: {resp.text[:1000]}")
         resp.raise_for_status()
 
     latency_ms = int((time.time() - start) * 1000)
     data = resp.json()
 
-    content = data["choices"][0]["message"]["content"]
+    msg = data["choices"][0]["message"]
+    content = msg.get("content") or ""
+    # Some providers (Novita) return reasoning in a separate field
+    reasoning = msg.get("reasoning_content") or ""
+    if reasoning and content:
+        content = f"<thinking>\n{reasoning}\n</thinking>\n\n{content}"
+    elif reasoning:
+        content = reasoning
+
     usage = data.get("usage", {})
 
     return {
@@ -125,13 +166,14 @@ def query_text(
     temperature: float = 0.3,
     max_tokens: int = 2048,
     timeout: float = 120.0,
+    provider: str = "openrouter",
 ) -> Dict:
-    """Send text-only query to a model via OpenRouter.
+    """Send text-only query to a model.
 
     Used for Gemini judge calls (no image needed).
     """
-    api_key = _get_api_key()
-    headers = _build_headers(api_key)
+    api_url, api_key, extra_headers = _get_provider_config(provider)
+    headers = _build_headers(api_key, extra_headers)
 
     messages = []
     if system_prompt:
@@ -147,13 +189,15 @@ def query_text(
 
     start = time.time()
     with httpx.Client(timeout=timeout) as client:
-        resp = client.post(OPENROUTER_API_URL, headers=headers, json=payload)
+        resp = client.post(api_url, headers=headers, json=payload)
         resp.raise_for_status()
 
     latency_ms = int((time.time() - start) * 1000)
     data = resp.json()
 
-    content = data["choices"][0]["message"]["content"]
+    choice = data["choices"][0]
+    message = choice.get("message") or {}
+    content = message.get("content") or ""
     usage = data.get("usage", {})
 
     return {
@@ -161,6 +205,8 @@ def query_text(
         "model": data.get("model", model),
         "usage": usage,
         "latency_ms": latency_ms,
+        "finish_reason": choice.get("finish_reason"),
+        "native_reasoning": message.get("reasoning_content") or message.get("reasoning") or "",
     }
 
 
@@ -168,12 +214,16 @@ def query_both_vlms(
     image_bytes: bytes,
     prompt: str,
     system_prompt: str = "",
-    model_a: str = MODELS["glm_4_6v"],
-    model_b: str = MODELS["glm_4_1v"],
+    model_a_key: str = "glm_4_6v",
+    model_b_key: str = "glm_4_6v_novita",
     temperature: float = 0.3,
     max_tokens: int = 2048,
 ) -> Dict:
-    """Query both GLM models with the same image+prompt, return side-by-side.
+    """Query two VLMs with the same image+prompt, return side-by-side.
+
+    Args:
+        model_a_key: Key into MODELS dict (e.g. "glm_4_6v")
+        model_b_key: Key into MODELS dict (e.g. "glm_4_6v_novita")
 
     Returns:
         {
@@ -181,11 +231,16 @@ def query_both_vlms(
             "model_b": {"content": ..., "model": ..., "latency_ms": ...},
         }
     """
+    provider_a, model_a = MODELS[model_a_key]
+    provider_b, model_b = MODELS[model_b_key]
+
     result_a = query_vlm(
-        model_a, image_bytes, prompt, system_prompt, temperature, max_tokens
+        model_a, image_bytes, prompt, system_prompt, temperature, max_tokens,
+        provider=provider_a,
     )
     result_b = query_vlm(
-        model_b, image_bytes, prompt, system_prompt, temperature, max_tokens
+        model_b, image_bytes, prompt, system_prompt, temperature, max_tokens,
+        provider=provider_b,
     )
 
     return {"model_a": result_a, "model_b": result_b}
@@ -196,9 +251,9 @@ def judge_responses(
     response_a: str,
     response_b: str,
     ground_truth: str = "",
-    model_a_name: str = "GLM-4.6V",
-    model_b_name: str = "GLM-4.1V-9B",
-    judge_model: str = MODELS["gemini_judge"],
+    model_a_name: str = "GLM-4.6V (OpenRouter)",
+    model_b_name: str = "GLM-4.6V (Novita)",
+    judge_key: str = "gemini_judge",
 ) -> Dict:
     """Use Gemini to judge two VLM responses.
 
@@ -239,12 +294,14 @@ Respond with ONLY valid JSON (no markdown code fences):
     "explanation": "brief explanation of your scoring"
 }}"""
 
+    judge_provider, judge_model = MODELS[judge_key]
     result = query_text(
         judge_model,
         judge_prompt,
         system_prompt="You are an expert Catan player and fair judge. Respond with JSON only.",
         temperature=0.1,
         max_tokens=1024,
+        provider=judge_provider,
     )
 
     raw = result["content"]

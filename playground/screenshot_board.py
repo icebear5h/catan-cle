@@ -27,7 +27,10 @@ import time
 from pathlib import Path
 from typing import Optional
 
+import io
+
 import httpx
+from PIL import Image
 from playwright.async_api import async_playwright
 
 from engine.game import Game
@@ -64,12 +67,18 @@ class FrontendScreenshotter:
         headless: bool = True,
         board_width: int = 800,
         board_height: int = 800,
+        crop_pct: float = 0.15,
+        vertical_offset_pct: float = 0.03,
+        horizontal_offset_pct: float = 0.0,
     ):
         self.flask_port = flask_port
         self.vite_port = vite_port
         self.headless = headless
         self.board_width = board_width
         self.board_height = board_height
+        self.crop_pct = crop_pct
+        self.vertical_offset_pct = vertical_offset_pct
+        self.horizontal_offset_pct = horizontal_offset_pct
 
         self._flask_proc: Optional[subprocess.Popen] = None
         self._vite_proc: Optional[subprocess.Popen] = None
@@ -110,7 +119,11 @@ class FrontendScreenshotter:
     async def __aexit__(self, *args):
         await self.stop()
 
-    async def screenshot(self, game: Game, settle_ms: int = 600) -> bytes:
+    async def screenshot(
+        self,
+        game: Game,
+        settle_ms: int = 600,
+    ) -> bytes:
         """Render a Game state in the frontend and return PNG bytes.
 
         Args:
@@ -139,7 +152,22 @@ class FrontendScreenshotter:
         board = self._page.locator(".board-container")
         await board.wait_for(state="visible", timeout=5000)
 
-        return await board.screenshot(type="png")
+        raw_png = await board.screenshot(type="png")
+        img = Image.open(io.BytesIO(raw_png))
+
+        # Crop to center on the hex grid, trimming ocean border
+        if self.crop_pct > 0:
+            w, h = img.size
+            cx = self.crop_pct * w
+            cy = self.crop_pct * h
+            vx = self.horizontal_offset_pct * w
+            vy = self.vertical_offset_pct * h
+            box = (int(cx + vx), int(cy + vy), int(w - cx + vx), int(h - cy + vy))
+            img = img.crop(box)
+
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        return buf.getvalue()
 
     async def screenshot_to_file(self, game: Game, path: str, **kwargs) -> str:
         """Screenshot and save to file. Returns path."""
@@ -189,6 +217,10 @@ class FrontendScreenshotter:
 
         # Wait for the app to mount and socket to connect
         await self._page.wait_for_selector(".app", timeout=10000)
+        game_viewer_button = self._page.get_by_role("button", name="Game Viewer")
+        if await game_viewer_button.count():
+            await game_viewer_button.first.click()
+            await self._page.wait_for_selector(".board-container", timeout=10000)
         # Give SocketIO a moment to establish connection
         await self._page.wait_for_timeout(1000)
         print("[screenshot] Browser ready.")

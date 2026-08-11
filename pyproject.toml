@@ -30,20 +30,53 @@ dependencies = [
 
 [project.optional-dependencies]
 modal = ["modal>=0.68.0"]
-eval = ["jupyter>=1.0.0", "plotly>=5.14.0", "matplotlib>=3.7.0", "seaborn>=0.12.0"]
+eval = [
+    "openbench>=0.5.0",
+    "inspect-ai>=0.3.0",
+    "openai>=1.0.0",
+    "jupyter>=1.0.0",
+    "plotly>=5.14.0",
+    "matplotlib>=3.7.0",
+    "seaborn>=0.12.0",
+]
 training = ["torch>=2.0.0", "catanatron>=1.0.0"]
 scraping = ["httpx>=0.25.0", "playwright>=1.40.0", "msgpack>=1.0.0", "google-api-python-client>=2.100.0", "youtube-transcript-api>=0.6.0"]
+pretraining = [
+    "torch>=2.0.0",
+    "transformers>=4.57.1",
+    "peft>=0.7.0",
+    "llamafactory>=0.9.0",
+    "wandb>=0.16.0",
+    "bitsandbytes>=0.41.0",
+    "google-api-python-client>=2.100.0",
+    "youtube-transcript-api>=0.6.0",
+]
+sft = [
+    "torch>=2.6.0",
+    "transformers>=4.57.1",
+    "trl>=0.21.0",
+    "peft>=0.17.0",
+    "accelerate>=1.10.0",
+    "datasets>=3.0.0",
+    "bitsandbytes>=0.46.0",
+    "qwen-vl-utils>=0.0.14",
+    "tensorboard>=2.14.0",
+    "wandb>=0.16.0",
+]
 dev = ["pytest-cov>=4.1.0", "black>=23.3.0", "ruff>=0.0.270"]
 
 [project.scripts]
 cle = "cle.run:main"
+
+[project.entry-points."openbench.benchmarks"]
+catanbench = "catanbench.eval.metadata:get_benchmark_metadata"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["cle", "engine", "data_pipeline"]
+packages = ["cle", "engine", "data_pipeline", "evals", "catanbench", "replay_pipeline", "training_pipeline", "ingestion"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -4,6 +4,12 @@ from engine.models.actions import Action
 from engine.models.enums import ActionType
 
 from ..colonist.constants import COLONIST_RESOURCE, ENGINE_RESOURCES
+from ..colonist.coordinates import reflect_x, rotate_60_cw
+
+
+def _colonist_xy_to_engine_coord(x, y):
+    colonist_cube = (x, y, -x - y)
+    return reflect_x(rotate_60_cw(rotate_60_cw(rotate_60_cw(colonist_cube))))
 
 
 def find_matching_action(playable_actions, action_hint, state=None):
@@ -128,18 +134,8 @@ def find_matching_action(playable_actions, action_hint, state=None):
                 return action
 
         elif action_type == "CONFIRM_TRADE" and "CONFIRM_TRADE" in action_str:
-            acceptor_id = action_hint.get("acceptor")
-            if acceptor_id is not None and game and replay_data:
-                colonist_to_engine = replay_data.get("colonist_color_to_engine_idx", {})
-                acceptor_idx = colonist_to_engine.get(str(acceptor_id))
-                if acceptor_idx is not None:
-                    acceptor_color = game.state.colors[acceptor_idx]
-                    if hasattr(action, 'value') and action.value == acceptor_color:
-                        print(f"[Trade] Matched CONFIRM_TRADE with acceptor {acceptor_color}")
-                        return action
-            else:
-                print(f"[Trade] Matched CONFIRM_TRADE from engine (fallback): {action}")
-                return action
+            print("[Trade] CONFIRM_TRADE uses exact Colonist log resources")
+            return None
 
         # Development card actions
         elif action_type == "BUY_DEVELOPMENT_CARD" and "BUY_DEVELOPMENT_CARD" in action_str:
@@ -194,11 +190,22 @@ def find_matching_action(playable_actions, action_hint, state=None):
             tile_info = action_hint.get("tile_info", {})
             colonist_resource_type = tile_info.get("resourceType")
             colonist_dice_number = tile_info.get("diceNumber")
+            colonist_x = tile_info.get("x")
+            colonist_y = tile_info.get("y")
+
+            target_coord = None
+            if colonist_x is not None and colonist_y is not None:
+                target_coord = _colonist_xy_to_engine_coord(colonist_x, colonist_y)
 
             target_resource = COLONIST_RESOURCE.get(colonist_resource_type)
 
             action_coord = action.value if hasattr(action, 'value') else None
             if action_coord and game:
+                if target_coord is not None:
+                    if action_coord == target_coord:
+                        return action
+                    continue
+
                 engine_tile = game.state.board.map.land_tiles.get(action_coord)
                 if engine_tile:
                     engine_resource = engine_tile.resource
@@ -237,6 +244,16 @@ def find_matching_action(playable_actions, action_hint, state=None):
             given = action_hint.get("given")
             received = action_hint.get("received")
             if given and received:
+                given_resource_types = [i for i, count in enumerate(given) if count > 0]
+                received_resource_types = [i for i, count in enumerate(received) if count > 0]
+
+                if len(given_resource_types) != 1 or len(received_resource_types) != 1:
+                    print(
+                        "[Trade] Multi-resource MARITIME_TRADE needs direct execution: "
+                        f"given={given}, received={received}"
+                    )
+                    return None
+
                 action_value = action.value if hasattr(action, 'value') else None
                 if action_value and isinstance(action_value, tuple) and len(action_value) == 5:
                     given_resources = [r for r in action_value[:4] if r is not None]
@@ -256,6 +273,12 @@ def find_matching_action(playable_actions, action_hint, state=None):
 
         # Discard
         elif action_type == "DISCARD" and "DISCARD" in action_str:
+            cards = action_hint.get("cards")
+            if cards:
+                discarded = []
+                for i, count in enumerate(cards):
+                    discarded.extend([ENGINE_RESOURCES[i]] * count)
+                return Action(action.color, ActionType.DISCARD, discarded)
             return action
 
         # END_TURN

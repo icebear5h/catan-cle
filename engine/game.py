@@ -8,7 +8,7 @@ import sys
 from typing import Sequence, Union, Optional
 
 from engine.models.enums import Action, ActionPrompt, ActionType
-from engine.state import State, apply_action
+from engine.state import State, apply_action, assert_forced_action_is_explicit
 from engine.state_functions import player_key, player_has_rolled
 from engine.models.map import CatanMap
 from engine.models.player import Color, Player
@@ -132,8 +132,18 @@ class Game:
         )
         return self.execute(action)
 
-    def execute(self, action: Action, validate_action: bool = True, save_history: bool = True) -> Action:
+    def execute(
+        self,
+        action: Action,
+        validate_action: bool = True,
+        save_history: bool = True,
+        force: bool = False,
+    ) -> Action:
         """Internal call that carries out decided action by player"""
+        if force:
+            assert_forced_action_is_explicit(action)
+            validate_action = False
+
         if validate_action and not is_valid_action(self.state, action):
             raise ValueError(
                 f"{action} not playable right now. playable_actions={self.state.playable_actions}"
@@ -143,7 +153,7 @@ class Game:
         if save_history and hasattr(self, 'history'):
             self.history.append((self.state.copy(), action))
 
-        return apply_action(self.state, action)
+        return apply_action(self.state, action, force=force)
 
     def undo(self) -> Optional[Action]:
         """Undo the last action, restoring the previous game state.

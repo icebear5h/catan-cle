@@ -3,6 +3,7 @@
 import json
 import time
 from pathlib import Path
+from threading import Lock
 
 
 class ServerState:
@@ -24,6 +25,12 @@ class ServerState:
         self.replay_mode = False
         self.replay_actions_per_step = []
         self.first_divergence_step = {}
+        self.replay_semantic_issues = []
+        self.replay_final_state_synced = False
+        self.replay_pending_dev_card = None
+        self.replay_step_checkpoints = []
+        self.replay_trade_ledger = {}
+        self.replay_llm_lock = Lock()
 
         # Mapping files
         self._data_dir = Path(__file__).parent
@@ -66,6 +73,11 @@ class ServerState:
         self.replay_mode = False
         self.replay_actions_per_step = []
         self.first_divergence_step = {}
+        self.replay_semantic_issues = []
+        self.replay_final_state_synced = False
+        self.replay_pending_dev_card = None
+        self.replay_step_checkpoints = []
+        self.replay_trade_ledger = {}
 
     def log_event(self, event_type, message, color=None, details=None):
         """Add an event to the game log."""

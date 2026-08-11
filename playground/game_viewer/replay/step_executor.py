@@ -4,14 +4,419 @@ import time
 import traceback
 
 from engine.models.actions import Action, generate_playable_actions
-from engine.models.enums import ActionType, ActionPrompt
+from engine.models.enums import ActionType, ActionPrompt, ROAD
+from engine.state import sync_legacy_trade_state
+from engine.models.decks import ROAD_COST_FREQDECK, freqdeck_add
 
 from ..colonist.helpers import (
     format_resources, format_trade, get_player_color_name,
     colonist_cards_to_freqdeck, get_engine_player_resources, validate_resources_match,
 )
 from ..colonist.constants import ENGINE_RESOURCES, RESOURCE_EMOJIS
-from .action_matcher import find_matching_action
+from .action_matcher import _colonist_xy_to_engine_coord, find_matching_action
+from .checkpoint import ReplayStepCheckpoint, ensure_replay_checkpoint_state
+from .trade_ledger import apply_replay_trade_event, ensure_replay_trade_ledger
+from .audit import (
+    ensure_replay_audit_state,
+    record_replay_issue,
+    sync_final_replay_state,
+)
+
+
+TURN_OWNER_ACTIONS = {
+    "ROLL",
+    "BUILD_ROAD",
+    "BUILD_SETTLEMENT",
+    "BUILD_CITY",
+    "BUY_DEVELOPMENT_CARD",
+    "PLAY_KNIGHT_CARD",
+    "PLAY_ROAD_BUILDING",
+    "PLAY_MONOPOLY",
+    "PLAY_YEAR_OF_PLENTY",
+    "MONOPOLY_RESOURCE",
+    "YEAR_OF_PLENTY_RESOURCES",
+    "MOVE_ROBBER",
+    "STEAL",
+    "DISCARD",
+    "OFFER_TRADE",
+    "CONFIRM_TRADE",
+    "MARITIME_TRADE",
+    "END_TURN",
+}
+
+
+def _mark_finished_if_needed(state, parsed_actions):
+    finished = state.replay_index >= len(parsed_actions)
+    if finished:
+        state.game_running = False
+        sync_final_replay_state(state)
+    return finished
+
+
+def _engine_color_for_colonist(state, colonist_player):
+    if colonist_player is None:
+        return None, None
+    replay_data = state.replay_data or {}
+    game = state.current_game
+    player_idx = replay_data.get("colonist_color_to_engine_idx", {}).get(str(colonist_player))
+    if player_idx is None or player_idx >= len(game.state.colors):
+        return None, player_idx
+    return game.state.colors[player_idx], player_idx
+
+
+def _trade_tuple_parts(action_hint):
+    trade_tuple = action_hint.get("trade_tuple")
+    if trade_tuple and len(trade_tuple) >= 10:
+        offered = tuple(trade_tuple[:5])
+        wanted = tuple(trade_tuple[5:10])
+        offered_any = trade_tuple[10] if len(trade_tuple) > 10 else 0
+        wanted_any = trade_tuple[11] if len(trade_tuple) > 11 else 0
+        return offered, wanted, offered_any, wanted_any
+    offered = tuple(action_hint.get("offered") or (0, 0, 0, 0, 0))
+    wanted = tuple(action_hint.get("wanted") or (0, 0, 0, 0, 0))
+    return offered, wanted, 0, 0
+
+
+def _ensure_active_trade(game_state, creator_color, action_hint):
+    trade_id = action_hint.get("trade_id")
+    existing = game_state.active_trades.get(creator_color)
+    if existing is not None and (
+        trade_id is None or existing.get("trade_id") == trade_id
+    ):
+        return
+
+    offered, wanted, offered_any, wanted_any = _trade_tuple_parts(action_hint)
+    game_state.active_trades[creator_color] = {
+        "trade_id": trade_id,
+        "trade_num": action_hint.get("trade_num", 0),
+        "offered": offered,
+        "wanted": wanted,
+        "offered_any": offered_any,
+        "wanted_any": wanted_any,
+        "acceptees": set(),
+        "rejecters": set(),
+    }
+    sync_legacy_trade_state(game_state)
+
+
+def _ensure_counter_offer(game_state, counter_color, action_hint):
+    trade_id = action_hint.get("trade_id")
+    existing = game_state.counter_offers.get(counter_color)
+    if existing is not None and (
+        trade_id is None or existing.get("trade_id") == trade_id
+    ):
+        return
+
+    offered, wanted, offered_any, wanted_any = _trade_tuple_parts(action_hint)
+    game_state.counter_offers[counter_color] = {
+        "trade_id": trade_id,
+        "trade_num": action_hint.get("trade_num", 0),
+        "counter_offer_to": action_hint.get("counter_offer_to"),
+        "offered": offered,
+        "wanted": wanted,
+        "offered_any": offered_any,
+        "wanted_any": wanted_any,
+        "acceptees": set(),
+    }
+    sync_legacy_trade_state(game_state)
+
+
+def _project_trade_record(state, record):
+    creator_color, _ = _engine_color_for_colonist(state, record.get("creator"))
+    if creator_color is None:
+        return False
+
+    if record.get("is_counter_offer"):
+        _ensure_counter_offer(state.current_game.state, creator_color, record)
+        projection = state.current_game.state.counter_offers[creator_color]
+    else:
+        _ensure_active_trade(state.current_game.state, creator_color, record)
+        projection = state.current_game.state.active_trades[creator_color]
+
+    projection["acceptees"] = set()
+    if "rejecters" in projection:
+        projection["rejecters"] = set()
+
+    for responder_id, response in record.get("responses", {}).items():
+        responder_color, _ = _engine_color_for_colonist(state, responder_id)
+        if responder_color is None or responder_color == creator_color:
+            continue
+        if response == "accepted":
+            projection["acceptees"].add(responder_color)
+        elif response == "rejected" and "rejecters" in projection:
+            projection["rejecters"].add(responder_color)
+
+    sync_legacy_trade_state(state.current_game.state)
+    return True
+
+
+def _latest_trade_for_creator(state, creator, is_counter_offer):
+    ensure_replay_trade_ledger(state)
+    for record in reversed(list(state.replay_trade_ledger.values())):
+        if (
+            record.get("creator") == creator
+            and bool(record.get("is_counter_offer")) == is_counter_offer
+        ):
+            return record
+    return None
+
+
+def _regenerate_playable_actions(game_state):
+    game_state.playable_actions = generate_playable_actions(game_state)
+
+
+def _force_apply_trade_overlay(action_type, action_hint, state):
+    """Apply Colonist trade overlay events when no legal engine action matches."""
+    game = state.current_game
+    game_state = game.state
+    player_color, _ = _engine_color_for_colonist(state, action_hint.get("player"))
+    creator_color, _ = _engine_color_for_colonist(state, action_hint.get("creator"))
+
+    if action_type == "OFFER_TRADE":
+        if player_color is None:
+            return None
+        _ensure_active_trade(game_state, player_color, action_hint)
+        _regenerate_playable_actions(game_state)
+        return "Forced OFFER_TRADE into async trade overlay"
+
+    if action_type == "COUNTER_OFFER":
+        if player_color is None:
+            return None
+        _ensure_counter_offer(game_state, player_color, action_hint)
+        _regenerate_playable_actions(game_state)
+        return "Forced COUNTER_OFFER into async trade overlay"
+
+    if action_type in (
+        "ACCEPT_TRADE",
+        "REJECT_TRADE",
+        "CLEAR_TRADE_RESPONSE",
+    ):
+        if player_color is None or creator_color is None:
+            return None
+
+        if action_hint.get("is_counter_offer"):
+            _ensure_counter_offer(game_state, creator_color, action_hint)
+            acceptees = game_state.counter_offers[creator_color]["acceptees"]
+            if action_type == "ACCEPT_TRADE" and player_color != creator_color:
+                acceptees.add(player_color)
+            else:
+                acceptees.discard(player_color)
+            sync_legacy_trade_state(game_state)
+            _regenerate_playable_actions(game_state)
+            return f"Forced {action_type} onto counter-offer overlay"
+
+        _ensure_active_trade(game_state, creator_color, action_hint)
+        trade_info = game_state.active_trades[creator_color]
+        if action_type == "ACCEPT_TRADE":
+            trade_info["rejecters"].discard(player_color)
+            trade_info["acceptees"].add(player_color)
+        elif action_type == "REJECT_TRADE":
+            trade_info["acceptees"].discard(player_color)
+            trade_info["rejecters"].add(player_color)
+        else:
+            trade_info["acceptees"].discard(player_color)
+            trade_info["rejecters"].discard(player_color)
+        sync_legacy_trade_state(game_state)
+        _regenerate_playable_actions(game_state)
+        return f"Forced {action_type} into async trade overlay"
+
+    return None
+
+
+def _trade_closures_from_hint(action_hint):
+    closures = action_hint.get("closed_trades")
+    if closures is not None:
+        return closures
+    if action_hint.get("type") == "CLOSE_TRADE":
+        return [action_hint]
+    return []
+
+
+def _apply_trade_closures(action_hint, state):
+    """Project authoritative Colonist offer closures onto engine overlays."""
+    game_state = state.current_game.state
+    applied = []
+    impacted_creators = set()
+
+    for closure in _trade_closures_from_hint(action_hint):
+        creator_color, creator_idx = _engine_color_for_colonist(
+            state, closure.get("creator")
+        )
+        if creator_color is None:
+            record_replay_issue(
+                state,
+                kind="unmapped_trade_closure",
+                action_hint=action_hint,
+                message=(
+                    f"Could not map creator {closure.get('creator')} for closed "
+                    f"trade {closure.get('trade_id')}"
+                ),
+                severity="error",
+                details={"closure": closure},
+            )
+            continue
+
+        is_counter_offer = bool(closure.get("is_counter_offer"))
+        trade_id = closure.get("trade_id")
+        projections = (
+            game_state.counter_offers
+            if is_counter_offer
+            else game_state.active_trades
+        )
+        projection = projections.get(creator_color)
+        projection_matches = projection is not None and (
+            projection.get("trade_id") in (None, trade_id)
+        )
+        if projection_matches:
+            projections.pop(creator_color)
+
+        if (
+            not is_counter_offer
+            and projection_matches
+            and creator_idx is not None
+            and game_state.current_trade[10] == creator_idx
+        ):
+            game_state.current_trade = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+            game_state.acceptees = tuple(False for _ in game_state.colors)
+            game_state.rejecters = tuple(False for _ in game_state.colors)
+
+        impacted_creators.add((closure.get("creator"), is_counter_offer))
+        applied.append({
+            "trade_id": closure.get("trade_id"),
+            "creator": closure.get("creator"),
+            "is_counter_offer": is_counter_offer,
+            "reason": closure.get("reason"),
+            "overlay_existed": projection_matches,
+        })
+
+    for creator, is_counter_offer in impacted_creators:
+        replacement = _latest_trade_for_creator(
+            state, creator, is_counter_offer
+        )
+        if replacement is not None:
+            _project_trade_record(state, replacement)
+
+    if applied:
+        sync_legacy_trade_state(game_state)
+        _regenerate_playable_actions(game_state)
+
+    return applied
+
+
+def _record_forced_overlay(state, action_hint, message, details=None):
+    record_replay_issue(
+        state,
+        kind="forced_replay_overlay",
+        action_hint=action_hint,
+        message=message,
+        severity="warning",
+        details=details,
+    )
+
+
+def _force_clear_stale_steal_prompt(state, action_hint, reason):
+    game_state = state.current_game.state
+    game_state.current_player_index = game_state.current_turn_index
+    game_state.current_prompt = ActionPrompt.PLAY_TURN
+    game_state.is_moving_knight = False
+    _regenerate_playable_actions(game_state)
+    _record_forced_overlay(
+        state,
+        action_hint,
+        "Cleared stale STEAL prompt from replay state",
+        details={"reason": reason},
+    )
+
+
+def _force_record_road(game_state, player_color, edge, is_free):
+    """Record a Colonist road when engine topology rejects the placement."""
+    edge = tuple(edge)
+    inverted_edge = (edge[1], edge[0])
+    game_state.board.roads[edge] = player_color
+    game_state.board.roads[inverted_edge] = player_color
+    game_state.board.buildable_edges_cache = {}
+
+    a, b = edge
+    components = game_state.board.connected_components[player_color]
+    matching_indices = [
+        idx for idx, component in enumerate(components)
+        if a in component or b in component
+    ]
+    if not matching_indices:
+        components.append({a, b})
+    else:
+        merged = {a, b}
+        for idx in reversed(matching_indices):
+            merged.update(components[idx])
+            del components[idx]
+        components.append(merged)
+        game_state.board.road_lengths[player_color] = max(
+            game_state.board.road_lengths[player_color],
+            max(len(merged) - 1, 0),
+        )
+
+    if edge not in game_state.buildings_by_color[player_color][ROAD]:
+        game_state.buildings_by_color[player_color][ROAD].append(edge)
+
+    key = f"P{game_state.color_to_index[player_color]}"
+    game_state.player_state[f"{key}_ROADS_AVAILABLE"] -= 1
+    if is_free:
+        if game_state.is_road_building and game_state.free_roads_available > 0:
+            game_state.free_roads_available -= 1
+            if game_state.free_roads_available == 0:
+                game_state.is_road_building = False
+    else:
+        game_state.player_state[f"{key}_WOOD_IN_HAND"] -= 1
+        game_state.player_state[f"{key}_BRICK_IN_HAND"] -= 1
+        game_state.resource_freqdeck = freqdeck_add(
+            game_state.resource_freqdeck,
+            ROAD_COST_FREQDECK,
+        )
+
+    game_state.current_prompt = ActionPrompt.PLAY_TURN
+    game_state.playable_actions = generate_playable_actions(game_state)
+
+
+def _sync_turn_owner_from_hint(action_hint, state):
+    """Align engine turn indices to the Colonist actor for turn-owned actions."""
+    action_type = action_hint.get("type")
+    if action_type not in TURN_OWNER_ACTIONS:
+        return
+
+    colonist_player = action_hint.get("player")
+    if colonist_player is None:
+        return
+
+    game = state.current_game
+    replay_data = state.replay_data or {}
+    colonist_to_engine = replay_data.get("colonist_color_to_engine_idx", {})
+    player_idx = colonist_to_engine.get(str(colonist_player))
+    if player_idx is None or player_idx >= len(game.state.colors):
+        return
+
+    if action_type == "DISCARD":
+        if game.state.current_player_index != player_idx:
+            player_color = game.state.colors[player_idx]
+            print(
+                f"[Replay] Syncing discard actor: "
+                f"colonist {colonist_player} -> {player_color}"
+            )
+            game.state.current_player_index = player_idx
+            game.state.playable_actions = generate_playable_actions(game.state)
+        return
+
+    if (
+        game.state.current_player_index != player_idx
+        or game.state.current_turn_index != player_idx
+    ):
+        player_color = game.state.colors[player_idx]
+        print(
+            f"[Replay] Syncing turn owner for {action_type}: "
+            f"colonist {colonist_player} -> {player_color}"
+        )
+        game.state.current_player_index = player_idx
+        game.state.current_turn_index = player_idx
+        game.state.playable_actions = generate_playable_actions(game.state)
 
 
 def _handle_trade_response(action_hint, action_type, state):
@@ -22,6 +427,7 @@ def _handle_trade_response(action_hint, action_type, state):
     """
     game = state.current_game
     replay_data = state.replay_data
+    ensure_replay_audit_state(state)
     parsed_actions = replay_data.get("parsed_actions", [])
 
     responding_player_id = action_hint.get("player")
@@ -30,6 +436,55 @@ def _handle_trade_response(action_hint, action_type, state):
 
     if responding_player_idx is not None:
         responding_color = game.state.colors[responding_player_idx]
+        creator_id = action_hint.get("creator")
+        creator_idx = colonist_to_engine.get(str(creator_id))
+
+        if creator_idx is not None and not action_hint.get("is_counter_offer"):
+            creator_color = game.state.colors[creator_idx]
+            _ensure_active_trade(game.state, creator_color, action_hint)
+            _regenerate_playable_actions(game.state)
+            active_trades = getattr(game.state, "active_trades", {})
+            projected_trade = active_trades.get(creator_color)
+            if projected_trade is not None and projected_trade.get("trade_id") in (
+                None,
+                action_hint.get("trade_id"),
+            ):
+                action_type_enum = {
+                    "ACCEPT_TRADE": ActionType.ACCEPT_TRADE,
+                    "REJECT_TRADE": ActionType.REJECT_TRADE,
+                }[action_type]
+                print(
+                    f"[Trade] Applying async {action_type} directly: "
+                    f"{responding_color} -> trade from {creator_color}"
+                )
+                game.execute(
+                    Action(responding_color, action_type_enum, creator_color),
+                    force=True,
+                )
+
+                trade_num = action_hint.get("trade_num", 0)
+                trade_label = f"Trade #{trade_num}" if trade_num else "Trade"
+                state.game_log.append({
+                    "type": "general",
+                    "timestamp": time.time(),
+                    "message": f"[{state.replay_index+1}/{len(parsed_actions)}] {trade_label} {action_type} by {responding_color}",
+                    "color": get_player_color_name(action_hint.get("player")),
+                })
+
+                state.replay_actions_per_step.append(1)
+                state.replay_index += 1
+                finished = _mark_finished_if_needed(state, parsed_actions)
+                return {
+                    "status": "ok",
+                    "event_index": state.replay_index,
+                    "total_events": len(parsed_actions),
+                    "finished": finished,
+                }, False
+
+            print(
+                f"[Trade] Async {action_type} has no active trade from "
+                f"{creator_color} (active: {list(active_trades.keys())})"
+            )
 
         original_player_index = game.state.current_player_index
         game.state.current_player_index = responding_player_idx
@@ -50,7 +505,7 @@ def _handle_trade_response(action_hint, action_type, state):
             print(f"[Trade] Found matching {action_type} for {responding_color}")
             print(f"[DEBUG] Before {action_type}: current_player_index={game.state.current_player_index}, current_turn_index={game.state.current_turn_index}")
 
-            game.execute(action, validate_action=False)
+            game.execute(action, force=True)
 
             print(f"[DEBUG] After {action_type}: current_player_index={game.state.current_player_index}, current_turn_index={game.state.current_turn_index}")
 
@@ -65,9 +520,7 @@ def _handle_trade_response(action_hint, action_type, state):
 
             state.replay_actions_per_step.append(1)
             state.replay_index += 1
-            finished = state.replay_index >= len(parsed_actions)
-            if finished:
-                state.game_running = False
+            finished = _mark_finished_if_needed(state, parsed_actions)
             return {
                 "status": "ok",
                 "event_index": state.replay_index,
@@ -87,6 +540,7 @@ def _handle_confirm_trade(action_hint, state):
     game = state.current_game
     replay_data = state.replay_data
     parsed_actions = replay_data.get("parsed_actions", [])
+    actions_count = 0
 
     offered = action_hint.get("offered", (0,0,0,0,0))
     received = action_hint.get("received", (0,0,0,0,0))
@@ -111,14 +565,15 @@ def _handle_confirm_trade(action_hint, state):
             game.state.player_state[f"P{acceptor_idx}_{res}_IN_HAND"] -= received[i]
             game.state.player_state[f"P{acceptor_idx}_{res}_IN_HAND"] += offered[i]
 
-        if creator_color in game.state.active_trades:
-            del game.state.active_trades[creator_color]
+        if (
+            not action_hint.get("trade_closures_preceded")
+            and not _trade_closures_from_hint(action_hint)
+        ):
+            game.state.active_trades.pop(creator_color, None)
+            game.state.counter_offers.pop(creator_color, None)
 
-        if len(game.state.active_trades) == 0:
-            game.state.is_resolving_trade = False
-            game.state.current_trade = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-            game.state.acceptees = tuple(False for _ in game.state.colors)
-            game.state.rejecters = tuple(False for _ in game.state.colors)
+        applied_closures = _apply_trade_closures(action_hint, state)
+        sync_legacy_trade_state(game.state)
 
         print(f"[DEBUG] Before resetting turn: current_player_index={game.state.current_player_index}, current_turn_index={game.state.current_turn_index}")
         print(f"[DEBUG] Resetting to creator_idx: {creator_idx}")
@@ -129,10 +584,26 @@ def _handle_confirm_trade(action_hint, state):
         print(f"[DEBUG] Set P{creator_idx}_HAS_ROLLED = True")
 
         game.state.playable_actions = generate_playable_actions(game.state)
+        game.state.actions.append(
+            Action(creator_color, ActionType.CONFIRM_TRADE, acceptor_color)
+        )
+        actions_count = 1
 
         has_rolled_after = game.state.player_state.get(f"P{creator_idx}_HAS_ROLLED", False)
         print(f"[DEBUG] After manual trade: P{creator_idx}_HAS_ROLLED = {has_rolled_after}")
         print(f"[DEBUG] Playable action types: {set(str(a.action_type) for a in game.state.playable_actions)}")
+        _record_forced_overlay(
+            state,
+            action_hint,
+            "Applied CONFIRM_TRADE from exact Colonist resource delta",
+            details={
+                "creator": creator,
+                "acceptor": acceptor,
+                "offered": offered,
+                "received": received,
+                "closed_trades": applied_closures,
+            },
+        )
 
         trade_num = action_hint.get("trade_num", 0)
         trade_label = f"Trade #{trade_num}" if trade_num else "Trade"
@@ -150,17 +621,22 @@ def _handle_confirm_trade(action_hint, state):
             skip_reason_parts.append(f"acceptor {acceptor} not mapped to engine color")
         skip_reason = " -- " + "; ".join(skip_reason_parts) if skip_reason_parts else " -- player mapping failed"
         print(f"[Replay] Skipping CONFIRM_TRADE: couldn't map players {creator}->{creator_idx}, {acceptor}->{acceptor_idx}")
+        record_replay_issue(
+            state,
+            kind="unmatched_confirm_trade",
+            action_hint=action_hint,
+            message=f"Could not map CONFIRM_TRADE players: {creator}->{creator_idx}, {acceptor}->{acceptor_idx}",
+            severity="error",
+        )
         state.game_log.append({
             "type": "general",
             "timestamp": time.time(),
             "message": f"[{state.replay_index+1}/{len(parsed_actions)}] Skipped CONFIRM_TRADE{skip_reason}",
         })
 
-    state.replay_actions_per_step.append(0)
+    state.replay_actions_per_step.append(actions_count)
     state.replay_index += 1
-    finished = state.replay_index >= len(parsed_actions)
-    if finished:
-        state.game_running = False
+    finished = _mark_finished_if_needed(state, parsed_actions)
     return {
         "status": "trade_applied",
         "event_index": state.replay_index,
@@ -180,11 +656,17 @@ def _handle_direct_execute(action_type, action_hint, state):
     parsed_actions = replay_data.get("parsed_actions", [])
 
     def _finish(status, actions_count, message=None, extra=None):
+        if status == "skipped":
+            record_replay_issue(
+                state,
+                kind="skipped_replay_action",
+                action_hint=action_hint,
+                message=message or f"Skipped {action_type}",
+                severity="error",
+            )
         state.replay_actions_per_step.append(actions_count)
         state.replay_index += 1
-        finished = state.replay_index >= len(parsed_actions)
-        if finished:
-            state.game_running = False
+        finished = _mark_finished_if_needed(state, parsed_actions)
         result = {
             "status": status,
             "event_index": state.replay_index,
@@ -198,6 +680,38 @@ def _handle_direct_execute(action_type, action_hint, state):
         return result
 
     colonist_to_engine = replay_data.get("colonist_color_to_engine_idx", {})
+
+    # CLOSE_TRADE is a replay lifecycle event, not a resource transaction.
+    if action_type == "CLOSE_TRADE":
+        applied_closures = _apply_trade_closures(action_hint, state)
+        if not applied_closures:
+            return _finish(
+                "skipped",
+                0,
+                f"Could not apply trade closure {action_hint.get('trade_id')}",
+            ), True
+
+        creator_color, _ = _engine_color_for_colonist(
+            state, action_hint.get("creator")
+        )
+        if creator_color is not None:
+            game.state.actions.append(
+                Action(creator_color, ActionType.CANCEL_TRADE, None)
+            )
+
+        record_replay_issue(
+            state,
+            kind="replayed_trade_closure",
+            action_hint=action_hint,
+            message=f"Replayed closure for trade {action_hint.get('trade_id')}",
+            severity="info",
+            details={"closures": applied_closures},
+        )
+        return _finish(
+            "closed",
+            1,
+            f"Closed trade {action_hint.get('trade_id')}",
+        ), True
 
     # MARITIME_TRADE
     if action_type == "MARITIME_TRADE":
@@ -219,7 +733,17 @@ def _handle_direct_execute(action_type, action_hint, state):
             else:
                 print(f"[Replay] Executing MARITIME_TRADE: {format_resources(given)} -> {format_resources(received)}")
 
-            game.execute(maritime_action, validate_action=False)
+            game.execute(maritime_action, force=True)
+            applied_closures = _apply_trade_closures(action_hint, state)
+            if applied_closures:
+                record_replay_issue(
+                    state,
+                    kind="replayed_trade_closure",
+                    action_hint=action_hint,
+                    message="Replayed offer closures attached to maritime trade",
+                    severity="info",
+                    details={"closures": applied_closures},
+                )
 
             state.game_log.append({
                 "type": "general",
@@ -232,16 +756,70 @@ def _handle_direct_execute(action_type, action_hint, state):
             print(f"[Replay] Skipping MARITIME_TRADE: couldn't map player {colonist_player}")
             return _finish("skipped", 0, "Skipped MARITIME_TRADE (player mapping failed)"), True
 
-    # PLAY_MONOPOLY / PLAY_YEAR_OF_PLENTY announcement - skip silently
+    # PLAY_MONOPOLY / PLAY_YEAR_OF_PLENTY announcement. Colonist logs the
+    # announcement separately, while the engine combines play+resource choice.
     if action_type in ["PLAY_MONOPOLY", "PLAY_YEAR_OF_PLENTY"]:
-        print(f"[Replay] Skipping {action_type} announcement (actual action follows)")
-        return _finish("skipped", 0, f"Skipped {action_type} announcement"), True
+        expected_followup = {
+            "PLAY_MONOPOLY": "MONOPOLY_RESOURCE",
+            "PLAY_YEAR_OF_PLENTY": "YEAR_OF_PLENTY_RESOURCES",
+        }[action_type]
+        state.replay_pending_dev_card = {
+            "announcement_type": action_type,
+            "expected_followup": expected_followup,
+            "player": action_hint.get("player"),
+            "step": state.replay_index,
+        }
+        print(f"[Replay] Deferred {action_type} announcement until {expected_followup}")
+        return _finish(
+            "deferred",
+            0,
+            f"Deferred {action_type} announcement until {expected_followup}",
+            {"deferred": True},
+        ), True
+
+    # PLAY_KNIGHT_CARD / PLAY_ROAD_BUILDING
+    if action_type in ["PLAY_KNIGHT_CARD", "PLAY_ROAD_BUILDING"]:
+        colonist_player = action_hint.get("player")
+        player_idx = colonist_to_engine.get(str(colonist_player))
+        action_type_enum = {
+            "PLAY_KNIGHT_CARD": ActionType.PLAY_KNIGHT_CARD,
+            "PLAY_ROAD_BUILDING": ActionType.PLAY_ROAD_BUILDING,
+        }[action_type]
+
+        if player_idx is not None:
+            player_color = game.state.colors[player_idx]
+            dev_action = Action(player_color, action_type_enum, None)
+            print(f"[Replay] Executing {action_type} directly: player={player_color}")
+            try:
+                game.execute(dev_action, force=True)
+                return _finish("ok", 1), True
+            except ValueError as e:
+                print(f"[Replay] Skipping {action_type}: direct execution failed: {e}")
+                return _finish("skipped", 0, f"Skipped {action_type} (direct execution failed)"), True
+
+        print(f"[Replay] Skipping {action_type}: couldn't map player {colonist_player}")
+        return _finish("skipped", 0, f"Skipped {action_type} (player mapping failed)"), True
 
     # MONOPOLY_RESOURCE
     if action_type == "MONOPOLY_RESOURCE":
         resource = action_hint.get("resource")
         colonist_player = action_hint.get("player")
         player_idx = colonist_to_engine.get(str(colonist_player))
+        pending_dev = getattr(state, "replay_pending_dev_card", None)
+        if pending_dev:
+            if (
+                pending_dev.get("expected_followup") != "MONOPOLY_RESOURCE"
+                or pending_dev.get("player") != colonist_player
+            ):
+                record_replay_issue(
+                    state,
+                    kind="dev_card_announcement_mismatch",
+                    action_hint=action_hint,
+                    message="MONOPOLY_RESOURCE did not match pending dev-card announcement",
+                    severity="error",
+                    details={"pending": pending_dev},
+                )
+            state.replay_pending_dev_card = None
 
         print(f"[DEBUG MONOPOLY] colonist_player={colonist_player} (type: {type(colonist_player)})")
         print(f"[DEBUG MONOPOLY] colonist_to_engine mapping: {colonist_to_engine}")
@@ -253,7 +831,7 @@ def _handle_direct_execute(action_type, action_hint, state):
             monopoly_action = Action(player_color, ActionType.PLAY_MONOPOLY, resource)
             amount = action_hint.get("amount", "?")
             print(f"[Replay] Executing PLAY_MONOPOLY: player_color={player_color}, player_idx={player_idx}, resource={resource}, amount={amount}")
-            game.execute(monopoly_action, validate_action=False)
+            game.execute(monopoly_action, force=True)
             return _finish("ok", 1), True
         else:
             print(f"[Replay] Skipping MONOPOLY_RESOURCE: player={colonist_player}, resource={resource}")
@@ -264,17 +842,126 @@ def _handle_direct_execute(action_type, action_hint, state):
         resources = action_hint.get("resources", [])
         colonist_player = action_hint.get("player")
         player_idx = colonist_to_engine.get(str(colonist_player))
+        pending_dev = getattr(state, "replay_pending_dev_card", None)
+        if pending_dev:
+            if (
+                pending_dev.get("expected_followup") != "YEAR_OF_PLENTY_RESOURCES"
+                or pending_dev.get("player") != colonist_player
+            ):
+                record_replay_issue(
+                    state,
+                    kind="dev_card_announcement_mismatch",
+                    action_hint=action_hint,
+                    message="YEAR_OF_PLENTY_RESOURCES did not match pending dev-card announcement",
+                    severity="error",
+                    details={"pending": pending_dev},
+                )
+            state.replay_pending_dev_card = None
 
         if player_idx is not None and len(resources) >= 1:
             player_color = game.state.colors[player_idx]
             resource_tuple = tuple(resources[:2]) if len(resources) >= 2 else (resources[0],)
             yop_action = Action(player_color, ActionType.PLAY_YEAR_OF_PLENTY, resource_tuple)
             print(f"[Replay] Executing PLAY_YEAR_OF_PLENTY: player={player_color}, resources={resource_tuple}")
-            game.execute(yop_action, validate_action=False)
+            game.execute(yop_action, force=True)
             return _finish("ok", 1), True
         else:
             print(f"[Replay] Skipping YEAR_OF_PLENTY_RESOURCES: player={colonist_player}, resources={resources}")
             return _finish("skipped", 0, "Skipped YEAR_OF_PLENTY_RESOURCES (invalid params)"), True
+
+    # DISCARD
+    if action_type == "DISCARD":
+        cards = action_hint.get("cards")
+        colonist_player = action_hint.get("player")
+        player_idx = colonist_to_engine.get(str(colonist_player))
+
+        if player_idx is not None and cards:
+            discarded = []
+            for i, count in enumerate(cards):
+                discarded.extend([ENGINE_RESOURCES[i]] * count)
+
+            player_color = game.state.colors[player_idx]
+            print(f"[Replay] Executing DISCARD directly: player={player_color}, cards={discarded}")
+            game.state.current_player_index = player_idx
+            discard_action = Action(player_color, ActionType.DISCARD, discarded)
+            game.execute(discard_action, force=True)
+            return _finish("ok", 1), True
+
+        print(f"[Replay] Skipping DISCARD: player={colonist_player}, cards={cards}")
+        return _finish("skipped", 0, "Skipped DISCARD (invalid params)"), True
+
+    # STEAL
+    if action_type == "STEAL":
+        thief = action_hint.get("player")
+        victim = action_hint.get("victim")
+        stolen_resource = action_hint.get("stolen_resource")
+        thief_idx = colonist_to_engine.get(str(thief))
+        victim_idx = colonist_to_engine.get(str(victim))
+
+        if thief_idx is not None and victim_idx is not None and stolen_resource is not None:
+            thief_color = game.state.colors[thief_idx]
+            victim_color = game.state.colors[victim_idx]
+            print(
+                f"[Replay] Executing STEAL directly: "
+                f"{thief_color} steals {stolen_resource} from {victim_color}"
+            )
+            game.state.current_player_index = thief_idx
+            game.state.current_turn_index = thief_idx
+            steal_action = Action(thief_color, ActionType.STEAL, (victim_color, stolen_resource))
+            game.execute(steal_action, force=True)
+            return _finish("ok", 1), True
+
+        print(f"[Replay] Skipping STEAL: thief={thief}, victim={victim}, resource={stolen_resource}")
+        return _finish("skipped", 0, "Skipped STEAL (invalid params)"), True
+
+    # MOVE_ROBBER
+    if action_type == "MOVE_ROBBER":
+        tile_info = action_hint.get("tile_info", {})
+        colonist_player = action_hint.get("player")
+        player_idx = colonist_to_engine.get(str(colonist_player))
+        x = tile_info.get("x")
+        y = tile_info.get("y")
+
+        if player_idx is not None and x is not None and y is not None:
+            player_color = game.state.colors[player_idx]
+            target_coord = _colonist_xy_to_engine_coord(x, y)
+            if (
+                target_coord == game.state.board.robber_coordinate
+                and game.state.current_prompt != ActionPrompt.MOVE_ROBBER
+            ):
+                record_replay_issue(
+                    state,
+                    kind="observed_replay_state",
+                    action_hint=action_hint,
+                    message="Observed unchanged robber location from Colonist replay",
+                    severity="info",
+                    details={"target_coord": target_coord, "tile_info": tile_info},
+                )
+                return _finish(
+                    "already_satisfied",
+                    0,
+                    "Robber location already matches Colonist replay",
+                ), True
+
+            print(
+                f"[Replay] Forcing MOVE_ROBBER directly: "
+                f"player={player_color}, coord={target_coord}"
+            )
+            robber_action = Action(player_color, ActionType.MOVE_ROBBER, target_coord)
+            game.execute(robber_action, force=True)
+            _record_forced_overlay(
+                state,
+                action_hint,
+                "Forced MOVE_ROBBER from Colonist tile coordinate",
+                details={"target_coord": target_coord, "tile_info": tile_info},
+            )
+            return _finish("ok", 1, "Forced MOVE_ROBBER from Colonist replay"), True
+
+        print(
+            f"[Replay] Skipping MOVE_ROBBER: player={colonist_player}, "
+            f"tile_info={tile_info}"
+        )
+        return _finish("skipped", 0, "Skipped MOVE_ROBBER (invalid params)"), True
 
     # BUILD actions (BUILD_ROAD, BUILD_SETTLEMENT, BUILD_CITY)
     build_actions = ["BUILD_ROAD", "BUILD_SETTLEMENT", "BUILD_CITY"]
@@ -310,7 +997,7 @@ def _handle_direct_execute(action_type, action_hint, state):
             print(f"[Replay] Executing {action_type}: player={player_color}, location={location}")
 
             try:
-                game.execute(build_action, validate_action=False)
+                game.execute(build_action, force=True)
             except ValueError as e:
                 error_msg = str(e)
                 if action_type == "BUILD_CITY" and "no player settlement" in error_msg:
@@ -320,7 +1007,7 @@ def _handle_direct_execute(action_type, action_hint, state):
                         try_color = game.state.colors[try_idx]
                         try_action = Action(try_color, ActionType.BUILD_CITY, location)
                         try:
-                            game.execute(try_action, validate_action=False)
+                            game.execute(try_action, force=True)
                             found_player = try_idx
                             print(f"[Replay] BUILD_CITY succeeded with player {try_idx}")
                             break
@@ -329,7 +1016,36 @@ def _handle_direct_execute(action_type, action_hint, state):
                     if found_player is None:
                         raise ValueError(f"Could not find valid player for BUILD_CITY at {location}")
                 else:
-                    raise
+                    if action_type == "BUILD_ROAD":
+                        is_free = bool(
+                            game.state.is_initial_build_phase
+                            or (
+                                game.state.is_road_building
+                                and game.state.free_roads_available > 0
+                            )
+                        )
+                        print(f"[Replay] Forcing BUILD_ROAD record after placement failure: {error_msg}")
+                        _force_record_road(game.state, player_color, location, is_free)
+                        _record_forced_overlay(
+                            state,
+                            action_hint,
+                            "Forced BUILD_ROAD board record after engine placement failure",
+                            details={"location": location, "error": error_msg},
+                        )
+                        state.game_log.append({
+                            "type": "warning",
+                            "timestamp": time.time(),
+                            "message": f"[{state.replay_index+1}/{len(parsed_actions)}] Forced {action_type} from Colonist replay (direct execution failed: {error_msg})",
+                        })
+                        return _finish("ok", 1, f"Forced {action_type} from Colonist replay"), True
+
+                    print(f"[Replay] Skipping {action_type}: direct execution failed: {error_msg}")
+                    state.game_log.append({
+                        "type": "warning",
+                        "timestamp": time.time(),
+                        "message": f"[{state.replay_index+1}/{len(parsed_actions)}] Skipped {action_type} (direct execution failed: {error_msg})",
+                    })
+                    return _finish("skipped", 0, f"Skipped {action_type} (direct execution failed)"), True
 
             return _finish("ok", 1), True
         else:
@@ -351,7 +1067,7 @@ def _handle_direct_execute(action_type, action_hint, state):
             card_type = action_hint.get("card_type", None)
             buy_dev_action = Action(player_color, ActionType.BUY_DEVELOPMENT_CARD, card_type)
             print(f"[Replay] Executing BUY_DEVELOPMENT_CARD: player={player_color}, card_type={card_type}")
-            game.execute(buy_dev_action, validate_action=False)
+            game.execute(buy_dev_action, force=True)
             return _finish("ok", 1), True
         else:
             print(f"[Replay] Skipping BUY_DEVELOPMENT_CARD: couldn't map player {colonist_player}")
@@ -359,18 +1075,41 @@ def _handle_direct_execute(action_type, action_hint, state):
 
     # END_TURN
     if action_type == "END_TURN":
-        print(f"[Replay] END_TURN not available (engine state differs), skipping")
+        colonist_player = action_hint.get("player")
+        _, player_idx = _engine_color_for_colonist(state, colonist_player)
+        if player_idx is not None and game.state.current_turn_index != player_idx:
+            print("[Replay] END_TURN already satisfied by engine turn advance")
+            return _finish(
+                "already_satisfied",
+                0,
+                "END_TURN already satisfied by engine turn advance",
+            ), True
+
+        issue_message = "END_TURN unavailable while engine requires another action"
+        print(f"[Replay] {issue_message}")
+        record_replay_issue(
+            state,
+            kind="unmatched_end_turn",
+            action_hint=action_hint,
+            message=issue_message,
+            severity="error",
+            details={
+                "current_prompt": str(game.state.current_prompt),
+                "current_turn_index": game.state.current_turn_index,
+                "colonist_player": colonist_player,
+            },
+        )
         state.game_log.append({
             "type": "general",
             "timestamp": time.time(),
-            "message": f"[{state.replay_index+1}/{len(parsed_actions)}] Skipped END_TURN (engine requires other action first)",
+            "message": f"[{state.replay_index+1}/{len(parsed_actions)}] {issue_message}",
         })
-        return _finish("skipped", 0, "Skipped END_TURN (engine state differs)"), True
+        return _finish("unmatched", 0, issue_message), True
 
     return None, False  # Not handled
 
 
-def replay_step_logic(state, broadcast_fn):
+def _replay_step_logic(state, broadcast_fn):
     """Execute one replay step. Returns a dict to be jsonified.
 
     Args:
@@ -379,6 +1118,7 @@ def replay_step_logic(state, broadcast_fn):
     """
     game = state.current_game
     replay_data = state.replay_data
+    ensure_replay_audit_state(state)
 
     if not state.replay_mode or not replay_data or not game:
         return {"error": "No replay loaded"}, 400
@@ -397,13 +1137,20 @@ def replay_step_logic(state, broadcast_fn):
     action_hint = parsed_actions[state.replay_index]
     action_type = action_hint.get("type")
 
+    apply_replay_trade_event(state, action_hint)
+    _sync_turn_owner_from_hint(action_hint, state)
+
     playable = game.state.playable_actions
     if not playable:
         state.game_running = False
         return {"error": "No playable actions", "event_index": state.replay_index}, 400
 
     skip_actions = [
-        "OFFER_TRADE", "ACCEPT_TRADE", "REJECT_TRADE", "COUNTER_OFFER",
+        "OFFER_TRADE",
+        "ACCEPT_TRADE",
+        "REJECT_TRADE",
+        "CLEAR_TRADE_RESPONSE",
+        "COUNTER_OFFER",
     ]
 
     auto_actions_taken = 0
@@ -411,6 +1158,7 @@ def replay_step_logic(state, broadcast_fn):
     # Check if engine requires a specific action that doesn't match current replay action
     required_action_types = {"MOVE_ROBBER", "STEAL", "DISCARD"}
     engine_requires = None
+    lookahead_executed_type = None
     for a in playable:
         if hasattr(a, 'action_type'):
             atype = str(a.action_type).replace("ActionType.", "")
@@ -419,16 +1167,38 @@ def replay_step_logic(state, broadcast_fn):
                 break
 
     if engine_requires and action_type != engine_requires:
-        print(f"[Replay] Engine requires {engine_requires}, but replay has {action_type} - looking ahead")
-        for lookahead_idx in range(state.replay_index, min(state.replay_index + 50, len(parsed_actions))):
-            lookahead_hint = parsed_actions[lookahead_idx]
-            if lookahead_hint.get("type") == engine_requires:
-                action = find_matching_action(playable, lookahead_hint, state=state)
-                if action:
-                    print(f"[Replay] Found {engine_requires} at replay index {lookahead_idx}, executing")
-                    game.execute(action, validate_action=False)
-                    playable = game.state.playable_actions
-                    break
+        if action_type == "DISCARD" and engine_requires == "MOVE_ROBBER":
+            print("[Replay] Engine is ready to move robber, but Colonist has another discard - executing discard first")
+        elif action_type == "MOVE_ROBBER" and engine_requires == "STEAL":
+            print("[Replay] MOVE_ROBBER already satisfied; waiting for Colonist STEAL action")
+        elif action_type in skip_actions:
+            print(
+                f"[Replay] Engine requires {engine_requires}, but replay has "
+                f"{action_type} trade response - waiting for replay cursor"
+            )
+        elif engine_requires == "STEAL":
+            print(
+                f"[Replay] Engine requires STEAL, but replay advanced to {action_type}; "
+                "clearing stale steal prompt"
+            )
+            _force_clear_stale_steal_prompt(
+                state,
+                action_hint,
+                f"Replay advanced to {action_type} without a STEAL row",
+            )
+            playable = game.state.playable_actions
+        else:
+            print(f"[Replay] Engine requires {engine_requires}, but replay has {action_type} - looking ahead")
+            for lookahead_idx in range(state.replay_index, min(state.replay_index + 50, len(parsed_actions))):
+                lookahead_hint = parsed_actions[lookahead_idx]
+                if lookahead_hint.get("type") == engine_requires:
+                    action = find_matching_action(playable, lookahead_hint, state=state)
+                    if action:
+                        print(f"[Replay] Found {engine_requires} at replay index {lookahead_idx}, executing")
+                        game.execute(action, force=True)
+                        playable = game.state.playable_actions
+                        lookahead_executed_type = engine_requires
+                        break
 
     # Handle async trade responses
     if action_type in ["ACCEPT_TRADE", "REJECT_TRADE"]:
@@ -441,8 +1211,10 @@ def replay_step_logic(state, broadcast_fn):
     action = find_matching_action(playable, action_hint, state=state)
 
     direct_execute_types = {
-        "MARITIME_TRADE", "PLAY_MONOPOLY", "PLAY_YEAR_OF_PLENTY",
+        "CLOSE_TRADE", "MARITIME_TRADE", "PLAY_MONOPOLY", "PLAY_YEAR_OF_PLENTY",
+        "PLAY_KNIGHT_CARD", "PLAY_ROAD_BUILDING",
         "MONOPOLY_RESOURCE", "YEAR_OF_PLENTY_RESOURCES", "CONFIRM_TRADE",
+        "DISCARD", "MOVE_ROBBER", "STEAL",
     }
 
     if action is None and action_type in skip_actions:
@@ -461,8 +1233,8 @@ def replay_step_logic(state, broadcast_fn):
                     break
 
             if cancel_trade_action:
-                print(f"[Replay] Auto-executing CANCEL_TRADE to exit trade state")
-                game.execute(cancel_trade_action, validate_action=False)
+                print("[Replay] Auto-executing CANCEL_TRADE to exit trade state")
+                game.execute(cancel_trade_action, force=True)
                 playable = game.state.playable_actions
                 auto_actions_taken += 1
                 action = find_matching_action(playable, action_hint, state=state)
@@ -477,8 +1249,8 @@ def replay_step_logic(state, broadcast_fn):
                     break
 
             if end_turn_action:
-                print(f"[Replay] Auto-executing END_TURN to sync with Colonist replay")
-                game.execute(end_turn_action, validate_action=False)
+                print("[Replay] Auto-executing END_TURN to sync with Colonist replay")
+                game.execute(end_turn_action, force=True)
                 playable = game.state.playable_actions
                 auto_actions_taken += 1
                 action = find_matching_action(playable, action_hint, state=state)
@@ -489,6 +1261,52 @@ def replay_step_logic(state, broadcast_fn):
             break
 
     if action is None:
+        if action_type in (
+            "DISCARD", "MOVE_ROBBER", "STEAL", "PLAY_KNIGHT_CARD", "PLAY_ROAD_BUILDING",
+        ):
+            result, handled = _handle_direct_execute(action_type, action_hint, state)
+            if handled:
+                broadcast_fn()
+                return result
+
+        # Required actions can be executed by lookahead to satisfy engine prompts.
+        # When the replay cursor later reaches that already-satisfied hint, do not
+        # fall back to the first playable action; that mutates resources incorrectly.
+        if action_type in required_action_types:
+            skip_reason = (
+                "already satisfied by lookahead"
+                if lookahead_executed_type == action_type
+                else "no matching required action"
+            )
+            status = "already_satisfied" if lookahead_executed_type == action_type else "unmatched"
+            if status == "unmatched":
+                record_replay_issue(
+                    state,
+                    kind="unmatched_required_action",
+                    action_hint=action_hint,
+                    message=f"No matching required action for {action_type}",
+                    severity="error",
+                    details={"engine_requires": engine_requires},
+                )
+            print(f"[Replay] {action_type}: {skip_reason}")
+            state.game_log.append({
+                "type": "general",
+                "timestamp": time.time(),
+                "message": f"[{state.replay_index+1}/{len(parsed_actions)}] {action_type} ({skip_reason})",
+                "color": get_player_color_name(action_hint.get("player")),
+            })
+            state.replay_actions_per_step.append(0)
+            state.replay_index += 1
+            finished = _mark_finished_if_needed(state, parsed_actions)
+            broadcast_fn()
+            return {
+                "status": status,
+                "event_index": state.replay_index,
+                "total_events": len(parsed_actions),
+                "message": f"{action_type} ({skip_reason})",
+                "finished": finished,
+            }
+
         # Handle skippable trade actions
         if action_type in skip_actions:
             skip_msg = action_type
@@ -506,10 +1324,16 @@ def replay_step_logic(state, broadcast_fn):
                 skip_msg = f"{trade_label} ACCEPT_TRADE"
             elif action_type == "REJECT_TRADE":
                 skip_msg = f"{trade_label} REJECT_TRADE"
+            elif action_type == "CLEAR_TRADE_RESPONSE":
+                skip_msg = f"{trade_label} CLEAR_TRADE_RESPONSE"
 
             # Determine why the trade was skipped
             skip_reason = ""
-            if action_type in ("ACCEPT_TRADE", "REJECT_TRADE"):
+            if action_type in (
+                "ACCEPT_TRADE",
+                "REJECT_TRADE",
+                "CLEAR_TRADE_RESPONSE",
+            ):
                 colonist_to_engine = replay_data.get("colonist_color_to_engine_idx", {})
                 responding_id = action_hint.get("player")
                 creator_id = action_hint.get("creator")
@@ -543,40 +1367,51 @@ def replay_step_logic(state, broadcast_fn):
             else:
                 skip_reason = " -- no matching action in engine playable actions"
 
-            print(f"[Replay] Skipping unmatchable action: {skip_msg}{skip_reason}")
-            state.game_log.append({
-                "type": "general",
-                "timestamp": time.time(),
-                "message": f"[{state.replay_index+1}/{len(parsed_actions)}] Skipped {skip_msg}{skip_reason}",
-                "color": get_player_color_name(action_hint.get("player")),
-            })
+            overlay_msg = _force_apply_trade_overlay(action_type, action_hint, state)
+            if overlay_msg:
+                print(f"[Replay] {overlay_msg}: {skip_msg}{skip_reason}")
+                _record_forced_overlay(
+                    state,
+                    action_hint,
+                    overlay_msg,
+                    details={"reason": skip_reason.strip(" -")},
+                )
+                state.game_log.append({
+                    "type": "trade",
+                    "timestamp": time.time(),
+                    "message": f"[{state.replay_index+1}/{len(parsed_actions)}] {overlay_msg}: {skip_msg}",
+                    "color": get_player_color_name(action_hint.get("player")),
+                })
+                status = "overlay_applied"
+                message = overlay_msg
+            else:
+                message = f"Unmatched {action_type}{skip_reason}"
+                print(f"[Replay] {message}: {skip_msg}")
+                record_replay_issue(
+                    state,
+                    kind="unmatched_trade_overlay",
+                    action_hint=action_hint,
+                    message=message,
+                    severity="error",
+                    details={"reason": skip_reason.strip(" -")},
+                )
+                state.game_log.append({
+                    "type": "warning",
+                    "timestamp": time.time(),
+                    "message": f"[{state.replay_index+1}/{len(parsed_actions)}] {message}: {skip_msg}",
+                    "color": get_player_color_name(action_hint.get("player")),
+                })
+                status = "unmatched"
 
-            cancel_executed = False
-            if action_type not in ["ACCEPT_TRADE", "REJECT_TRADE"]:
-                trade_prompts = [ActionPrompt.DECIDE_TRADE, ActionPrompt.DECIDE_ACCEPTEES, ActionPrompt.DECIDE_COUNTER_OFFERS]
-                if game.state.is_resolving_trade or game.state.current_prompt in trade_prompts:
-                    for a in game.state.playable_actions:
-                        if hasattr(a, 'action_type') and "CANCEL_TRADE" in str(a.action_type):
-                            print(f"[Replay] Auto-cancelling trade after skipping {action_type} (cancel from {a.color})")
-                            has_rolled_before_cancel = game.state.player_state.get(f"P{game.state.current_turn_index}_HAS_ROLLED", False)
-                            print(f"[DEBUG] Before cancel: current_player_index={game.state.current_player_index}, current_turn_index={game.state.current_turn_index}, P{game.state.current_turn_index}_HAS_ROLLED={has_rolled_before_cancel}")
-                            game.execute(a, validate_action=False)
-                            has_rolled_after_cancel = game.state.player_state.get(f"P{game.state.current_turn_index}_HAS_ROLLED", False)
-                            print(f"[DEBUG] After cancel: current_player_index={game.state.current_player_index}, current_turn_index={game.state.current_turn_index}, P{game.state.current_turn_index}_HAS_ROLLED={has_rolled_after_cancel}")
-                            cancel_executed = True
-                            break
-
-            state.replay_actions_per_step.append(1 if cancel_executed else 0)
+            state.replay_actions_per_step.append(0)
             state.replay_index += 1
-            finished = state.replay_index >= len(parsed_actions)
-            if finished:
-                state.game_running = False
+            finished = _mark_finished_if_needed(state, parsed_actions)
             broadcast_fn()
             return {
-                "status": "skipped",
+                "status": status,
                 "event_index": state.replay_index,
                 "total_events": len(parsed_actions),
-                "message": f"Skipped unmatchable {action_type}",
+                "message": message,
                 "finished": finished,
             }
 
@@ -592,20 +1427,38 @@ def replay_step_logic(state, broadcast_fn):
             broadcast_fn()
             return result
 
-        # Fallback to first playable action
-        action = playable[0]
-
-        if hasattr(action, 'action_type') and "ROLL" in str(action.action_type):
-            if action_type == "ROLL" and action_hint.get("dice"):
-                dice = action_hint.get("dice")
-                action = Action(action.color, action.action_type, tuple(dice))
-                print(f"[Replay] Using hint dice values: {dice}")
-
+        message = f"No engine action or replay force path matched {action_type}"
+        print(f"[Replay] {message}")
+        record_replay_issue(
+            state,
+            kind="unmatched_replay_action",
+            action_hint=action_hint,
+            message=message,
+            severity="error",
+            details={
+                "playable_types": [
+                    str(a.action_type).replace("ActionType.", "")
+                    for a in playable
+                    if hasattr(a, "action_type")
+                ][:20],
+            },
+        )
         state.game_log.append({
-            "type": "general",
+            "type": "warning",
             "timestamp": time.time(),
-            "message": f"[Replay] No match for {action_type}, using: {action}",
+            "message": f"[{state.replay_index+1}/{len(parsed_actions)}] {message}",
         })
+        state.replay_actions_per_step.append(0)
+        state.replay_index += 1
+        finished = _mark_finished_if_needed(state, parsed_actions)
+        broadcast_fn()
+        return {
+            "status": "unmatched",
+            "event_index": state.replay_index,
+            "total_events": len(parsed_actions),
+            "message": message,
+            "finished": finished,
+        }
 
     # Log what we're doing with coordinates
     colonist_coords = ""
@@ -625,7 +1478,13 @@ def replay_step_logic(state, broadcast_fn):
         log_type = "building"
     elif "ROLL" in str(action):
         log_type = "dice"
-    elif action_type in ("OFFER_TRADE", "ACCEPT_TRADE", "REJECT_TRADE", "CONFIRM_TRADE"):
+    elif action_type in (
+        "OFFER_TRADE",
+        "ACCEPT_TRADE",
+        "REJECT_TRADE",
+        "CLEAR_TRADE_RESPONSE",
+        "CONFIRM_TRADE",
+    ):
         log_type = "trade"
         trade_label = "Trade"
         colonist_to_engine = replay_data.get("colonist_color_to_engine_idx", {})
@@ -662,6 +1521,8 @@ def replay_step_logic(state, broadcast_fn):
             active_display = [str(k) for k in game.state.active_trades.keys()] if game and hasattr(game.state, 'active_trades') else []
             active_str = f" [active: {', '.join(active_display)}]" if active_display else ""
             log_message = f"{trade_label} Player {action_hint.get('player')} rejects trade{active_str}"
+        elif action_type == "CLEAR_TRADE_RESPONSE":
+            log_message = f"{trade_label} Player {action_hint.get('player')} clears response"
         elif action_type == "CONFIRM_TRADE":
             log_message = f"{trade_label} Player {action_hint.get('player')} confirms trade with Player {action_hint.get('acceptor')}"
     elif action_type == "MARITIME_TRADE":
@@ -688,7 +1549,12 @@ def replay_step_logic(state, broadcast_fn):
     # Execute the action
     try:
         print(f"[Replay] Executing action: {action}")
-        game.execute(action, validate_action=False)
+        game.execute(action, force=True)
+        if action_type in ("OFFER_TRADE", "COUNTER_OFFER"):
+            trade_record = state.replay_trade_ledger.get(action_hint.get("trade_id"))
+            if trade_record is not None:
+                _project_trade_record(state, trade_record)
+                _regenerate_playable_actions(game.state)
     except Exception as e:
         traceback.print_exc()
         return {"error": f"Action failed: {e}", "action": str(action), "hint": action_hint}, 500
@@ -754,10 +1620,11 @@ def replay_step_logic(state, broadcast_fn):
     actions_this_step = auto_actions_taken + 1
     state.replay_actions_per_step.append(actions_this_step)
     state.replay_index += 1
+    replay_finished = _mark_finished_if_needed(state, parsed_actions)
 
     # Check if replay finished or game over
     winner = game.winning_color()
-    if winner or state.replay_index >= len(parsed_actions):
+    if winner or replay_finished:
         state.game_running = False
         state.game_log.append({
             "type": "general",
@@ -777,7 +1644,38 @@ def replay_step_logic(state, broadcast_fn):
         "event_index": state.replay_index,
         "total_events": len(parsed_actions),
         "action": str(action),
-        "finished": state.replay_index >= len(parsed_actions) or winner is not None,
+        "finished": replay_finished or winner is not None,
         "colonist_event": raw_event,
         "engine_translation": action_hint,
     }
+
+
+def replay_step_logic(state, broadcast_fn):
+    """Execute one parsed replay action as an atomic, undoable transaction."""
+    game = state.current_game
+    replay_data = state.replay_data
+    parsed_actions = replay_data.get("parsed_actions", []) if replay_data else []
+
+    if (
+        not state.replay_mode
+        or not replay_data
+        or not game
+        or state.replay_index >= len(parsed_actions)
+    ):
+        return _replay_step_logic(state, broadcast_fn)
+
+    ensure_replay_checkpoint_state(state)
+    checkpoint = ReplayStepCheckpoint.capture(state)
+
+    try:
+        result = _replay_step_logic(state, broadcast_fn)
+    except Exception:
+        checkpoint.restore(state)
+        raise
+
+    if state.replay_index == checkpoint.replay_index + 1:
+        state.replay_step_checkpoints.append(checkpoint)
+    else:
+        checkpoint.restore(state)
+
+    return result

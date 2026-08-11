@@ -1,9 +1,11 @@
 """Live game endpoints: start, step, auto-play, stop."""
 
+import io
 import os
 import time
+from pathlib import Path
 
-from flask import Blueprint, jsonify, request, current_app
+from flask import Blueprint, jsonify, request, current_app, send_file
 
 from engine.game import Game
 from engine.models.player import SimplePlayer, Color
@@ -13,6 +15,8 @@ from engine.state_functions import get_visible_victory_points
 from ..live.game_logging import analyze_action, post_analyze_action
 from ..live.runner import run_game_auto
 from .websocket import broadcast_game_state
+
+_SCREENSHOT_DIR = Path(__file__).resolve().parent.parent.parent / "screenshots"
 
 live_game_bp = Blueprint('live_game', __name__)
 
@@ -38,20 +42,35 @@ def start_game():
     state.replay_index = 0
     state.replay_mode = False
     state.replay_actions_per_step = []
+    state.replay_step_checkpoints = []
+    state.replay_trade_ledger = {}
 
     data = request.json or {}
-    use_llm = data.get('use_llm', False)
+    # Support both new `mode` param and legacy `use_llm` boolean
+    mode = data.get('mode')
+    if mode is None:
+        use_llm = data.get('use_llm', False)
+        mode = 'llm' if use_llm else 'random'
 
-    if use_llm:
-        if not os.getenv("GROQ_API_KEY"):
+    if mode in ('llm', 'llm_vs_random'):
+        has_vlm = os.getenv("NOVITA_API_KEY") or os.getenv("OPENROUTER_API_KEY")
+        has_groq = os.getenv("GROQ_API_KEY")
+        if not has_vlm and not has_groq:
             return jsonify({
-                "error": "GROQ_API_KEY not set",
-                "message": "Set GROQ_API_KEY environment variable to use LLM player"
+                "error": "No API key set",
+                "message": "Set NOVITA_API_KEY (vision) or OPENROUTER_API_KEY (vision) or GROQ_API_KEY (text-only)"
             }), 400
 
+    if mode == 'llm':
         players = [
             LLMPlayer(Color.RED), LLMPlayer(Color.BLUE),
             LLMPlayer(Color.WHITE), LLMPlayer(Color.ORANGE),
+        ]
+    elif mode == 'llm_vs_random':
+        players = [
+            LLMPlayer(Color.RED),
+            SimplePlayer(Color.BLUE), SimplePlayer(Color.WHITE),
+            SimplePlayer(Color.ORANGE),
         ]
     else:
         players = [
@@ -85,7 +104,7 @@ def start_game():
         "status": "started",
         "players": [str(p.color) for p in players],
         "player_types": player_types,
-        "use_llm": use_llm
+        "mode": mode
     })
 
 
@@ -170,6 +189,8 @@ def step_game():
             decision_info["observation"] = current_player.last_observation
         if hasattr(current_player, 'strategic_notes') and current_player.strategic_notes:
             decision_info["strategic_notes"] = current_player.strategic_notes
+        if hasattr(current_player, 'last_screenshot') and current_player.last_screenshot:
+            decision_info["has_screenshot"] = True
 
     pre_state = analyze_action(state, action, game.state)
 
@@ -249,3 +270,21 @@ def stop_auto_play():
     state = _get_state()
     state.auto_play_running = False
     return jsonify({"status": "stopped"})
+
+
+@live_game_bp.route('/api/latest-screenshot')
+def latest_screenshot():
+    """Serve the latest board screenshot taken by the LLM player."""
+    state = _get_state()
+    if state.current_players:
+        for p in state.current_players:
+            if isinstance(p, LLMPlayer) and p.last_screenshot:
+                return send_file(
+                    io.BytesIO(p.last_screenshot),
+                    mimetype='image/png',
+                )
+    # Fallback: try the file on disk
+    latest_path = _SCREENSHOT_DIR / "latest.png"
+    if latest_path.exists():
+        return send_file(str(latest_path), mimetype='image/png')
+    return jsonify({"error": "No screenshot available"}), 404

@@ -57,8 +57,6 @@ def generate_playable_actions(state) -> List[Action]:
         if state.is_road_building:
             return road_building_possibilities(state, color, False)
         actions = []
-        # END_TURN is always available during your turn (like Colonist)
-        actions.append(Action(color, ActionType.END_TURN, None))
         # Allow playing dev cards before and after rolling
         if player_can_play_dev(state, color, "YEAR_OF_PLENTY"):
             actions.extend(year_of_plenty_possibilities(color, state.resource_freqdeck))
@@ -74,6 +72,7 @@ def generate_playable_actions(state) -> List[Action]:
         if not player_has_rolled(state, color):
             actions.append(Action(color, ActionType.ROLL, None))
         else:
+            actions.append(Action(color, ActionType.END_TURN, None))
             actions.extend(road_building_possibilities(state, color))
             actions.extend(settlement_possibilities(state, color))
             actions.extend(city_possibilities(state, color))
@@ -129,16 +128,26 @@ def generate_playable_actions(state) -> List[Action]:
                         )
                         actions.append(Action(color, ActionType.COUNTER_OFFER, description))
 
-            # If there are acceptees for this trade, allow CONFIRM_TRADE with any acceptee
+            # Confirm only while both parties can still honor the accepted offer.
             if len(trade_info['acceptees']) > 0 and color == trade_creator_color:
-                for acceptee_color in trade_info['acceptees']:
-                    actions.append(
-                        Action(
-                            color,
-                            ActionType.CONFIRM_TRADE,
-                            acceptee_color,
+                creator_can_pay = freqdeck_contains(
+                    get_player_freqdeck(state, color),
+                    trade_info['offered'],
+                )
+                if creator_can_pay:
+                    for acceptee_color in trade_info['acceptees']:
+                        acceptee_can_pay = freqdeck_contains(
+                            get_player_freqdeck(state, acceptee_color),
+                            trade_info['wanted'],
                         )
-                    )
+                        if acceptee_can_pay:
+                            actions.append(
+                                Action(
+                                    color,
+                                    ActionType.CONFIRM_TRADE,
+                                    acceptee_color,
+                                )
+                            )
 
         # Counter-offers: proposals from non-turn players directed at the turn player
         turn_player_color = state.colors[state.current_turn_index]
@@ -436,7 +445,7 @@ def inner_maritime_trade_possibilities(hand_freqdeck, bank_freqdeck, port_resour
     if None in port_resources:
         rates = {WOOD: 3, BRICK: 3, SHEEP: 3, WHEAT: 3, ORE: 3}
     for resource in port_resources:
-        if resource != None:
+        if resource is not None:
             rates[resource] = 2
 
     # For resource in hand

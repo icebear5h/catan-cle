@@ -7,6 +7,7 @@ from flask_socketio import emit
 from engine.json import GameEncoder
 from cle.agents.llm_player import LLMPlayer
 from ..live.game_logging import get_player_resources, get_player_dev_cards
+from ..replay.trade_ledger import replay_trade_ledger_payload
 
 
 def broadcast_game_state(socketio, state):
@@ -30,7 +31,7 @@ def broadcast_game_state(socketio, state):
             player_types[color_str] = "Random"
 
     trade_state = None
-    if game.state.is_resolving_trade:
+    if game.state.active_trades:
         trade_tuple = game.state.current_trade
         offered = list(trade_tuple[:5])
         requested = list(trade_tuple[5:10])
@@ -76,6 +77,7 @@ def broadcast_game_state(socketio, state):
             "progress": f"{state.replay_index}/{state.replay_data.get('total_events', 0)}",
             "colonist_players": state.replay_data.get("colonist_players", []),
             "play_order": state.replay_data.get("play_order", []),
+            "active_trades": replay_trade_ledger_payload(state),
         }
 
     print(f"\n[BROADCAST] Sending game state to clients:")

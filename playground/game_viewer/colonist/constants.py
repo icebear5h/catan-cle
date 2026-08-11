@@ -98,8 +98,13 @@ ENGINE_RESOURCES = ["WOOD", "BRICK", "SHEEP", "WHEAT", "ORE"]
 COLONIST_PLAYER_COLORS = {
     1: "RED",
     2: "BLUE",
+    3: "ORANGE",
     4: "GREEN",
     5: "BLACK",
+    6: "BRONZE",
+    7: "SILVER",
+    8: "GOLD",
     9: "WHITE",
+    10: "PINK",
     11: "MYSTIC_BLUE",
 }

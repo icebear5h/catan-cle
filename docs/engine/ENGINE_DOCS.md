@@ -58,8 +58,15 @@ Main game controller.
 class Game:
     def __init__(self, players: List[Player], catan_map=None, seed=None)
 
-    # Execute an action
-    def execute(self, action: Action) -> None
+    # Execute an action. force=True bypasses playable-action validation only
+    # when all randomness-sensitive values are explicit.
+    def execute(
+        self,
+        action: Action,
+        validate_action: bool = True,
+        save_history: bool = True,
+        force: bool = False,
+    ) -> Action
 
     # Get current player
     def state.current_player() -> Player

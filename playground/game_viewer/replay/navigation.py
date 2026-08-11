@@ -3,11 +3,17 @@
 import time
 
 from engine.game import Game
-from engine.models.player import SimplePlayer, Color
-from engine.models.map import CatanMap
+from engine.models.player import SimplePlayer
 
 from ..colonist.helpers import validate_resources_match
-from .action_matcher import find_matching_action
+from .checkpoint import ensure_replay_checkpoint_state
+from .audit import (
+    ensure_replay_audit_state,
+    record_replay_issue,
+    replay_issues_since,
+    sync_final_replay_state,
+    validate_final_replay_state,
+)
 
 
 def replay_undo_logic(state, broadcast_fn):
@@ -16,6 +22,33 @@ def replay_undo_logic(state, broadcast_fn):
 
     if not state.replay_mode or not game:
         return {"error": "No replay loaded"}, 400
+
+    ensure_replay_checkpoint_state(state)
+    if state.replay_step_checkpoints:
+        checkpoint = state.replay_step_checkpoints[-1]
+        if checkpoint.replay_index != state.replay_index - 1:
+            return {"error": "Replay undo checkpoint is out of sync"}, 409
+
+        actions_to_undo = (
+            state.replay_actions_per_step[-1]
+            if state.replay_actions_per_step
+            else 0
+        )
+        action_start = len(checkpoint.game_state.actions)
+        undone_actions = [
+            str(action) for action in game.state.actions[action_start:]
+        ]
+
+        state.replay_step_checkpoints.pop()
+        checkpoint.restore(state)
+        broadcast_fn()
+
+        return {
+            "status": "ok",
+            "event_index": state.replay_index,
+            "actions_undone": actions_to_undo,
+            "undone_actions": undone_actions,
+        }
 
     if not game.can_undo():
         return {"error": "Nothing to undo"}, 400
@@ -48,146 +81,19 @@ def replay_undo_logic(state, broadcast_fn):
     }
 
 
-def replay_goto_fast_logic(state, target_step, broadcast_fn):
-    """Jump to a specific replay step by reloading game from scratch."""
-    game = state.current_game
-    replay_data = state.replay_data
-
-    if not state.replay_mode or not replay_data:
-        return {"error": "No replay loaded"}, 400
-
-    parsed_actions = replay_data.get("parsed_actions", [])
-    total = len(parsed_actions)
-
-    if target_step < 0 or target_step > total:
-        return {"error": f"Step must be between 0 and {total}"}, 400
-
-    print(f"[Replay] Jumping to step {target_step} (reloading from scratch)")
-
-    play_order_colors = []
-    colonist_players = replay_data.get("colonist_players", [])
-    play_order = replay_data.get("play_order", [])
-    for idx in play_order:
-        if idx < len(colonist_players):
-            color_name = colonist_players[idx].get("color", "red").upper()
-            if color_name == "MYSTIC_BLUE":
-                color_name = "MYSTIC_BLUE"
-            try:
-                play_order_colors.append(Color[color_name])
-            except KeyError:
-                play_order_colors.append(Color.RED)
-
-    if len(play_order_colors) < 4:
-        default_colors = [Color.RED, Color.BLUE, Color.WHITE, Color.ORANGE]
-        while len(play_order_colors) < 4:
-            for c in default_colors:
-                if c not in play_order_colors:
-                    play_order_colors.append(c)
-                    break
-
-    players = [SimplePlayer(color) for color in play_order_colors[:4]]
-
-    seed = replay_data.get("seed", 42)
-    catan_map = game.state.board.map if game else CatanMap()
-    state.current_game = Game(players, seed=seed, catan_map=catan_map, shuffle_players=False)
-    game = state.current_game
-
-    state.replay_index = 0
-    state.replay_actions_per_step = []
-    state.game_running = True
-    state.game_log = [{
-        "type": "general",
-        "timestamp": time.time(),
-        "message": f"Jumping to step {target_step}..."
-    }]
-
-    errors = []
-    required_action_types = {"MOVE_ROBBER", "STEAL", "DISCARD"}
-
-    while state.replay_index < target_step and state.replay_index < total:
-        try:
-            action_hint = parsed_actions[state.replay_index]
-            action_type = action_hint.get("type", "")
-            playable = game.state.playable_actions
-
-            engine_requires = None
-            for a in playable:
-                if hasattr(a, 'action_type'):
-                    atype = str(a.action_type).replace("ActionType.", "")
-                    if atype in required_action_types:
-                        engine_requires = atype
-                        break
-
-            if engine_requires and action_type != engine_requires:
-                print(f"[Goto] Step {state.replay_index}: Engine requires {engine_requires}, looking ahead...")
-                for lookahead_idx in range(state.replay_index, min(state.replay_index + 50, total)):
-                    lookahead_hint = parsed_actions[lookahead_idx]
-                    if lookahead_hint.get("type") == engine_requires:
-                        action = find_matching_action(playable, lookahead_hint, state=state)
-                        if action:
-                            print(f"[Goto] Found {engine_requires} at index {lookahead_idx}, executing")
-                            game.execute(action, validate_action=False)
-                            playable = game.state.playable_actions
-                            break
-
-            matched_action = find_matching_action(playable, action_hint, state=state)
-            if matched_action:
-                print(f"[Goto] Step {state.replay_index}: Executing {matched_action}")
-                game.execute(matched_action, validate_action=False)
-                state.replay_actions_per_step.append(1)
-            else:
-                if action_type == "MOVE_ROBBER":
-                    print(f"[Goto] Step {state.replay_index}: MOVE_ROBBER not matched! Playable: {[str(a.action_type) for a in playable[:5]]}")
-                print(f"[Goto] Step {state.replay_index}: Skipping {action_type} (no match)")
-                state.replay_actions_per_step.append(0)
-
-            state.replay_index += 1
-        except Exception as e:
-            errors.append(f"Step {state.replay_index}: {str(e)}")
-            state.replay_index += 1
-
-    state.game_log.append({
-        "type": "general",
-        "timestamp": time.time(),
-        "message": f"Jumped to step {state.replay_index}/{total}"
-    })
-
-    # Check for divergence at current step
-    if state.replay_index > 0 and state.replay_index <= len(parsed_actions):
-        action_hint = parsed_actions[state.replay_index - 1]
-        expected_resources = action_hint.get("expected_resources", {})
-        colonist_to_engine = replay_data.get("colonist_color_to_engine_idx", {})
-
-        if expected_resources:
-            mismatches = validate_resources_match(
-                game, expected_resources, colonist_to_engine,
-                step_info=f"At step {state.replay_index} after goto"
-            )
-            if mismatches:
-                res_names = ["WOOD", "BRICK", "SHEEP", "WHEAT", "ORE"]
-                for m in mismatches:
-                    diff_str = ", ".join(f"{res_names[i]}:{d:+d}" for i, d in enumerate(m["diff"]) if d != 0)
-                    print(f"[GOTO DIVERGENCE] Player {m['player_idx']} (colonist {m['colonist_id']}): "
-                          f"engine={m['engine_has']}, expected={m['colonist_expects']}, diff=[{diff_str}]")
-                    state.game_log.append({
-                        "type": "warning",
-                        "timestamp": time.time(),
-                        "message": f"[DIVERGENCE at step {state.replay_index}] Player {m['player_idx']}: {diff_str}",
-                        "details": {
-                            "engine_resources": m["engine_has"],
-                            "expected_resources": m["colonist_expects"],
-                            "diff": m["diff"],
-                        }
-                    })
-
-    broadcast_fn()
-
-    return {
-        "status": "ok",
-        "event_index": state.replay_index,
-        "total_events": total,
-        "errors": errors[:5] if errors else None,
-    }
+def replay_goto_fast_logic(
+    state,
+    target_step,
+    replay_step_fn,
+    broadcast_fn,
+):
+    """Compatibility alias for authoritative sequential reconstruction."""
+    return replay_goto_sequential_logic(
+        state,
+        target_step,
+        replay_step_fn,
+        broadcast_fn,
+    )
 
 
 def replay_goto_sequential_logic(state, target_step, replay_step_fn, broadcast_fn):
@@ -220,6 +126,11 @@ def replay_goto_sequential_logic(state, target_step, replay_step_fn, broadcast_f
         state.replay_index = 0
         state.replay_actions_per_step = []
         state.first_divergence_step = {}
+        state.replay_semantic_issues = []
+        state.replay_final_state_synced = False
+        state.replay_pending_dev_card = None
+        state.replay_step_checkpoints = []
+        state.replay_trade_ledger = {}
         state.game_log = [{
             "type": "general",
             "timestamp": time.time(),
@@ -241,6 +152,7 @@ def replay_goto_sequential_logic(state, target_step, replay_step_fn, broadcast_f
         if steps_taken % 50 == 0:
             print(f"[Goto Sequential] Progress: {state.replay_index}/{target_step}")
 
+    state.game_running = not errors and state.replay_index < total
     broadcast_fn()
 
     return {
@@ -266,11 +178,13 @@ def replay_goto_divergence_logic(state, max_steps, replay_step_fn, broadcast_fn)
     steps_taken = 0
     divergence_found = False
     divergence_info = None
+    ensure_replay_audit_state(state)
 
     while state.replay_index < total and steps_taken < max_steps and not divergence_found:
         action_hint = parsed_actions[state.replay_index]
         expected_resources = action_hint.get("expected_resources", {})
         action_type = action_hint.get("type")
+        audit_cursor = len(state.replay_semantic_issues)
 
         result = replay_step_fn()
         if isinstance(result, tuple):
@@ -278,9 +192,22 @@ def replay_goto_divergence_logic(state, max_steps, replay_step_fn, broadcast_fn)
 
         steps_taken += 1
 
-        skip_divergence_check = action_type in ["PLAY_MONOPOLY", "PLAY_YEAR_OF_PLENTY"]
+        new_errors = replay_issues_since(state, audit_cursor, min_severity="error")
+        if new_errors:
+            divergence_found = True
+            divergence_info = {
+                "step": state.replay_index,
+                "action_type": action_type,
+                "kind": "semantic",
+                "issues": new_errors,
+            }
+            print(
+                f"[Goto Divergence] Found semantic divergence at step {state.replay_index}: "
+                f"{new_errors[0]['kind']}"
+            )
+            break
 
-        if expected_resources and not skip_divergence_check:
+        if expected_resources:
             colonist_to_engine = replay_data.get("colonist_color_to_engine_idx", {})
             mismatches = validate_resources_match(
                 state.current_game, expected_resources, colonist_to_engine,
@@ -291,6 +218,7 @@ def replay_goto_divergence_logic(state, max_steps, replay_step_fn, broadcast_fn)
                 divergence_info = {
                     "step": state.replay_index,
                     "action_type": action_hint.get("type"),
+                    "kind": "resources",
                     "mismatches": [
                         {
                             "player_idx": m["player_idx"],
@@ -308,6 +236,28 @@ def replay_goto_divergence_logic(state, max_steps, replay_step_fn, broadcast_fn)
         if steps_taken % 50 == 0:
             print(f"[Goto Divergence] Progress: {state.replay_index}/{total}, no divergence yet")
 
+    if not divergence_found and state.replay_index >= total:
+        if getattr(state, "replay_pending_dev_card", None):
+            record_replay_issue(
+                state,
+                kind="unpaired_dev_card_announcement",
+                message="Replay ended with a dev-card announcement that had no resource-selection row",
+                severity="warning",
+                details={"pending": state.replay_pending_dev_card},
+            )
+            state.replay_pending_dev_card = None
+
+        sync_final_replay_state(state)
+        final_mismatches = validate_final_replay_state(state)
+        if final_mismatches:
+            divergence_found = True
+            divergence_info = {
+                "step": state.replay_index,
+                "action_type": None,
+                "kind": "final_state",
+                "mismatches": final_mismatches,
+            }
+
     broadcast_fn()
 
     if divergence_found:
@@ -317,12 +267,21 @@ def replay_goto_divergence_logic(state, max_steps, replay_step_fn, broadcast_fn)
             "total_events": total,
             "steps_taken": steps_taken,
             "divergence": divergence_info,
+            "semantic_issue_count": len(state.replay_semantic_issues),
         }
     else:
+        warning_count = len(
+            [
+                issue
+                for issue in state.replay_semantic_issues
+                if issue.get("severity") == "warning"
+            ]
+        )
         return {
             "status": "no_divergence",
             "event_index": state.replay_index,
             "total_events": total,
             "steps_taken": steps_taken,
+            "semantic_warning_count": warning_count,
             "message": f"No divergence found in {steps_taken} steps",
         }

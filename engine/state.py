@@ -47,6 +47,7 @@ from engine.state_functions import (
     buy_dev_card,
     maintain_longest_road,
     play_dev_card,
+    get_player_freqdeck,
     player_can_afford_dev_card,
     player_can_play_dev,
     player_clean_turn,
@@ -265,6 +266,7 @@ class State:
         state_copy.current_trade = self.current_trade
         state_copy.acceptees = self.acceptees
         state_copy.rejecters = self.rejecters
+        state_copy.last_dice_roll = self.last_dice_roll
 
         state_copy.playable_actions = self.playable_actions
         return state_copy
@@ -344,7 +346,37 @@ def next_player_index(state, direction=1):
     return (state.current_player_index + direction) % len(state.colors)
 
 
-def apply_action(state: State, action: Action):
+def assert_forced_action_is_explicit(action: Action):
+    """Reject forced actions that would otherwise rely on engine randomness."""
+    if action.action_type == ActionType.ROLL:
+        if not isinstance(action.value, (tuple, list)) or len(action.value) != 2:
+            raise ValueError("Forced ROLL requires explicit dice tuple")
+    elif action.action_type == ActionType.DISCARD:
+        if action.value is None:
+            raise ValueError("Forced DISCARD requires explicit discarded cards")
+    elif action.action_type == ActionType.BUY_DEVELOPMENT_CARD:
+        if action.value is None:
+            raise ValueError("Forced BUY_DEVELOPMENT_CARD requires explicit card type")
+    elif action.action_type == ActionType.STEAL:
+        if (
+            not isinstance(action.value, (tuple, list))
+            or len(action.value) != 2
+            or action.value[0] is None
+            or action.value[1] is None
+        ):
+            raise ValueError("Forced STEAL requires explicit victim and resource")
+    elif action.action_type == ActionType.MOVE_ROBBER:
+        if action.value is None:
+            raise ValueError("Forced MOVE_ROBBER requires explicit tile coordinate")
+    elif action.action_type == ActionType.PLAY_YEAR_OF_PLENTY:
+        if not action.value or any(resource is None for resource in action.value):
+            raise ValueError("Forced PLAY_YEAR_OF_PLENTY requires explicit resources")
+    elif action.action_type == ActionType.PLAY_MONOPOLY:
+        if action.value is None:
+            raise ValueError("Forced PLAY_MONOPOLY requires explicit resource")
+
+
+def apply_action(state: State, action: Action, force: bool = False):
     """Main controller call. Follows redux-like pattern and
     routes the given action to the appropiate state-changing calls.
 
@@ -365,72 +397,109 @@ def apply_action(state: State, action: Action):
         Action: Fully-specified action
     """
 
+    if force:
+        assert_forced_action_is_explicit(action)
+
+    executed_action = None
+
     match action.action_type:
         case ActionType.END_TURN:
-            apply_end_turn(state, action)
+            executed_action = apply_end_turn(state, action, force=force)
         case ActionType.BUILD_SETTLEMENT:
-            apply_build_settlement(state, action)
+            executed_action = apply_build_settlement(state, action, force=force)
         case ActionType.BUILD_ROAD:
-            apply_build_road(state, action)
+            executed_action = apply_build_road(state, action, force=force)
         case ActionType.BUILD_CITY:
-            apply_build_city(state, action)
+            executed_action = apply_build_city(state, action, force=force)
         case ActionType.BUY_DEVELOPMENT_CARD:
-            apply_buy_development_card(state, action)
+            executed_action = apply_buy_development_card(state, action, force=force)
         case ActionType.ROLL:
-            apply_roll(state, action)
+            executed_action = apply_roll(state, action, force=force)
         case ActionType.DISCARD:
-            apply_discard(state, action)
+            executed_action = apply_discard(state, action, force=force)
         case ActionType.MOVE_ROBBER:
-            apply_move_robber(state, action)
+            executed_action = apply_move_robber(state, action, force=force)
         case ActionType.STEAL:
-            apply_steal(state, action)
+            executed_action = apply_steal(state, action, force=force)
         case ActionType.PLAY_KNIGHT_CARD:
-            apply_play_knight_card(state, action)
+            executed_action = apply_play_knight_card(state, action, force=force)
         case ActionType.PLAY_YEAR_OF_PLENTY:
-            apply_play_year_of_plenty(state, action)
+            executed_action = apply_play_year_of_plenty(state, action, force=force)
         case ActionType.PLAY_MONOPOLY:
-            apply_play_monopoly(state, action)
+            executed_action = apply_play_monopoly(state, action, force=force)
         case ActionType.PLAY_ROAD_BUILDING:
-            apply_play_road_building(state, action)
+            executed_action = apply_play_road_building(state, action, force=force)
         case ActionType.MARITIME_TRADE:
-            apply_maritime_trade(state, action)
+            executed_action = apply_maritime_trade(state, action, force=force)
         case ActionType.OFFER_TRADE:
-            apply_offer_trade(state, action)
+            executed_action = apply_offer_trade(state, action, force=force)
         case ActionType.ACCEPT_TRADE:
-            apply_accept_trade(state, action)
+            executed_action = apply_accept_trade(state, action, force=force)
         case ActionType.REJECT_TRADE:
-            apply_reject_trade(state, action)
+            executed_action = apply_reject_trade(state, action, force=force)
         case ActionType.CONFIRM_TRADE:
-            apply_confirm_trade(state, action)
+            executed_action = apply_confirm_trade(state, action, force=force)
         case ActionType.COUNTER_OFFER:
-            apply_counter_offer(state, action)
+            executed_action = apply_counter_offer(state, action, force=force)
         case ActionType.JOIN_COUNTER_OFFER:
-            apply_join_counter_offer(state, action)
+            executed_action = apply_join_counter_offer(state, action, force=force)
         case ActionType.ACCEPT_COUNTER_OFFER:
-            apply_accept_counter_offer(state, action)
+            executed_action = apply_accept_counter_offer(state, action, force=force)
         case ActionType.CANCEL_TRADE:
-            apply_cancel_trade(state, action)
+            executed_action = apply_cancel_trade(state, action, force=force)
         case _:
             raise ValueError("Unknown ActionType " + str(action.action_type))
 
-    state.actions.append(action)
-    return action
+    if executed_action is None:
+        executed_action = action
+
+    state.actions.append(executed_action)
+    return executed_action
+
+
+def sync_legacy_trade_state(state):
+    """Project color-keyed trade state into deprecated single-trade fields."""
+    state.is_resolving_trade = bool(state.active_trades or state.counter_offers)
+
+    selected_creator = None
+    current_creator_idx = state.current_trade[10]
+    if isinstance(current_creator_idx, int) and 0 <= current_creator_idx < len(state.colors):
+        current_creator = state.colors[current_creator_idx]
+        if current_creator in state.active_trades:
+            selected_creator = current_creator
+
+    if selected_creator is None and state.active_trades:
+        selected_creator = next(reversed(state.active_trades))
+
+    if selected_creator is None:
+        state.current_trade = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        state.acceptees = tuple(False for _ in state.colors)
+        state.rejecters = tuple(False for _ in state.colors)
+        return
+
+    trade_info = state.active_trades[selected_creator]
+    state.current_trade = (
+        *trade_info["offered"],
+        *trade_info["wanted"],
+        state.colors.index(selected_creator),
+    )
+    state.acceptees = tuple(
+        color in trade_info["acceptees"] for color in state.colors
+    )
+    state.rejecters = tuple(
+        color in trade_info["rejecters"] for color in state.colors
+    )
 
 
 def reset_trading_state(state):
-    """Reset all trading state - called on end turn or when all trades complete."""
+    """Reset all trading state - called when a turn ends."""
     state.active_trades = {}
     state.counter_offers = {}
-
-    # Legacy fields
-    state.is_resolving_trade = False
-    state.current_trade = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-    state.acceptees = tuple(False for _ in state.colors)
-    state.rejecters = tuple(False for _ in state.colors)
+    sync_legacy_trade_state(state)
 
 
 # ===== Apply Action Handlers =====
-def apply_end_turn(state: State, action: Action):
+def apply_end_turn(state: State, action: Action, force: bool = False):
     # Reset any pending trade state (like Colonist's auto-cancel on end turn)
     reset_trading_state(state)
     player_clean_turn(state, action.color)
@@ -439,7 +508,7 @@ def apply_end_turn(state: State, action: Action):
     state.playable_actions = generate_playable_actions(state)
 
 
-def apply_build_settlement(state: State, action: Action):
+def apply_build_settlement(state: State, action: Action, force: bool = False):
     node_id = action.value
     if state.is_initial_build_phase:
         state.board.build_settlement(action.color, node_id, True)
@@ -451,7 +520,7 @@ def apply_build_settlement(state: State, action: Action):
         if is_second_house:
             key = player_key(state, action.color)
             for tile in state.board.map.adjacent_tiles[node_id]:
-                if tile.resource != None:
+                if tile.resource is not None:
                     freqdeck_draw(state.resource_freqdeck, 1, tile.resource)  # type: ignore
                     state.player_state[f"{key}_{tile.resource}_IN_HAND"] += 1
 
@@ -475,7 +544,7 @@ def apply_build_settlement(state: State, action: Action):
         state.playable_actions = generate_playable_actions(state)
 
 
-def apply_build_road(state: State, action: Action):
+def apply_build_road(state: State, action: Action, force: bool = False):
     edge = action.value
     if state.is_initial_build_phase:
         state.board.build_road(action.color, edge)
@@ -530,7 +599,7 @@ def apply_build_road(state: State, action: Action):
         state.playable_actions = generate_playable_actions(state)
 
 
-def apply_build_city(state: State, action: Action):
+def apply_build_city(state: State, action: Action, force: bool = False):
     node_id = action.value
     state.board.build_city(action.color, node_id)
     build_city(state, action.color, node_id)
@@ -543,13 +612,15 @@ def apply_build_city(state: State, action: Action):
     state.playable_actions = generate_playable_actions(state)
 
 
-def apply_buy_development_card(state: State, action: Action):
+def apply_buy_development_card(state: State, action: Action, force: bool = False):
     if len(state.development_listdeck) == 0:
         raise ValueError("No more development cards")
     if not player_can_afford_dev_card(state, action.color):
         raise ValueError("No money to buy development card")
 
     if action.value is None:
+        if force:
+            raise ValueError("Forced BUY_DEVELOPMENT_CARD requires explicit card type")
         card = state.development_listdeck.pop()  # already shuffled
     else:
         card = action.value
@@ -564,12 +635,15 @@ def apply_buy_development_card(state: State, action: Action):
     # state.current_player_index stays the same
     # state.current_prompt stays as PLAY
     state.playable_actions = generate_playable_actions(state)
+    return action
 
 
-def apply_roll(state: State, action: Action):
+def apply_roll(state: State, action: Action, force: bool = False):
     key = player_key(state, action.color)
     state.player_state[f"{key}_HAS_ROLLED"] = True
 
+    if action.value is None and force:
+        raise ValueError("Forced ROLL requires explicit dice tuple")
     dices = action.value or roll_dice()
     number = dices[0] + dices[1]
 
@@ -606,12 +680,15 @@ def apply_roll(state: State, action: Action):
         # state.current_player_index stays the same
         state.current_prompt = ActionPrompt.PLAY_TURN
         state.playable_actions = generate_playable_actions(state)
+    return action
 
 
-def apply_discard(state: State, action: Action):
+def apply_discard(state: State, action: Action, force: bool = False):
     hand = player_deck_to_array(state, action.color)
     num_to_discard = len(hand) // 2
     if action.value is None:
+        if force:
+            raise ValueError("Forced DISCARD requires explicit discarded cards")
         # TODO: Forcefully discard randomly so that decision tree doesnt explode in possibilities.
         discarded = random.sample(hand, k=num_to_discard)
     else:
@@ -637,9 +714,10 @@ def apply_discard(state: State, action: Action):
         state.is_moving_knight = True
 
     state.playable_actions = generate_playable_actions(state)
+    return action
 
 
-def apply_move_robber(state: State, action: Action):
+def apply_move_robber(state: State, action: Action, force: bool = False):
     """Move robber to new tile. STEAL is now a separate action."""
     coordinate = action.value
     state.board.robber_coordinate = coordinate
@@ -659,11 +737,13 @@ def apply_move_robber(state: State, action: Action):
     state.playable_actions = generate_playable_actions(state)
 
 
-def apply_steal(state: State, action: Action):
+def apply_steal(state: State, action: Action, force: bool = False):
     """Steal a card from a player at the robber's tile."""
     (robbed_color, robbed_resource) = action.value
 
     if robbed_resource is None:
+        if force:
+            raise ValueError("Forced STEAL requires explicit victim and resource")
         robbed_resource = player_deck_random_draw(state, robbed_color)
         action = Action(
             action.color,
@@ -678,9 +758,10 @@ def apply_steal(state: State, action: Action):
     # state.current_player_index stays the same
     state.current_prompt = ActionPrompt.PLAY_TURN
     state.playable_actions = generate_playable_actions(state)
+    return action
 
 
-def apply_play_knight_card(state: State, action: Action):
+def apply_play_knight_card(state: State, action: Action, force: bool = False):
     if not player_can_play_dev(state, action.color, "KNIGHT"):
         raise ValueError("Player cant play knight card now")
 
@@ -691,7 +772,7 @@ def apply_play_knight_card(state: State, action: Action):
     state.playable_actions = generate_playable_actions(state)
 
 
-def apply_play_year_of_plenty(state: State, action: Action):
+def apply_play_year_of_plenty(state: State, action: Action, force: bool = False):
     cards_selected = freqdeck_from_listdeck(action.value)
     if not player_can_play_dev(state, action.color, YEAR_OF_PLENTY):
         raise ValueError("Player cant play year of plenty now")
@@ -706,7 +787,7 @@ def apply_play_year_of_plenty(state: State, action: Action):
     state.playable_actions = generate_playable_actions(state)
 
 
-def apply_play_monopoly(state: State, action: Action):
+def apply_play_monopoly(state: State, action: Action, force: bool = False):
     mono_resource = action.value
     cards_stolen = [0, 0, 0, 0, 0]
     if not player_can_play_dev(state, action.color, MONOPOLY):
@@ -727,7 +808,7 @@ def apply_play_monopoly(state: State, action: Action):
     state.playable_actions = generate_playable_actions(state)
 
 
-def apply_play_road_building(state: State, action: Action):
+def apply_play_road_building(state: State, action: Action, force: bool = False):
     if not player_can_play_dev(state, action.color, "ROAD_BUILDING"):
         raise ValueError("Player cant play road building now")
 
@@ -740,7 +821,7 @@ def apply_play_road_building(state: State, action: Action):
     state.playable_actions = generate_playable_actions(state)
 
 
-def apply_maritime_trade(state: State, action: Action):
+def apply_maritime_trade(state: State, action: Action, force: bool = False):
     trade_offer = action.value
 
     # Support two formats:
@@ -771,7 +852,7 @@ def apply_maritime_trade(state: State, action: Action):
     state.playable_actions = generate_playable_actions(state)
 
 
-def apply_offer_trade(state: State, action: Action):
+def apply_offer_trade(state: State, action: Action, force: bool = False):
     # Multi-trade support: Add this trade to active_trades (don't cancel existing trades)
     offered = action.value[:5]
     wanted = action.value[5:10]
@@ -800,7 +881,7 @@ def apply_offer_trade(state: State, action: Action):
     state.playable_actions = generate_playable_actions(state)
 
 
-def apply_accept_trade(state: State, action: Action):
+def apply_accept_trade(state: State, action: Action, force: bool = False):
     # Multi-trade: action.value is the creator_color whose trade is being accepted
     creator_color = action.value
     acceptor_color = action.color
@@ -808,7 +889,8 @@ def apply_accept_trade(state: State, action: Action):
     if creator_color not in state.active_trades:
         raise ValueError(f"No active trade from {creator_color}")
 
-    # Add acceptor to this trade's acceptees
+    # A player's latest response replaces their previous response.
+    state.active_trades[creator_color]['rejecters'].discard(acceptor_color)
     state.active_trades[creator_color]['acceptees'].add(acceptor_color)
 
     # Update legacy fields for backward compatibility
@@ -818,6 +900,9 @@ def apply_accept_trade(state: State, action: Action):
         new_acceptess = list(state.acceptees)
         new_acceptess[index] = True
         state.acceptees = tuple(new_acceptess)
+        new_rejecters = list(state.rejecters)
+        new_rejecters[index] = False
+        state.rejecters = tuple(new_rejecters)
 
     # Async trades: don't advance player - stay on trade creator
     # Trade creator can now CONFIRM_TRADE with this acceptee
@@ -827,7 +912,7 @@ def apply_accept_trade(state: State, action: Action):
     state.playable_actions = generate_playable_actions(state)
 
 
-def apply_reject_trade(state: State, action: Action):
+def apply_reject_trade(state: State, action: Action, force: bool = False):
     # Multi-trade: action.value is the creator_color whose trade is being rejected
     creator_color = action.value
     rejector_color = action.color
@@ -835,7 +920,8 @@ def apply_reject_trade(state: State, action: Action):
     if creator_color not in state.active_trades:
         raise ValueError(f"No active trade from {creator_color}")
 
-    # Add rejector to this trade's rejecters
+    # A player's latest response replaces their previous response.
+    state.active_trades[creator_color]['acceptees'].discard(rejector_color)
     state.active_trades[creator_color]['rejecters'].add(rejector_color)
 
     # Update legacy fields for backward compatibility
@@ -845,6 +931,9 @@ def apply_reject_trade(state: State, action: Action):
         new_rejecters = list(state.rejecters)
         new_rejecters[index] = True
         state.rejecters = tuple(new_rejecters)
+        new_acceptees = list(state.acceptees)
+        new_acceptees[index] = False
+        state.acceptees = tuple(new_acceptees)
 
     # Async trades: just record the rejection, don't advance player
     # Stay on trade creator - they can continue playing or cancel the trade
@@ -854,7 +943,7 @@ def apply_reject_trade(state: State, action: Action):
     state.playable_actions = generate_playable_actions(state)
 
 
-def apply_confirm_trade(state: State, action: Action):
+def apply_confirm_trade(state: State, action: Action, force: bool = False):
     # Multi-trade: action.color is trade creator, action.value is acceptee_color
     creator_color = action.color
     acceptee_color = action.value
@@ -866,7 +955,14 @@ def apply_confirm_trade(state: State, action: Action):
     offering = trade_info['offered']
     asking = trade_info['wanted']
 
-    # Execute the trade: creator gives offered, gets wanted
+    if acceptee_color not in trade_info['acceptees']:
+        raise ValueError(f"{acceptee_color} has not accepted this trade")
+    if not freqdeck_contains(get_player_freqdeck(state, creator_color), offering):
+        raise ValueError(f"{creator_color} can no longer afford this trade")
+    if not freqdeck_contains(get_player_freqdeck(state, acceptee_color), asking):
+        raise ValueError(f"{acceptee_color} can no longer afford this trade")
+
+    # Execute the trade atomically after both affordability checks.
     player_freqdeck_subtract(state, creator_color, offering)
     player_freqdeck_add(state, creator_color, asking)
     player_freqdeck_subtract(state, acceptee_color, asking)
@@ -875,13 +971,8 @@ def apply_confirm_trade(state: State, action: Action):
     # Remove this completed trade from active_trades
     del state.active_trades[creator_color]
 
-    # Update legacy fields - reset if this was the current_trade
-    if state.current_trade[10] == state.colors.index(creator_color):
-        reset_trading_state(state)
-
-    # If no more active trades, clear is_resolving_trade
-    if len(state.active_trades) == 0:
-        state.is_resolving_trade = False
+    # Keep unrelated offers/counters and select a remaining legacy projection.
+    sync_legacy_trade_state(state)
 
     # After confirming trade, return to the trade creator's turn
     state.current_player_index = state.colors.index(creator_color)
@@ -889,7 +980,7 @@ def apply_confirm_trade(state: State, action: Action):
     state.playable_actions = generate_playable_actions(state)
 
 
-def apply_counter_offer(state: State, action: Action):
+def apply_counter_offer(state: State, action: Action, force: bool = False):
     """Handle a counter offer from a non-turn player.
 
     Counter-offers are proposals directed at the turn player. Other players can
@@ -910,6 +1001,7 @@ def apply_counter_offer(state: State, action: Action):
         'wanted_any': wanted_any,
         'acceptees': set(),  # Others who'd make the same offer to turn player
     }
+    state.is_resolving_trade = True
 
     if state.current_prompt == ActionPrompt.PLAY_TURN:
         # Async mode: stay on PLAY_TURN, regenerate actions
@@ -940,7 +1032,7 @@ def apply_counter_offer(state: State, action: Action):
     state.playable_actions = generate_playable_actions(state)
 
 
-def apply_join_counter_offer(state: State, action: Action):
+def apply_join_counter_offer(state: State, action: Action, force: bool = False):
     """Non-turn player joins an existing counter-offer.
 
     This indicates they'd also make the same offer to the turn player.
@@ -965,7 +1057,7 @@ def apply_join_counter_offer(state: State, action: Action):
     state.playable_actions = generate_playable_actions(state)
 
 
-def apply_accept_counter_offer(state: State, action: Action):
+def apply_accept_counter_offer(state: State, action: Action, force: bool = False):
     """Turn player accepts a counter offer, executing the trade.
 
     action.value can be:
@@ -1002,27 +1094,20 @@ def apply_accept_counter_offer(state: State, action: Action):
     # Remove the completed counter-offer
     del state.counter_offers[counter_creator_color]
 
-    # If no more active trades or counters, clear trading state
-    if len(state.active_trades) == 0 and len(state.counter_offers) == 0:
-        state.is_resolving_trade = False
+    sync_legacy_trade_state(state)
 
     state.current_player_index = state.current_turn_index
     state.current_prompt = ActionPrompt.PLAY_TURN
     state.playable_actions = generate_playable_actions(state)
 
 
-def apply_cancel_trade(state: State, action: Action):
+def apply_cancel_trade(state: State, action: Action, force: bool = False):
     # Multi-trade: only cancel this player's trade
     if action.color in state.active_trades:
         del state.active_trades[action.color]
 
-    # Update legacy fields - reset if this was the current_trade
-    if state.current_trade[10] == state.colors.index(action.color):
-        reset_trading_state(state)
-
-    # If no more active trades, clear is_resolving_trade
-    if len(state.active_trades) == 0:
-        state.is_resolving_trade = False
+    # Keep unrelated offers/counters and select a remaining legacy projection.
+    sync_legacy_trade_state(state)
 
     state.current_player_index = state.current_turn_index
     state.current_prompt = ActionPrompt.PLAY_TURN

@@ -1,0 +1,1101 @@
+import contextlib
+from copy import deepcopy
+import io
+import os
+from collections import Counter
+from pathlib import Path
+
+import pytest
+
+from engine.game import Game
+from engine.models.actions import generate_playable_actions
+from engine.models.enums import Action, ActionPrompt, ActionType
+from engine.models.player import Color, SimplePlayer
+from playground.game_viewer.app import app
+from playground.game_viewer.colonist.event_parser import parse_colonist_events_to_actions
+from playground.game_viewer.colonist.helpers import validate_resources_match
+from playground.game_viewer.replay.navigation import (
+    replay_goto_fast_logic,
+    replay_goto_sequential_logic,
+    replay_undo_logic,
+)
+from playground.game_viewer.replay.step_executor import replay_step_logic
+from playground.game_viewer.routes.websocket import broadcast_game_state
+from playground.game_viewer.state import ServerState, server_state
+
+
+RESOURCES = ("WOOD", "BRICK", "SHEEP", "WHEAT", "ORE")
+
+
+def make_confirmation_state():
+    state = ServerState()
+    players = [
+        SimplePlayer(Color.RED),
+        SimplePlayer(Color.BLUE),
+        SimplePlayer(Color.WHITE),
+        SimplePlayer(Color.ORANGE),
+    ]
+    game = Game(players, shuffle_players=False)
+    state.current_game = game
+    state.current_players = players
+    state.replay_mode = True
+    state.game_running = True
+
+    game.state.player_state["P0_WOOD_IN_HAND"] = 2
+    game.state.player_state["P1_BRICK_IN_HAND"] = 1
+    game.state.current_player_index = 2
+    game.state.current_turn_index = 2
+    game.state.current_prompt = ActionPrompt.BUILD_INITIAL_SETTLEMENT
+    game.state.active_trades = {
+        Color.RED: {
+            "offered": (1, 0, 0, 0, 0),
+            "wanted": (0, 1, 0, 0, 0),
+            "offered_any": 0,
+            "wanted_any": 0,
+            "acceptees": {Color.BLUE},
+            "rejecters": set(),
+        },
+        Color.ORANGE: {
+            "offered": (0, 0, 1, 0, 0),
+            "wanted": (0, 0, 0, 1, 0),
+            "offered_any": 0,
+            "wanted_any": 0,
+            "acceptees": set(),
+            "rejecters": {Color.WHITE},
+        },
+    }
+    game.state.counter_offers = {
+        Color.RED: {
+            "offered": (0, 0, 0, 1, 0),
+            "wanted": (0, 0, 0, 0, 1),
+            "offered_any": 0,
+            "wanted_any": 0,
+            "acceptees": set(),
+        }
+    }
+    game.state.is_resolving_trade = True
+    game.state.current_trade = (1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0)
+    game.state.playable_actions = generate_playable_actions(game.state)
+
+    confirmation = {
+        "index": 12,
+        "type": "CONFIRM_TRADE",
+        "player": 1,
+        "acceptor": 2,
+        "offered": (1, 0, 0, 0, 0),
+        "received": (0, 1, 0, 0, 0),
+    }
+    state.replay_data = {
+        "events": [{} for _ in range(13)],
+        "parsed_actions": [confirmation],
+        "colonist_color_to_engine_idx": {"1": 0, "2": 1},
+        "end_game_state": {},
+    }
+    state.game_log = [{"type": "test", "message": "before confirmation"}]
+    state.replay_semantic_issues = [
+        {"kind": "existing", "severity": "info", "step": -1}
+    ]
+    state.first_divergence_step = {"P3": 4}
+    state.replay_pending_dev_card = {"keep": "me"}
+    return state
+
+
+def engine_snapshot(state):
+    game_state = state.current_game.state
+    return {
+        "hands": tuple(
+            tuple(
+                game_state.player_state[f"P{player_idx}_{resource}_IN_HAND"]
+                for resource in RESOURCES
+            )
+            for player_idx in range(len(game_state.colors))
+        ),
+        "active_trades": deepcopy(game_state.active_trades),
+        "counter_offers": deepcopy(game_state.counter_offers),
+        "is_resolving_trade": game_state.is_resolving_trade,
+        "current_trade": game_state.current_trade,
+        "acceptees": game_state.acceptees,
+        "rejecters": game_state.rejecters,
+        "current_player_index": game_state.current_player_index,
+        "current_turn_index": game_state.current_turn_index,
+        "current_prompt": game_state.current_prompt,
+        "playable_actions": list(game_state.playable_actions),
+        "actions": list(game_state.actions),
+        "player_state": dict(game_state.player_state),
+        "game_history_length": len(state.current_game.history),
+    }
+
+
+def test_confirm_trade_undo_restores_the_complete_pre_step_transaction():
+    state = make_confirmation_state()
+    before_engine = engine_snapshot(state)
+    before_log = deepcopy(state.game_log)
+    before_issues = deepcopy(state.replay_semantic_issues)
+    before_divergence = deepcopy(state.first_divergence_step)
+    before_pending_dev = deepcopy(state.replay_pending_dev_card)
+
+    first_result = replay_step_logic(state, lambda: None)
+
+    assert first_result["status"] == "trade_applied"
+    assert state.replay_index == 1
+    assert state.replay_actions_per_step == [1]
+    assert len(state.replay_step_checkpoints) == 1
+    assert state.current_game.state.actions[-1].action_type == ActionType.CONFIRM_TRADE
+    assert state.current_game.state.player_state["P0_WOOD_IN_HAND"] == 1
+    assert state.current_game.state.player_state["P0_BRICK_IN_HAND"] == 1
+    assert state.current_game.state.player_state["P1_WOOD_IN_HAND"] == 1
+    assert state.current_game.state.player_state["P1_BRICK_IN_HAND"] == 0
+    after_first_confirmation = engine_snapshot(state)
+
+    undo_result = replay_undo_logic(state, lambda: None)
+
+    assert undo_result["status"] == "ok"
+    assert undo_result["event_index"] == 0
+    assert undo_result["actions_undone"] == 1
+    assert engine_snapshot(state) == before_engine
+    assert state.game_log == before_log
+    assert state.replay_semantic_issues == before_issues
+    assert state.first_divergence_step == before_divergence
+    assert state.replay_pending_dev_card == before_pending_dev
+    assert state.replay_actions_per_step == []
+    assert state.replay_step_checkpoints == []
+    assert state.game_running is True
+
+    second_result = replay_step_logic(state, lambda: None)
+
+    assert second_result["status"] == "trade_applied"
+    assert engine_snapshot(state) == after_first_confirmation
+
+
+def trade_offer_event(trade_id="trade-1"):
+    return {
+        "stateChange": {
+            "tradeState": {
+                "activeOffers": {
+                    trade_id: {
+                        "creator": 1,
+                        "offeredResources": [1],
+                        "wantedResources": [2],
+                    }
+                }
+            }
+        }
+    }
+
+
+def test_standalone_trade_closure_is_parsed_executed_and_undoable():
+    actions = parse_colonist_events_to_actions([
+        trade_offer_event(),
+        {
+            "stateChange": {
+                "tradeState": {"activeOffers": {"trade-1": None}}
+            }
+        },
+    ])
+
+    assert [action["type"] for action in actions] == [
+        "OFFER_TRADE",
+        "CLOSE_TRADE",
+    ]
+    assert actions[1]["trade_id"] == "trade-1"
+    assert actions[1]["creator"] == 1
+    assert actions[1]["reason"] == "cancelled"
+    assert actions[1]["is_counter_offer"] is False
+
+    state = ServerState()
+    players = [
+        SimplePlayer(Color.RED),
+        SimplePlayer(Color.BLUE),
+        SimplePlayer(Color.WHITE),
+        SimplePlayer(Color.ORANGE),
+    ]
+    state.current_game = Game(players, shuffle_players=False)
+    state.current_players = players
+    state.replay_mode = True
+    state.game_running = True
+    state.replay_data = {
+        "events": [{}, {}],
+        "parsed_actions": actions,
+        "colonist_color_to_engine_idx": {"1": 0},
+        "end_game_state": {},
+    }
+    resources_before = engine_snapshot(state)["hands"]
+
+    offer_result = replay_step_logic(state, lambda: None)
+
+    assert offer_result["status"] in {"ok", "overlay_applied"}
+    assert Color.RED in state.current_game.state.active_trades
+
+    close_result = replay_step_logic(state, lambda: None)
+
+    assert close_result["status"] == "closed"
+    assert Color.RED not in state.current_game.state.active_trades
+    assert state.current_game.state.is_resolving_trade is False
+    assert engine_snapshot(state)["hands"] == resources_before
+    assert any(
+        issue["kind"] == "replayed_trade_closure"
+        for issue in state.replay_semantic_issues
+    )
+
+    replay_undo_logic(state, lambda: None)
+
+    assert state.replay_index == 1
+    assert Color.RED in state.current_game.state.active_trades
+    assert not any(
+        issue["kind"] == "replayed_trade_closure"
+        for issue in state.replay_semantic_issues
+    )
+
+
+@pytest.mark.parametrize(
+    ("log_text", "expected_action_type"),
+    [
+        (
+            {
+                "type": 115,
+                "playerColor": 1,
+                "acceptingPlayerColor": 2,
+                "givenCardEnums": [1],
+                "receivedCardEnums": [2],
+            },
+            "CONFIRM_TRADE",
+        ),
+        (
+            {
+                "type": 116,
+                "playerColor": 1,
+                "givenCardEnums": [1, 1, 1, 1],
+                "receivedCardEnums": [2],
+            },
+            "MARITIME_TRADE",
+        ),
+    ],
+)
+def test_resource_trade_actions_follow_one_deterministic_closure(
+    log_text, expected_action_type
+):
+    actions = parse_colonist_events_to_actions([
+        trade_offer_event(),
+        {
+            "stateChange": {
+                "tradeState": {"activeOffers": {"trade-1": None}},
+                "gameLogState": {"log-1": {"text": log_text}},
+            }
+        },
+    ])
+
+    assert [action["type"] for action in actions] == [
+        "OFFER_TRADE",
+        "CLOSE_TRADE",
+        expected_action_type,
+    ]
+    assert actions[1]["trade_id"] == "trade-1"
+    assert actions[1]["reason"] == "transaction_closed"
+    assert actions[1]["expected_resources"] == {}
+    assert actions[2]["trade_closures_preceded"] is True
+
+
+def test_mixed_trade_logs_still_emit_each_source_closure_once():
+    actions = parse_colonist_events_to_actions([
+        trade_offer_event(),
+        {
+            "stateChange": {
+                "tradeState": {"activeOffers": {"trade-1": None}},
+                "gameLogState": {
+                    "confirm": {
+                        "text": {
+                            "type": 115,
+                            "playerColor": 1,
+                            "acceptingPlayerColor": 2,
+                            "givenCardEnums": [1],
+                            "receivedCardEnums": [2],
+                        }
+                    },
+                    "maritime": {
+                        "text": {
+                            "type": 116,
+                            "playerColor": 1,
+                            "givenCardEnums": [1, 1, 1, 1],
+                            "receivedCardEnums": [2],
+                        }
+                    },
+                },
+            }
+        },
+    ])
+
+    assert [action["type"] for action in actions] == [
+        "OFFER_TRADE",
+        "CLOSE_TRADE",
+        "CONFIRM_TRADE",
+        "MARITIME_TRADE",
+    ]
+    assert sum(action["type"] == "CLOSE_TRADE" for action in actions) == 1
+
+
+def test_trade_id_ledger_preserves_same_creator_offers_and_counter_links():
+    events = [
+        trade_offer_event("trade-1"),
+        {
+            "stateChange": {
+                "tradeState": {
+                    "activeOffers": {
+                        "trade-2": {
+                            "creator": 1,
+                            "offeredResources": [3],
+                            "wantedResources": [4],
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "stateChange": {
+                "tradeState": {
+                    "activeOffers": {
+                        "counter-1": {
+                            "creator": 2,
+                            "offeredResources": [2],
+                            "wantedResources": [1],
+                            "counterOfferInResponseToTradeId": "trade-1",
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "stateChange": {
+                "tradeState": {
+                    "activeOffers": {
+                        "trade-1": {"playerResponses": {"2": 1}}
+                    }
+                }
+            }
+        },
+        {
+            "stateChange": {
+                "tradeState": {"activeOffers": {"trade-1": None}}
+            }
+        },
+    ]
+    actions = parse_colonist_events_to_actions(events)
+    assert [action["type"] for action in actions] == [
+        "OFFER_TRADE",
+        "OFFER_TRADE",
+        "COUNTER_OFFER",
+        "ACCEPT_TRADE",
+        "CLOSE_TRADE",
+    ]
+
+    state = ServerState()
+    players = [
+        SimplePlayer(Color.RED),
+        SimplePlayer(Color.BLUE),
+        SimplePlayer(Color.WHITE),
+        SimplePlayer(Color.ORANGE),
+    ]
+    state.current_game = Game(players, shuffle_players=False)
+    state.current_players = players
+    state.replay_mode = True
+    state.game_running = True
+    state.replay_data = {
+        "events": events,
+        "parsed_actions": actions,
+        "colonist_color_to_engine_idx": {"1": 0, "2": 1},
+        "end_game_state": {},
+    }
+
+    replay_step_logic(state, lambda: None)
+    replay_step_logic(state, lambda: None)
+    replay_step_logic(state, lambda: None)
+
+    assert list(state.replay_trade_ledger) == [
+        "trade-1",
+        "trade-2",
+        "counter-1",
+    ]
+    assert state.replay_trade_ledger["trade-1"]["creator"] == 1
+    assert state.replay_trade_ledger["trade-2"]["creator"] == 1
+    assert state.replay_trade_ledger["counter-1"]["counter_offer_to"] == "trade-1"
+    assert state.current_game.state.active_trades[Color.RED]["trade_id"] == "trade-2"
+    assert state.current_game.state.counter_offers[Color.BLUE]["trade_id"] == "counter-1"
+
+    replay_step_logic(state, lambda: None)
+
+    assert state.replay_trade_ledger["trade-1"]["responses"] == {
+        "2": "accepted"
+    }
+    assert state.current_game.state.active_trades[Color.RED]["trade_id"] == "trade-1"
+    assert state.current_game.state.active_trades[Color.RED]["acceptees"] == {
+        Color.BLUE
+    }
+
+    replay_step_logic(state, lambda: None)
+
+    assert list(state.replay_trade_ledger) == ["trade-2", "counter-1"]
+    assert state.current_game.state.active_trades[Color.RED]["trade_id"] == "trade-2"
+    assert state.current_game.state.counter_offers[Color.BLUE]["trade_id"] == "counter-1"
+
+    replay_undo_logic(state, lambda: None)
+
+    assert list(state.replay_trade_ledger) == [
+        "trade-1",
+        "trade-2",
+        "counter-1",
+    ]
+    assert state.current_game.state.active_trades[Color.RED]["trade_id"] == "trade-1"
+    assert state.current_game.state.active_trades[Color.RED]["acceptees"] == {
+        Color.BLUE
+    }
+
+
+def test_fast_navigation_uses_the_authoritative_replay_executor():
+    events = [
+        trade_offer_event(),
+        {
+            "stateChange": {
+                "tradeState": {"activeOffers": {"trade-1": None}}
+            }
+        },
+    ]
+    actions = parse_colonist_events_to_actions(events)
+
+    def make_state():
+        state = ServerState()
+        players = [
+            SimplePlayer(Color.RED),
+            SimplePlayer(Color.BLUE),
+            SimplePlayer(Color.WHITE),
+            SimplePlayer(Color.ORANGE),
+        ]
+        state.current_game = Game(players, shuffle_players=False)
+        state.current_players = players
+        state.replay_mode = True
+        state.game_running = True
+        state.replay_data = {
+            "events": events,
+            "parsed_actions": actions,
+            "colonist_color_to_engine_idx": {"1": 0},
+            "end_game_state": {},
+        }
+        return state
+
+    sequential_state = make_state()
+    for _ in actions:
+        replay_step_logic(sequential_state, lambda: None)
+
+    fast_state = make_state()
+    result = replay_goto_fast_logic(
+        fast_state,
+        len(actions),
+        lambda: replay_step_logic(fast_state, lambda: None),
+        lambda: None,
+    )
+
+    assert result["status"] == "ok"
+    assert result["event_index"] == len(actions)
+    assert engine_snapshot(fast_state) == engine_snapshot(sequential_state)
+    assert fast_state.replay_trade_ledger == sequential_state.replay_trade_ledger
+    assert fast_state.replay_actions_per_step == sequential_state.replay_actions_per_step
+    assert fast_state.replay_semantic_issues == sequential_state.replay_semantic_issues
+
+
+def engine_trade_info(offered, wanted, acceptees=None, rejecters=None):
+    return {
+        "offered": offered,
+        "wanted": wanted,
+        "offered_any": 0,
+        "wanted_any": 0,
+        "acceptees": set(acceptees or ()),
+        "rejecters": set(rejecters or ()),
+    }
+
+
+def make_multi_offer_engine_game():
+    game = Game(
+        [
+            SimplePlayer(Color.RED),
+            SimplePlayer(Color.BLUE),
+            SimplePlayer(Color.WHITE),
+            SimplePlayer(Color.ORANGE),
+        ],
+        shuffle_players=False,
+    )
+    state = game.state
+    state.is_initial_build_phase = False
+    state.current_player_index = 0
+    state.current_turn_index = 0
+    state.current_prompt = ActionPrompt.PLAY_TURN
+    state.player_state["P0_HAS_ROLLED"] = True
+    state.player_state["P0_WOOD_IN_HAND"] = 1
+    state.player_state["P1_BRICK_IN_HAND"] = 1
+    state.active_trades = {
+        Color.RED: engine_trade_info(
+            (1, 0, 0, 0, 0),
+            (0, 1, 0, 0, 0),
+            acceptees={Color.BLUE},
+        ),
+        Color.ORANGE: engine_trade_info(
+            (0, 0, 1, 0, 0),
+            (0, 0, 0, 1, 0),
+            acceptees={Color.WHITE},
+        ),
+    }
+    state.counter_offers = {
+        Color.WHITE: {
+            "offered": (0, 0, 0, 0, 1),
+            "wanted": (1, 0, 0, 0, 0),
+            "offered_any": 0,
+            "wanted_any": 0,
+            "acceptees": set(),
+        }
+    }
+    state.is_resolving_trade = True
+    state.current_trade = (1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0)
+    state.acceptees = (False, True, False, False)
+    state.rejecters = (False, False, False, False)
+    state.playable_actions = generate_playable_actions(state)
+    return game
+
+
+def test_confirm_trade_preserves_unrelated_engine_offers_and_counters():
+    game = make_multi_offer_engine_game()
+
+    game.execute(
+        Action(Color.RED, ActionType.CONFIRM_TRADE, Color.BLUE),
+        force=True,
+    )
+
+    assert set(game.state.active_trades) == {Color.ORANGE}
+    assert set(game.state.counter_offers) == {Color.WHITE}
+    assert game.state.is_resolving_trade is True
+    assert game.state.current_trade[10] == game.state.colors.index(Color.ORANGE)
+    assert game.state.acceptees == (False, False, True, False)
+    assert game.state.player_state["P0_WOOD_IN_HAND"] == 0
+    assert game.state.player_state["P0_BRICK_IN_HAND"] == 1
+    assert game.state.player_state["P1_WOOD_IN_HAND"] == 1
+    assert game.state.player_state["P1_BRICK_IN_HAND"] == 0
+
+
+def test_cancel_trade_preserves_unrelated_engine_offers_and_counters():
+    game = make_multi_offer_engine_game()
+
+    game.execute(
+        Action(Color.RED, ActionType.CANCEL_TRADE, None),
+        force=True,
+    )
+
+    assert set(game.state.active_trades) == {Color.ORANGE}
+    assert set(game.state.counter_offers) == {Color.WHITE}
+    assert game.state.is_resolving_trade is True
+    assert game.state.current_trade[10] == game.state.colors.index(Color.ORANGE)
+    assert game.state.acceptees == (False, False, True, False)
+
+
+def test_trade_response_transitions_replace_and_clear_previous_state():
+    events = [
+        trade_offer_event(),
+        {
+            "stateChange": {
+                "tradeState": {
+                    "activeOffers": {
+                        "trade-1": {"playerResponses": {"2": 1}}
+                    }
+                }
+            }
+        },
+        {
+            "stateChange": {
+                "tradeState": {
+                    "activeOffers": {
+                        "trade-1": {"playerResponses": {"2": 2}}
+                    }
+                }
+            }
+        },
+        {
+            "stateChange": {
+                "tradeState": {
+                    "activeOffers": {
+                        "trade-1": {"playerResponses": {"2": 1}}
+                    }
+                }
+            }
+        },
+        {
+            "stateChange": {
+                "tradeState": {
+                    "activeOffers": {
+                        "trade-1": {"playerResponses": {"2": 0}}
+                    }
+                }
+            }
+        },
+    ]
+    actions = parse_colonist_events_to_actions(events)
+    assert [action["type"] for action in actions] == [
+        "OFFER_TRADE",
+        "ACCEPT_TRADE",
+        "REJECT_TRADE",
+        "ACCEPT_TRADE",
+        "CLEAR_TRADE_RESPONSE",
+    ]
+
+    state = ServerState()
+    players = [
+        SimplePlayer(Color.RED),
+        SimplePlayer(Color.BLUE),
+        SimplePlayer(Color.WHITE),
+        SimplePlayer(Color.ORANGE),
+    ]
+    state.current_game = Game(players, shuffle_players=False)
+    state.current_players = players
+    state.replay_mode = True
+    state.game_running = True
+    state.replay_data = {
+        "events": events,
+        "parsed_actions": actions,
+        "colonist_color_to_engine_idx": {"1": 0, "2": 1},
+        "end_game_state": {},
+    }
+    game_state = state.current_game.state
+    game_state.is_initial_build_phase = False
+    game_state.current_prompt = ActionPrompt.PLAY_TURN
+    game_state.player_state["P0_HAS_ROLLED"] = True
+    game_state.player_state["P0_WOOD_IN_HAND"] = 1
+    game_state.player_state["P1_BRICK_IN_HAND"] = 1
+    game_state.playable_actions = generate_playable_actions(game_state)
+
+    replay_step_logic(state, lambda: None)
+    replay_step_logic(state, lambda: None)
+    trade = game_state.active_trades[Color.RED]
+    assert trade["acceptees"] == {Color.BLUE}
+    assert trade["rejecters"] == set()
+    assert state.replay_trade_ledger["trade-1"]["responses"] == {
+        "2": "accepted"
+    }
+
+    replay_step_logic(state, lambda: None)
+    trade = game_state.active_trades[Color.RED]
+    assert trade["acceptees"] == set()
+    assert trade["rejecters"] == {Color.BLUE}
+    assert not any(
+        action.action_type == ActionType.CONFIRM_TRADE
+        for action in game_state.playable_actions
+    )
+
+    replay_step_logic(state, lambda: None)
+    trade = game_state.active_trades[Color.RED]
+    assert trade["acceptees"] == {Color.BLUE}
+    assert trade["rejecters"] == set()
+
+    replay_step_logic(state, lambda: None)
+    trade = game_state.active_trades[Color.RED]
+    assert trade["acceptees"] == set()
+    assert trade["rejecters"] == set()
+    assert state.replay_trade_ledger["trade-1"]["responses"] == {}
+
+
+def test_full_offer_zero_responses_then_independent_rejections_are_preserved():
+    events = [
+        {
+            "stateChange": {
+                "tradeState": {
+                    "activeOffers": {
+                        "trade-1": {
+                            "id": "trade-1",
+                            "creator": 3,
+                            "playerResponses": {"1": 0, "2": 0, "5": 0},
+                            "wantedResources": [1],
+                            "offeredResources": [5],
+                            "counterOfferInResponseToTradeId": None,
+                        }
+                    }
+                }
+            }
+        },
+        {"stateChange": {"tradeState": {"activeOffers": {
+            "trade-1": {"playerResponses": {"1": 2}}
+        }}}},
+        {"stateChange": {"tradeState": {"activeOffers": {
+            "trade-1": {"playerResponses": {"5": 2}}
+        }}}},
+        {"stateChange": {"tradeState": {"activeOffers": {
+            "trade-1": {"playerResponses": {"2": 2}}
+        }}}},
+    ]
+    events_before_parse = deepcopy(events)
+    actions = parse_colonist_events_to_actions(events)
+    assert events == events_before_parse
+    assert [action["type"] for action in actions] == [
+        "OFFER_TRADE",
+        "REJECT_TRADE",
+        "REJECT_TRADE",
+        "REJECT_TRADE",
+    ]
+
+    state = ServerState()
+    players = [
+        SimplePlayer(Color.ORANGE),
+        SimplePlayer(Color.BLACK),
+        SimplePlayer(Color.RED),
+        SimplePlayer(Color.BLUE),
+    ]
+    state.current_game = Game(players, shuffle_players=False)
+    state.current_players = players
+    state.replay_mode = True
+    state.game_running = True
+    state.replay_data = {
+        "events": events,
+        "parsed_actions": actions,
+        "colonist_color_to_engine_idx": {
+            "3": 0,
+            "5": 1,
+            "1": 2,
+            "2": 3,
+        },
+        "end_game_state": {},
+    }
+
+    for _ in actions:
+        replay_step_logic(state, lambda: None)
+
+    assert state.replay_trade_ledger["trade-1"]["responses"] == {
+        "1": "rejected",
+        "2": "rejected",
+        "5": "rejected",
+    }
+
+
+@pytest.mark.parametrize(
+    ("resource_key", "error_text"),
+    [
+        ("P0_WOOD_IN_HAND", "can no longer afford"),
+        ("P1_BRICK_IN_HAND", "can no longer afford"),
+    ],
+)
+def test_confirm_trade_revalidates_both_hands_before_transfer(
+    resource_key, error_text
+):
+    game = make_multi_offer_engine_game()
+    game.state.player_state[resource_key] = 0
+    game.state.playable_actions = generate_playable_actions(game.state)
+    confirmation = Action(Color.RED, ActionType.CONFIRM_TRADE, Color.BLUE)
+    hands_before = {
+        key: value
+        for key, value in game.state.player_state.items()
+        if key.endswith("_IN_HAND")
+    }
+
+    assert confirmation not in game.state.playable_actions
+    with pytest.raises(ValueError, match=error_text):
+        game.execute(confirmation, force=True)
+
+    assert {
+        key: value
+        for key, value in game.state.player_state.items()
+        if key.endswith("_IN_HAND")
+    } == hands_before
+
+
+def test_backward_navigation_restarts_replay_running_state():
+    events = [
+        trade_offer_event(),
+        {
+            "stateChange": {
+                "tradeState": {"activeOffers": {"trade-1": None}}
+            }
+        },
+    ]
+    actions = parse_colonist_events_to_actions(events)
+    state = ServerState()
+    players = [
+        SimplePlayer(Color.RED),
+        SimplePlayer(Color.BLUE),
+        SimplePlayer(Color.WHITE),
+        SimplePlayer(Color.ORANGE),
+    ]
+    state.current_game = Game(players, shuffle_players=False)
+    state.current_players = players
+    state.replay_mode = True
+    state.game_running = True
+    state.replay_data = {
+        "events": events,
+        "parsed_actions": actions,
+        "colonist_color_to_engine_idx": {"1": 0},
+        "end_game_state": {},
+    }
+    for _ in actions:
+        replay_step_logic(state, lambda: None)
+    assert state.game_running is False
+
+    replay_goto_sequential_logic(
+        state,
+        1,
+        lambda: replay_step_logic(state, lambda: None),
+        lambda: None,
+    )
+    assert state.replay_index == 1
+    assert state.game_running is True
+
+    replay_goto_sequential_logic(
+        state,
+        0,
+        lambda: replay_step_logic(state, lambda: None),
+        lambda: None,
+    )
+    assert state.replay_index == 0
+    assert state.game_running is True
+
+
+def test_counter_only_replay_state_does_not_broadcast_fake_legacy_offer():
+    events = [
+        {
+            "stateChange": {
+                "tradeState": {
+                    "activeOffers": {
+                        "counter-1": {
+                            "creator": 2,
+                            "offeredResources": [2],
+                            "wantedResources": [1],
+                            "counterOfferInResponseToTradeId": "trade-1",
+                        }
+                    }
+                }
+            }
+        }
+    ]
+    actions = parse_colonist_events_to_actions(events)
+    state = ServerState()
+    players = [
+        SimplePlayer(Color.RED),
+        SimplePlayer(Color.BLUE),
+        SimplePlayer(Color.WHITE),
+        SimplePlayer(Color.ORANGE),
+    ]
+    state.current_game = Game(players, shuffle_players=False)
+    state.current_players = players
+    state.replay_mode = True
+    state.game_running = True
+    state.replay_data = {
+        "game_id": "test",
+        "events": events,
+        "parsed_actions": actions,
+        "total_events": len(actions),
+        "colonist_color_to_engine_idx": {"1": 0, "2": 1},
+        "end_game_state": {},
+    }
+    replay_step_logic(state, lambda: None)
+
+    class SocketRecorder:
+        def __init__(self):
+            self.payload = None
+
+        def emit(self, event, payload):
+            assert event == "game_state"
+            self.payload = payload
+
+    socket = SocketRecorder()
+    broadcast_game_state(socket, state)
+
+    assert state.current_game.state.active_trades == {}
+    assert state.current_game.state.counter_offers
+    assert state.current_game.state.is_resolving_trade is True
+    assert socket.payload["trade_state"] is None
+    assert socket.payload["replay"]["active_trades"][0]["trade_id"] == "counter-1"
+
+
+def raw_active_trades_by_event(events):
+    active_trades = {}
+    snapshots = []
+    for event in events:
+        offer_updates = (
+            event.get("stateChange", {})
+            .get("tradeState", {})
+            .get("activeOffers", {})
+        )
+        for trade_id, update in offer_updates.items():
+            if update is None:
+                active_trades.pop(trade_id, None)
+                continue
+
+            trade = active_trades.setdefault(trade_id, {})
+            for key, value in update.items():
+                if key == "playerResponses":
+                    trade.setdefault(key, {}).update(value)
+                else:
+                    trade[key] = value
+        snapshots.append(deepcopy(active_trades))
+    return snapshots
+
+
+def assert_replay_ledger_matches_raw(state, expected_raw_trades, context):
+    assert set(state.replay_trade_ledger) == set(expected_raw_trades), context
+    for trade_id, raw_trade in expected_raw_trades.items():
+        replay_trade = state.replay_trade_ledger[trade_id]
+        expected_responses = {
+            str(player_id): "accepted" if response == 1 else "rejected"
+            for player_id, response in raw_trade.get("playerResponses", {}).items()
+            if response in (1, 2)
+        }
+        assert replay_trade["creator"] == raw_trade.get("creator"), context
+        assert replay_trade["counter_offer_to"] == raw_trade.get(
+            "counterOfferInResponseToTradeId"
+        ), context
+        assert replay_trade["responses"] == expected_responses, (
+            context,
+            trade_id,
+            replay_trade["responses"],
+            expected_responses,
+        )
+
+
+@pytest.mark.skipif(
+    os.getenv("RUN_LOCAL_REPLAY_CORPUS") != "1",
+    reason="set RUN_LOCAL_REPLAY_CORPUS=1 for the local replay audit",
+)
+def test_all_local_replays_have_exact_resources_and_trade_lifecycle():
+    replay_dir = Path("data_pipeline/bootstrapping/data/raw_replays")
+    replay_files = sorted(replay_dir.glob("*.json"))
+    requested_game_ids = {
+        game_id
+        for game_id in os.getenv("LOCAL_REPLAY_GAME_IDS", "").split(",")
+        if game_id
+    }
+    requested_game_id = os.getenv("LOCAL_REPLAY_GAME_ID")
+    if requested_game_id:
+        requested_game_ids.add(requested_game_id)
+
+    if requested_game_ids:
+        replay_files = [
+            path for path in replay_files if path.stem in requested_game_ids
+        ]
+        assert {path.stem for path in replay_files} == requested_game_ids
+    else:
+        expected_count = int(
+            os.getenv("EXPECTED_LOCAL_REPLAY_COUNT", "18")
+        )
+        assert len(replay_files) == expected_count
+
+    total_actions = 0
+    trade_counts = Counter()
+    trade_types = {
+        "OFFER_TRADE",
+        "COUNTER_OFFER",
+        "ACCEPT_TRADE",
+        "REJECT_TRADE",
+        "CLEAR_TRADE_RESPONSE",
+        "CLOSE_TRADE",
+        "CONFIRM_TRADE",
+        "MARITIME_TRADE",
+    }
+
+    with app.test_client() as client:
+        for replay_file in replay_files:
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output), contextlib.redirect_stderr(output):
+                load_response = client.post(
+                    "/api/load-replay",
+                    json={"game_id": replay_file.stem},
+                )
+            assert load_response.status_code == 200, output.getvalue()[-4_000:]
+
+            parsed_actions = server_state.replay_data["parsed_actions"]
+            raw_events = server_state.replay_data["events"]
+            raw_trade_snapshots = raw_active_trades_by_event(raw_events)
+            total_actions += len(parsed_actions)
+            trade_counts.update(
+                action["type"]
+                for action in parsed_actions
+                if action.get("type") in trade_types
+            )
+
+            for action_index, action_hint in enumerate(parsed_actions):
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output), contextlib.redirect_stderr(output):
+                    step_response = client.post("/api/replay-step")
+                assert step_response.status_code == 200, (
+                    replay_file.stem,
+                    action_index,
+                    action_hint.get("index"),
+                    action_hint.get("type"),
+                    output.getvalue()[-4_000:],
+                )
+
+                expected_resources = action_hint.get("expected_resources", {})
+                if expected_resources:
+                    mismatches = validate_resources_match(
+                        server_state.current_game,
+                        expected_resources,
+                        server_state.replay_data[
+                            "colonist_color_to_engine_idx"
+                        ],
+                    )
+                    assert not mismatches, (
+                        replay_file.stem,
+                        action_index,
+                        action_hint.get("type"),
+                        mismatches,
+                    )
+
+                game_state = server_state.current_game.state
+                for player_idx in range(len(game_state.colors)):
+                    hand = [
+                        game_state.player_state[
+                            f"P{player_idx}_{resource}_IN_HAND"
+                        ]
+                        for resource in RESOURCES
+                    ]
+                    assert all(count >= 0 for count in hand), (
+                        replay_file.stem,
+                        action_index,
+                        player_idx,
+                        hand,
+                    )
+
+                for resource_idx, resource in enumerate(RESOURCES):
+                    resource_total = game_state.resource_freqdeck[resource_idx]
+                    resource_total += sum(
+                        game_state.player_state[
+                            f"P{player_idx}_{resource}_IN_HAND"
+                        ]
+                        for player_idx in range(len(game_state.colors))
+                    )
+                    assert resource_total == 19, (
+                        replay_file.stem,
+                        action_index,
+                        resource,
+                        resource_total,
+                    )
+
+                raw_event_index = action_hint["index"]
+                next_raw_event_index = (
+                    parsed_actions[action_index + 1]["index"]
+                    if action_index + 1 < len(parsed_actions)
+                    else None
+                )
+                if next_raw_event_index != raw_event_index:
+                    assert_replay_ledger_matches_raw(
+                        server_state,
+                        raw_trade_snapshots[raw_event_index],
+                        (
+                            replay_file.stem,
+                            action_index,
+                            raw_event_index,
+                            action_hint.get("type"),
+                        ),
+                    )
+
+            semantic_errors = [
+                issue
+                for issue in server_state.replay_semantic_issues
+                if issue.get("severity") == "error"
+            ]
+            assert not semantic_errors, (replay_file.stem, semantic_errors)
+            assert server_state.replay_index == len(parsed_actions)
+
+    print(
+        f"Audited {len(replay_files)} replays, {total_actions} actions, "
+        f"and {sum(trade_counts.values())} trade lifecycle actions: "
+        f"{dict(sorted(trade_counts.items()))}"
+    )

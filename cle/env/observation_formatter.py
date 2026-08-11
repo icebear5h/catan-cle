@@ -49,6 +49,7 @@ class CatanObservation:
     my_resources: Dict[str, int]  # resource name -> count
     my_dev_cards: Dict[str, int]  # dev card name -> count
     opponent_resource_counts: Dict[Color, int]  # total visible count
+    opponent_dev_card_counts: Dict[Color, int]  # total dev cards in hand
 
     # Game state
     current_turn: int
@@ -133,24 +134,29 @@ class CatanObservationFormatter:
         events_section = self._format_events(obs)
 
         # Only include trade section if there's active trading
-        trade_section = f"\n\n{trade_context}" if trade_context else ""
+        trade_section = f"\n<trading>\n{trade_context}\n</trading>" if trade_context else ""
 
         # Only include events section if there are recent events
-        events_block = f"\n\n{events_section}" if events_section else ""
+        events_block = f"\n<recent_events>\n{events_section}\n</recent_events>" if events_section else ""
 
-        raw_str = f"""
-=== GAME STATE (Turn {obs.current_turn}) ===
-
-{strategic_context}{events_block}
-
+        color_name = obs.my_color.value if hasattr(obs.my_color, 'value') else str(obs.my_color)
+        raw_str = f"""<game_state turn="{obs.current_turn}" player="{color_name}">{events_block}
+<phase_info>
+{strategic_context}
+</phase_info>
+<board_state>
 {board_state}
-
+</board_state>
+<resources>
 {resources}
-
-{opponents}{trade_section}
-
+</resources>
+<opponents>
+{opponents}
+</opponents>{trade_section}
+<valid_actions>
 {valid_actions}
-        """.strip()
+</valid_actions>
+</game_state>""".strip()
 
         return FormattedObservation(
             raw_str=raw_str,
@@ -269,12 +275,11 @@ class CatanObservationFormatter:
             lines.append("  No resources")
             return "\n".join(lines)
 
-        # List each resource
+        # List all resources (always show all 5 so the model knows what's at 0)
         for resource in RESOURCES:
             resource_name = resource.name if hasattr(resource, 'name') else str(resource)
             count = obs.my_resources.get(resource_name, 0)
-            if count > 0:
-                lines.append(f"  {resource_name}: {count}")
+            lines.append(f"  {resource_name}: {count}")
 
         lines.append(f"  Total: {total} cards")
 
@@ -333,10 +338,11 @@ class CatanObservationFormatter:
             cities = obs.opponent_cities.get(color, [])
             roads = len(obs.opponent_roads.get(color, []))
             resources = obs.opponent_resource_counts.get(color, 0)
+            dev_cards = obs.opponent_dev_card_counts.get(color, 0)
 
             lines.append(
                 f"  {color_str}: {vp} VP ({len(settlements)} settlements, {len(cities)} cities, "
-                f"{roads} roads, {resources} resources)"
+                f"{roads} roads, {resources} resources, {dev_cards} dev cards)"
             )
 
             # During initial placement, show where opponents have placed
@@ -369,15 +375,17 @@ class CatanObservationFormatter:
         """Format valid actions with strategic implications."""
         from engine.models.enums import ActionType
 
-        lines = ["VALID ACTIONS:"]
+        lines = ["VALID ACTIONS (all listed actions are legal and affordable — do not re-check costs):"]
 
         if not obs.valid_actions:
             lines.append("  No actions available (waiting for turn)")
             return "\n".join(lines)
 
-        # Group actions by type
+        # Group actions by type, filtering out meta-actions (string-valued descriptions)
         action_groups = {}
         for action in obs.valid_actions:
+            if isinstance(action.value, str):
+                continue
             action_type = action.action_type if hasattr(action, 'action_type') else str(type(action))
             if action_type not in action_groups:
                 action_groups[action_type] = []
@@ -408,34 +416,106 @@ class CatanObservationFormatter:
 
         return "\n".join(lines)
 
+    def _describe_node(self, node_id: int, obs: CatanObservation) -> str:
+        """Describe a node by its surrounding tiles with dice numbers AND pips."""
+        if node_id not in obs.board_map.adjacent_tiles:
+            return f"node {node_id}"
+
+        tiles = obs.board_map.adjacent_tiles[node_id]
+        tile_descs = []
+        total_pips = 0
+        for tile in tiles:
+            if tile.resource is not None and tile.number is not None:
+                pips = self._number_to_pips(tile.number)
+                total_pips += pips
+                tile_descs.append(f"{tile.resource} dice={tile.number}({pips}pip)")
+
+        if not tile_descs:
+            return f"node {node_id}"
+
+        # Check for port
+        port_str = ""
+        for resource, nodes in obs.board_map.port_nodes.items():
+            if node_id in nodes:
+                port_str = " (3:1 port)" if resource is None else f" ({resource} 2:1 port)"
+                break
+
+        return f"{'/'.join(tile_descs)} [{total_pips}pips]{port_str}"
+
     def _format_single_action(self, action: Action, obs: CatanObservation) -> str:
-        """Format a single action with context."""
+        """Format a single action in Catan lingo."""
         from engine.models.enums import ActionType
 
-        # For settlement building actions, show strategic context
-        if hasattr(action, 'action_type') and action.action_type == ActionType.BUILD_SETTLEMENT:
-            if hasattr(action, 'value'):
-                node_id = action.value
-                context = self._get_node_strategic_context(node_id, obs)
-                node_str = self._format_node(node_id, self._node_coords)
+        at = action.action_type
 
-                # Check if any opponent is nearby
-                nearby_opponents = self._check_nearby_opponents(node_id, obs)
+        if at == ActionType.END_TURN:
+            return "End turn"
 
-                if nearby_opponents:
-                    return f"Build settlement at {node_str}: {context} | Near: {nearby_opponents}"
-                else:
-                    return f"Build settlement at {node_str}: {context}"
+        if at == ActionType.ROLL:
+            return "Roll dice"
 
-        # For road building actions with spatial context
-        if hasattr(action, 'action_type') and action.action_type == ActionType.BUILD_ROAD:
-            if hasattr(action, 'value') and isinstance(action.value, tuple):
-                edge = action.value
-                edge_str = self._format_edge(edge, self._node_coords)
-                return f"Build road on {edge_str}"
+        if at == ActionType.BUILD_SETTLEMENT:
+            desc = self._describe_node(action.value, obs)
+            nearby = self._check_nearby_opponents(action.value, obs)
+            if nearby:
+                return f"Build settlement at {desc} | Near: {nearby}"
+            return f"Build settlement at {desc}"
 
-        # Default: just convert to string
-        return str(action)
+        if at == ActionType.BUILD_CITY:
+            desc = self._describe_node(action.value, obs)
+            return f"Upgrade to city at {desc}"
+
+        if at == ActionType.BUILD_ROAD:
+            if isinstance(action.value, tuple) and len(action.value) == 2:
+                n1_desc = self._describe_node(action.value[0], obs)
+                n2_desc = self._describe_node(action.value[1], obs)
+                return f"Build road between {n1_desc} and {n2_desc}"
+
+        if at == ActionType.BUY_DEVELOPMENT_CARD:
+            return "Buy development card"
+
+        if at == ActionType.MARITIME_TRADE:
+            val = action.value
+            if isinstance(val, tuple) and len(val) >= 2:
+                offered = [r for r in val[:-1] if r is not None]
+                received = val[-1]
+                if offered:
+                    give_name = offered[0].name if hasattr(offered[0], 'name') else str(offered[0])
+                    get_name = received.name if hasattr(received, 'name') else str(received)
+                    return f"Trade {len(offered)} {give_name} for 1 {get_name}"
+
+        if at == ActionType.PLAY_KNIGHT_CARD:
+            return "Play knight card"
+
+        if at == ActionType.PLAY_YEAR_OF_PLENTY:
+            if isinstance(action.value, tuple) and len(action.value) == 2:
+                r1 = action.value[0].name if hasattr(action.value[0], 'name') else str(action.value[0])
+                r2 = action.value[1].name if hasattr(action.value[1], 'name') else str(action.value[1])
+                return f"Year of Plenty: take {r1} and {r2}"
+            return "Play Year of Plenty"
+
+        if at == ActionType.PLAY_MONOPOLY:
+            r = action.value.name if hasattr(action.value, 'name') else str(action.value)
+            return f"Monopoly on {r}"
+
+        if at == ActionType.PLAY_ROAD_BUILDING:
+            return "Play road building card"
+
+        if at == ActionType.MOVE_ROBBER:
+            return f"Move robber to {action.value}"
+
+        if at == ActionType.STEAL:
+            if action.value is not None:
+                color_name = action.value.name if hasattr(action.value, 'name') else str(action.value)
+                return f"Steal from {color_name}"
+            return "Steal (no targets)"
+
+        if at == ActionType.DISCARD:
+            return "Discard resources"
+
+        # Default
+        type_name = at.name if hasattr(at, 'name') else str(at)
+        return f"{type_name}: {action.value}"
 
     def _format_trade_context(self, obs: CatanObservation) -> str:
         """Format active trades and counter-offers for LLM decision-making."""
@@ -735,24 +815,14 @@ class CatanObservationFormatter:
         return "\n".join(lines)
 
     def _format_strategic_context(self, obs: CatanObservation) -> str:
-        """Format high-level strategic context."""
+        """Format phase and score info."""
         lines = []
-
-        # Phase
         lines.append(f"Phase: {obs.current_phase}")
 
         if obs.current_phase == "initial_placement":
             placed = len(obs.my_settlements)
-            if placed <= 0:
-                lines.append("Initial placement rule: you do NOT receive starting resources for your 1st settlement.")
-                lines.append("Initial placement rule: you DO receive starting resources after placing your 2nd settlement (one from each adjacent non-desert tile).")
-            elif placed == 1:
-                lines.append("Initial placement: you have placed 1/2 settlements. No starting resources are gained from the 1st settlement.")
-                lines.append("Initial placement: you will gain starting resources after placing your 2nd settlement (one from each adjacent non-desert tile).")
-            else:
-                lines.append("Initial placement: you have already placed both settlements. Starting resources come only from the 2nd settlement.")
+            lines.append(f"Settlements placed: {placed}/2")
 
-        # Score status
         lines.append(f"Your VP: {obs.my_vp}/10")
 
         if obs.last_dice_roll:
@@ -820,6 +890,10 @@ def create_observation_from_state(
         color: sum(get_player_freqdeck(game_state, color))
         for color in opponent_colors
     }
+    opponent_dev_card_counts = {
+        color: get_dev_cards_in_hand(game_state, color)
+        for color in opponent_colors
+    }
 
     # Determine phase
     if game_state.is_initial_build_phase:
@@ -857,6 +931,7 @@ def create_observation_from_state(
         my_resources=my_resources,
         my_dev_cards=my_dev_cards,
         opponent_resource_counts=opponent_resource_counts,
+        opponent_dev_card_counts=opponent_dev_card_counts,
         current_turn=game_state.num_turns,
         current_phase=phase,
         last_dice_roll=None,  # TODO: Track last dice roll

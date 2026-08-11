@@ -35,24 +35,58 @@ Scrape top 100 players from ranked leaderboards and their game histories.
 
 ```bash
 cd scrapers
-python scrape_top_players.py --mode all
+python scrape_top_players.py --mode index --top 100 --games 100 --all-games --game-modes Classic4P,Tournament --index-output 4p_games_top100.json
+
+# Or index histories more likely to be replay-accessible for the current account
+COLONIST_JWT="<your-token>" python scrape_top_players.py --mode index --me --games 100 --all-games --game-modes all --index-output 4p_games_me_all.json
+python scrape_top_players.py --mode index --username Robijs --games 100 --all-games --index-output 4p_games_robijs.json
 ```
 
-**Output:** `4p_games_top100.json` with 8,495 games (7,327 unique)
+**Output:** `4p_games_top100.json` with replay candidate IDs and lightweight player/game metadata. Use `--game-modes all` to include other Colonist variants.
 
 ### 2. Scrape Replays
 
-Download replay data using the direct API endpoint.
+Capture replay data through a persistent Playwright browser session. This matches the
+working Colonist replay page flow: the first replay API request may be denied while the
+browser resolves session/Cloudflare state, then a later request to the same endpoint
+returns the replay JSON.
 
 ```bash
-# Get JWT from colonist.io cookies (DevTools > Application > Cookies > jwt_colonist.io)
-export COLONIST_JWT="<your-token>"
+# First run opens a browser profile at .colonist-playwright-profile/.
+# Log in or complete any browser challenge there if prompted.
+python replay_playwright_scraper.py \
+  --game-id 228953487 \
+  --player-color 1 \
+  --output-dir ../data/raw_replays
 
-# Scrape to local files
-python replay_api_scraper.py --max-games 100
+# Batch into staging in small, paced chunks. Validate before promoting files.
+python replay_playwright_scraper.py \
+  --index-file 4p_games_top100.json \
+  --max-games 10 \
+  --max-attempts 15 \
+  --expected-player-count 4 \
+  --expected-mode-setting 0 \
+  --delay-seconds 40 \
+  --output-dir ../data/replay_staging/base4p
 
-# Or scrape directly to Supabase
-python replay_api_scraper.py --max-games 100 --supabase
+# Stop after any HTTP 429 and cool down before a manually approved retry.
+# Do not run multiple scraper processes in parallel.
+
+# If Google/Colonist login refuses the Playwright profile, attach to real Chrome instead.
+# First quit Chrome, then relaunch it with local remote debugging enabled:
+open -na "Google Chrome" --args \
+  --remote-debugging-address=127.0.0.1 \
+  --remote-debugging-port=9222 \
+  --profile-directory=Default
+
+python replay_playwright_scraper.py \
+  --game-id 228953487 \
+  --player-color 1 \
+  --output-dir ../data/raw_replays \
+  --cdp-url http://127.0.0.1:9222
+
+# Direct API fallback/debug path. JWT alone may still 403 if browser session state is required.
+COLONIST_JWT="<your-token>" python replay_api_scraper.py --index-file 4p_games_top100.json --max-games 100 --raw --output-dir ../data/raw_replays
 ```
 
 ### 3. Generate Training Data
@@ -125,11 +159,14 @@ trainer.train()
 ## Requirements
 
 ```bash
-pip install httpx supabase
+pip install httpx playwright supabase
+python -m playwright install chromium
 ```
 
 - **Colonist.io Membership** - Replay viewing requires paid membership
-- **JWT Token** - Auth cookie expires every ~7 days
+- **Playwright browser profile** - Replay scraping uses `.colonist-playwright-profile/`
+- **Real Chrome attach** - Use `--cdp-url` when OAuth refuses the Playwright browser
+- **JWT Token** - Still useful for authenticated profile/history indexing and direct API debugging
 
 ## Metrics
 

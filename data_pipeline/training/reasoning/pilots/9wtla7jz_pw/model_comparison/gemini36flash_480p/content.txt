@@ -1,0 +1,681 @@
+[
+  {
+    "decision_id": "9wtla7jz_pw_d001",
+    "start_s": 20.0,
+    "decision_s": 140.0,
+    "end_s": 240.0,
+    "actor": "OccamsSheep (Red)",
+    "phase": "initial_placement",
+    "decision_type": "settlement_and_road_placement",
+    "transcript_evidence": [
+      {
+        "start_s": 20.56,
+        "end_s": 25.44,
+        "quote": "all the wheat is very much at the bottom of the board. So, we're probably going to see an 8 4 10 and a 5 9 10.",
+        "role": "pre_action_reasoning"
+      },
+      {
+        "start_s": 137.28,
+        "end_s": 141.44,
+        "quote": "I might go with the 693 here. And the idea is if I can get 6512 down, I'm pretty happy.",
+        "role": "pre_action_reasoning"
+      },
+      {
+        "start_s": 220.36,
+        "end_s": 226.56,
+        "quote": "The idea is maybe we can road road to 912 and work that angle instead cuz there's already a ton of wood.",
+        "role": "pre_action_reasoning"
+      }
+    ],
+    "visual_evidence": {
+      "pre_action": "Board shows initial setup turn with available intersections around 6-9-3 and 6-5-12.",
+      "action": "Red places initial settlement on 6-9-3 and points road pointing left toward the coast.",
+      "post_action": "Settlement and road appear on board; log confirms OccamsSheep placed a Settlement and Road."
+    },
+    "state_facts": [
+      "Player OccamsSheep is in 3rd position in initial setup.",
+      "Board shows wheat tiles clumped at the bottom."
+    ],
+    "beliefs_or_inferences": [
+      "Speaker believes 6-9-3 paired with 6-5-12 or 6-3-4 provides strong ore/sheep base and path to 9-12 wheat."
+    ],
+    "alternatives": [
+      {
+        "action": "Place on 6-5-12 first",
+        "assessment": "Considered slower down route to access 9-12.",
+        "evidence_type": "explicit"
+      },
+      {
+        "action": "Place on 6-3-4 first",
+        "assessment": "Considered for wood port synergy.",
+        "evidence_type": "explicit"
+      }
+    ],
+    "chosen_action": {
+      "action": "Place initial settlement on 6-9-3 and road left",
+      "visual_confirmation": "confirmed"
+    },
+    "reasoning_script": {
+      "goal": "Secure top ore/sheep production and retain setup flexibility to secure wheat access later.",
+      "rationale": "6-9-3 guarantees highest quality ore and sheep while leaving open expansion options toward 6-5-12 or wood port.",
+      "tradeoff": "Leaves starting board without direct initial wheat production.",
+      "expected_consequence": "Can expand to 9-12 or wood port to fix missing resources."
+    },
+    "post_hoc_commentary": [
+      "This is a very risky play, but I think the ideas here are pretty reasonable."
+    ],
+    "uncertainties": [
+      "Opponent placements in front of Red could cut off target settlement nodes."
+    ],
+    "confidence": {
+      "temporal_alignment": 0.95,
+      "visual_grounding": 0.95,
+      "action_identification": 0.95,
+      "reasoning_faithfulness": 0.9
+    }
+  },
+  {
+    "decision_id": "9wtla7jz_pw_d002",
+    "start_s": 295.0,
+    "decision_s": 305.0,
+    "end_s": 315.0,
+    "actor": "felipefl (Orange)",
+    "phase": "robber",
+    "decision_type": "robber_placement_and_steal",
+    "transcript_evidence": [
+      {
+        "start_s": 297.64,
+        "end_s": 302.12,
+        "quote": "The only way orange loses is the five rolls and then this is a mistake.",
+        "role": "pre_action_reasoning"
+      },
+      {
+        "start_s": 302.12,
+        "end_s": 307.6,
+        "quote": "That's a mistake. There it is.",
+        "role": "action_narration"
+      }
+    ],
+    "visual_evidence": {
+      "pre_action": "Orange rolls a 7 during initial setup/early turn sequence and must move the robber.",
+      "action": "Orange places the robber on the 6 ore tile instead of the high-value 5 tile.",
+      "post_action": "Robber icon rests on 6 ore tile."
+    },
+    "state_facts": [
+      "Orange rolled a 7.",
+      "Blue (paladyn019) holds strong production including the 5 ore/wheat tile."
+    ],
+    "beliefs_or_inferences": [
+      "Speaker believes Orange made a major mistake by not blocking Blue's 5 tile."
+    ],
+    "alternatives": [
+      {
+        "action": "Place robber on the 5 tile",
+        "assessment": "Speaker considers this the optimal play to slow down Blue.",
+        "evidence_type": "explicit"
+      }
+    ],
+    "chosen_action": {
+      "action": "Place robber on 6 ore tile",
+      "visual_confirmation": "confirmed"
+    },
+    "reasoning_script": {
+      "goal": "Target an opponent with the robber.",
+      "rationale": "Orange chose to block the 6 tile rather than the critical 5 tile.",
+      "tradeoff": "Fails to block Blue's strongest resource engine.",
+      "expected_consequence": "Blue continues unhindered resource production."
+    },
+    "post_hoc_commentary": [
+      "Massive massive massive mistake here by Orange unfortunately. He had the best opportunity to slow down his biggest competition."
+    ],
+    "uncertainties": [
+      "Exact internal reasoning for Orange picking 6 over 5."
+    ],
+    "confidence": {
+      "temporal_alignment": 0.95,
+      "visual_grounding": 0.9,
+      "action_identification": 0.95,
+      "reasoning_faithfulness": 0.85
+    }
+  },
+  {
+    "decision_id": "9wtla7jz_pw_d003",
+    "start_s": 655.0,
+    "decision_s": 665.0,
+    "end_s": 690.0,
+    "actor": "OccamsSheep (Red)",
+    "phase": "main_game",
+    "decision_type": "card_play_and_robber_target",
+    "transcript_evidence": [
+      {
+        "start_s": 660.96,
+        "end_s": 665.44,
+        "quote": "We absolutely need to get to the spot. Pop a dev as well.",
+        "role": "pre_action_reasoning"
+      },
+      {
+        "start_s": 674.2,
+        "end_s": 678.32,
+        "quote": "Probably the five at this point. We really need the nine.",
+        "role": "pre_action_reasoning"
+      }
+    ],
+    "visual_evidence": {
+      "pre_action": "Red plays a Knight card from hand.",
+      "action": "Red places robber on the 5 ore tile and steals from Blue.",
+      "post_action": "Robber rests on 5 tile; log shows Knight played and card stolen."
+    },
+    "state_facts": [
+      "Red has an unplayed Knight dev card.",
+      "Blue is leading in production and city count."
+    ],
+    "beliefs_or_inferences": [
+      "Speaker believes blocking Blue's 5 tile is critical to suppress Blue's overwhelming advantage."
+    ],
+    "alternatives": [
+      {
+        "action": "Place robber on another tile",
+        "assessment": "Rejected because 5 is Blue's main engine.",
+        "evidence_type": "explicit"
+      }
+    ],
+    "chosen_action": {
+      "action": "Play Knight card, place robber on 5 tile, steal from Blue",
+      "visual_confirmation": "confirmed"
+    },
+    "reasoning_script": {
+      "goal": "Re-establish board control and slow down Blue's rapid scaling.",
+      "rationale": "Blue's 5 tile generates massive yield; blocking it restricts Blue while allowing Red to catch up.",
+      "tradeoff": "Consumes Knight card action before dice roll.",
+      "expected_consequence": "Restricts Blue's resource income and grants Red a stolen card."
+    },
+    "post_hoc_commentary": [
+      "Big block."
+    ],
+    "uncertainties": [
+      "Which specific card is stolen from Blue's hand."
+    ],
+    "confidence": {
+      "temporal_alignment": 0.95,
+      "visual_grounding": 0.95,
+      "action_identification": 0.95,
+      "reasoning_faithfulness": 0.95
+    }
+  },
+  {
+    "decision_id": "9wtla7jz_pw_d004",
+    "start_s": 750.0,
+    "decision_s": 755.0,
+    "end_s": 765.0,
+    "actor": "OccamsSheep (Red)",
+    "phase": "main_game",
+    "decision_type": "strategic_hold_vs_build",
+    "transcript_evidence": [
+      {
+        "start_s": 758.4,
+        "end_s": 764.32,
+        "quote": "We just got to stay patient here. We need more sixes, less 10s.",
+        "role": "pre_action_reasoning"
+      },
+      {
+        "start_s": 773.36,
+        "end_s": 778.08,
+        "quote": "As long as the five is blocked, it's it's a lot harder for him.",
+        "role": "pre_action_reasoning"
+      }
+    ],
+    "visual_evidence": {
+      "pre_action": "Red's turn with resource cards displayed in HUD.",
+      "action": "Red chooses not to execute premature trades or sub-optimal builds, clicking End Turn.",
+      "post_action": "Turn passes to next player."
+    },
+    "state_facts": [
+      "5 tile remains blocked by robber.",
+      "Red is holding cards waiting for a 6 roll or key trade."
+    ],
+    "beliefs_or_inferences": [
+      "Speaker believes remaining patient while 5 stays blocked gives Red time to outpace opponents."
+    ],
+    "alternatives": [
+      {
+        "action": "Force a 4:1 bank trade",
+        "assessment": "Rejected to preserve card value for key settlement build.",
+        "evidence_type": "inferred"
+      }
+    ],
+    "chosen_action": {
+      "action": "Hold resources and end turn",
+      "visual_confirmation": "confirmed"
+    },
+    "reasoning_script": {
+      "goal": "Preserve resource efficiency for high-value settlement build.",
+      "rationale": "Opponents are suppressed by robber placement; spending cards inefficiently weakens long-term position.",
+      "tradeoff": "Risks holding cards if 7 is rolled.",
+      "expected_consequence": "Accumulates resources for next turn expansion."
+    },
+    "post_hoc_commentary": [
+      "We also got to be careful about black here."
+    ],
+    "uncertainties": [
+      "Exact dice roll timing for 6."
+    ],
+    "confidence": {
+      "temporal_alignment": 0.9,
+      "visual_grounding": 0.9,
+      "action_identification": 0.9,
+      "reasoning_faithfulness": 0.85
+    }
+  },
+  {
+    "decision_id": "9wtla7jz_pw_d005",
+    "start_s": 830.0,
+    "decision_s": 835.0,
+    "end_s": 845.0,
+    "actor": "OccamsSheep (Red)",
+    "phase": "main_game",
+    "decision_type": "dev_card_play",
+    "transcript_evidence": [
+      {
+        "start_s": 831.8,
+        "end_s": 839.04,
+        "quote": "we're going to play a road building here. Think it's our only option.",
+        "role": "pre_action_reasoning"
+      },
+      {
+        "start_s": 839.48,
+        "end_s": 843.44,
+        "quote": "We're going to open up two settle spots. I think that's just strategically a little bit better.",
+        "role": "action_narration"
+      }
+    ],
+    "visual_evidence": {
+      "pre_action": "Red selects Road Building dev card from hand.",
+      "action": "Red places two roads on the board, expanding road network.",
+      "post_action": "Two new red road segments appear on the board."
+    },
+    "state_facts": [
+      "Red holds Road Building development card.",
+      "Red needs open settlement locations to expand."
+    ],
+    "beliefs_or_inferences": [
+      "Speaker believes using Road Building now opens up two settlement spots and secures key expansion lanes."
+    ],
+    "alternatives": [
+      {
+        "action": "Save Road Building for later",
+        "assessment": "Rejected because opening settlement spots immediately is higher priority.",
+        "evidence_type": "explicit"
+      }
+    ],
+    "chosen_action": {
+      "action": "Play Road Building card and place 2 roads",
+      "visual_confirmation": "confirmed"
+    },
+    "reasoning_script": {
+      "goal": "Expand road network and unlock two immediate settlement locations.",
+      "rationale": "Road Building instantly claims critical paths before competitors can block them.",
+      "tradeoff": "Consumes dev card.",
+      "expected_consequence": "Secures path to new settlement sites."
+    },
+    "post_hoc_commentary": [
+      "These rolls are insane."
+    ],
+    "uncertainties": [
+      "Whether competitors can race to the settlement nodes before Red builds."
+    ],
+    "confidence": {
+      "temporal_alignment": 0.95,
+      "visual_grounding": 0.95,
+      "action_identification": 0.95,
+      "reasoning_faithfulness": 0.95
+    }
+  },
+  {
+    "decision_id": "9wtla7jz_pw_d006",
+    "start_s": 1490.0,
+    "decision_s": 1495.0,
+    "end_s": 1505.0,
+    "actor": "OccamsSheep (Red)",
+    "phase": "main_game",
+    "decision_type": "dev_card_play",
+    "transcript_evidence": [
+      {
+        "start_s": 1453.48,
+        "end_s": 1458.0,
+        "quote": "We pulled a mono. We pulled a lot of good stuff",
+        "role": "post_hoc_reflection"
+      }
+    ],
+    "visual_evidence": {
+      "pre_action": "Red opens dev card menu and selects Monopoly card.",
+      "action": "Red plays Monopoly card, selecting a specific resource.",
+      "post_action": "Resource cards flood into Red's hand; game log records Monopoly play."
+    },
+    "state_facts": [
+      "Red holds Monopoly development card.",
+      "Opponents hold accumulated resources in hand."
+    ],
+    "beliefs_or_inferences": [
+      "Speaker infers opponents hold significant amounts of target resource to fund next build."
+    ],
+    "alternatives": [
+      {
+        "action": "Hold Monopoly card",
+        "assessment": "Rejected in favor of immediate resource spike to complete build.",
+        "evidence_type": "inferred"
+      }
+    ],
+    "chosen_action": {
+      "action": "Play Monopoly development card",
+      "visual_confirmation": "confirmed"
+    },
+    "reasoning_script": {
+      "goal": "Steal maximum resource cards from all players to fund crucial structure.",
+      "rationale": "Monopoly drains enemy hands while granting exact cards needed for victory target.",
+      "tradeoff": "Consumes Monopoly card.",
+      "expected_consequence": "Massive resource gain for Red."
+    },
+    "post_hoc_commentary": [
+      "We pulled a mono... which is obviously a big win for our position."
+    ],
+    "uncertainties": [
+      "Exact distribution of cards in opponent hands prior to play."
+    ],
+    "confidence": {
+      "temporal_alignment": 0.9,
+      "visual_grounding": 0.95,
+      "action_identification": 0.95,
+      "reasoning_faithfulness": 0.85
+    }
+  },
+  {
+    "decision_id": "9wtla7jz_pw_d007",
+    "start_s": 1535.0,
+    "decision_s": 1540.0,
+    "end_s": 1550.0,
+    "actor": "OccamsSheep (Red)",
+    "phase": "main_game",
+    "decision_type": "dev_card_play",
+    "transcript_evidence": [
+      {
+        "start_s": 1539.0,
+        "end_s": 1544.0,
+        "quote": "OccamsSheep used Year of Plenty",
+        "role": "action_narration"
+      }
+    ],
+    "visual_evidence": {
+      "pre_action": "Red selects Year of Plenty card from dev card UI.",
+      "action": "Red chooses two free resource cards from bank.",
+      "post_action": "Two selected resources added to Red's hand."
+    },
+    "state_facts": [
+      "Red holds Year of Plenty card.",
+      "Red lacks specific resources to complete immediate build."
+    ],
+    "beliefs_or_inferences": [
+      "Speaker uses Year of Plenty to fill precise card deficit for city/settlement."
+    ],
+    "alternatives": [
+      {
+        "action": "Trade with bank 4:1",
+        "assessment": "Rejected as wasteful compared to free Year of Plenty selection.",
+        "evidence_type": "inferred"
+      }
+    ],
+    "chosen_action": {
+      "action": "Play Year of Plenty card and take 2 resources",
+      "visual_confirmation": "confirmed"
+    },
+    "reasoning_script": {
+      "goal": "Gain exact missing resources from bank.",
+      "rationale": "Year of Plenty bypasses trading obstacles to complete key construction.",
+      "tradeoff": "Uses dev card for turn.",
+      "expected_consequence": "Completes build requirements."
+    },
+    "post_hoc_commentary": [],
+    "uncertainties": [
+      "Exact resource pairing chosen if UI overlay obscures icons."
+    ],
+    "confidence": {
+      "temporal_alignment": 0.9,
+      "visual_grounding": 0.95,
+      "action_identification": 0.95,
+      "reasoning_faithfulness": 0.9
+    }
+  },
+  {
+    "decision_id": "9wtla7jz_pw_d008",
+    "start_s": 1930.0,
+    "decision_s": 1937.0,
+    "end_s": 1945.0,
+    "actor": "OccamsSheep (Red)",
+    "phase": "main_game",
+    "decision_type": "card_play_and_robber_target",
+    "transcript_evidence": [
+      {
+        "start_s": 1933.0,
+        "end_s": 1937.0,
+        "quote": "Place the Robber on any tile and steal 1 random card",
+        "role": "action_narration"
+      }
+    ],
+    "visual_evidence": {
+      "pre_action": "Red plays Knight card from dev card menu.",
+      "action": "Red places robber on target hex and steals from opponent.",
+      "post_action": "Robber moves to new location; game log records Knight played and stolen card."
+    },
+    "state_facts": [
+      "Red holds playable Knight card.",
+      "Red is pushing toward victory point threshold."
+    ],
+    "beliefs_or_inferences": [
+      "Speaker plays Knight to maintain army pressure and secure stolen resource."
+    ],
+    "alternatives": [
+      {
+        "action": "Hold Knight card",
+        "assessment": "Rejected because active robber placement and steal benefit current turn.",
+        "evidence_type": "inferred"
+      }
+    ],
+    "chosen_action": {
+      "action": "Play Knight card, move robber, steal card",
+      "visual_confirmation": "confirmed"
+    },
+    "reasoning_script": {
+      "goal": "Disrupt target leader and steal resource card.",
+      "rationale": "Knight play keeps key hexes blocked while advancing toward Largest Army.",
+      "tradeoff": "Consumes Knight card.",
+      "expected_consequence": "Gains stolen card and locks opponent hex."
+    },
+    "post_hoc_commentary": [],
+    "uncertainties": [
+      "Exact target player selected for steal."
+    ],
+    "confidence": {
+      "temporal_alignment": 0.95,
+      "visual_grounding": 0.95,
+      "action_identification": 0.95,
+      "reasoning_faithfulness": 0.85
+    }
+  },
+  {
+    "decision_id": "9wtla7jz_pw_d009",
+    "start_s": 2190.0,
+    "decision_s": 2198.0,
+    "end_s": 2210.0,
+    "actor": "OccamsSheep (Red)",
+    "phase": "main_game",
+    "decision_type": "discard_selection",
+    "transcript_evidence": [
+      {
+        "start_s": 2195.0,
+        "end_s": 2200.0,
+        "quote": "7 was rolled! You have more than 7 cards. You need to discard 4 of them.",
+        "role": "action_narration"
+      }
+    ],
+    "visual_evidence": {
+      "pre_action": "Discard modal pops up with title 'Discard Cards (0/4)'.",
+      "action": "Red selects 4 cards and clicks checkmark confirmation.",
+      "post_action": "Hand count reduced by 4; game continues to robber placement."
+    },
+    "state_facts": [
+      "A 7 was rolled while Red held >7 cards.",
+      "Red must discard half their hand (4 cards)."
+    ],
+    "beliefs_or_inferences": [
+      "Speaker chooses which resources are least critical to preserve build paths."
+    ],
+    "alternatives": [
+      {
+        "action": "Discard different card combination",
+        "assessment": "Evaluated based on keeping core city/settlement materials.",
+        "evidence_type": "inferred"
+      }
+    ],
+    "chosen_action": {
+      "action": "Discard 4 selected resource cards",
+      "visual_confirmation": "confirmed"
+    },
+    "reasoning_script": {
+      "goal": "Comply with 7-roll discard penalty while retaining vital win-condition resources.",
+      "rationale": "Discarding surplus resources minimizes damage to primary building strategy.",
+      "tradeoff": "Loses 4 cards to bank.",
+      "expected_consequence": "Hand reduced to legal size."
+    },
+    "post_hoc_commentary": [],
+    "uncertainties": [
+      "Exact resource breakdown of discarded cards."
+    ],
+    "confidence": {
+      "temporal_alignment": 0.95,
+      "visual_grounding": 0.95,
+      "action_identification": 0.95,
+      "reasoning_faithfulness": 0.9
+    }
+  },
+  {
+    "decision_id": "9wtla7jz_pw_d010",
+    "start_s": 2220.0,
+    "decision_s": 2225.0,
+    "end_s": 2235.0,
+    "actor": "OccamsSheep (Red)",
+    "phase": "endgame",
+    "decision_type": "dev_card_play_and_largest_army",
+    "transcript_evidence": [
+      {
+        "start_s": 2223.0,
+        "end_s": 2227.0,
+        "quote": "OccamsSheep received Largest Army (+2 VPs)",
+        "role": "action_narration"
+      }
+    ],
+    "visual_evidence": {
+      "pre_action": "Red plays 3rd Knight card from hand.",
+      "action": "Red places robber; UI banner awards Largest Army title (+2 VPs).",
+      "post_action": "Largest Army badge displays under Red's profile with +2 VPs."
+    },
+    "state_facts": [
+      "Red plays 3rd Knight card.",
+      "Threshold reached to claim Largest Army banner."
+    ],
+    "beliefs_or_inferences": [
+      "Speaker plays Knight to lock in 2 VPs and push total score toward 10 VPs."
+    ],
+    "alternatives": [
+      {
+        "action": "Delay playing Knight card",
+        "assessment": "Rejected because immediate 2 VPs puts Red on threshold of winning.",
+        "evidence_type": "inferred"
+      }
+    ],
+    "chosen_action": {
+      "action": "Play Knight card and claim Largest Army (+2 VPs)",
+      "visual_confirmation": "confirmed"
+    },
+    "reasoning_script": {
+      "goal": "Claim Largest Army for +2 Victory Points.",
+      "rationale": "Playing 3rd Knight guarantees Largest Army banner and pushes Red to game point.",
+      "tradeoff": "Consumes Knight card.",
+      "expected_consequence": "+2 VP boost."
+    },
+    "post_hoc_commentary": [
+      "our production score was off the freaking charts, but honestly, the whole pacing of that worked out really well."
+    ],
+    "uncertainties": [
+      "None."
+    ],
+    "confidence": {
+      "temporal_alignment": 0.95,
+      "visual_grounding": 0.95,
+      "action_identification": 0.95,
+      "reasoning_faithfulness": 0.95
+    }
+  },
+  {
+    "decision_id": "9wtla7jz_pw_d011",
+    "start_s": 2305.0,
+    "decision_s": 2309.0,
+    "end_s": 2320.0,
+    "actor": "OccamsSheep (Red)",
+    "phase": "endgame",
+    "decision_type": "city_build_victory",
+    "transcript_evidence": [
+      {
+        "start_s": 1289.2,
+        "end_s": 1295.16,
+        "quote": "Six is the win. That's the win, folks.",
+        "role": "action_narration"
+      },
+      {
+        "start_s": 2309.0,
+        "end_s": 2315.0,
+        "quote": "OccamsSheep built a City (+1 VP)! OccamsSheep won the game!",
+        "role": "action_narration"
+      }
+    ],
+    "visual_evidence": {
+      "pre_action": "Red has required ore and grain cards for a city build; dice roll yields needed resources.",
+      "action": "Red upgrades settlement to city; Victory popup banner appears with rank rating update.",
+      "post_action": "'Victory!!!' overlay shown on screen; end game stats button appears."
+    },
+    "state_facts": [
+      "Red reaches 10 VPs by building a city.",
+      "Game ends immediately with victory screen."
+    ],
+    "beliefs_or_inferences": [
+      "Speaker knows building final city guarantees immediate match victory."
+    ],
+    "alternatives": [
+      {
+        "action": "End turn without building",
+        "assessment": "Rejected; winning immediately is objective.",
+        "evidence_type": "explicit"
+      }
+    ],
+    "chosen_action": {
+      "action": "Build City on settlement and trigger Victory",
+      "visual_confirmation": "confirmed"
+    },
+    "reasoning_script": {
+      "goal": "Reach 10 VPs and win the match.",
+      "rationale": "Upgrading settlement to city supplies 10th VP to secure victory.",
+      "tradeoff": "Consumes city resources.",
+      "expected_consequence": "Game win."
+    },
+    "post_hoc_commentary": [
+      "I've just been having the worst string of games, so I'm just happy that one worked out."
+    ],
+    "uncertainties": [
+      "None."
+    ],
+    "confidence": {
+      "temporal_alignment": 0.95,
+      "visual_grounding": 0.95,
+      "action_identification": 0.95,
+      "reasoning_faithfulness": 0.95
+    }
+  }
+]

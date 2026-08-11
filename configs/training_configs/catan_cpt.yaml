@@ -1,0 +1,44 @@
+### Continued Pretraining Config for Catan Knowledge Injection
+### Uses LLaMA-Factory with LoRA on GLM-4.1V-9B-Thinking
+
+### Model
+model_name_or_path: THUDM/GLM-4.1V-9B-Thinking
+
+### Method
+stage: pt
+do_train: true
+finetuning_type: lora
+lora_target: all
+lora_rank: 64
+lora_alpha: 128
+lora_dropout: 0.05
+
+### Dataset
+dataset: catan_knowledge
+dataset_dir: data_pipeline/training/pretraining/output
+cutoff_len: 4096
+preprocessing_num_workers: 4
+
+### Training
+per_device_train_batch_size: 2
+gradient_accumulation_steps: 8
+learning_rate: 2.0e-5
+num_train_epochs: 3
+lr_scheduler_type: cosine
+warmup_ratio: 0.1
+bf16: true
+gradient_checkpointing: true
+
+### Logging
+output_dir: checkpoints/catan-cpt-lora
+logging_dir: checkpoints/catan-cpt-lora/logs
+logging_steps: 10
+save_steps: 500
+save_total_limit: 3
+report_to: wandb
+run_name: catan-cpt-lora
+
+### Eval (optional, uses 5% held-out split)
+val_size: 0.05
+eval_strategy: steps
+eval_steps: 100

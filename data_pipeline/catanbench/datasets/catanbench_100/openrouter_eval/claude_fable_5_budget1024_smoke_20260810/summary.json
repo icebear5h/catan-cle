@@ -1,0 +1,129 @@
+{
+  "generated_at": "2026-08-10T21:35:39.752166+00:00",
+  "models": {
+    "anthropic_claude-fable-5": {
+      "attempted": 11,
+      "avg_latency_ms": 11848.0,
+      "categories": {
+        "color_building_counts": {
+          "attempted": 1,
+          "avg_latency_ms": 6112.0,
+          "component_accuracy": 0.5,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "color_road_count": {
+          "attempted": 1,
+          "avg_latency_ms": 6332.0,
+          "component_accuracy": 1.0,
+          "errors": 0,
+          "exact_accuracy": 1.0,
+          "requests": 1
+        },
+        "color_road_locations": {
+          "attempted": 1,
+          "avg_latency_ms": 19659.0,
+          "component_accuracy": 0.5,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "edge_road_owner": {
+          "attempted": 1,
+          "avg_latency_ms": 6217.0,
+          "component_accuracy": 1.0,
+          "errors": 0,
+          "exact_accuracy": 1.0,
+          "requests": 1
+        },
+        "node_occupancy": {
+          "attempted": 1,
+          "avg_latency_ms": 5712.0,
+          "component_accuracy": 1.0,
+          "errors": 0,
+          "exact_accuracy": 1.0,
+          "requests": 1
+        },
+        "port_occupancy": {
+          "attempted": 1,
+          "avg_latency_ms": 18355.0,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "port_trade_type": {
+          "attempted": 1,
+          "avg_latency_ms": 21950.0,
+          "component_accuracy": 0.5,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "robber_resource_number": {
+          "attempted": 1,
+          "avg_latency_ms": 18385.0,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "robber_tile": {
+          "attempted": 1,
+          "avg_latency_ms": 14861.0,
+          "component_accuracy": 1.0,
+          "errors": 0,
+          "exact_accuracy": 1.0,
+          "requests": 1
+        },
+        "tile_has_robber": {
+          "attempted": 1,
+          "avg_latency_ms": 7470.0,
+          "component_accuracy": 1.0,
+          "errors": 0,
+          "exact_accuracy": 1.0,
+          "requests": 1
+        },
+        "tile_resource_number": {
+          "attempted": 1,
+          "avg_latency_ms": 5275.0,
+          "component_accuracy": 1.0,
+          "errors": 0,
+          "exact_accuracy": 1.0,
+          "requests": 1
+        }
+      },
+      "component_accuracy": 0.6111111111111112,
+      "errors": 0,
+      "exact_accuracy": 0.5454545454545454,
+      "requests": 11
+    }
+  },
+  "plan": {
+    "atlas_prompt": true,
+    "bench_dir": "data_pipeline/catanbench/datasets/catanbench_100",
+    "categories": [
+      "robber_tile",
+      "robber_resource_number",
+      "tile_resource_number",
+      "tile_has_robber",
+      "node_occupancy",
+      "edge_road_owner",
+      "color_road_locations",
+      "port_trade_type",
+      "port_occupancy",
+      "color_building_counts",
+      "color_road_count"
+    ],
+    "limit_samples": 1,
+    "models": {
+      "anthropic_claude-fable-5": "anthropic/claude-fable-5"
+    },
+    "output_dir": "data_pipeline/catanbench/datasets/catanbench_100/openrouter_eval/claude_fable_5_budget1024_smoke_20260810",
+    "question_count": 11,
+    "question_dir": "data_pipeline/catanbench/datasets/catanbench_100/questions",
+    "questions_per_sample": 11,
+    "suite": "catanbench"
+  }
+}

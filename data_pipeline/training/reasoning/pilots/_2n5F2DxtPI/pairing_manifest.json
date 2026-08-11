@@ -1,0 +1,86 @@
+{
+ "schema": "video-replay-pairing/v0",
+ "status": "replay_archived_pending_video_verification",
+ "video": {
+  "video_id": "_2n5F2DxtPI",
+  "url": "https://www.youtube.com/watch?v=_2n5F2DxtPI",
+  "discovered_by": "user manual search"
+ },
+ "replay": {
+  "game_id": "242781000",
+  "source_url": "https://colonist.io/replay?q=bootymun&gameId=242781000&playerColor=5",
+  "archived_path": "data_pipeline/bootstrapping/data/replay_staging/242781000.json",
+  "sha256": "b07dfe7aa9aa0214e6be4627e23a23dcb9620f2175016eed7eb8805485eae2e4",
+  "size_bytes": 249784,
+  "captured_at_utc": "2026-08-11T20:55:01Z",
+  "capture_method": "replay_playwright_scraper via user Chrome CDP, single attempt, HTTP 200"
+ },
+ "replay_metadata": {
+  "start_time": "2026-07-13T22:48:59.359Z",
+  "players": [
+   {
+    "username": "bootymunchr",
+    "color": 5,
+    "is_bot": false,
+    "country": "US"
+   },
+   {
+    "username": "Harka",
+    "color": 1,
+    "is_bot": false,
+    "country": "DE"
+   },
+   {
+    "username": "FunDipDevRip",
+    "color": 2,
+    "is_bot": false,
+    "country": "US"
+   },
+   {
+    "username": "Nobretti",
+    "color": 3,
+    "is_bot": false,
+    "country": "PT"
+   }
+  ],
+  "play_order": [
+   2,
+   5,
+   3,
+   1
+  ],
+  "perspective_color": 5,
+  "mode_setting": 0,
+  "max_players": 4,
+  "vp_to_win": 10,
+  "total_turns": 85,
+  "duration_minutes": 39.9,
+  "endgame_public_vp": {
+   "1": 7,
+   "2": 7,
+   "3": 7,
+   "5": 8
+  }
+ },
+ "identity_note": "Narrator is FunDipDevRip (color 2), evidenced by transcript commit \"I think it's 8 4 10\" [58.8] matching the wall-94 placement, port talk matching that corner, and observer language about other seats. bootymunchr (color 5) was only the search username used to find the replay; the archived payload is the color-5 perspective, i.e. NOT the narrator's seat. For narrator-hand supervision, refetch playerColor=2 after rate-limit clearance or restrict packets to public state. Identity remains provisional until frame-level verification.",
+ "open_questions": [
+  "endgame_public_vp shows no player at 10; verify the true winner and end condition against the video (hidden VP cards, resignation, or early end).",
+  "Verify board layout, opening placements, and at least three ordered public events against video frames."
+ ],
+ "verification": {
+  "verified": false,
+  "planned_checks": [
+   "board layout fingerprint (hexes, numbers, ports) vs clean video frame",
+   "usernames/colors visible in video UI",
+   "opening placement sequence",
+   ">=3 ordered public-event anchors (e.g. monopoly, road building, final build)",
+   "winner and turn count"
+  ]
+ },
+ "narrator_seat_candidate": {
+  "username": "FunDipDevRip",
+  "color": 2,
+  "evidence": "transcript commit + port references + observer phrasing",
+  "status": "provisional_strong"
+ }
+}

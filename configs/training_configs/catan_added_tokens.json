@@ -1,0 +1,3091 @@
+{
+  "token_type": "regular_added_tokens",
+  "note": "Use tokenizer.add_tokens(...), not tokenizer.add_special_tokens(...).",
+  "counts": {
+    "node": 54,
+    "edge": 72,
+    "tile": 19,
+    "port": 9,
+    "resource": 6,
+    "object": 1,
+    "color": 11,
+    "building": 3,
+    "action": 22
+  },
+  "total": 197,
+  "tokens": [
+    "<N00>",
+    "<N01>",
+    "<N02>",
+    "<N03>",
+    "<N04>",
+    "<N05>",
+    "<N06>",
+    "<N07>",
+    "<N08>",
+    "<N09>",
+    "<N10>",
+    "<N11>",
+    "<N12>",
+    "<N13>",
+    "<N14>",
+    "<N15>",
+    "<N16>",
+    "<N17>",
+    "<N18>",
+    "<N19>",
+    "<N20>",
+    "<N21>",
+    "<N22>",
+    "<N23>",
+    "<N24>",
+    "<N25>",
+    "<N26>",
+    "<N27>",
+    "<N28>",
+    "<N29>",
+    "<N30>",
+    "<N31>",
+    "<N32>",
+    "<N33>",
+    "<N34>",
+    "<N35>",
+    "<N36>",
+    "<N37>",
+    "<N38>",
+    "<N39>",
+    "<N40>",
+    "<N41>",
+    "<N42>",
+    "<N43>",
+    "<N44>",
+    "<N45>",
+    "<N46>",
+    "<N47>",
+    "<N48>",
+    "<N49>",
+    "<N50>",
+    "<N51>",
+    "<N52>",
+    "<N53>",
+    "<E00_01>",
+    "<E00_05>",
+    "<E00_20>",
+    "<E01_02>",
+    "<E01_06>",
+    "<E02_03>",
+    "<E02_09>",
+    "<E03_04>",
+    "<E03_12>",
+    "<E04_05>",
+    "<E04_15>",
+    "<E05_16>",
+    "<E06_07>",
+    "<E06_23>",
+    "<E07_08>",
+    "<E07_24>",
+    "<E08_09>",
+    "<E08_27>",
+    "<E09_10>",
+    "<E10_11>",
+    "<E10_29>",
+    "<E11_12>",
+    "<E11_32>",
+    "<E12_13>",
+    "<E13_14>",
+    "<E13_34>",
+    "<E14_15>",
+    "<E14_37>",
+    "<E15_17>",
+    "<E16_18>",
+    "<E16_21>",
+    "<E17_18>",
+    "<E17_39>",
+    "<E18_40>",
+    "<E19_20>",
+    "<E19_21>",
+    "<E19_46>",
+    "<E20_22>",
+    "<E21_43>",
+    "<E22_23>",
+    "<E22_49>",
+    "<E23_52>",
+    "<E24_25>",
+    "<E24_53>",
+    "<E25_26>",
+    "<E26_27>",
+    "<E27_28>",
+    "<E28_29>",
+    "<E29_30>",
+    "<E30_31>",
+    "<E31_32>",
+    "<E32_33>",
+    "<E33_34>",
+    "<E34_35>",
+    "<E35_36>",
+    "<E36_37>",
+    "<E37_38>",
+    "<E38_39>",
+    "<E39_41>",
+    "<E40_42>",
+    "<E40_44>",
+    "<E41_42>",
+    "<E43_44>",
+    "<E43_47>",
+    "<E45_46>",
+    "<E45_47>",
+    "<E46_48>",
+    "<E48_49>",
+    "<E49_50>",
+    "<E50_51>",
+    "<E51_52>",
+    "<E52_53>",
+    "<T00>",
+    "<T01>",
+    "<T02>",
+    "<T03>",
+    "<T04>",
+    "<T05>",
+    "<T06>",
+    "<T07>",
+    "<T08>",
+    "<T09>",
+    "<T10>",
+    "<T11>",
+    "<T12>",
+    "<T13>",
+    "<T14>",
+    "<T15>",
+    "<T16>",
+    "<T17>",
+    "<T18>",
+    "<P00>",
+    "<P01>",
+    "<P02>",
+    "<P03>",
+    "<P04>",
+    "<P05>",
+    "<P06>",
+    "<P07>",
+    "<P08>",
+    "<WOOD>",
+    "<BRICK>",
+    "<SHEEP>",
+    "<WHEAT>",
+    "<ORE>",
+    "<DESERT>",
+    "<ROBBER>",
+    "<RED>",
+    "<BLUE>",
+    "<ORANGE>",
+    "<WHITE>",
+    "<BLACK>",
+    "<GREEN>",
+    "<BRONZE>",
+    "<SILVER>",
+    "<GOLD>",
+    "<PINK>",
+    "<MYSTIC_BLUE>",
+    "<SETTLEMENT>",
+    "<CITY>",
+    "<ROAD>",
+    "<ROLL>",
+    "<MOVE_ROBBER>",
+    "<STEAL>",
+    "<DISCARD>",
+    "<BUILD_ROAD>",
+    "<BUILD_SETTLEMENT>",
+    "<BUILD_CITY>",
+    "<BUY_DEVELOPMENT_CARD>",
+    "<PLAY_KNIGHT_CARD>",
+    "<PLAY_YEAR_OF_PLENTY>",
+    "<PLAY_MONOPOLY>",
+    "<PLAY_ROAD_BUILDING>",
+    "<MARITIME_TRADE>",
+    "<OFFER_TRADE>",
+    "<ACCEPT_TRADE>",
+    "<REJECT_TRADE>",
+    "<COUNTER_OFFER>",
+    "<JOIN_COUNTER_OFFER>",
+    "<CONFIRM_TRADE>",
+    "<ACCEPT_COUNTER_OFFER>",
+    "<CANCEL_TRADE>",
+    "<END_TURN>"
+  ],
+  "specs": [
+    {
+      "token": "<N00>",
+      "category": "node",
+      "value": 0
+    },
+    {
+      "token": "<N01>",
+      "category": "node",
+      "value": 1
+    },
+    {
+      "token": "<N02>",
+      "category": "node",
+      "value": 2
+    },
+    {
+      "token": "<N03>",
+      "category": "node",
+      "value": 3
+    },
+    {
+      "token": "<N04>",
+      "category": "node",
+      "value": 4
+    },
+    {
+      "token": "<N05>",
+      "category": "node",
+      "value": 5
+    },
+    {
+      "token": "<N06>",
+      "category": "node",
+      "value": 6
+    },
+    {
+      "token": "<N07>",
+      "category": "node",
+      "value": 7
+    },
+    {
+      "token": "<N08>",
+      "category": "node",
+      "value": 8
+    },
+    {
+      "token": "<N09>",
+      "category": "node",
+      "value": 9
+    },
+    {
+      "token": "<N10>",
+      "category": "node",
+      "value": 10
+    },
+    {
+      "token": "<N11>",
+      "category": "node",
+      "value": 11
+    },
+    {
+      "token": "<N12>",
+      "category": "node",
+      "value": 12
+    },
+    {
+      "token": "<N13>",
+      "category": "node",
+      "value": 13
+    },
+    {
+      "token": "<N14>",
+      "category": "node",
+      "value": 14
+    },
+    {
+      "token": "<N15>",
+      "category": "node",
+      "value": 15
+    },
+    {
+      "token": "<N16>",
+      "category": "node",
+      "value": 16
+    },
+    {
+      "token": "<N17>",
+      "category": "node",
+      "value": 17
+    },
+    {
+      "token": "<N18>",
+      "category": "node",
+      "value": 18
+    },
+    {
+      "token": "<N19>",
+      "category": "node",
+      "value": 19
+    },
+    {
+      "token": "<N20>",
+      "category": "node",
+      "value": 20
+    },
+    {
+      "token": "<N21>",
+      "category": "node",
+      "value": 21
+    },
+    {
+      "token": "<N22>",
+      "category": "node",
+      "value": 22
+    },
+    {
+      "token": "<N23>",
+      "category": "node",
+      "value": 23
+    },
+    {
+      "token": "<N24>",
+      "category": "node",
+      "value": 24
+    },
+    {
+      "token": "<N25>",
+      "category": "node",
+      "value": 25
+    },
+    {
+      "token": "<N26>",
+      "category": "node",
+      "value": 26
+    },
+    {
+      "token": "<N27>",
+      "category": "node",
+      "value": 27
+    },
+    {
+      "token": "<N28>",
+      "category": "node",
+      "value": 28
+    },
+    {
+      "token": "<N29>",
+      "category": "node",
+      "value": 29
+    },
+    {
+      "token": "<N30>",
+      "category": "node",
+      "value": 30
+    },
+    {
+      "token": "<N31>",
+      "category": "node",
+      "value": 31
+    },
+    {
+      "token": "<N32>",
+      "category": "node",
+      "value": 32
+    },
+    {
+      "token": "<N33>",
+      "category": "node",
+      "value": 33
+    },
+    {
+      "token": "<N34>",
+      "category": "node",
+      "value": 34
+    },
+    {
+      "token": "<N35>",
+      "category": "node",
+      "value": 35
+    },
+    {
+      "token": "<N36>",
+      "category": "node",
+      "value": 36
+    },
+    {
+      "token": "<N37>",
+      "category": "node",
+      "value": 37
+    },
+    {
+      "token": "<N38>",
+      "category": "node",
+      "value": 38
+    },
+    {
+      "token": "<N39>",
+      "category": "node",
+      "value": 39
+    },
+    {
+      "token": "<N40>",
+      "category": "node",
+      "value": 40
+    },
+    {
+      "token": "<N41>",
+      "category": "node",
+      "value": 41
+    },
+    {
+      "token": "<N42>",
+      "category": "node",
+      "value": 42
+    },
+    {
+      "token": "<N43>",
+      "category": "node",
+      "value": 43
+    },
+    {
+      "token": "<N44>",
+      "category": "node",
+      "value": 44
+    },
+    {
+      "token": "<N45>",
+      "category": "node",
+      "value": 45
+    },
+    {
+      "token": "<N46>",
+      "category": "node",
+      "value": 46
+    },
+    {
+      "token": "<N47>",
+      "category": "node",
+      "value": 47
+    },
+    {
+      "token": "<N48>",
+      "category": "node",
+      "value": 48
+    },
+    {
+      "token": "<N49>",
+      "category": "node",
+      "value": 49
+    },
+    {
+      "token": "<N50>",
+      "category": "node",
+      "value": 50
+    },
+    {
+      "token": "<N51>",
+      "category": "node",
+      "value": 51
+    },
+    {
+      "token": "<N52>",
+      "category": "node",
+      "value": 52
+    },
+    {
+      "token": "<N53>",
+      "category": "node",
+      "value": 53
+    },
+    {
+      "token": "<E00_01>",
+      "category": "edge",
+      "value": [
+        0,
+        1
+      ]
+    },
+    {
+      "token": "<E00_05>",
+      "category": "edge",
+      "value": [
+        0,
+        5
+      ]
+    },
+    {
+      "token": "<E00_20>",
+      "category": "edge",
+      "value": [
+        0,
+        20
+      ]
+    },
+    {
+      "token": "<E01_02>",
+      "category": "edge",
+      "value": [
+        1,
+        2
+      ]
+    },
+    {
+      "token": "<E01_06>",
+      "category": "edge",
+      "value": [
+        1,
+        6
+      ]
+    },
+    {
+      "token": "<E02_03>",
+      "category": "edge",
+      "value": [
+        2,
+        3
+      ]
+    },
+    {
+      "token": "<E02_09>",
+      "category": "edge",
+      "value": [
+        2,
+        9
+      ]
+    },
+    {
+      "token": "<E03_04>",
+      "category": "edge",
+      "value": [
+        3,
+        4
+      ]
+    },
+    {
+      "token": "<E03_12>",
+      "category": "edge",
+      "value": [
+        3,
+        12
+      ]
+    },
+    {
+      "token": "<E04_05>",
+      "category": "edge",
+      "value": [
+        4,
+        5
+      ]
+    },
+    {
+      "token": "<E04_15>",
+      "category": "edge",
+      "value": [
+        4,
+        15
+      ]
+    },
+    {
+      "token": "<E05_16>",
+      "category": "edge",
+      "value": [
+        5,
+        16
+      ]
+    },
+    {
+      "token": "<E06_07>",
+      "category": "edge",
+      "value": [
+        6,
+        7
+      ]
+    },
+    {
+      "token": "<E06_23>",
+      "category": "edge",
+      "value": [
+        6,
+        23
+      ]
+    },
+    {
+      "token": "<E07_08>",
+      "category": "edge",
+      "value": [
+        7,
+        8
+      ]
+    },
+    {
+      "token": "<E07_24>",
+      "category": "edge",
+      "value": [
+        7,
+        24
+      ]
+    },
+    {
+      "token": "<E08_09>",
+      "category": "edge",
+      "value": [
+        8,
+        9
+      ]
+    },
+    {
+      "token": "<E08_27>",
+      "category": "edge",
+      "value": [
+        8,
+        27
+      ]
+    },
+    {
+      "token": "<E09_10>",
+      "category": "edge",
+      "value": [
+        9,
+        10
+      ]
+    },
+    {
+      "token": "<E10_11>",
+      "category": "edge",
+      "value": [
+        10,
+        11
+      ]
+    },
+    {
+      "token": "<E10_29>",
+      "category": "edge",
+      "value": [
+        10,
+        29
+      ]
+    },
+    {
+      "token": "<E11_12>",
+      "category": "edge",
+      "value": [
+        11,
+        12
+      ]
+    },
+    {
+      "token": "<E11_32>",
+      "category": "edge",
+      "value": [
+        11,
+        32
+      ]
+    },
+    {
+      "token": "<E12_13>",
+      "category": "edge",
+      "value": [
+        12,
+        13
+      ]
+    },
+    {
+      "token": "<E13_14>",
+      "category": "edge",
+      "value": [
+        13,
+        14
+      ]
+    },
+    {
+      "token": "<E13_34>",
+      "category": "edge",
+      "value": [
+        13,
+        34
+      ]
+    },
+    {
+      "token": "<E14_15>",
+      "category": "edge",
+      "value": [
+        14,
+        15
+      ]
+    },
+    {
+      "token": "<E14_37>",
+      "category": "edge",
+      "value": [
+        14,
+        37
+      ]
+    },
+    {
+      "token": "<E15_17>",
+      "category": "edge",
+      "value": [
+        15,
+        17
+      ]
+    },
+    {
+      "token": "<E16_18>",
+      "category": "edge",
+      "value": [
+        16,
+        18
+      ]
+    },
+    {
+      "token": "<E16_21>",
+      "category": "edge",
+      "value": [
+        16,
+        21
+      ]
+    },
+    {
+      "token": "<E17_18>",
+      "category": "edge",
+      "value": [
+        17,
+        18
+      ]
+    },
+    {
+      "token": "<E17_39>",
+      "category": "edge",
+      "value": [
+        17,
+        39
+      ]
+    },
+    {
+      "token": "<E18_40>",
+      "category": "edge",
+      "value": [
+        18,
+        40
+      ]
+    },
+    {
+      "token": "<E19_20>",
+      "category": "edge",
+      "value": [
+        19,
+        20
+      ]
+    },
+    {
+      "token": "<E19_21>",
+      "category": "edge",
+      "value": [
+        19,
+        21
+      ]
+    },
+    {
+      "token": "<E19_46>",
+      "category": "edge",
+      "value": [
+        19,
+        46
+      ]
+    },
+    {
+      "token": "<E20_22>",
+      "category": "edge",
+      "value": [
+        20,
+        22
+      ]
+    },
+    {
+      "token": "<E21_43>",
+      "category": "edge",
+      "value": [
+        21,
+        43
+      ]
+    },
+    {
+      "token": "<E22_23>",
+      "category": "edge",
+      "value": [
+        22,
+        23
+      ]
+    },
+    {
+      "token": "<E22_49>",
+      "category": "edge",
+      "value": [
+        22,
+        49
+      ]
+    },
+    {
+      "token": "<E23_52>",
+      "category": "edge",
+      "value": [
+        23,
+        52
+      ]
+    },
+    {
+      "token": "<E24_25>",
+      "category": "edge",
+      "value": [
+        24,
+        25
+      ]
+    },
+    {
+      "token": "<E24_53>",
+      "category": "edge",
+      "value": [
+        24,
+        53
+      ]
+    },
+    {
+      "token": "<E25_26>",
+      "category": "edge",
+      "value": [
+        25,
+        26
+      ]
+    },
+    {
+      "token": "<E26_27>",
+      "category": "edge",
+      "value": [
+        26,
+        27
+      ]
+    },
+    {
+      "token": "<E27_28>",
+      "category": "edge",
+      "value": [
+        27,
+        28
+      ]
+    },
+    {
+      "token": "<E28_29>",
+      "category": "edge",
+      "value": [
+        28,
+        29
+      ]
+    },
+    {
+      "token": "<E29_30>",
+      "category": "edge",
+      "value": [
+        29,
+        30
+      ]
+    },
+    {
+      "token": "<E30_31>",
+      "category": "edge",
+      "value": [
+        30,
+        31
+      ]
+    },
+    {
+      "token": "<E31_32>",
+      "category": "edge",
+      "value": [
+        31,
+        32
+      ]
+    },
+    {
+      "token": "<E32_33>",
+      "category": "edge",
+      "value": [
+        32,
+        33
+      ]
+    },
+    {
+      "token": "<E33_34>",
+      "category": "edge",
+      "value": [
+        33,
+        34
+      ]
+    },
+    {
+      "token": "<E34_35>",
+      "category": "edge",
+      "value": [
+        34,
+        35
+      ]
+    },
+    {
+      "token": "<E35_36>",
+      "category": "edge",
+      "value": [
+        35,
+        36
+      ]
+    },
+    {
+      "token": "<E36_37>",
+      "category": "edge",
+      "value": [
+        36,
+        37
+      ]
+    },
+    {
+      "token": "<E37_38>",
+      "category": "edge",
+      "value": [
+        37,
+        38
+      ]
+    },
+    {
+      "token": "<E38_39>",
+      "category": "edge",
+      "value": [
+        38,
+        39
+      ]
+    },
+    {
+      "token": "<E39_41>",
+      "category": "edge",
+      "value": [
+        39,
+        41
+      ]
+    },
+    {
+      "token": "<E40_42>",
+      "category": "edge",
+      "value": [
+        40,
+        42
+      ]
+    },
+    {
+      "token": "<E40_44>",
+      "category": "edge",
+      "value": [
+        40,
+        44
+      ]
+    },
+    {
+      "token": "<E41_42>",
+      "category": "edge",
+      "value": [
+        41,
+        42
+      ]
+    },
+    {
+      "token": "<E43_44>",
+      "category": "edge",
+      "value": [
+        43,
+        44
+      ]
+    },
+    {
+      "token": "<E43_47>",
+      "category": "edge",
+      "value": [
+        43,
+        47
+      ]
+    },
+    {
+      "token": "<E45_46>",
+      "category": "edge",
+      "value": [
+        45,
+        46
+      ]
+    },
+    {
+      "token": "<E45_47>",
+      "category": "edge",
+      "value": [
+        45,
+        47
+      ]
+    },
+    {
+      "token": "<E46_48>",
+      "category": "edge",
+      "value": [
+        46,
+        48
+      ]
+    },
+    {
+      "token": "<E48_49>",
+      "category": "edge",
+      "value": [
+        48,
+        49
+      ]
+    },
+    {
+      "token": "<E49_50>",
+      "category": "edge",
+      "value": [
+        49,
+        50
+      ]
+    },
+    {
+      "token": "<E50_51>",
+      "category": "edge",
+      "value": [
+        50,
+        51
+      ]
+    },
+    {
+      "token": "<E51_52>",
+      "category": "edge",
+      "value": [
+        51,
+        52
+      ]
+    },
+    {
+      "token": "<E52_53>",
+      "category": "edge",
+      "value": [
+        52,
+        53
+      ]
+    },
+    {
+      "token": "<T00>",
+      "category": "tile",
+      "value": 0
+    },
+    {
+      "token": "<T01>",
+      "category": "tile",
+      "value": 1
+    },
+    {
+      "token": "<T02>",
+      "category": "tile",
+      "value": 2
+    },
+    {
+      "token": "<T03>",
+      "category": "tile",
+      "value": 3
+    },
+    {
+      "token": "<T04>",
+      "category": "tile",
+      "value": 4
+    },
+    {
+      "token": "<T05>",
+      "category": "tile",
+      "value": 5
+    },
+    {
+      "token": "<T06>",
+      "category": "tile",
+      "value": 6
+    },
+    {
+      "token": "<T07>",
+      "category": "tile",
+      "value": 7
+    },
+    {
+      "token": "<T08>",
+      "category": "tile",
+      "value": 8
+    },
+    {
+      "token": "<T09>",
+      "category": "tile",
+      "value": 9
+    },
+    {
+      "token": "<T10>",
+      "category": "tile",
+      "value": 10
+    },
+    {
+      "token": "<T11>",
+      "category": "tile",
+      "value": 11
+    },
+    {
+      "token": "<T12>",
+      "category": "tile",
+      "value": 12
+    },
+    {
+      "token": "<T13>",
+      "category": "tile",
+      "value": 13
+    },
+    {
+      "token": "<T14>",
+      "category": "tile",
+      "value": 14
+    },
+    {
+      "token": "<T15>",
+      "category": "tile",
+      "value": 15
+    },
+    {
+      "token": "<T16>",
+      "category": "tile",
+      "value": 16
+    },
+    {
+      "token": "<T17>",
+      "category": "tile",
+      "value": 17
+    },
+    {
+      "token": "<T18>",
+      "category": "tile",
+      "value": 18
+    },
+    {
+      "token": "<P00>",
+      "category": "port",
+      "value": 0
+    },
+    {
+      "token": "<P01>",
+      "category": "port",
+      "value": 1
+    },
+    {
+      "token": "<P02>",
+      "category": "port",
+      "value": 2
+    },
+    {
+      "token": "<P03>",
+      "category": "port",
+      "value": 3
+    },
+    {
+      "token": "<P04>",
+      "category": "port",
+      "value": 4
+    },
+    {
+      "token": "<P05>",
+      "category": "port",
+      "value": 5
+    },
+    {
+      "token": "<P06>",
+      "category": "port",
+      "value": 6
+    },
+    {
+      "token": "<P07>",
+      "category": "port",
+      "value": 7
+    },
+    {
+      "token": "<P08>",
+      "category": "port",
+      "value": 8
+    },
+    {
+      "token": "<WOOD>",
+      "category": "resource",
+      "value": "WOOD"
+    },
+    {
+      "token": "<BRICK>",
+      "category": "resource",
+      "value": "BRICK"
+    },
+    {
+      "token": "<SHEEP>",
+      "category": "resource",
+      "value": "SHEEP"
+    },
+    {
+      "token": "<WHEAT>",
+      "category": "resource",
+      "value": "WHEAT"
+    },
+    {
+      "token": "<ORE>",
+      "category": "resource",
+      "value": "ORE"
+    },
+    {
+      "token": "<DESERT>",
+      "category": "resource",
+      "value": null
+    },
+    {
+      "token": "<ROBBER>",
+      "category": "object",
+      "value": "ROBBER"
+    },
+    {
+      "token": "<RED>",
+      "category": "color",
+      "value": "RED"
+    },
+    {
+      "token": "<BLUE>",
+      "category": "color",
+      "value": "BLUE"
+    },
+    {
+      "token": "<ORANGE>",
+      "category": "color",
+      "value": "ORANGE"
+    },
+    {
+      "token": "<WHITE>",
+      "category": "color",
+      "value": "WHITE"
+    },
+    {
+      "token": "<BLACK>",
+      "category": "color",
+      "value": "BLACK"
+    },
+    {
+      "token": "<GREEN>",
+      "category": "color",
+      "value": "GREEN"
+    },
+    {
+      "token": "<BRONZE>",
+      "category": "color",
+      "value": "BRONZE"
+    },
+    {
+      "token": "<SILVER>",
+      "category": "color",
+      "value": "SILVER"
+    },
+    {
+      "token": "<GOLD>",
+      "category": "color",
+      "value": "GOLD"
+    },
+    {
+      "token": "<PINK>",
+      "category": "color",
+      "value": "PINK"
+    },
+    {
+      "token": "<MYSTIC_BLUE>",
+      "category": "color",
+      "value": "MYSTIC_BLUE"
+    },
+    {
+      "token": "<SETTLEMENT>",
+      "category": "building",
+      "value": "SETTLEMENT"
+    },
+    {
+      "token": "<CITY>",
+      "category": "building",
+      "value": "CITY"
+    },
+    {
+      "token": "<ROAD>",
+      "category": "building",
+      "value": "ROAD"
+    },
+    {
+      "token": "<ROLL>",
+      "category": "action",
+      "value": "ROLL"
+    },
+    {
+      "token": "<MOVE_ROBBER>",
+      "category": "action",
+      "value": "MOVE_ROBBER"
+    },
+    {
+      "token": "<STEAL>",
+      "category": "action",
+      "value": "STEAL"
+    },
+    {
+      "token": "<DISCARD>",
+      "category": "action",
+      "value": "DISCARD"
+    },
+    {
+      "token": "<BUILD_ROAD>",
+      "category": "action",
+      "value": "BUILD_ROAD"
+    },
+    {
+      "token": "<BUILD_SETTLEMENT>",
+      "category": "action",
+      "value": "BUILD_SETTLEMENT"
+    },
+    {
+      "token": "<BUILD_CITY>",
+      "category": "action",
+      "value": "BUILD_CITY"
+    },
+    {
+      "token": "<BUY_DEVELOPMENT_CARD>",
+      "category": "action",
+      "value": "BUY_DEVELOPMENT_CARD"
+    },
+    {
+      "token": "<PLAY_KNIGHT_CARD>",
+      "category": "action",
+      "value": "PLAY_KNIGHT_CARD"
+    },
+    {
+      "token": "<PLAY_YEAR_OF_PLENTY>",
+      "category": "action",
+      "value": "PLAY_YEAR_OF_PLENTY"
+    },
+    {
+      "token": "<PLAY_MONOPOLY>",
+      "category": "action",
+      "value": "PLAY_MONOPOLY"
+    },
+    {
+      "token": "<PLAY_ROAD_BUILDING>",
+      "category": "action",
+      "value": "PLAY_ROAD_BUILDING"
+    },
+    {
+      "token": "<MARITIME_TRADE>",
+      "category": "action",
+      "value": "MARITIME_TRADE"
+    },
+    {
+      "token": "<OFFER_TRADE>",
+      "category": "action",
+      "value": "OFFER_TRADE"
+    },
+    {
+      "token": "<ACCEPT_TRADE>",
+      "category": "action",
+      "value": "ACCEPT_TRADE"
+    },
+    {
+      "token": "<REJECT_TRADE>",
+      "category": "action",
+      "value": "REJECT_TRADE"
+    },
+    {
+      "token": "<COUNTER_OFFER>",
+      "category": "action",
+      "value": "COUNTER_OFFER"
+    },
+    {
+      "token": "<JOIN_COUNTER_OFFER>",
+      "category": "action",
+      "value": "JOIN_COUNTER_OFFER"
+    },
+    {
+      "token": "<CONFIRM_TRADE>",
+      "category": "action",
+      "value": "CONFIRM_TRADE"
+    },
+    {
+      "token": "<ACCEPT_COUNTER_OFFER>",
+      "category": "action",
+      "value": "ACCEPT_COUNTER_OFFER"
+    },
+    {
+      "token": "<CANCEL_TRADE>",
+      "category": "action",
+      "value": "CANCEL_TRADE"
+    },
+    {
+      "token": "<END_TURN>",
+      "category": "action",
+      "value": "END_TURN"
+    }
+  ],
+  "atlas": {
+    "tiles": [
+      {
+        "id": 0,
+        "token": "<T00>",
+        "coord": [
+          0,
+          0,
+          0
+        ],
+        "nodes": {
+          "NORTH": 0,
+          "NORTHEAST": 1,
+          "SOUTHEAST": 2,
+          "SOUTH": 3,
+          "SOUTHWEST": 4,
+          "NORTHWEST": 5
+        },
+        "edges": {
+          "EAST": [
+            1,
+            2
+          ],
+          "SOUTHEAST": [
+            2,
+            3
+          ],
+          "SOUTHWEST": [
+            3,
+            4
+          ],
+          "WEST": [
+            4,
+            5
+          ],
+          "NORTHWEST": [
+            0,
+            5
+          ],
+          "NORTHEAST": [
+            0,
+            1
+          ]
+        }
+      },
+      {
+        "id": 1,
+        "token": "<T01>",
+        "coord": [
+          1,
+          -1,
+          0
+        ],
+        "nodes": {
+          "NORTH": 6,
+          "NORTHEAST": 7,
+          "SOUTHEAST": 8,
+          "SOUTH": 9,
+          "SOUTHWEST": 2,
+          "NORTHWEST": 1
+        },
+        "edges": {
+          "EAST": [
+            7,
+            8
+          ],
+          "SOUTHEAST": [
+            8,
+            9
+          ],
+          "SOUTHWEST": [
+            2,
+            9
+          ],
+          "WEST": [
+            1,
+            2
+          ],
+          "NORTHWEST": [
+            1,
+            6
+          ],
+          "NORTHEAST": [
+            6,
+            7
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "token": "<T02>",
+        "coord": [
+          0,
+          -1,
+          1
+        ],
+        "nodes": {
+          "NORTH": 2,
+          "NORTHEAST": 9,
+          "SOUTHEAST": 10,
+          "SOUTH": 11,
+          "SOUTHWEST": 12,
+          "NORTHWEST": 3
+        },
+        "edges": {
+          "EAST": [
+            9,
+            10
+          ],
+          "SOUTHEAST": [
+            10,
+            11
+          ],
+          "SOUTHWEST": [
+            11,
+            12
+          ],
+          "WEST": [
+            3,
+            12
+          ],
+          "NORTHWEST": [
+            2,
+            3
+          ],
+          "NORTHEAST": [
+            2,
+            9
+          ]
+        }
+      },
+      {
+        "id": 3,
+        "token": "<T03>",
+        "coord": [
+          -1,
+          0,
+          1
+        ],
+        "nodes": {
+          "NORTH": 4,
+          "NORTHEAST": 3,
+          "SOUTHEAST": 12,
+          "SOUTH": 13,
+          "SOUTHWEST": 14,
+          "NORTHWEST": 15
+        },
+        "edges": {
+          "EAST": [
+            3,
+            12
+          ],
+          "SOUTHEAST": [
+            12,
+            13
+          ],
+          "SOUTHWEST": [
+            13,
+            14
+          ],
+          "WEST": [
+            14,
+            15
+          ],
+          "NORTHWEST": [
+            4,
+            15
+          ],
+          "NORTHEAST": [
+            3,
+            4
+          ]
+        }
+      },
+      {
+        "id": 4,
+        "token": "<T04>",
+        "coord": [
+          -1,
+          1,
+          0
+        ],
+        "nodes": {
+          "NORTH": 16,
+          "NORTHEAST": 5,
+          "SOUTHEAST": 4,
+          "SOUTH": 15,
+          "SOUTHWEST": 17,
+          "NORTHWEST": 18
+        },
+        "edges": {
+          "EAST": [
+            4,
+            5
+          ],
+          "SOUTHEAST": [
+            4,
+            15
+          ],
+          "SOUTHWEST": [
+            15,
+            17
+          ],
+          "WEST": [
+            17,
+            18
+          ],
+          "NORTHWEST": [
+            16,
+            18
+          ],
+          "NORTHEAST": [
+            5,
+            16
+          ]
+        }
+      },
+      {
+        "id": 5,
+        "token": "<T05>",
+        "coord": [
+          0,
+          1,
+          -1
+        ],
+        "nodes": {
+          "NORTH": 19,
+          "NORTHEAST": 20,
+          "SOUTHEAST": 0,
+          "SOUTH": 5,
+          "SOUTHWEST": 16,
+          "NORTHWEST": 21
+        },
+        "edges": {
+          "EAST": [
+            0,
+            20
+          ],
+          "SOUTHEAST": [
+            0,
+            5
+          ],
+          "SOUTHWEST": [
+            5,
+            16
+          ],
+          "WEST": [
+            16,
+            21
+          ],
+          "NORTHWEST": [
+            19,
+            21
+          ],
+          "NORTHEAST": [
+            19,
+            20
+          ]
+        }
+      },
+      {
+        "id": 6,
+        "token": "<T06>",
+        "coord": [
+          1,
+          0,
+          -1
+        ],
+        "nodes": {
+          "NORTH": 22,
+          "NORTHEAST": 23,
+          "SOUTHEAST": 6,
+          "SOUTH": 1,
+          "SOUTHWEST": 0,
+          "NORTHWEST": 20
+        },
+        "edges": {
+          "EAST": [
+            6,
+            23
+          ],
+          "SOUTHEAST": [
+            1,
+            6
+          ],
+          "SOUTHWEST": [
+            0,
+            1
+          ],
+          "WEST": [
+            0,
+            20
+          ],
+          "NORTHWEST": [
+            20,
+            22
+          ],
+          "NORTHEAST": [
+            22,
+            23
+          ]
+        }
+      },
+      {
+        "id": 7,
+        "token": "<T07>",
+        "coord": [
+          2,
+          -2,
+          0
+        ],
+        "nodes": {
+          "NORTH": 24,
+          "NORTHEAST": 25,
+          "SOUTHEAST": 26,
+          "SOUTH": 27,
+          "SOUTHWEST": 8,
+          "NORTHWEST": 7
+        },
+        "edges": {
+          "EAST": [
+            25,
+            26
+          ],
+          "SOUTHEAST": [
+            26,
+            27
+          ],
+          "SOUTHWEST": [
+            8,
+            27
+          ],
+          "WEST": [
+            7,
+            8
+          ],
+          "NORTHWEST": [
+            7,
+            24
+          ],
+          "NORTHEAST": [
+            24,
+            25
+          ]
+        }
+      },
+      {
+        "id": 8,
+        "token": "<T08>",
+        "coord": [
+          1,
+          -2,
+          1
+        ],
+        "nodes": {
+          "NORTH": 8,
+          "NORTHEAST": 27,
+          "SOUTHEAST": 28,
+          "SOUTH": 29,
+          "SOUTHWEST": 10,
+          "NORTHWEST": 9
+        },
+        "edges": {
+          "EAST": [
+            27,
+            28
+          ],
+          "SOUTHEAST": [
+            28,
+            29
+          ],
+          "SOUTHWEST": [
+            10,
+            29
+          ],
+          "WEST": [
+            9,
+            10
+          ],
+          "NORTHWEST": [
+            8,
+            9
+          ],
+          "NORTHEAST": [
+            8,
+            27
+          ]
+        }
+      },
+      {
+        "id": 9,
+        "token": "<T09>",
+        "coord": [
+          0,
+          -2,
+          2
+        ],
+        "nodes": {
+          "NORTH": 10,
+          "NORTHEAST": 29,
+          "SOUTHEAST": 30,
+          "SOUTH": 31,
+          "SOUTHWEST": 32,
+          "NORTHWEST": 11
+        },
+        "edges": {
+          "EAST": [
+            29,
+            30
+          ],
+          "SOUTHEAST": [
+            30,
+            31
+          ],
+          "SOUTHWEST": [
+            31,
+            32
+          ],
+          "WEST": [
+            11,
+            32
+          ],
+          "NORTHWEST": [
+            10,
+            11
+          ],
+          "NORTHEAST": [
+            10,
+            29
+          ]
+        }
+      },
+      {
+        "id": 10,
+        "token": "<T10>",
+        "coord": [
+          -1,
+          -1,
+          2
+        ],
+        "nodes": {
+          "NORTH": 12,
+          "NORTHEAST": 11,
+          "SOUTHEAST": 32,
+          "SOUTH": 33,
+          "SOUTHWEST": 34,
+          "NORTHWEST": 13
+        },
+        "edges": {
+          "EAST": [
+            11,
+            32
+          ],
+          "SOUTHEAST": [
+            32,
+            33
+          ],
+          "SOUTHWEST": [
+            33,
+            34
+          ],
+          "WEST": [
+            13,
+            34
+          ],
+          "NORTHWEST": [
+            12,
+            13
+          ],
+          "NORTHEAST": [
+            11,
+            12
+          ]
+        }
+      },
+      {
+        "id": 11,
+        "token": "<T11>",
+        "coord": [
+          -2,
+          0,
+          2
+        ],
+        "nodes": {
+          "NORTH": 14,
+          "NORTHEAST": 13,
+          "SOUTHEAST": 34,
+          "SOUTH": 35,
+          "SOUTHWEST": 36,
+          "NORTHWEST": 37
+        },
+        "edges": {
+          "EAST": [
+            13,
+            34
+          ],
+          "SOUTHEAST": [
+            34,
+            35
+          ],
+          "SOUTHWEST": [
+            35,
+            36
+          ],
+          "WEST": [
+            36,
+            37
+          ],
+          "NORTHWEST": [
+            14,
+            37
+          ],
+          "NORTHEAST": [
+            13,
+            14
+          ]
+        }
+      },
+      {
+        "id": 12,
+        "token": "<T12>",
+        "coord": [
+          -2,
+          1,
+          1
+        ],
+        "nodes": {
+          "NORTH": 17,
+          "NORTHEAST": 15,
+          "SOUTHEAST": 14,
+          "SOUTH": 37,
+          "SOUTHWEST": 38,
+          "NORTHWEST": 39
+        },
+        "edges": {
+          "EAST": [
+            14,
+            15
+          ],
+          "SOUTHEAST": [
+            14,
+            37
+          ],
+          "SOUTHWEST": [
+            37,
+            38
+          ],
+          "WEST": [
+            38,
+            39
+          ],
+          "NORTHWEST": [
+            17,
+            39
+          ],
+          "NORTHEAST": [
+            15,
+            17
+          ]
+        }
+      },
+      {
+        "id": 13,
+        "token": "<T13>",
+        "coord": [
+          -2,
+          2,
+          0
+        ],
+        "nodes": {
+          "NORTH": 40,
+          "NORTHEAST": 18,
+          "SOUTHEAST": 17,
+          "SOUTH": 39,
+          "SOUTHWEST": 41,
+          "NORTHWEST": 42
+        },
+        "edges": {
+          "EAST": [
+            17,
+            18
+          ],
+          "SOUTHEAST": [
+            17,
+            39
+          ],
+          "SOUTHWEST": [
+            39,
+            41
+          ],
+          "WEST": [
+            41,
+            42
+          ],
+          "NORTHWEST": [
+            40,
+            42
+          ],
+          "NORTHEAST": [
+            18,
+            40
+          ]
+        }
+      },
+      {
+        "id": 14,
+        "token": "<T14>",
+        "coord": [
+          -1,
+          2,
+          -1
+        ],
+        "nodes": {
+          "NORTH": 43,
+          "NORTHEAST": 21,
+          "SOUTHEAST": 16,
+          "SOUTH": 18,
+          "SOUTHWEST": 40,
+          "NORTHWEST": 44
+        },
+        "edges": {
+          "EAST": [
+            16,
+            21
+          ],
+          "SOUTHEAST": [
+            16,
+            18
+          ],
+          "SOUTHWEST": [
+            18,
+            40
+          ],
+          "WEST": [
+            40,
+            44
+          ],
+          "NORTHWEST": [
+            43,
+            44
+          ],
+          "NORTHEAST": [
+            21,
+            43
+          ]
+        }
+      },
+      {
+        "id": 15,
+        "token": "<T15>",
+        "coord": [
+          0,
+          2,
+          -2
+        ],
+        "nodes": {
+          "NORTH": 45,
+          "NORTHEAST": 46,
+          "SOUTHEAST": 19,
+          "SOUTH": 21,
+          "SOUTHWEST": 43,
+          "NORTHWEST": 47
+        },
+        "edges": {
+          "EAST": [
+            19,
+            46
+          ],
+          "SOUTHEAST": [
+            19,
+            21
+          ],
+          "SOUTHWEST": [
+            21,
+            43
+          ],
+          "WEST": [
+            43,
+            47
+          ],
+          "NORTHWEST": [
+            45,
+            47
+          ],
+          "NORTHEAST": [
+            45,
+            46
+          ]
+        }
+      },
+      {
+        "id": 16,
+        "token": "<T16>",
+        "coord": [
+          1,
+          1,
+          -2
+        ],
+        "nodes": {
+          "NORTH": 48,
+          "NORTHEAST": 49,
+          "SOUTHEAST": 22,
+          "SOUTH": 20,
+          "SOUTHWEST": 19,
+          "NORTHWEST": 46
+        },
+        "edges": {
+          "EAST": [
+            22,
+            49
+          ],
+          "SOUTHEAST": [
+            20,
+            22
+          ],
+          "SOUTHWEST": [
+            19,
+            20
+          ],
+          "WEST": [
+            19,
+            46
+          ],
+          "NORTHWEST": [
+            46,
+            48
+          ],
+          "NORTHEAST": [
+            48,
+            49
+          ]
+        }
+      },
+      {
+        "id": 17,
+        "token": "<T17>",
+        "coord": [
+          2,
+          0,
+          -2
+        ],
+        "nodes": {
+          "NORTH": 50,
+          "NORTHEAST": 51,
+          "SOUTHEAST": 52,
+          "SOUTH": 23,
+          "SOUTHWEST": 22,
+          "NORTHWEST": 49
+        },
+        "edges": {
+          "EAST": [
+            51,
+            52
+          ],
+          "SOUTHEAST": [
+            23,
+            52
+          ],
+          "SOUTHWEST": [
+            22,
+            23
+          ],
+          "WEST": [
+            22,
+            49
+          ],
+          "NORTHWEST": [
+            49,
+            50
+          ],
+          "NORTHEAST": [
+            50,
+            51
+          ]
+        }
+      },
+      {
+        "id": 18,
+        "token": "<T18>",
+        "coord": [
+          2,
+          -1,
+          -1
+        ],
+        "nodes": {
+          "NORTH": 52,
+          "NORTHEAST": 53,
+          "SOUTHEAST": 24,
+          "SOUTH": 7,
+          "SOUTHWEST": 6,
+          "NORTHWEST": 23
+        },
+        "edges": {
+          "EAST": [
+            24,
+            53
+          ],
+          "SOUTHEAST": [
+            7,
+            24
+          ],
+          "SOUTHWEST": [
+            6,
+            7
+          ],
+          "WEST": [
+            6,
+            23
+          ],
+          "NORTHWEST": [
+            23,
+            52
+          ],
+          "NORTHEAST": [
+            52,
+            53
+          ]
+        }
+      }
+    ],
+    "nodes": [
+      {
+        "id": 0,
+        "token": "<N00>"
+      },
+      {
+        "id": 1,
+        "token": "<N01>"
+      },
+      {
+        "id": 2,
+        "token": "<N02>"
+      },
+      {
+        "id": 3,
+        "token": "<N03>"
+      },
+      {
+        "id": 4,
+        "token": "<N04>"
+      },
+      {
+        "id": 5,
+        "token": "<N05>"
+      },
+      {
+        "id": 6,
+        "token": "<N06>"
+      },
+      {
+        "id": 7,
+        "token": "<N07>"
+      },
+      {
+        "id": 8,
+        "token": "<N08>"
+      },
+      {
+        "id": 9,
+        "token": "<N09>"
+      },
+      {
+        "id": 10,
+        "token": "<N10>"
+      },
+      {
+        "id": 11,
+        "token": "<N11>"
+      },
+      {
+        "id": 12,
+        "token": "<N12>"
+      },
+      {
+        "id": 13,
+        "token": "<N13>"
+      },
+      {
+        "id": 14,
+        "token": "<N14>"
+      },
+      {
+        "id": 15,
+        "token": "<N15>"
+      },
+      {
+        "id": 16,
+        "token": "<N16>"
+      },
+      {
+        "id": 17,
+        "token": "<N17>"
+      },
+      {
+        "id": 18,
+        "token": "<N18>"
+      },
+      {
+        "id": 19,
+        "token": "<N19>"
+      },
+      {
+        "id": 20,
+        "token": "<N20>"
+      },
+      {
+        "id": 21,
+        "token": "<N21>"
+      },
+      {
+        "id": 22,
+        "token": "<N22>"
+      },
+      {
+        "id": 23,
+        "token": "<N23>"
+      },
+      {
+        "id": 24,
+        "token": "<N24>"
+      },
+      {
+        "id": 25,
+        "token": "<N25>"
+      },
+      {
+        "id": 26,
+        "token": "<N26>"
+      },
+      {
+        "id": 27,
+        "token": "<N27>"
+      },
+      {
+        "id": 28,
+        "token": "<N28>"
+      },
+      {
+        "id": 29,
+        "token": "<N29>"
+      },
+      {
+        "id": 30,
+        "token": "<N30>"
+      },
+      {
+        "id": 31,
+        "token": "<N31>"
+      },
+      {
+        "id": 32,
+        "token": "<N32>"
+      },
+      {
+        "id": 33,
+        "token": "<N33>"
+      },
+      {
+        "id": 34,
+        "token": "<N34>"
+      },
+      {
+        "id": 35,
+        "token": "<N35>"
+      },
+      {
+        "id": 36,
+        "token": "<N36>"
+      },
+      {
+        "id": 37,
+        "token": "<N37>"
+      },
+      {
+        "id": 38,
+        "token": "<N38>"
+      },
+      {
+        "id": 39,
+        "token": "<N39>"
+      },
+      {
+        "id": 40,
+        "token": "<N40>"
+      },
+      {
+        "id": 41,
+        "token": "<N41>"
+      },
+      {
+        "id": 42,
+        "token": "<N42>"
+      },
+      {
+        "id": 43,
+        "token": "<N43>"
+      },
+      {
+        "id": 44,
+        "token": "<N44>"
+      },
+      {
+        "id": 45,
+        "token": "<N45>"
+      },
+      {
+        "id": 46,
+        "token": "<N46>"
+      },
+      {
+        "id": 47,
+        "token": "<N47>"
+      },
+      {
+        "id": 48,
+        "token": "<N48>"
+      },
+      {
+        "id": 49,
+        "token": "<N49>"
+      },
+      {
+        "id": 50,
+        "token": "<N50>"
+      },
+      {
+        "id": 51,
+        "token": "<N51>"
+      },
+      {
+        "id": 52,
+        "token": "<N52>"
+      },
+      {
+        "id": 53,
+        "token": "<N53>"
+      }
+    ],
+    "edges": [
+      {
+        "id": [
+          0,
+          1
+        ],
+        "token": "<E00_01>"
+      },
+      {
+        "id": [
+          0,
+          5
+        ],
+        "token": "<E00_05>"
+      },
+      {
+        "id": [
+          0,
+          20
+        ],
+        "token": "<E00_20>"
+      },
+      {
+        "id": [
+          1,
+          2
+        ],
+        "token": "<E01_02>"
+      },
+      {
+        "id": [
+          1,
+          6
+        ],
+        "token": "<E01_06>"
+      },
+      {
+        "id": [
+          2,
+          3
+        ],
+        "token": "<E02_03>"
+      },
+      {
+        "id": [
+          2,
+          9
+        ],
+        "token": "<E02_09>"
+      },
+      {
+        "id": [
+          3,
+          4
+        ],
+        "token": "<E03_04>"
+      },
+      {
+        "id": [
+          3,
+          12
+        ],
+        "token": "<E03_12>"
+      },
+      {
+        "id": [
+          4,
+          5
+        ],
+        "token": "<E04_05>"
+      },
+      {
+        "id": [
+          4,
+          15
+        ],
+        "token": "<E04_15>"
+      },
+      {
+        "id": [
+          5,
+          16
+        ],
+        "token": "<E05_16>"
+      },
+      {
+        "id": [
+          6,
+          7
+        ],
+        "token": "<E06_07>"
+      },
+      {
+        "id": [
+          6,
+          23
+        ],
+        "token": "<E06_23>"
+      },
+      {
+        "id": [
+          7,
+          8
+        ],
+        "token": "<E07_08>"
+      },
+      {
+        "id": [
+          7,
+          24
+        ],
+        "token": "<E07_24>"
+      },
+      {
+        "id": [
+          8,
+          9
+        ],
+        "token": "<E08_09>"
+      },
+      {
+        "id": [
+          8,
+          27
+        ],
+        "token": "<E08_27>"
+      },
+      {
+        "id": [
+          9,
+          10
+        ],
+        "token": "<E09_10>"
+      },
+      {
+        "id": [
+          10,
+          11
+        ],
+        "token": "<E10_11>"
+      },
+      {
+        "id": [
+          10,
+          29
+        ],
+        "token": "<E10_29>"
+      },
+      {
+        "id": [
+          11,
+          12
+        ],
+        "token": "<E11_12>"
+      },
+      {
+        "id": [
+          11,
+          32
+        ],
+        "token": "<E11_32>"
+      },
+      {
+        "id": [
+          12,
+          13
+        ],
+        "token": "<E12_13>"
+      },
+      {
+        "id": [
+          13,
+          14
+        ],
+        "token": "<E13_14>"
+      },
+      {
+        "id": [
+          13,
+          34
+        ],
+        "token": "<E13_34>"
+      },
+      {
+        "id": [
+          14,
+          15
+        ],
+        "token": "<E14_15>"
+      },
+      {
+        "id": [
+          14,
+          37
+        ],
+        "token": "<E14_37>"
+      },
+      {
+        "id": [
+          15,
+          17
+        ],
+        "token": "<E15_17>"
+      },
+      {
+        "id": [
+          16,
+          18
+        ],
+        "token": "<E16_18>"
+      },
+      {
+        "id": [
+          16,
+          21
+        ],
+        "token": "<E16_21>"
+      },
+      {
+        "id": [
+          17,
+          18
+        ],
+        "token": "<E17_18>"
+      },
+      {
+        "id": [
+          17,
+          39
+        ],
+        "token": "<E17_39>"
+      },
+      {
+        "id": [
+          18,
+          40
+        ],
+        "token": "<E18_40>"
+      },
+      {
+        "id": [
+          19,
+          20
+        ],
+        "token": "<E19_20>"
+      },
+      {
+        "id": [
+          19,
+          21
+        ],
+        "token": "<E19_21>"
+      },
+      {
+        "id": [
+          19,
+          46
+        ],
+        "token": "<E19_46>"
+      },
+      {
+        "id": [
+          20,
+          22
+        ],
+        "token": "<E20_22>"
+      },
+      {
+        "id": [
+          21,
+          43
+        ],
+        "token": "<E21_43>"
+      },
+      {
+        "id": [
+          22,
+          23
+        ],
+        "token": "<E22_23>"
+      },
+      {
+        "id": [
+          22,
+          49
+        ],
+        "token": "<E22_49>"
+      },
+      {
+        "id": [
+          23,
+          52
+        ],
+        "token": "<E23_52>"
+      },
+      {
+        "id": [
+          24,
+          25
+        ],
+        "token": "<E24_25>"
+      },
+      {
+        "id": [
+          24,
+          53
+        ],
+        "token": "<E24_53>"
+      },
+      {
+        "id": [
+          25,
+          26
+        ],
+        "token": "<E25_26>"
+      },
+      {
+        "id": [
+          26,
+          27
+        ],
+        "token": "<E26_27>"
+      },
+      {
+        "id": [
+          27,
+          28
+        ],
+        "token": "<E27_28>"
+      },
+      {
+        "id": [
+          28,
+          29
+        ],
+        "token": "<E28_29>"
+      },
+      {
+        "id": [
+          29,
+          30
+        ],
+        "token": "<E29_30>"
+      },
+      {
+        "id": [
+          30,
+          31
+        ],
+        "token": "<E30_31>"
+      },
+      {
+        "id": [
+          31,
+          32
+        ],
+        "token": "<E31_32>"
+      },
+      {
+        "id": [
+          32,
+          33
+        ],
+        "token": "<E32_33>"
+      },
+      {
+        "id": [
+          33,
+          34
+        ],
+        "token": "<E33_34>"
+      },
+      {
+        "id": [
+          34,
+          35
+        ],
+        "token": "<E34_35>"
+      },
+      {
+        "id": [
+          35,
+          36
+        ],
+        "token": "<E35_36>"
+      },
+      {
+        "id": [
+          36,
+          37
+        ],
+        "token": "<E36_37>"
+      },
+      {
+        "id": [
+          37,
+          38
+        ],
+        "token": "<E37_38>"
+      },
+      {
+        "id": [
+          38,
+          39
+        ],
+        "token": "<E38_39>"
+      },
+      {
+        "id": [
+          39,
+          41
+        ],
+        "token": "<E39_41>"
+      },
+      {
+        "id": [
+          40,
+          42
+        ],
+        "token": "<E40_42>"
+      },
+      {
+        "id": [
+          40,
+          44
+        ],
+        "token": "<E40_44>"
+      },
+      {
+        "id": [
+          41,
+          42
+        ],
+        "token": "<E41_42>"
+      },
+      {
+        "id": [
+          43,
+          44
+        ],
+        "token": "<E43_44>"
+      },
+      {
+        "id": [
+          43,
+          47
+        ],
+        "token": "<E43_47>"
+      },
+      {
+        "id": [
+          45,
+          46
+        ],
+        "token": "<E45_46>"
+      },
+      {
+        "id": [
+          45,
+          47
+        ],
+        "token": "<E45_47>"
+      },
+      {
+        "id": [
+          46,
+          48
+        ],
+        "token": "<E46_48>"
+      },
+      {
+        "id": [
+          48,
+          49
+        ],
+        "token": "<E48_49>"
+      },
+      {
+        "id": [
+          49,
+          50
+        ],
+        "token": "<E49_50>"
+      },
+      {
+        "id": [
+          50,
+          51
+        ],
+        "token": "<E50_51>"
+      },
+      {
+        "id": [
+          51,
+          52
+        ],
+        "token": "<E51_52>"
+      },
+      {
+        "id": [
+          52,
+          53
+        ],
+        "token": "<E52_53>"
+      }
+    ],
+    "ports": [
+      {
+        "id": 0,
+        "token": "<P00>",
+        "coord": [
+          3,
+          -3,
+          0
+        ],
+        "direction": "WEST",
+        "attached_nodes": [
+          25,
+          26
+        ]
+      },
+      {
+        "id": 1,
+        "token": "<P01>",
+        "coord": [
+          1,
+          -3,
+          2
+        ],
+        "direction": "NORTHWEST",
+        "attached_nodes": [
+          28,
+          29
+        ]
+      },
+      {
+        "id": 2,
+        "token": "<P02>",
+        "coord": [
+          -1,
+          -2,
+          3
+        ],
+        "direction": "NORTHWEST",
+        "attached_nodes": [
+          32,
+          33
+        ]
+      },
+      {
+        "id": 3,
+        "token": "<P03>",
+        "coord": [
+          -3,
+          0,
+          3
+        ],
+        "direction": "NORTHEAST",
+        "attached_nodes": [
+          35,
+          36
+        ]
+      },
+      {
+        "id": 4,
+        "token": "<P04>",
+        "coord": [
+          -3,
+          2,
+          1
+        ],
+        "direction": "EAST",
+        "attached_nodes": [
+          38,
+          39
+        ]
+      },
+      {
+        "id": 5,
+        "token": "<P05>",
+        "coord": [
+          -2,
+          3,
+          -1
+        ],
+        "direction": "EAST",
+        "attached_nodes": [
+          40,
+          44
+        ]
+      },
+      {
+        "id": 6,
+        "token": "<P06>",
+        "coord": [
+          0,
+          3,
+          -3
+        ],
+        "direction": "SOUTHEAST",
+        "attached_nodes": [
+          47,
+          45
+        ]
+      },
+      {
+        "id": 7,
+        "token": "<P07>",
+        "coord": [
+          2,
+          1,
+          -3
+        ],
+        "direction": "SOUTHWEST",
+        "attached_nodes": [
+          48,
+          49
+        ]
+      },
+      {
+        "id": 8,
+        "token": "<P08>",
+        "coord": [
+          3,
+          -1,
+          -2
+        ],
+        "direction": "SOUTHWEST",
+        "attached_nodes": [
+          52,
+          53
+        ]
+      }
+    ]
+  }
+}

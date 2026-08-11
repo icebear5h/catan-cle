@@ -1,0 +1,37 @@
+[
+  {
+    "decision_id": "9wtla7jz_pw_d001",
+    "start_s": 22.4,
+    "decision_s": 83.0,
+    "end_s": 100.0,
+    "actor": "OccamsSheep",
+    "phase": "initial_placement",
+    "decision_type": "initial_settlement_placement",
+    "transcript_evidence": [
+      {
+        "start_s": 22.4,
+        "end_s": 27.84,
+        "quote": "So, we're probably going to see an 8 4 10 and a 5 9 10.",
+        "role": "pre_action_reasoning"
+      },
+      {
+        "start_s": 57.28,
+        "end_s": 61.76,
+        "quote": "Uh we can also play something like the 6 9 3.",
+        "role": "pre_action_reasoning"
+      },
+      {
+        "start_s": 135.32,
+        "end_s": 139.6,
+        "quote": "You know what? I might go with the 693 here. And the idea is if I can get 6512 down, I'm pretty happy.",
+        "role": "pre_action_reasoning"
+      }
+    ],
+    "visual_evidence": {
+      "pre_action": "Empty board during setup phase; 6-9-3, 6-5-12, and 6-3-4 spots are available.",
+      "action": "OccamsSheep places an orange settlement on the 6-9-3 intersection.",
+      "post_action": "Settlement is placed on 6-9-3 with a road pointing downwards."
+    },
+    "state_facts": [
+      "OccamsSheep is picking 3rd in initial setup order",
+      "Wheat numbers 

@@ -1,0 +1,318 @@
+{
+  "generated_at": "2026-05-13T20:13:05.401928+00:00",
+  "models": {
+    "gemma3-12b": {
+      "attempted": 30,
+      "avg_latency_ms": 632.2,
+      "categories": {
+        "edge_road_owner": {
+          "attempted": 5,
+          "avg_latency_ms": 472.4,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 5
+        },
+        "longest_road_holder": {
+          "attempted": 5,
+          "avg_latency_ms": 396.8,
+          "component_accuracy": 1.0,
+          "errors": 0,
+          "exact_accuracy": 1.0,
+          "requests": 5
+        },
+        "node_occupancy": {
+          "attempted": 5,
+          "avg_latency_ms": 716.4,
+          "component_accuracy": 0.6666666666666666,
+          "errors": 0,
+          "exact_accuracy": 0.8,
+          "requests": 5
+        },
+        "port_type_nodes": {
+          "attempted": 5,
+          "avg_latency_ms": 712.8,
+          "component_accuracy": 0.65,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 5
+        },
+        "robber_tile": {
+          "attempted": 5,
+          "avg_latency_ms": 678.2,
+          "component_accuracy": 0.2,
+          "errors": 0,
+          "exact_accuracy": 0.2,
+          "requests": 5
+        },
+        "tile_resource_number": {
+          "attempted": 5,
+          "avg_latency_ms": 816.6,
+          "component_accuracy": 0.2,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 5
+        }
+      },
+      "component_accuracy": 0.49019607843137253,
+      "errors": 0,
+      "exact_accuracy": 0.3333333333333333,
+      "requests": 30
+    },
+    "ministral-3b": {
+      "attempted": 30,
+      "avg_latency_ms": 1040.6,
+      "categories": {
+        "edge_road_owner": {
+          "attempted": 5,
+          "avg_latency_ms": 809.6,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 5
+        },
+        "longest_road_holder": {
+          "attempted": 5,
+          "avg_latency_ms": 940.2,
+          "component_accuracy": 1.0,
+          "errors": 0,
+          "exact_accuracy": 1.0,
+          "requests": 5
+        },
+        "node_occupancy": {
+          "attempted": 5,
+          "avg_latency_ms": 1144.8,
+          "component_accuracy": 0.5,
+          "errors": 0,
+          "exact_accuracy": 0.4,
+          "requests": 5
+        },
+        "port_type_nodes": {
+          "attempted": 5,
+          "avg_latency_ms": 1191.6,
+          "component_accuracy": 0.35,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 5
+        },
+        "robber_tile": {
+          "attempted": 5,
+          "avg_latency_ms": 1007.2,
+          "component_accuracy": 0.2,
+          "errors": 0,
+          "exact_accuracy": 0.2,
+          "requests": 5
+        },
+        "tile_resource_number": {
+          "attempted": 5,
+          "avg_latency_ms": 1150.2,
+          "component_accuracy": 0.3,
+          "errors": 0,
+          "exact_accuracy": 0.2,
+          "requests": 5
+        }
+      },
+      "component_accuracy": 0.37254901960784315,
+      "errors": 0,
+      "exact_accuracy": 0.3,
+      "requests": 30
+    },
+    "nemotron-12b-free": {
+      "attempted": 20,
+      "avg_latency_ms": 2728.05,
+      "categories": {
+        "edge_road_owner": {
+          "attempted": 3,
+          "avg_latency_ms": 5067.666666666667,
+          "component_accuracy": 0.3333333333333333,
+          "errors": 2,
+          "exact_accuracy": 0.3333333333333333,
+          "requests": 5
+        },
+        "longest_road_holder": {
+          "attempted": 3,
+          "avg_latency_ms": 1529.6666666666667,
+          "component_accuracy": 1.0,
+          "errors": 2,
+          "exact_accuracy": 1.0,
+          "requests": 5
+        },
+        "node_occupancy": {
+          "attempted": 3,
+          "avg_latency_ms": 1406.3333333333333,
+          "component_accuracy": 1.0,
+          "errors": 2,
+          "exact_accuracy": 1.0,
+          "requests": 5
+        },
+        "port_type_nodes": {
+          "attempted": 3,
+          "avg_latency_ms": 2094.3333333333335,
+          "component_accuracy": 0.5833333333333334,
+          "errors": 2,
+          "exact_accuracy": 0.0,
+          "requests": 5
+        },
+        "robber_tile": {
+          "attempted": 4,
+          "avg_latency_ms": 1877.25,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 5
+        },
+        "tile_resource_number": {
+          "attempted": 4,
+          "avg_latency_ms": 4189.5,
+          "component_accuracy": 0.25,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 5
+        }
+      },
+      "component_accuracy": 0.48484848484848486,
+      "errors": 10,
+      "exact_accuracy": 0.35,
+      "requests": 30
+    },
+    "qwen3-vl-8b": {
+      "attempted": 30,
+      "avg_latency_ms": 1506.9,
+      "categories": {
+        "edge_road_owner": {
+          "attempted": 5,
+          "avg_latency_ms": 1271.6,
+          "component_accuracy": 0.6,
+          "errors": 0,
+          "exact_accuracy": 0.6,
+          "requests": 5
+        },
+        "longest_road_holder": {
+          "attempted": 5,
+          "avg_latency_ms": 1587.0,
+          "component_accuracy": 0.8,
+          "errors": 0,
+          "exact_accuracy": 0.8,
+          "requests": 5
+        },
+        "node_occupancy": {
+          "attempted": 5,
+          "avg_latency_ms": 1643.6,
+          "component_accuracy": 0.6666666666666666,
+          "errors": 0,
+          "exact_accuracy": 0.8,
+          "requests": 5
+        },
+        "port_type_nodes": {
+          "attempted": 5,
+          "avg_latency_ms": 1503.0,
+          "component_accuracy": 0.65,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 5
+        },
+        "robber_tile": {
+          "attempted": 5,
+          "avg_latency_ms": 1685.8,
+          "component_accuracy": 0.4,
+          "errors": 0,
+          "exact_accuracy": 0.4,
+          "requests": 5
+        },
+        "tile_resource_number": {
+          "attempted": 5,
+          "avg_latency_ms": 1350.4,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 5
+        }
+      },
+      "component_accuracy": 0.5098039215686274,
+      "errors": 0,
+      "exact_accuracy": 0.43333333333333335,
+      "requests": 30
+    },
+    "ui-tars-7b": {
+      "attempted": 30,
+      "avg_latency_ms": 681.0333333333333,
+      "categories": {
+        "edge_road_owner": {
+          "attempted": 5,
+          "avg_latency_ms": 573.2,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 5
+        },
+        "longest_road_holder": {
+          "attempted": 5,
+          "avg_latency_ms": 576.4,
+          "component_accuracy": 1.0,
+          "errors": 0,
+          "exact_accuracy": 1.0,
+          "requests": 5
+        },
+        "node_occupancy": {
+          "attempted": 5,
+          "avg_latency_ms": 542.6,
+          "component_accuracy": 0.6666666666666666,
+          "errors": 0,
+          "exact_accuracy": 0.8,
+          "requests": 5
+        },
+        "port_type_nodes": {
+          "attempted": 5,
+          "avg_latency_ms": 931.8,
+          "component_accuracy": 0.65,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 5
+        },
+        "robber_tile": {
+          "attempted": 5,
+          "avg_latency_ms": 691.2,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 5
+        },
+        "tile_resource_number": {
+          "attempted": 5,
+          "avg_latency_ms": 771.0,
+          "component_accuracy": 0.4,
+          "errors": 0,
+          "exact_accuracy": 0.2,
+          "requests": 5
+        }
+      },
+      "component_accuracy": 0.5098039215686274,
+      "errors": 0,
+      "exact_accuracy": 0.3333333333333333,
+      "requests": 30
+    }
+  },
+  "plan": {
+    "atlas_prompt": true,
+    "bench_dir": "data_pipeline/benchmarks/catanbench_100",
+    "categories": [
+      "robber_tile",
+      "tile_resource_number",
+      "node_occupancy",
+      "edge_road_owner",
+      "port_type_nodes",
+      "longest_road_holder"
+    ],
+    "limit_samples": 5,
+    "models": {
+      "gemma3-12b": "google/gemma-3-12b-it",
+      "ministral-3b": "mistralai/ministral-3b-2512",
+      "nemotron-12b-free": "nvidia/nemotron-nano-12b-v2-vl:free",
+      "qwen3-vl-8b": "qwen/qwen3-vl-8b-instruct",
+      "ui-tars-7b": "bytedance/ui-tars-1.5-7b"
+    },
+    "output_dir": "data_pipeline/benchmarks/catanbench_100/openrouter_eval/20260513T201207Z",
+    "question_count": 30,
+    "questions_per_sample": 6
+  }
+}

@@ -1,0 +1,510 @@
+[
+ {
+  "t": 20.6,
+  "text": "I kind of like this 9 5 10. And one of",
+  "refs": [
+   {
+    "surface": "9 5 10",
+    "kind": "corner3",
+    "status": "unique",
+    "binding": 41
+   }
+  ]
+ },
+ {
+  "t": 24.08,
+  "text": "9 5 10 to me",
+  "refs": [
+   {
+    "surface": "9 5 10",
+    "kind": "corner3",
+    "status": "unique",
+    "binding": 41
+   }
+  ]
+ },
+ {
+  "t": 26.08,
+  "text": "is that we do have this interesting 8 10",
+  "refs": [
+   {
+    "surface": "8 10",
+    "kind": "corner2",
+    "status": "2+2 candidates"
+   }
+  ]
+ },
+ {
+  "t": 28.72,
+  "text": "to 8 5. Somebody will do that. Which",
+  "refs": [
+   {
+    "surface": "8 5",
+    "kind": "corner2",
+    "status": "0+0 candidates"
+   }
+  ]
+ },
+ {
+  "t": 36.4,
+  "text": "can go 8 10 4,",
+  "refs": [
+   {
+    "surface": "8 10 4",
+    "kind": "corner3",
+    "status": "unique",
+    "binding": 37
+   }
+  ]
+ },
+ {
+  "t": 41.92,
+  "text": "Man, all these players 6 9 3 can also",
+  "refs": [
+   {
+    "surface": "6 9 3",
+    "kind": "corner3",
+    "status": "unique",
+    "binding": 26
+   }
+  ]
+ },
+ {
+  "t": 46.28,
+  "text": "to the 8 10, right? 5 10 up. That's",
+  "refs": [
+   {
+    "surface": "8 10",
+    "kind": "corner2",
+    "status": "2+2 candidates"
+   },
+   {
+    "surface": "5 10",
+    "kind": "corner2",
+    "status": "2+2 candidates"
+   }
+  ]
+ },
+ {
+  "t": 54.24,
+  "text": "isn't it? I mean, 8 4 10 has also an",
+  "refs": [
+   {
+    "surface": "8 4 10",
+    "kind": "corner3",
+    "status": "unique",
+    "binding": 37
+   }
+  ]
+ },
+ {
+  "t": 58.8,
+  "text": "I think it's 8 4 10.",
+  "refs": [
+   {
+    "surface": "8 4 10",
+    "kind": "corner3",
+    "status": "unique",
+    "binding": 37
+   }
+  ]
+ },
+ {
+  "t": 65.199,
+  "text": "Best case, we do like uh 8 10 down or 5",
+  "refs": [
+   {
+    "surface": "8 10",
+    "kind": "corner2",
+    "status": "2+2 candidates"
+   }
+  ]
+ },
+ {
+  "t": 77.2,
+  "text": "that I guess maybe 6 3 11 could be Let's",
+  "refs": [
+   {
+    "surface": "6 3 11",
+    "kind": "corner3",
+    "status": "unique",
+    "binding": 49
+   }
+  ]
+ },
+ {
+  "t": 84.36,
+  "text": "uh 6 4 11 is not bad.",
+  "refs": [
+   {
+    "surface": "6 4 11",
+    "kind": "corner3",
+    "status": "unique",
+    "binding": 3
+   }
+  ]
+ },
+ {
+  "t": 95.0,
+  "text": "ton of sense. Like 8 4 3 and then what?",
+  "refs": [
+   {
+    "surface": "8 4 3",
+    "kind": "corner3",
+    "status": "ambiguous",
+    "binding": [
+     7,
+     30
+    ]
+   }
+  ]
+ },
+ {
+  "t": 98.64,
+  "text": "Versus if you go 8 4 10, you get a brick",
+  "refs": [
+   {
+    "surface": "8 4 10",
+    "kind": "corner3",
+    "status": "unique",
+    "binding": 37
+   }
+  ]
+ },
+ {
+  "t": 108.08,
+  "text": "the 6 5",
+  "refs": [
+   {
+    "surface": "6 5",
+    "kind": "corner2",
+    "status": "0+2 candidates"
+   }
+  ]
+ },
+ {
+  "t": 119.68,
+  "text": "really good for us then we can take 5 10",
+  "refs": [
+   {
+    "surface": "5 10",
+    "kind": "corner2",
+    "status": "2+2 candidates"
+   }
+  ]
+ },
+ {
+  "t": 121.64,
+  "text": "up to 8 10.",
+  "refs": [
+   {
+    "surface": "8 10",
+    "kind": "corner2",
+    "status": "2+2 candidates"
+   }
+  ]
+ },
+ {
+  "t": 124.64,
+  "text": "Yes. 8 5 10 is actually",
+  "refs": [
+   {
+    "surface": "8 5 10",
+    "kind": "corner3",
+    "status": "none",
+    "binding": null
+   }
+  ]
+ },
+ {
+  "t": 127.88,
+  "text": "it's actually the same pippage as the 9",
+  "refs": [
+   {
+    "surface": "pippage",
+    "kind": "jargon",
+    "gloss": "pip count"
+   }
+  ]
+ },
+ {
+  "t": 129.6,
+  "text": "5 10, but I think just having the sheep",
+  "refs": [
+   {
+    "surface": "5 10",
+    "kind": "corner2",
+    "status": "2+2 candidates"
+   }
+  ]
+ },
+ {
+  "t": 137.76,
+  "text": "though. I think whoever gets the 5 10 to",
+  "refs": [
+   {
+    "surface": "5 10",
+    "kind": "corner2",
+    "status": "2+2 candidates"
+   }
+  ]
+ },
+ {
+  "t": 140.64,
+  "text": "8 10's in a great spot and that's",
+  "refs": [
+   {
+    "surface": "8 10",
+    "kind": "corner2",
+    "status": "2+2 candidates"
+   }
+  ]
+ },
+ {
+  "t": 142.0,
+  "text": "honestly 6 9 3 could play that. 9 5 10",
+  "refs": [
+   {
+    "surface": "6 9 3",
+    "kind": "corner3",
+    "status": "unique",
+    "binding": 26
+   },
+   {
+    "surface": "9 5 10",
+    "kind": "corner3",
+    "status": "unique",
+    "binding": 41
+   }
+  ]
+ },
+ {
+  "t": 147.4,
+  "text": "really actually really good for 6 9 3.",
+  "refs": [
+   {
+    "surface": "6 9 3",
+    "kind": "corner3",
+    "status": "unique",
+    "binding": 26
+   }
+  ]
+ },
+ {
+  "t": 153.32,
+  "text": "take 6 9 3 left and then what we could",
+  "refs": [
+   {
+    "surface": "6 9 3",
+    "kind": "corner3",
+    "status": "unique",
+    "binding": 26
+   }
+  ]
+ },
+ {
+  "t": 155.64,
+  "text": "do is potentially try to build a 5 2",
+  "refs": [
+   {
+    "surface": "5 2",
+    "kind": "corner2",
+    "status": "2+0 candidates"
+   }
+  ]
+ },
+ {
+  "t": 186.44,
+  "text": "6 9 3 smart. Smart man. Maybe he's",
+  "refs": [
+   {
+    "surface": "6 9 3",
+    "kind": "corner3",
+    "status": "unique",
+    "binding": 26
+   }
+  ]
+ },
+ {
+  "t": 201.32,
+  "text": "like 5 10 for us or or 8 10 down, excuse",
+  "refs": [
+   {
+    "surface": "5 10",
+    "kind": "corner2",
+    "status": "2+2 candidates"
+   },
+   {
+    "surface": "8 10",
+    "kind": "corner2",
+    "status": "2+2 candidates"
+   }
+  ]
+ },
+ {
+  "t": 219.36,
+  "text": "is an angle of like 6 4 3. It's the",
+  "refs": [
+   {
+    "surface": "6 4 3",
+    "kind": "corner3",
+    "status": "unique",
+    "binding": 6
+   }
+  ]
+ },
+ {
+  "t": 231.239,
+  "text": "with the best wood. Right? Go for cord",
+  "refs": [
+   {
+    "surface": "cord",
+    "kind": "jargon",
+    "gloss": "coordinated"
+   }
+  ]
+ },
+ {
+  "t": 442.28,
+  "text": "is certainly our our golden goose.",
+  "refs": [
+   {
+    "surface": "golden goose",
+    "kind": "jargon",
+    "gloss": "best producer"
+   }
+  ]
+ },
+ {
+  "t": 848.44,
+  "text": "settle double pop on an eight, which is",
+  "refs": [
+   {
+    "surface": "pop",
+    "kind": "jargon",
+    "gloss": "buy/play dev card"
+   }
+  ]
+ },
+ {
+  "t": 898.48,
+  "text": "Pop.",
+  "refs": [
+   {
+    "surface": "pop",
+    "kind": "jargon",
+    "gloss": "buy/play dev card"
+   }
+  ]
+ },
+ {
+  "t": 900.76,
+  "text": "Pop. And then we said we'll roll a seven",
+  "refs": [
+   {
+    "surface": "pop",
+    "kind": "jargon",
+    "gloss": "buy/play dev card"
+   }
+  ]
+ },
+ {
+  "t": 1035.839,
+  "text": "actually double pop with the op if we",
+  "refs": [
+   {
+    "surface": "pop",
+    "kind": "jargon",
+    "gloss": "buy/play dev card"
+   }
+  ]
+ },
+ {
+  "t": 1046.319,
+  "text": "would rather double pop, which is more",
+  "refs": [
+   {
+    "surface": "pop",
+    "kind": "jargon",
+    "gloss": "buy/play dev card"
+   }
+  ]
+ },
+ {
+  "t": 1127.96,
+  "text": "pop.",
+  "refs": [
+   {
+    "surface": "pop",
+    "kind": "jargon",
+    "gloss": "buy/play dev card"
+   }
+  ]
+ },
+ {
+  "t": 1154.08,
+  "text": "Um pop.",
+  "refs": [
+   {
+    "surface": "pop",
+    "kind": "jargon",
+    "gloss": "buy/play dev card"
+   }
+  ]
+ },
+ {
+  "t": 1330.64,
+  "text": "All right, 4 10 here would be",
+  "refs": [
+   {
+    "surface": "4 10",
+    "kind": "corner2",
+    "status": "0+2 candidates"
+   }
+  ]
+ },
+ {
+  "t": 1680.0,
+  "text": "The problem is if I if I take 8 3, he's",
+  "refs": [
+   {
+    "surface": "8 3",
+    "kind": "corner2",
+    "status": "1+3 candidates"
+   }
+  ]
+ },
+ {
+  "t": 1796.28,
+  "text": "He says a yop and a knight. So, I don't",
+  "refs": [
+   {
+    "surface": "yop",
+    "kind": "jargon",
+    "gloss": "year of plenty"
+   }
+  ]
+ },
+ {
+  "t": 2346.44,
+  "text": "We pulled yop, road builder.",
+  "refs": [
+   {
+    "surface": "yop",
+    "kind": "jargon",
+    "gloss": "year of plenty"
+   }
+  ]
+ },
+ {
+  "t": 2361.8,
+  "text": "five knights and a yop and road builder.",
+  "refs": [
+   {
+    "surface": "yop",
+    "kind": "jargon",
+    "gloss": "year of plenty"
+   }
+  ]
+ }
+]

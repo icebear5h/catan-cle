@@ -1,0 +1,63 @@
+{
+  "settlement": {
+    "appears_between_absolute_s": [
+      240.0,
+      241.0
+    ],
+    "adjacent_dice_numbers": [
+      6,
+      11,
+      12
+    ],
+    "adjacent_resources": [
+      "brick",
+      "brick",
+      "wheat"
+    ],
+    "confidence": 0.9
+  },
+  "road": {
+    "appears_between_absolute_s": [
+      241.0,
+      242.0
+    ],
+    "direction_or_target": "southeast from new settlement toward 11/12 edge",
+    "confidence": 0.85
+  },
+  "caption_visual_conflict": "Caption discusses 'road to 9-12' and wood-port angle, but the red player actually placed the settlement at the 6-11-12 junction (brick/brick/wheat) and roaded southeast, not toward 9-12.",
+  "visible_evidence": [
+    "Red settlement appears at intersection of 6-brick, 11-brick, 12-wheat hexes around frame 240-241s",
+    "Red road extends southeast from that settlement along the 11/12 border by 242s",
+    "Log updates: 'OccamsSheep placed a Settlement', 'received starting resources', 'placed a Road'",
+    "Resource cards (2 brick, 1 wheat) fly to hand at 241s confirming brick-brick-wheat adjacency"
+  ],
+  "_pilot_provenance": {
+    "model": "qwen/qwen3.8-max",
+    "latency_ms": 40329,
+    "usage": {
+      "prompt_tokens": 9017,
+      "completion_tokens": 1712,
+      "total_tokens": 10729,
+      "cost": 0.028306,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.028306,
+        "upstream_inference_prompt_cost": 0.018034,
+        "upstream_inference_completions_cost": 0.010272
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1439,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    },
+    "clip_sha256": "873b088d85dde258600bc48bf0ac5f1efab7b9b6c62306a3f01946dc9c0e44d3",
+    "generated_at": "2026-08-11T03:00:54.824639+00:00"
+  }
+}

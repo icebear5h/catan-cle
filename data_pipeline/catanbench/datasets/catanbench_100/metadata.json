@@ -1,0 +1,44 @@
+{
+  "counts": {
+    "replay:191035308.json": 8,
+    "replay:191046136.json": 8,
+    "replay:191057036.json": 8,
+    "replay:191196714.json": 8,
+    "replay:191208779.json": 8,
+    "replay:192244603.json": 8,
+    "replay:192261074.json": 8,
+    "replay:192281207.json": 8,
+    "replay:192284486.json": 8,
+    "replay:192289925.json": 8,
+    "replay:192294329.json": 8,
+    "replay:192418134_sample.json": 8,
+    "replay:194335024.json": 4
+  },
+  "files": {
+    "answer_key": "answer_key.jsonl",
+    "contracts_dir": "contracts",
+    "images_dir": "images",
+    "manifest": "manifest.jsonl",
+    "qa": "qa.jsonl",
+    "question_dir": "data_pipeline/catanbench/datasets/catanbench_100/questions",
+    "questions": "questions.jsonl"
+  },
+  "generated_at": "2026-05-13T21:22:39.101560+00:00",
+  "image_size": [
+    512,
+    512
+  ],
+  "name": "CatanBench-100",
+  "qa_count": 3032,
+  "render_images": true,
+  "rendered_images": 100,
+  "replay_dir": "data_pipeline/bootstrapping/data/raw_replays",
+  "sample_count": 100,
+  "sampling": {
+    "min_step": 8,
+    "per_replay_limit": 8,
+    "target_samples": 100
+  },
+  "schema": "catan_benchmark/v0",
+  "source_replay_count": 13
+}

@@ -1,0 +1,137 @@
+{
+ "schema": "paired-decision-demo/v0",
+ "game_id": "242781000",
+ "video_id": "_2n5F2DxtPI",
+ "perspective": "bootymunchr (narrator), place order 2 of 4",
+ "phase": "initial_placement_first_settlement",
+ "board_hexes": [
+  {
+   "hex": 0,
+   "resource": "WHEAT",
+   "number": 11
+  },
+  {
+   "hex": 1,
+   "resource": "ORE",
+   "number": 4
+  },
+  {
+   "hex": 2,
+   "resource": "ORE",
+   "number": 8
+  },
+  {
+   "hex": 3,
+   "resource": "WHEAT",
+   "number": 10
+  },
+  {
+   "hex": 4,
+   "resource": "WOOD",
+   "number": 5
+  },
+  {
+   "hex": 5,
+   "resource": "WOOD",
+   "number": 2
+  },
+  {
+   "hex": 6,
+   "resource": "BRICK",
+   "number": 6
+  },
+  {
+   "hex": 7,
+   "resource": "ORE",
+   "number": 3
+  },
+  {
+   "hex": 8,
+   "resource": "BRICK",
+   "number": 8
+  },
+  {
+   "hex": 9,
+   "resource": "WOOD",
+   "number": 10
+  },
+  {
+   "hex": 10,
+   "resource": "BRICK",
+   "number": 9
+  },
+  {
+   "hex": 11,
+   "resource": "WOOD",
+   "number": 12
+  },
+  {
+   "hex": 12,
+   "resource": "WHEAT",
+   "number": 6
+  },
+  {
+   "hex": 13,
+   "resource": "SHEEP",
+   "number": 3
+  },
+  {
+   "hex": 14,
+   "resource": "DESERT",
+   "number": 0
+  },
+  {
+   "hex": 15,
+   "resource": "SHEEP",
+   "number": 9
+  },
+  {
+   "hex": 16,
+   "resource": "SHEEP",
+   "number": 4
+  },
+  {
+   "hex": 17,
+   "resource": "WHEAT",
+   "number": 5
+  },
+  {
+   "hex": 18,
+   "resource": "SHEEP",
+   "number": 11
+  }
+ ],
+ "port_types_available": [
+  "BRICK",
+  "GENERIC",
+  "ORE",
+  "SHEEP",
+  "WHEAT",
+  "WOOD"
+ ],
+ "public_events_before_action": [
+  {
+   "t_wall": 94.0,
+   "player": "FunDipDevRip",
+   "action": "build_settlement",
+   "at": "10-WOOD / 8-BRICK / 4-SHEEP"
+  },
+  {
+   "t_wall": 95.0,
+   "player": "FunDipDevRip",
+   "action": "build_road",
+   "edge": 45
+  }
+ ],
+ "authoritative_chosen_action": {
+  "t_wall": 207.4,
+  "action": "build_settlement",
+  "corner": 26,
+  "at": "9-SHEEP / 6-BRICK / 3-ORE",
+  "followed_by_road": {
+   "t_wall": 208.4,
+   "edge": 35
+  }
+ },
+ "pre_action_transcript_video_time_max": 206.5
+}

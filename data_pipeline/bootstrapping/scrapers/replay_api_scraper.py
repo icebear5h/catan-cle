@@ -23,6 +23,8 @@ from pathlib import Path
 from typing import Optional, List, Dict, Any
 from dataclasses import dataclass, asdict
 
+from dotenv import load_dotenv
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
@@ -162,7 +164,10 @@ class ReplayAPIClient:
                 logger.error("Authentication required - provide valid JWT token")
                 return None
             elif response.status_code == 403:
-                logger.error("Access denied - membership may be required")
+                logger.error(
+                    "Access denied from the direct replay API. Colonist may require browser "
+                    "session/Cloudflare state; try replay_playwright_scraper.py."
+                )
                 return None
             elif response.status_code == 404:
                 logger.error(f"Replay not found: {game_id}")
@@ -376,8 +381,10 @@ async def scrape_replays_from_index(
     output_dir: str,
     jwt_token: str,
     max_games: Optional[int] = None,
+    max_attempts: Optional[int] = None,
     skip_existing: bool = True,
     use_supabase: bool = False,
+    save_raw: bool = False,
 ) -> Dict[str, int]:
     """
     Scrape replays from the game index file.
@@ -386,9 +393,11 @@ async def scrape_replays_from_index(
         index_file: Path to 4p_games_top100.json
         output_dir: Directory to save parsed replays
         jwt_token: Authentication token
-        max_games: Maximum games to scrape (None for all)
+        max_games: Maximum successful new games to scrape (None for all)
+        max_attempts: Maximum non-skipped games to try before stopping
         skip_existing: Skip already-scraped games
         use_supabase: Save to Supabase instead of local files
+        save_raw: Save raw Colonist API JSON instead of parsed replay wrapper
 
     Returns:
         Stats dict with success/failure counts
@@ -397,13 +406,11 @@ async def scrape_replays_from_index(
     with open(index_file) as f:
         games = json.load(f)
 
-    if max_games:
-        games = games[:max_games]
-
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
 
     stats = {"success": 0, "failed": 0, "skipped": 0}
+    attempts = 0
 
     # Setup Supabase if requested
     db = None
@@ -436,6 +443,12 @@ async def scrape_replays_from_index(
                     stats["skipped"] += 1
                     continue
 
+            if max_games is not None and stats["success"] >= max_games:
+                break
+            if max_attempts is not None and attempts >= max_attempts:
+                break
+            attempts += 1
+
             logger.info(f"[{i+1}/{len(games)}] Scraping {game_id} (player {game['username']})...")
 
             try:
@@ -453,7 +466,7 @@ async def scrape_replays_from_index(
                         db["save"](game_id, raw_data, metadata)
                     else:
                         with open(output_file, "w") as f:
-                            json.dump(replay.to_dict(), f)
+                            json.dump(raw_data if save_raw else replay.to_dict(), f)
 
                     stats["success"] += 1
                     logger.info(f"  Saved: {replay.total_events} events")
@@ -494,21 +507,29 @@ async def main():
     """CLI entry point."""
     import argparse
 
+    load_dotenv(dotenv_path=Path.cwd() / ".env")
+    load_dotenv()
+
     parser = argparse.ArgumentParser(description="Scrape Colonist.io replays via API")
     parser.add_argument("--game-id", type=str, help="Single game ID to scrape")
     parser.add_argument("--index-file", type=str, default="4p_games_top100.json", help="Game index file")
     parser.add_argument("--output-dir", type=str, default="./data/replays_api", help="Output directory")
-    parser.add_argument("--max-games", type=int, help="Max games to scrape")
+    parser.add_argument("--max-games", type=int, help="Max successful new games to scrape")
+    parser.add_argument("--max-attempts", type=int, help="Max non-skipped games to try")
     parser.add_argument("--player-color", type=int, default=0, help="Player color perspective")
     parser.add_argument("--supabase", action="store_true",
                        help="Save to Supabase (requires SUPABASE_URL and SUPABASE_KEY)")
+    parser.add_argument("--raw", action="store_true",
+                       help="Save raw Colonist API JSON for replay viewer compatibility")
 
     args = parser.parse_args()
 
     jwt_token = os.environ.get("COLONIST_JWT")
     if not jwt_token:
         print("ERROR: Set COLONIST_JWT environment variable")
-        print("Get token from DevTools > Application > Cookies > jwt_colonist.io")
+        print("This direct API scraper is a debug fallback and may still 403 with only JWT.")
+        print("For replay downloads, prefer replay_playwright_scraper.py.")
+        print("Get JWT from DevTools > Application > Cookies > jwt_colonist.io")
         sys.exit(1)
 
     if not validate_jwt(jwt_token):
@@ -547,7 +568,9 @@ async def main():
             output_dir=args.output_dir,
             jwt_token=jwt_token,
             max_games=args.max_games,
+            max_attempts=args.max_attempts,
             use_supabase=args.supabase,
+            save_raw=args.raw,
         )
         print(f"\nScraping complete:")
         print(f"  Success: {stats['success']}")

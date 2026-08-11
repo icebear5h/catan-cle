@@ -1,0 +1,67 @@
+{
+  "schema": "grounded-video-decisions/v0-pilot-provisional",
+  "video_id": "9wtla7jz_pw",
+  "source_proposals": "coarse_decision_proposals.json",
+  "evidence_status": "Assistant frame interpretation only; not authoritative ground truth or independent proof.",
+  "training_policy": "No record in this file is training eligible until verified against an authoritative replay/log or an independently reviewed deterministic pixel-to-board mapping.",
+  "records": [
+    {
+      "decision_id": "9wtla7jz_pw_d003",
+      "audit_status": "candidate_pending_authoritative_verification",
+      "actor": "RED (OccamsSheep)",
+      "phase": "initial_placement",
+      "decision_type": "first_settlement",
+      "action": {
+        "settlement": "Place first settlement on 6-9-3",
+        "settlement_action_interval_s": [150.0, 151.0],
+        "road": "Place adjoining road west/southwest toward the coast",
+        "road_action_interval_s": [152.0, 153.0],
+        "visual_confirmation": "provisional_frame_interpretation"
+      },
+      "pre_action_transcript_evidence": [
+        {"start_s": 133.32, "end_s": 137.28, "quote": "And then we can take"},
+        {"start_s": 135.32, "end_s": 139.6, "quote": "You know what? I might go with the 693"},
+        {"start_s": 137.28, "end_s": 141.44, "quote": "here. And the idea is if I can get 6512"},
+        {"start_s": 139.6, "end_s": 144.64, "quote": "down, I'm pretty happy. I can either"}
+      ],
+      "reasoning_script": {
+        "goal": "Anchor strong sheep/ore production while retaining a lower port-oriented second-placement route to address scarce wheat.",
+        "rationale": "The narrator chooses 6-9-3 and keeps two second-placement families open instead of committing to the upper route immediately.",
+        "tradeoff": "The line may be slower and depends on the remaining second-placement options.",
+        "expected_consequence": "Preserve a path toward wheat/port access without giving up the strongest available sheep and ore base."
+      },
+      "excluded_future_evidence": "All commentary at or after 150.0 seconds is excluded from this decision target; it occurred during or after the visible placement.",
+      "export_eligibility": {
+        "video_action_grounding": false,
+        "video_reasoning_seed": false,
+        "policy_sft": false,
+        "preference_pair": false
+      }
+    },
+    {
+      "decision_id": "9wtla7jz_pw_d004",
+      "audit_status": "candidate_pending_authoritative_verification",
+      "actor": "RED (OccamsSheep)",
+      "phase": "initial_placement",
+      "decision_type": "second_settlement",
+      "candidate_visible_context": "Frames appear consistent with paladyn019 (dark/grey) near 8-3-4 rather than the coarse proposal's ORANGE/9-4-11 claim; this mapping is not independently proven.",
+      "action": {
+        "settlement": "Place second settlement on 6-11-12",
+        "adjacent_resources": ["BRICK", "BRICK", "WHEAT"],
+        "settlement_action_interval_s": [233.0, 234.0],
+        "road": "Place adjoining road east/southeast along the 11/12 side toward the coast/port route",
+        "road_action_interval_s": [234.0, 235.0],
+        "visual_confirmation": "provisional_frame_interpretation"
+      },
+      "caption_conflict": "Automatic captions repeatedly contain '6 5 12'. The frame delta and starting-resource animation show 6-11-12 with two BRICK and one WHEAT. Preserve the raw ASR; do not silently replace it in quoted evidence.",
+      "reasoning_status": "Rejected for rationale training until audio-level ASR review resolves the number phrase and the rationale is re-cut strictly before 233.0 seconds.",
+      "export_eligibility": {
+        "video_action_grounding": false,
+        "video_reasoning_seed": false,
+        "policy_sft": false,
+        "preference_pair": false
+      }
+    }
+  ],
+  "unaudited_proposal_count": 12
+}

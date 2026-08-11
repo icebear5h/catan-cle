@@ -1,0 +1,7 @@
+{
+ "artifact": "demo_trace.json + demo_decision_packet.json",
+ "status": "INVALID_actor_misattribution",
+ "training_eligible": false,
+ "reason": "The packet framed bootymunchr (color 5) corner-26 placement as the narrator decision. User correction + transcript evidence show the narrator is FunDipDevRip (color 2): verbal commit \"I think it's 8 4 10\" [58.8] matches his wall-94 settlement 8-BRICK/4-SHEEP/10-WOOD; \"6 9 3 smart... stream sniping\" [186.4] is observer commentary about bootymunchr. All quotes were real and the cutoff passed, yet supervision was wrong-actor: gates lacked an actor-attribution check.",
+ "corrected_by": "demo2_decision_packet.json / demo2_trace.json"
+}

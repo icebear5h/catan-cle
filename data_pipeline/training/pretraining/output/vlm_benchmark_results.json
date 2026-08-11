@@ -1,0 +1,122 @@
+{
+  "screenshot": "latest.png",
+  "prompt": "tile_reading",
+  "system_prompt": "You are a visual analyzer for a Settlers of Catan board game screenshot.\n\nRules:\n- ONLY describe what you can literally see in the image.\n- If you cannot read a number or color clearly, say \"unclear\" instead of guessing.\n- Do not use any prior knowledge about Catan boards to fill in gaps.\n- Do not describe what a Catan board \"typically\" looks like.\n- Be specific: use exact numbers, exact colors, exact positions.\n- If you are unsure about something, skip it entirely.",
+  "results": {
+    "gemma3-12b-free": {
+      "response": "ore 6\nwood 3\nsheep 10\nwheat 10\nore 11\ndesert \nsheep 5\nwood 10\nore 2\nbrick 4\nsheep 9\nwood 3\nwheat 12\nsheep 8\nbrick 5\nwood 6\nore 9",
+      "latency_ms": 4103,
+      "model": "google/gemma-3-12b-it:free",
+      "usage": {
+        "prompt_tokens": 433,
+        "completion_tokens": 0,
+        "total_tokens": 433,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    },
+    "nemotron-12b-free": {
+      "response": "",
+      "latency_ms": 62070,
+      "model": "nvidia/nemotron-nano-12b-v2-vl:free",
+      "usage": {
+        "prompt_tokens": 948,
+        "completion_tokens": 4096,
+        "total_tokens": 5044,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 3395,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    },
+    "qwen3-vl-8b": {
+      "response": "wood 6\nbrick 11\nsheep 4\nwood 3\nsheep 11\nwheat 10\nore 10\nsheep 2\nwheat 5\nore 8\nwood 4\nwheat 12\nwood 9\nore 5\nwood 8\nwood 9\nore 6\nsheep 3\nwood 3\nsheep 3\nwood 3\nsheep 3\nwood 3\nsheep 3\nwood 3\nsheep 3\nwood 3\nsheep 3\nwood 3\nsheep 3\nwood 3\nsheep 3\nwood 3\nsheep 3\nwood 3\nsheep 3\nwood 3\nsheep 3\nwood 3\nsheep 3\nwood 3\nsheep 3\nwood 3\nsheep 3\nwood 3\nsheep 3\nwood 3\nsheep 3\nwood 3\nsheep 3\nwood 3\nsheep 3\nwood 3\nsheep",
+      "latency_ms": 2769,
+      "model": "qwen/qwen3-vl-8b-instruct",
+      "usage": {
+        "prompt_tokens": 309,
+        "completion_tokens": 243,
+        "total_tokens": 552,
+        "cost": 0.000146718,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.00022572,
+          "upstream_inference_prompt_cost": 5.562e-05,
+          "upstream_inference_completions_cost": 0.0001701
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    },
+    "qwen3-vl-32b": {
+      "response": "wood 6  \nbrick 11  \nsheep 4  \nore 9  \nwheat 3  \ndesert 11  \nsheep 10  \nore 10  \nwheat 2  \nbrick 3  \nsheep 8  \nwheat 5  \nore 8  \nwood 4  \nbrick 9  \nwood 6  \nwheat 12",
+      "latency_ms": 2353,
+      "model": "qwen/qwen3-vl-32b-instruct",
+      "usage": {
+        "prompt_tokens": 309,
+        "completion_tokens": 81,
+        "total_tokens": 390,
+        "cost": 6.5832e-05,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.00010128,
+          "upstream_inference_prompt_cost": 4.944e-05,
+          "upstream_inference_completions_cost": 5.184e-05
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      }
+    },
+    "glm-4.1v": {
+      "error": "Empty response (container may be cold starting)"
+    }
+  }
+}

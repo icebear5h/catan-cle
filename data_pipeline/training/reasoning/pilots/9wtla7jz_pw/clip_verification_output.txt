@@ -1,0 +1,14 @@
+{
+  "schema": "grounded-video-clip-verification/v0-pilot",
+  "clip": {"absolute_start_s": 120.0, "absolute_end_s": 245.0, "resolution": "854x480"},
+  "proposal_verdicts": [
+    {"decision_id": "9wtla7jz_pw_d003", "verdict": "correct", "corrections": [
+      "Caption quotes were truncated/misaligned; corrected to exact caption text with proper boundaries.",
+      "The proposal's visual_evidence claims 'Empty board; red about to place first settlement' and that the settlement appears 'in subsequent frames' — this is FALSE. The red settlement at the 6-9-3 intersection is already visible from the very first frame (video 0.2s / absolute 120.2s). It was placed before this clip began.",
+      "The actual placement ACTION occurs at video ~32-33s (absolute ~152-153s): the log shows 'OccamsSheep placed a Settlement' then 'OccamsSheep placed a Road' and a red road appears extending left from the 6-9-3 settlement toward the coast.",
+      "The decision_type 'first_settlement_commit' is misleading — the settlement was already committed; what happens in-clip is the road placement and the verbal reasoning about the second settlement.",
+      "The actor is 'OccamsSheep' (red), confirmed by the log entries 'OccamsSheep placed a Settlement' and 'OccamsSheep placed a Road'."
+    ]},
+    {"decision_id": "9wtla7jz_pw_d004", "verdict": "correct", "corrections": [
+      "Caption quotes were truncated; corrected to exact caption text.",
+      "The proposal claims 'Orange occupied the 9-4-11 region' as a state fact — this is INCORRECT. Looking at the board, the orange player (felipefi) has a settlement at the bottom (near 4-10-8 area with orange road going up). The opponent who 'makes it more difficult' is paladyn019 (grey/dark), who places a settlement at the 8-3-4 area (upper right) around video 64s (absolute ~184s), visible as a grey settlement appearing near the 8 hex. The '

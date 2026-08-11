@@ -1,0 +1,23 @@
+{
+  "atlas_prompt": true,
+  "bench_dir": "data_pipeline/benchmarks/catanbench_100",
+  "categories": [
+    "robber_tile",
+    "tile_resource_number",
+    "node_occupancy",
+    "edge_road_owner",
+    "port_type_nodes",
+    "longest_road_holder"
+  ],
+  "limit_samples": 1,
+  "models": {
+    "gemma4-26b-a4b-free": "google/gemma-4-26b-a4b-it:free",
+    "gemma4-31b-free": "google/gemma-4-31b-it:free",
+    "llama-3.2-11b": "meta-llama/llama-3.2-11b-vision-instruct",
+    "mistral-small-3.2-24b": "mistralai/mistral-small-3.2-24b-instruct",
+    "qwen3-vl-8b-thinking": "qwen/qwen3-vl-8b-thinking"
+  },
+  "output_dir": "data_pipeline/benchmarks/catanbench_100/openrouter_eval/20260513T200941Z",
+  "question_count": 6,
+  "questions_per_sample": 6
+}

@@ -1,0 +1,703 @@
+[
+  {
+    "schema": "grounded-video-decisions/v0-pilot",
+    "video": {
+      "video_id": "9wtla7jz_pw",
+      "url": "https://www.youtube.com/watch?v=9wtla7jz_pw",
+      "title": "Catan Pro Plays Coordinated Ore Brick Setup In Ranked",
+      "channel": "DandyDrew",
+      "duration_s": 1482.36
+    },
+    "video_summary": "DandyDrew (playing as OccamsSheep) evaluates a low-wheat Catan board from the third position. He selects a initial placement setup focusing on double ore and double sheep (placing on 6-9-3 and 6-5-12 down), aiming to expand towards the 9-12 wheat/wood intersection. Despite early competition and strong initial expansion from Blue (felipeft), Drew navigates mid-game robber placements, leverages a well-timed Monopoly card, and secures the win with high 6-roll production and road building.",
+    "game_intervals": [
+      {
+        "game_index": 1,
+        "start_s": 0.0,
+        "end_s": 1410.0,
+        "outcome": "win",
+        "evidence": "Victory screen appears at 23:10 showing OccamsSheep with 10 victory points."
+      }
+    ],
+    "decisions": [
+      {
+        "decision_id": "9wtla7jz_pw_d001",
+        "start_s": 22.0,
+        "decision_s": 137.0,
+        "end_s": 150.0,
+        "actor": "OccamsSheep",
+        "phase": "initial_placement",
+        "decision_type": "settlement_placement",
+        "transcript_evidence": [
+          {
+            "start_s": 105.96,
+            "end_s": 109.64,
+            "quote": "which might be like that 6 3 4 I was talking about.",
+            "role": "pre_action_reasoning"
+          },
+          {
+            "start_s": 135.32,
+            "end_s": 139.6,
+            "quote": "You know what? I might go with the 693 here.",
+            "role": "pre_action_reasoning"
+          },
+          {
+            "start_s": 150.44,
+            "end_s": 155.92,
+            "quote": "It's not an ideal situation, but we would have the best sheep and ore.",
+            "role": "post_hoc_reflection"
+          }
+        ],
+        "visual_evidence": {
+          "pre_action": "Board shows initial setup phase with 3rd settlement placement for player OccamsSheep.",
+          "action": "Player clicks on the 6-9-3 intersection tile to place their settlement.",
+          "post_action": "Settlement and road appear on the 6-9-3 node."
+        },
+        "state_facts": [
+          "Player is in 3rd position in initial settlement placement.",
+          "Wheat production is scarce at the bottom of the board."
+        ],
+        "beliefs_or_inferences": [
+          "Speaker believes 6-9-3 combined with another spot guarantees superior ore and sheep coverage."
+        ],
+        "alternatives": [
+          {
+            "action": "6-4-3 node",
+            "assessment": "Considered for wood port potential, but deemed riskier depending on opponents' picks.",
+            "evidence_type": "explicit"
+          },
+          {
+            "action": "6-5-12 node",
+            "assessment": "Considered as a candidate first pick or second pick for downwards expansion.",
+            "evidence_type": "explicit"
+          }
+        ],
+        "chosen_action": {
+          "action": "Place initial settlement on 6-9-3",
+          "visual_confirmation": "confirmed"
+        },
+        "reasoning_script": {
+          "goal": "Secure heavy ore/sheep production while keeping flexibility for either 6-5-12 or 6-4-3 on the wrap.",
+          "rationale": "6-9-3 grants strong baseline production and sets up complementary second settlement options.",
+          "tradeoff": "Leaves wheat open for other players at the bottom of the board.",
+          "expected_consequence": "Allows player to get top ore/sheep and solve wheat via ports or 6-5-12 expansion later."
+        },
+        "post_hoc_commentary": [
+          "Not ideal, but gives best sheep and ore on the board."
+        ],
+        "uncertainties": [
+          "Uncertain where fourth player will place."
+        ],
+        "confidence": {
+          "temporal_alignment": 0.95,
+          "visual_grounding": 0.95,
+          "action_identification": 0.95,
+          "reasoning_faithfulness": 0.95
+        }
+      },
+      {
+        "decision_id": "9wtla7jz_pw_d002",
+        "start_s": 216.0,
+        "decision_s": 228.0,
+        "end_s": 235.0,
+        "actor": "OccamsSheep",
+        "phase": "initial_placement",
+        "decision_type": "settlement_placement",
+        "transcript_evidence": [
+          {
+            "start_s": 216.36,
+            "end_s": 221.88,
+            "quote": "I guess the 6512 is better.",
+            "role": "pre_action_reasoning"
+          },
+          {
+            "start_s": 220.36,
+            "end_s": 224.8,
+            "quote": "The idea is maybe we can road road to 912 and work that angle instead cuz there's already a ton of wood.",
+            "role": "pre_action_reasoning"
+          }
+        ],
+        "visual_evidence": {
+          "pre_action": "4th player placed settlements, snake draft returns to OccamsSheep.",
+          "action": "OccamsSheep places second settlement on 6-5-12 with road pointing down towards 9-12.",
+          "post_action": "Blue settlement and road visible on 6-5-12."
+        },
+        "state_facts": [
+          "6-5-12 intersection gives access to ore/sheep/brick and faces towards 9-12 wheat hex."
+        ],
+        "beliefs_or_inferences": [
+          "Speaker infers that expanding via road-road to 9-12 will solve wheat issues."
+        ],
+        "alternatives": [
+          {
+            "action": "6-4-11 node",
+            "assessment": "Considered, but would squeeze player against opponent's prospective path.",
+            "evidence_type": "explicit"
+          }
+        ],
+        "chosen_action": {
+          "action": "Place second settlement on 6-5-12 pointing down",
+          "visual_confirmation": "confirmed"
+        },
+        "reasoning_script": {
+          "goal": "Gain route access to 9-12 wheat/wood.",
+          "rationale": "6-5-12 gives a direct path to 9-12, solving wheat deficiency.",
+          "tradeoff": "Slow start without starting wheat on hand.",
+          "expected_consequence": "Player can trade wood/brick to reach 9-12 early."
+        },
+        "post_hoc_commentary": [
+          "Risky play, but 9-12 solves a lot of issues."
+        ],
+        "uncertainties": [
+          "Whether opponents will block path to 9-12."
+        ],
+        "confidence": {
+          "temporal_alignment": 0.95,
+          "visual_grounding": 0.95,
+          "action_identification": 0.95,
+          "reasoning_faithfulness": 0.95
+        }
+      },
+      {
+        "decision_id": "9wtla7jz_pw_d003",
+        "start_s": 464.0,
+        "decision_s": 494.0,
+        "end_s": 501.0,
+        "actor": "OccamsSheep",
+        "phase": "robber",
+        "decision_type": "robber_placement",
+        "transcript_evidence": [
+          {
+            "start_s": 464.12,
+            "end_s": 467.44,
+            "quote": "Maybe we block the nine now.",
+            "role": "pre_action_reasoning"
+          }
+        ],
+        "visual_evidence": {
+          "pre_action": "OccamsSheep rolled a 7 at 08:14 (04:54 video time).",
+          "action": "Player places robber on tile 9 (wheat) and steals from Blue.",
+          "post_action": "Robber icon located on 9 wheat hex."
+        },
+        "state_facts": [
+          "Blue has built an early city and is leading in production."
+        ],
+        "beliefs_or_inferences": [
+          "Blue is the runaway leader and primary threat."
+        ],
+        "alternatives": [
+          {
+            "action": "Block 6 ore hex",
+            "assessment": "Considered blocking production hexes of other players.",
+            "evidence_type": "inferred"
+          }
+        ],
+        "chosen_action": {
+          "action": "Place robber on 9 wheat hex and steal from Blue",
+          "visual_confirmation": "confirmed"
+        },
+        "reasoning_script": {
+          "goal": "Slow down leader's resource engine.",
+          "rationale": "Blue's double wheat on the 9 is generating massive card volume.",
+          "tradeoff": "Does not gain immediate brick needed for own expansion.",
+          "expected_consequence": "Reduces Blue's wheat generation."
+        },
+        "post_hoc_commentary": [],
+        "uncertainties": [
+          "Exact card stolen from Blue."
+        ],
+        "confidence": {
+          "temporal_alignment": 0.9,
+          "visual_grounding": 0.95,
+          "action_identification": 0.95,
+          "reasoning_faithfulness": 0.9
+        }
+      },
+      {
+        "decision_id": "9wtla7jz_pw_d004",
+        "start_s": 660.0,
+        "decision_s": 673.0,
+        "end_s": 690.0,
+        "actor": "OccamsSheep",
+        "phase": "main_game",
+        "decision_type": "dev_card_play",
+        "transcript_evidence": [
+          {
+            "start_s": 660.96,
+            "end_s": 665.44,
+            "quote": "We absolutely need to get to the spot. Pop a dev as well.",
+            "role": "pre_action_reasoning"
+          },
+          {
+            "start_s": 674.2,
+            "end_s": 678.32,
+            "quote": "Probably the five at this point. We really need the nine.",
+            "role": "pre_action_reasoning"
+          }
+        ],
+        "visual_evidence": {
+          "pre_action": "Player has a Knight dev card in hand and built road towards 9-12.",
+          "action": "Player plays Knight card, moves robber to 5 ore hex, steals from Blue.",
+          "post_action": "Robber placed on 5 ore, Blue card stolen."
+        },
+        "state_facts": [
+          "Player needs to secure settlement spot on 9-12 and keep Blue suppressed."
+        ],
+        "beliefs_or_inferences": [
+          "Blocking Blue's 5 ore reduces Blue's dev card buying ability."
+        ],
+        "alternatives": [
+          {
+            "action": "Hold knight card",
+            "assessment": "Holding leaves player vulnerable to robber blocks on own 9/6 hexes.",
+            "evidence_type": "inferred"
+          }
+        ],
+        "chosen_action": {
+          "action": "Play Knight card, place robber on 5 ore, steal from Blue",
+          "visual_confirmation": "confirmed"
+        },
+        "reasoning_script": {
+          "goal": "Unblock needed hexes and target main competitor's ore supply.",
+          "rationale": "5 ore hex gives Blue critical dev card/city resources.",
+          "tradeoff": "Expends Knight card before army race fully materializes.",
+          "expected_consequence": "Protects own production while stealing from lead player."
+        },
+        "post_hoc_commentary": [
+          "Big block."
+        ],
+        "uncertainties": [
+          "Which resource card is stolen."
+        ],
+        "confidence": {
+          "temporal_alignment": 0.95,
+          "visual_grounding": 0.95,
+          "action_identification": 0.95,
+          "reasoning_faithfulness": 0.95
+        }
+      },
+      {
+        "decision_id": "9wtla7jz_pw_d005",
+        "start_s": 831.0,
+        "decision_s": 838.0,
+        "end_s": 845.0,
+        "actor": "OccamsSheep",
+        "phase": "main_game",
+        "decision_type": "dev_card_play",
+        "transcript_evidence": [
+          {
+            "start_s": 831.8,
+            "end_s": 835.2,
+            "quote": "we're going to play a road building here.",
+            "role": "pre_action_reasoning"
+          },
+          {
+            "start_s": 839.48,
+            "end_s": 841.84,
+            "quote": "We're going to open up two settle spots.",
+            "role": "pre_action_reasoning"
+          }
+        ],
+        "visual_evidence": {
+          "pre_action": "Player holds Road Building dev card in UI.",
+          "action": "Player plays Road Building card and places two roads towards open coastal nodes.",
+          "post_action": "Two green roads placed, extending towards settlement locations."
+        },
+        "state_facts": [
+          "Player has Road Building development card available."
+        ],
+        "beliefs_or_inferences": [
+          "Opening two potential settlement locations increases strategic options against opponent expansion."
+        ],
+        "alternatives": [
+          {
+            "action": "Save Road Building card",
+            "assessment": "Saving risks getting blocked or losing route priority.",
+            "evidence_type": "inferred"
+          }
+        ],
+        "chosen_action": {
+          "action": "Play Road Building card to place two roads",
+          "visual_confirmation": "confirmed"
+        },
+        "reasoning_script": {
+          "goal": "Secure future expansion nodes quickly.",
+          "rationale": "Road Building instantly connects player to viable coastal settlement spots without using raw resources.",
+          "tradeoff": "Consumes valuable dev card.",
+          "expected_consequence": "Secures path to key settlement nodes."
+        },
+        "post_hoc_commentary": [],
+        "uncertainties": [
+          "None."
+        ],
+        "confidence": {
+          "temporal_alignment": 0.95,
+          "visual_grounding": 0.95,
+          "action_identification": 0.95,
+          "reasoning_faithfulness": 0.95
+        }
+      },
+      {
+        "decision_id": "9wtla7jz_pw_d006",
+        "start_s": 888.0,
+        "decision_s": 896.0,
+        "end_s": 912.0,
+        "actor": "OccamsSheep",
+        "phase": "main_game",
+        "decision_type": "dev_card_play",
+        "transcript_evidence": [
+          {
+            "start_s": 892.68,
+            "end_s": 896.04,
+            "quote": "Think we have to take the ore here.",
+            "role": "pre_action_reasoning"
+          },
+          {
+            "start_s": 906.8,
+            "end_s": 910.36,
+            "quote": "And then um that actually rips a lot of the ore and then the nine becomes a double.",
+            "role": "post_hoc_reflection"
+          }
+        ],
+        "visual_evidence": {
+          "pre_action": "Player has Monopoly card in development card menu.",
+          "action": "Player plays Monopoly card and selects Ore.",
+          "post_action": "Player collects multiple ore cards from opponents."
+        },
+        "state_facts": [
+          "Multiple opponents have been collecting ore from recent rolls."
+        ],
+        "beliefs_or_inferences": [
+          "Opponents hold substantial ore in hand, making Monopoly on ore high yield."
+        ],
+        "alternatives": [
+          {
+            "action": "Monopoly on Wheat",
+            "assessment": "Wheat was less heavily produced across table compared to recent ore rolls.",
+            "evidence_type": "inferred"
+          }
+        ],
+        "chosen_action": {
+          "action": "Play Monopoly card calling Ore",
+          "visual_confirmation": "confirmed"
+        },
+        "reasoning_script": {
+          "goal": "Drain opponents of ore while fueling player's own city/dev card purchases.",
+          "rationale": "Ore is heavily held across the table after recent rolls; monopolizing it yields maximum cards.",
+          "tradeoff": "Consumes Monopoly card.",
+          "expected_consequence": "Gains massive ore stash for immediate city build or dev cards."
+        },
+        "post_hoc_commentary": [
+          "Rips a lot of ore, making the nine hex a huge double setup."
+        ],
+        "uncertainties": [
+          "Exact count of ore held in opponents' hidden hands."
+        ],
+        "confidence": {
+          "temporal_alignment": 0.95,
+          "visual_grounding": 0.95,
+          "action_identification": 0.95,
+          "reasoning_faithfulness": 0.95
+        }
+      },
+      {
+        "decision_id": "9wtla7jz_pw_d007",
+        "start_s": 1007.0,
+        "decision_s": 1011.0,
+        "end_s": 1018.0,
+        "actor": "OccamsSheep",
+        "phase": "main_game",
+        "decision_type": "bank_trade",
+        "transcript_evidence": [
+          {
+            "start_s": 1007.52,
+            "end_s": 1011.2,
+            "quote": "I'm actually going to port for the wood here.",
+            "role": "pre_action_reasoning"
+          },
+          {
+            "start_s": 1011.2,
+            "end_s": 1015.64,
+            "quote": "I think the idea is we just need to set up a a nine play.",
+            "role": "pre_action_reasoning"
+          }
+        ],
+        "visual_evidence": {
+          "pre_action": "Player has excess cards in bank trade interface.",
+          "action": "Player performs bank port trade to acquire Wood.",
+          "post_action": "Wood card enters player hand."
+        },
+        "state_facts": [
+          "Player has port access or 4:1 bank trade available."
+        ],
+        "beliefs_or_inferences": [
+          "Trading for wood sets up settlement placement on 9-12."
+        ],
+        "alternatives": [
+          {
+            "action": "Hold resources for development card",
+            "assessment": "Settling on 9-12 is higher strategic priority than buying another dev card.",
+            "evidence_type": "inferred"
+          }
+        ],
+        "chosen_action": {
+          "action": "Port resources for 1 Wood card",
+          "visual_confirmation": "confirmed"
+        },
+        "reasoning_script": {
+          "goal": "Obtain wood required to complete settlement build on 9-12.",
+          "rationale": "9-12 settlement completes wheat access.",
+          "tradeoff": "Loss of 3 or 4 resources for 1 wood.",
+          "expected_consequence": "Enables settlement placement on 9-12."
+        },
+        "post_hoc_commentary": [],
+        "uncertainties": [
+          "None."
+        ],
+        "confidence": {
+          "temporal_alignment": 0.9,
+          "visual_grounding": 0.9,
+          "action_identification": 0.95,
+          "reasoning_faithfulness": 0.9
+        }
+      },
+      {
+        "decision_id": "9wtla7jz_pw_d008",
+        "start_s": 1101.0,
+        "decision_s": 1103.0,
+        "end_s": 1106.0,
+        "actor": "OccamsSheep",
+        "phase": "main_game",
+        "decision_type": "dev_card_play",
+        "transcript_evidence": [
+          {
+            "start_s": 1101.0,
+            "end_s": 1103.0,
+            "quote": "Year of Plenty: Select any 2 resources from the bank.",
+            "role": "action_narration"
+          }
+        ],
+        "visual_evidence": {
+          "pre_action": "Player opens dev card menu showing Year of Plenty card.",
+          "action": "Player activates Year of Plenty card and selects resources.",
+          "post_action": "Two resources added to player hand."
+        },
+        "state_facts": [
+          "Player possesses a Year of Plenty development card."
+        ],
+        "beliefs_or_inferences": [
+          "Using Year of Plenty immediately fills resource deficit for building."
+        ],
+        "alternatives": [
+          {
+            "action": "Save Year of Plenty card",
+            "assessment": "Holding delays immediate expansion/city construction.",
+            "evidence_type": "inferred"
+          }
+        ],
+        "chosen_action": {
+          "action": "Play Year of Plenty development card for 2 resources",
+          "visual_confirmation": "confirmed"
+        },
+        "reasoning_script": {
+          "goal": "Instantly bridge resource gap for immediate structure placement.",
+          "rationale": "Guarantees exact missing resources without trading.",
+          "tradeoff": "Consumes Year of Plenty card.",
+          "expected_consequence": "Allows immediate build on turn."
+        },
+        "post_hoc_commentary": [],
+        "uncertainties": [
+          "Exact pair chosen if UI overlays quickly."
+        ],
+        "confidence": {
+          "temporal_alignment": 0.95,
+          "visual_grounding": 0.95,
+          "action_identification": 0.95,
+          "reasoning_faithfulness": 0.9
+        }
+      },
+      {
+        "decision_id": "9wtla7jz_pw_d009",
+        "start_s": 1128.0,
+        "decision_s": 1131.0,
+        "end_s": 1137.0,
+        "actor": "OccamsSheep",
+        "phase": "robber",
+        "decision_type": "robber_placement",
+        "transcript_evidence": [
+          {
+            "start_s": 1128.0,
+            "end_s": 1131.0,
+            "quote": "Knight: Place the Robber anywhere on the map...",
+            "role": "action_narration"
+          }
+        ],
+        "visual_evidence": {
+          "pre_action": "Knight card selected in UI.",
+          "action": "Player plays Knight card, moves robber to 6 tile, steals from Black (Badjeje67).",
+          "post_action": "Robber placed on 6 tile, Black card stolen."
+        },
+        "state_facts": [
+          "Player has played 3+ Knight cards total during game.",
+          "Black is building key infrastructure rapidly."
+        ],
+        "beliefs_or_inferences": [
+          "Black holds desirable resources (wood/brick) for player's needs."
+        ],
+        "alternatives": [
+          {
+            "action": "Target Blue on 5 ore",
+            "assessment": "Blue was targeted earlier, but Black has become a stronger threat/resource source.",
+            "evidence_type": "inferred"
+          }
+        ],
+        "chosen_action": {
+          "action": "Play Knight, place robber on 6 hex, steal from Black",
+          "visual_confirmation": "confirmed"
+        },
+        "reasoning_script": {
+          "goal": "Steal wood/brick from Black to build roads/settlements while maintaining Knight play rate.",
+          "rationale": "Black has strong production on the 6 and holds key build resources.",
+          "tradeoff": "Leaves Blue unblocked momentarily.",
+          "expected_consequence": "Acquires resource card from Black."
+        },
+        "post_hoc_commentary": [
+          "Snagged wood from Black."
+        ],
+        "uncertainties": [
+          "Exact stolen card."
+        ],
+        "confidence": {
+          "temporal_alignment": 0.95,
+          "visual_grounding": 0.95,
+          "action_identification": 0.95,
+          "reasoning_faithfulness": 0.9
+        }
+      },
+      {
+        "decision_id": "9wtla7jz_pw_d010",
+        "start_s": 1351.0,
+        "decision_s": 1353.0,
+        "end_s": 1358.0,
+        "actor": "OccamsSheep",
+        "phase": "robber",
+        "decision_type": "robber_placement",
+        "transcript_evidence": [
+          {
+            "start_s": 1339.8,
+            "end_s": 1343.52,
+            "quote": "Do I put it on the eight here?",
+            "role": "pre_action_reasoning"
+          },
+          {
+            "start_s": 1356.04,
+            "end_s": 1359.16,
+            "quote": "Maybe I should have just dropped the road there.",
+            "role": "post_hoc_reflection"
+          }
+        ],
+        "visual_evidence": {
+          "pre_action": "Player plays Knight card before rolling.",
+          "action": "Player moves robber to 8 ore tile and steals card.",
+          "post_action": "Robber situated on 8 tile."
+        },
+        "state_facts": [
+          "Player is near victory points total required to win."
+        ],
+        "beliefs_or_inferences": [
+          "Blocking 8 ore stops opponent from buying defensive development cards."
+        ],
+        "alternatives": [
+          {
+            "action": "Place robber on 5 or 6 hex",
+            "assessment": "8 hex blocks highest-yield ore production tile on board.",
+            "evidence_type": "explicit"
+          }
+        ],
+        "chosen_action": {
+          "action": "Play Knight card, place robber on 8 ore tile",
+          "visual_confirmation": "confirmed"
+        },
+        "reasoning_script": {
+          "goal": "Lock down key production to prevent opponent counter-play on final turns.",
+          "rationale": "The 8 hex is opponent's primary engine tile.",
+          "tradeoff": "Expends final Knight card.",
+          "expected_consequence": "Denies high-probability ore roll to opponents."
+        },
+        "post_hoc_commentary": [
+          "Reflects whether road placement was better, but secures safety."
+        ],
+        "uncertainties": [
+          "None."
+        ],
+        "confidence": {
+          "temporal_alignment": 0.95,
+          "visual_grounding": 0.95,
+          "action_identification": 0.95,
+          "reasoning_faithfulness": 0.9
+        }
+      },
+      {
+        "decision_id": "9wtla7jz_pw_d011",
+        "start_s": 1387.0,
+        "decision_s": 1391.0,
+        "end_s": 1410.0,
+        "actor": "OccamsSheep",
+        "phase": "endgame",
+        "decision_type": "build_structure",
+        "transcript_evidence": [
+          {
+            "start_s": 1289.2,
+            "end_s": 1295.16,
+            "quote": "Six is the win. That's the win, folks.",
+            "role": "action_narration"
+          },
+          {
+            "start_s": 1387.68,
+            "end_s": 1392.12,
+            "quote": "Thank goodness. Oh my goodness.",
+            "role": "post_hoc_reflection"
+          }
+        ],
+        "visual_evidence": {
+          "pre_action": "Player rolls a 6, gaining resources needed for 10th victory point.",
+          "action": "Player builds winning city/settlement.",
+          "post_action": "Victory screen pops up displaying 10 VPs and 'Victory!!!'."
+        },
+        "state_facts": [
+          "Player reaches 10 VPs after building structure."
+        ],
+        "beliefs_or_inferences": [
+          "Building final structure ends game immediately in victory."
+        ],
+        "alternatives": [],
+        "chosen_action": {
+          "action": "Build final structure to reach 10 Victory Points and win game",
+          "visual_confirmation": "confirmed"
+        },
+        "reasoning_script": {
+          "goal": "Win the game.",
+          "rationale": "Player has required resources after 6 roll to reach 10 VPs.",
+          "tradeoff": "None.",
+          "expected_consequence": "Immediate game win."
+        },
+        "post_hoc_commentary": [
+          "Relieved that the tough streak of games ended with a well-paced win."
+        ],
+        "uncertainties": [
+          "None."
+        ],
+        "confidence": {
+          "temporal_alignment": 0.95,
+          "visual_grounding": 0.95,
+          "action_identification": 0.95,
+          "reasoning_faithfulness": 0.95
+        }
+      }
+    ],
+    "rejected_candidate_notes": [
+      "Routine 2:1 and 4:1 bank trades were excluded unless directly tied to strategic milestones (e.g. 9-12 settlement).",
+      "Standard turn dice rolls without decision-making were excluded.",
+      "Post-game stats review screens (23:16-24:39) were excluded as no game-active decisions occur there."
+    ]
+  }
+]

@@ -1,0 +1,157 @@
+[
+  {
+    "game_id": "193538901",
+    "username": "88ym88",
+    "player_color": 4,
+    "mode": null,
+    "split": "train",
+    "step_plans": {
+      "early_mid": {
+        "fractions": {
+          "early": [
+            0.08,
+            0.18,
+            0.28
+          ],
+          "mid": [
+            0.38,
+            0.5
+          ]
+        }
+      },
+      "late_hard": {
+        "fractions": {
+          "late_hard": [
+            0.62,
+            0.74,
+            0.86
+          ]
+        }
+      }
+    }
+  },
+  {
+    "game_id": "194134632",
+    "username": "Reidy",
+    "player_color": 3,
+    "mode": null,
+    "split": "train",
+    "step_plans": {
+      "early_mid": {
+        "fractions": {
+          "early": [
+            0.08,
+            0.18,
+            0.28
+          ],
+          "mid": [
+            0.38,
+            0.5
+          ]
+        }
+      },
+      "late_hard": {
+        "fractions": {
+          "late_hard": [
+            0.62,
+            0.74,
+            0.86
+          ]
+        }
+      }
+    }
+  },
+  {
+    "game_id": "191010650",
+    "username": "juliusV",
+    "player_color": 1,
+    "mode": null,
+    "split": "train",
+    "step_plans": {
+      "early_mid": {
+        "fractions": {
+          "early": [
+            0.08,
+            0.18,
+            0.28
+          ],
+          "mid": [
+            0.38,
+            0.5
+          ]
+        }
+      },
+      "late_hard": {
+        "fractions": {
+          "late_hard": [
+            0.62,
+            0.74,
+            0.86
+          ]
+        }
+      }
+    }
+  },
+  {
+    "game_id": "192385820",
+    "username": "Glen3464",
+    "player_color": 1,
+    "mode": null,
+    "split": "train",
+    "step_plans": {
+      "early_mid": {
+        "fractions": {
+          "early": [
+            0.08,
+            0.18,
+            0.28
+          ],
+          "mid": [
+            0.38,
+            0.5
+          ]
+        }
+      },
+      "late_hard": {
+        "fractions": {
+          "late_hard": [
+            0.62,
+            0.74,
+            0.86
+          ]
+        }
+      }
+    }
+  },
+  {
+    "game_id": "189131938",
+    "username": "Tabzz",
+    "player_color": 1,
+    "mode": null,
+    "split": "train",
+    "step_plans": {
+      "early_mid": {
+        "fractions": {
+          "early": [
+            0.08,
+            0.18,
+            0.28
+          ],
+          "mid": [
+            0.38,
+            0.5
+          ]
+        }
+      },
+      "late_hard": {
+        "fractions": {
+          "late_hard": [
+            0.62,
+            0.74,
+            0.86
+          ]
+        }
+      }
+    }
+  }
+]

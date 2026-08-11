@@ -1,0 +1,24 @@
+{
+  "schema": "catan_python_renderer_style/v0",
+  "accepted_at": "2026-05-14",
+  "source": "renderer_tuning_app_accepted_baseline",
+  "style": {
+    "city_size_factor": 0.69,
+    "city_width_factor": 1.12,
+    "city_x_offset": 0.0,
+    "city_y_factor": 0.65,
+    "coast_size_factor": 1.04,
+    "dock_extend_factor": 0.12,
+    "dock_port_gap": 12.5,
+    "dock_sand_gap": 7.0,
+    "dock_ship_clearance_factor": 0.12,
+    "dock_width": 8.5,
+    "road_length_factor": 1.02,
+    "road_width_factor": 0.81,
+    "robber_size_factor": 0.71,
+    "settlement_size_factor": 0.63,
+    "settlement_x_offset": 0.0,
+    "settlement_y_factor": 0.7,
+    "view_padding_factor": 1.2
+  }
+}

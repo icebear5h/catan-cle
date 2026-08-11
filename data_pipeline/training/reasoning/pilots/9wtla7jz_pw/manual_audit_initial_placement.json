@@ -1,0 +1,54 @@
+{
+  "schema": "grounded-video-manual-audit/v0-pilot-provisional",
+  "video_id": "9wtla7jz_pw",
+  "audit_scope": "The narrator's first and second initial settlements",
+  "auditor": "assistant manual frame interpretation",
+  "evidence_status": "Corroborating visual hypothesis only; no authoritative replay/log or independently reviewed board mapping was available.",
+  "records": [
+    {
+      "decision_id": "9wtla7jz_pw_d003",
+      "verdict": "pending_authoritative_verification",
+      "coarse_target": "Place first settlement on 6-9-3",
+      "candidate_target": {
+        "settlement": "RED places the first settlement on 6-9-3",
+        "settlement_action_interval_s": [150.0, 151.0],
+        "road": "RED places the adjoining road west/southwest toward the coast",
+        "road_action_interval_s": [152.0, 153.0]
+      },
+      "frame_evidence": [
+        "frames_first_placement/150.jpg: Place Settlement is active and the RED settlement is absent",
+        "frames_first_placement/151.jpg: the RED settlement is present and Place Road is active",
+        "frames_first_placement/152.jpg: road placement is still active",
+        "frames_first_placement/153.jpg: the RED road is present and the next player is placing"
+      ],
+      "reasoning_audit": {
+        "safe_pre_action_span_s": [133.32, 150.0],
+        "safe_summary": "The narrator chooses 6-9-3 while hoping to pair it with the lower port-oriented second placement; this preserves strong sheep/ore access while attempting to solve scarce wheat.",
+        "future_leak_in_coarse_record": "The coarse record treated commentary through 176.8 seconds as pre-action reasoning even though the settlement action begins between 150 and 151 seconds. Evidence is conservatively cut before 150.0 seconds; the caption segment spanning 147.96-153.96 overlaps the action and is excluded. Later speech is post-action planning for the second settlement and cannot supervise the first-settlement decision without an explicit post-action label."
+      }
+    },
+    {
+      "decision_id": "9wtla7jz_pw_d004",
+      "verdict": "pending_authoritative_verification",
+      "coarse_target": "Second settlement on 6-5-12, road toward 9-12 port",
+      "candidate_target": {
+        "settlement": "RED places the second settlement on 6-11-12 (two BRICK hexes and one WHEAT hex)",
+        "settlement_action_interval_s": [233.0, 234.0],
+        "road": "RED places the adjoining road east/southeast along the 11/12 side toward the coast/port route",
+        "road_action_interval_s": [234.0, 235.0]
+      },
+      "frame_evidence": [
+        "frames_initial/184.jpg: paladyn019 (dark/grey), not ORANGE, has just placed at the upper-right 8-3-4 area",
+        "frames_second_placement/233.jpg: RED's second settlement is absent and Place Settlement is active",
+        "frames_second_placement/234.jpg: the RED settlement is present on 6-11-12, two BRICK and one WHEAT starting-resource cards are visible, and Place Road is active",
+        "frames_second_placement/235.jpg: the RED road is present and the next player is placing"
+      ],
+      "reasoning_audit": {
+        "caption_conflict": "The automatic captions repeatedly render the candidate as '6 5 12', while my frame interpretation appears consistent with 6-11-12. This could be a domain-specific ASR error, but the mapping remains unproven and raw evidence must be preserved.",
+        "coarse_visual_error": "The whole-video model followed the noisy number phrase. My frame interpretation instead suggests paladyn019 (dark/grey) near 8-3-4, but neither board mapping is authoritative without independent verification.",
+        "safe_summary": "After the dark/grey opponent changes the available board, RED takes the lower 6-11-12 brick/brick/wheat spot and roads toward the port route. The exact spoken number triple requires ASR correction from visual evidence."
+      }
+    }
+  ],
+  "conclusion": "These observations are hypotheses, not proof. Whole-video outputs and assistant frame readings are both unsafe as training labels until an authoritative replay/log or independently reviewed deterministic board mapping verifies them."
+}

@@ -1,0 +1,216 @@
+{
+  "schema": "grounded-video-decisions/v0-pilot",
+  "video": {
+    "video_id": "9wtla7jz_pw",
+    "url": "https://www.youtube.com/watch?v=9wtla7jz_pw",
+    "title": "Catan Pro Plays Coordinated Ore Brick Setup In Ranked",
+    "channel": "DandyDrew",
+    "duration_s": 1482.36
+  },
+  "video_summary": "A Catan gameplay video featuring a ranked match where the player (Blue) coordinates with a teammate (Orange) to secure a dominant ore and brick production setup, ultimately winning through superior pacing and development cards.",
+  "game_intervals": [
+    {
+      "game_index": 1,
+      "start_s": 0.0,
+      "end_s": 1482.36,
+      "outcome": "win",
+      "evidence": "Victory screen at 23:11 showing Blue (OceanSheep) with 10 VP."
+    }
+  ],
+  "decisions": [
+    {
+      "decision_id": "9wtla7jz_pw_d001",
+      "start_s": 16.56,
+      "decision_s": 16.56,
+      "end_s": 176.8,
+      "actor": "Blue (OceanSheep)",
+      "phase": "initial_placement",
+      "decision_type": "initial placement route planning",
+      "transcript_evidence": [
+        {
+          "start_s": 16.56,
+          "end_s": 25.44,
+          "quote": "all the wheat is very much at the bottom of the board. So, we're probably going to see an 8 4 10 and a 5 9 10.",
+          "role": "pre_action_reasoning"
+        },
+        {
+          "start_s": 30.08,
+          "end_s": 57.28,
+          "quote": "usually when you're lacking wheat, what you want to do is you want to try to get to a port... we can take a little bit more of a interesting slower route with like the 6 5 12 down, which gives us access to get to the 9 12.",
+          "role": "pre_action_reasoning"
+        },
+        {
+          "start_s": 133.32,
+          "end_s": 176.8,
+          "quote": "I might go with the 693 here. And the idea is if I can get 6512 down, I'm pretty happy... we would have the best sheep and ore. And then um I'm thinking either 634 for the wood port play or 6512 down.",
+          "role": "pre_action_reasoning"
+        }
+      ],
+      "visual_evidence": {
+        "pre_action": "Empty board, initial placement phase. Wheat is concentrated at the bottom.",
+        "action": "Blue places settlements on 6, 9, 3, 5, 12.",
+        "post_action": "Blue has a 6-9-3-5-12 setup, aiming for 9-12 wheat and wood port."
+      },
+      "state_facts": [
+        "Wheat is at the bottom (8, 4, 10, 5, 9, 10).",
+        "Blue wants to avoid 8-4 ore/brick focus of others."
+      ],
+      "beliefs_or_inferences": [
+        "Belief: 6-5-12 down gives access to 9-12 wheat.",
+        "Belief: 6-9-3 allows for wood port via 6-3-4 or 6-5-12."
+      ],
+      "alternatives": [
+        {
+          "action": "6-4-3 up",
+          "assessment": "Considered but risky due to 8-4 target for others.",
+          "evidence_type": "explicit"
+        },
+        {
+          "action": "6-5-12 down",
+          "assessment": "Chosen for flexibility and access to 9-12.",
+          "evidence_type": "explicit"
+        }
+      ],
+      "chosen_action": {
+        "action": "Placed settlements on 6, 9, 3, 5, 12",
+        "visual_confirmation": "confirmed"
+      },
+      "reasoning_script": {
+        "goal": "Secure wheat and wood port while avoiding early 8-4 competition.",
+        "rationale": "Bottom-heavy wheat means 9-12 is valuable. 6-5-12 provides a path to 9-12 and wood port.",
+        "tradeoff": "Slower initial production compared to direct 8-4.",
+        "expected_consequence": "Long-term wheat and wood dominance."
+      },
+      "post_hoc_commentary": [],
+      "uncertainties": [],
+      "confidence": {
+        "temporal_alignment": 0.9,
+        "visual_grounding": 0.9,
+        "action_identification": 0.95,
+        "reasoning_faithfulness": 0.9
+      }
+    },
+    {
+      "decision_id": "9wtla7jz_pw_d002",
+      "start_s": 380.6,
+      "decision_s": 380.6,
+      "end_s": 395.72,
+      "actor": "Orange (Felipe)",
+      "phase": "main_game",
+      "decision_type": "robber target / threat blocking",
+      "transcript_evidence": [
+        {
+          "start_s": 380.6,
+          "end_s": 395.72,
+          "quote": "Big mistake. Massive massive massive mistake here by Orange unfortunately. He had the best opportunity to slow down his biggest competition. He he just completely failed to do it.",
+          "role": "post_hoc_reflection"
+        }
+      ],
+      "visual_evidence": {
+        "pre_action": "Orange rolls a 6. Blue has a settlement on 6.",
+        "action": "Orange places robber on 6 (Blue's settlement).",
+        "post_action": "Blue loses resources. Orange fails to block Blue's 9."
+      },
+      "state_facts": [
+        "Orange rolled a 6.",
+        "Blue has a settlement on 6.",
+        "Blue's main threat is likely the 9 or 12."
+      ],
+      "beliefs_or_inferences": [
+        "Belief: Orange missed a chance to block Blue's key production (likely 9 or 12).",
+        "Belief: Placing on 6 was a mistake because it didn't slow Blue down enough."
+      ],
+      "alternatives": [
+        {
+          "action": "Place robber on 9 or 12",
+          "assessment": "Better to slow down Blue's main production.",
+          "evidence_type": "inferred"
+        }
+      ],
+      "chosen_action": {
+        "action": "Placed robber on 6",
+        "visual_confirmation": "confirmed"
+      },
+      "reasoning_script": {
+        "goal": "Disrupt Blue's production.",
+        "rationale": "Rolled a 6, placed on Blue's 6.",
+        "tradeoff": "Failed to block Blue's higher-value numbers.",
+        "expected_consequence": "Blue still has access to 9 and 12."
+      },
+      "post_hoc_commentary": [
+        {
+          "start_s": 380.6,
+          "end_s": 395.72,
+          "quote": "Big mistake. Massive massive massive mistake here by Orange unfortunately. He had the best opportunity to slow down his biggest competition."
+        }
+      ],
+      "uncertainties": [
+        "Exact intended target of the block is not explicitly stated, but commentary implies 9/12 was better."
+      ],
+      "confidence": {
+        "temporal_alignment": 0.95,
+        "visual_grounding": 0.95,
+        "action_identification": 0.95,
+        "reasoning_faithfulness": 0.8
+      }
+    },
+    {
+      "decision_id": "9wtla7jz_pw_d003",
+      "start_s": 414.84,
+      "decision_s": 414.84,
+      "end_s": 421.8,
+      "actor": "Blue (OceanSheep)",
+      "phase": "main_game",
+      "decision_type": "robber target",
+      "transcript_evidence": [
+        {
+          "start_s": 414.84,
+          "end_s": 421.8,
+          "quote": "I'm going to do the right play even though I really wish um I didn't have to play this way.",
+          "role": "pre_action_reasoning"
+        }
+      ],
+      "visual_evidence": {
+        "pre_action": "Blue rolls a 6. Black has a settlement on 6.",
+        "action": "Blue places robber on 6 (Black's settlement).",
+        "post_action": "Black loses resources."
+      },
+      "state_facts": [
+        "Blue rolled a 6.",
+        "Black has a settlement on 6."
+      ],
+      "beliefs_or_inferences": [
+        "Belief: Placing on 6 is the 'right play' despite preferences."
+      ],
+      "alternatives": [
+        {
+          "action": "Place robber elsewhere",
+          "assessment": "Not taken, commentary implies 6 was necessary.",
+          "evidence_type": "explicit"
+        }
+      ],
+      "chosen_action": {
+        "action": "Placed robber on 6",
+        "visual_confirmation": "confirmed"
+      },
+      "reasoning_script": {
+        "goal": "Disrupt Black's production.",
+        "rationale": "Rolled a 6, placed on Black's 6.",
+        "tradeoff": "Disrupted own 6 if applicable, but commentary says 'wish I didn't have to play this way'.",
+        "expected_consequence": "Black loses resources."
+      },
+      "post_hoc_commentary": [],
+      "uncertainties": [],
+      "confidence": {
+        "temporal_alignment": 0.9,
+        "visual_grounding": 0.95,
+        "action_identification": 0.95,
+        "reasoning_faithfulness": 0.8
+      }
+    },
+    {
+      "decision_id": "9wtla7jz_pw_d004",
+      "start_s": 515.64,
+      "decision_s": 515.64,
+      "end_s": 529.2,
+      "actor": "Blue (

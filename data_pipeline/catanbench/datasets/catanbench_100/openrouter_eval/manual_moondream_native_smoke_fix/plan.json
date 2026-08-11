@@ -1,0 +1,16 @@
+{
+  "atlas_prompt": true,
+  "bench_dir": "data_pipeline/catanbench/datasets/catanbench_100",
+  "categories": [
+    "robber_tile"
+  ],
+  "limit_samples": 1,
+  "models": {
+    "moondream2": "moondream2"
+  },
+  "output_dir": "data_pipeline/catanbench/datasets/catanbench_100/openrouter_eval/manual_moondream_native_smoke_fix",
+  "question_count": 1,
+  "question_dir": "data_pipeline/catanbench/datasets/catanbench_100/questions",
+  "questions_per_sample": 1,
+  "suite": "catanbench"
+}

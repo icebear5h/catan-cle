@@ -1,0 +1,183 @@
+CATAN BASE GAME RULES - COMPLETE REFERENCE
+
+OVERVIEW
+Catan is a multiplayer board game where 3 or 4 players compete to be the first to reach 10 victory points. Players collect and trade resources to build roads, settlements, and cities on a modular hex board. The board consists of 19 terrain hexes, each producing a specific resource, surrounded by ocean frame pieces.
+
+TERRAIN TYPES AND RESOURCES
+There are five terrain types, each producing one resource:
+- Hills produce Brick
+- Forest produces Lumber (Wood)
+- Mountains produce Ore
+- Fields produce Grain (Wheat)
+- Pasture produces Wool (Sheep)
+- Desert produces nothing and starts with the Robber
+
+BOARD SETUP
+The board is composed of 19 hex tiles arranged in a specific pattern:
+- 3 Hills (Brick)
+- 4 Forest (Lumber)
+- 3 Mountains (Ore)
+- 4 Fields (Grain)
+- 4 Pasture (Wool)
+- 1 Desert (no resource)
+
+Each hex (except the desert) receives a number token from 2 to 12 (excluding 7). The frequency of each number being rolled on two dice determines its probability:
+- 2: 1/36 (1 pip)
+- 3: 2/36 (2 pips)
+- 4: 3/36 (3 pips)
+- 5: 4/36 (4 pips)
+- 6: 5/36 (5 pips)
+- 7: 6/36 (most common - activates the Robber)
+- 8: 5/36 (5 pips)
+- 9: 4/36 (4 pips)
+- 10: 3/36 (3 pips)
+- 11: 2/36 (2 pips)
+- 12: 1/36 (1 pip)
+
+The 6 and 8 are the most valuable number tokens (after 7 which triggers the robber). The total number of "pips" on a number token indicates its relative probability. The numbers 6 and 8 are typically printed in red to indicate their high probability.
+
+INITIAL PLACEMENT
+Each player places 2 settlements and 2 roads during the setup phase:
+- Player order is determined (typically by dice roll).
+- In order (1st, 2nd, 3rd, 4th), each player places one settlement and one adjacent road.
+- In reverse order (4th, 3rd, 2nd, 1st), each player places a second settlement and one adjacent road.
+- Each player collects one resource card for each hex adjacent to their SECOND settlement.
+- Settlements must be placed at intersections (vertices) where three hexes meet.
+- The Distance Rule applies: no two settlements can be on adjacent intersections. There must be at least two edges (road lengths) between any two settlements.
+
+TURN STRUCTURE
+On each turn, a player:
+1. Rolls two dice
+2. Resource production: All players with settlements or cities adjacent to hexes matching the rolled number receive resources. A settlement produces 1 resource per adjacent matching hex. A city produces 2 resources per adjacent matching hex.
+3. Trade and Build (in any order):
+   a. Trade with other players (domestic trade)
+   b. Trade with the bank (maritime trade)
+   c. Build roads, settlements, cities, or buy development cards
+
+BUILDING COSTS
+- Road: 1 Brick + 1 Lumber
+- Settlement: 1 Brick + 1 Lumber + 1 Grain + 1 Wool
+- City (upgrade from settlement): 3 Ore + 2 Grain (Wheat). A city replaces an existing settlement.
+- Development Card: 1 Ore + 1 Grain + 1 Wool
+
+BUILDING RULES
+- Roads must be built along edges connecting two intersections. A new road must connect to one of your existing roads, settlements, or cities.
+- Settlements must be placed at intersections. A new settlement must be connected to one of your existing roads and must obey the Distance Rule (at least 2 edges from any other settlement or city).
+- Cities replace existing settlements. You remove the settlement and place a city on the same intersection. Cities produce double resources (2 per adjacent hex instead of 1).
+- Building limits: Each player has 5 settlements, 4 cities, and 15 roads. When you upgrade a settlement to a city, the settlement piece returns to your supply and can be built again later.
+
+TRADING
+Domestic Trade: On your turn, you may trade resource cards with any other player. You can offer any combination and negotiate freely. Other players may NOT trade with each other, only with the player whose turn it is.
+
+Maritime Trade (Bank Trade):
+- Default: 4:1 - Trade 4 identical resource cards to the bank for 1 resource of your choice.
+- Generic Harbor (3:1): If you have a settlement or city on a 3:1 harbor, you can trade any 3 identical resources for 1 of your choice.
+- Special Harbor (2:1): If you have a settlement or city on a 2:1 harbor for a specific resource, you can trade 2 of that resource for 1 of any other resource.
+
+THE ROBBER AND ROLLING A 7
+When a 7 is rolled:
+1. Any player with more than 7 resource cards must discard half (rounded down).
+2. The player who rolled the 7 must move the Robber to a different hex.
+3. The player who moved the Robber steals 1 random resource card from any one player who has a settlement or city adjacent to the hex where the Robber was placed.
+4. While the Robber is on a hex, that hex does NOT produce resources when its number is rolled.
+
+DEVELOPMENT CARDS
+There are 25 development cards in the deck:
+- 14 Knight cards
+- 5 Victory Point cards (1 VP each: Library, Market, Great Hall, Chapel, University of Catan)
+- 2 Road Building cards
+- 2 Year of Plenty cards
+- 2 Monopoly cards
+
+Development Card Rules:
+- You may play at most 1 development card per turn (except Victory Point cards, which can be revealed at any time to win).
+- You cannot play a development card on the same turn you bought it (must wait until a subsequent turn).
+- Knight cards: Move the Robber (same as rolling a 7, steps 2-3). Played knights count toward Largest Army.
+- Road Building: Place 2 roads for free (following normal placement rules).
+- Year of Plenty: Take any 2 resource cards from the bank (can be the same or different resources).
+- Monopoly: Name 1 resource type. ALL other players must give you ALL of their cards of that resource type.
+- Victory Point cards are kept hidden and revealed only to win. They do not need to be "played."
+
+SPECIAL VICTORY POINTS
+Longest Road: The first player to build a continuous road of at least 5 segments receives the Longest Road card (worth 2 Victory Points). If another player builds a longer continuous road, they take the card. If the longest road is broken (e.g., by an opponent building a settlement in the middle), the card may transfer to another player who has the longest continuous road of at least 5. If no player has 5+ continuous road segments, the card is removed from play.
+
+Largest Army: The first player to play 3 Knight cards receives the Largest Army card (worth 2 Victory Points). If another player plays more Knight cards, they take the card.
+
+VICTORY POINTS AND WINNING
+Victory Points are earned from:
+- Each Settlement: 1 VP
+- Each City: 2 VP (replaces the 1 VP from the settlement it upgraded)
+- Longest Road: 2 VP
+- Largest Army: 2 VP
+- Victory Point development cards: 1 VP each
+
+The first player to reach 10 Victory Points on their turn wins the game. You can only win during your own turn. If you reach 10 VP on another player's turn (e.g., through resource loss causing Longest Road to shift), you must wait until your turn to claim victory.
+
+RESOURCE CARD LIMITS
+There is no hand size limit (you can hold any number of cards). However, when a 7 is rolled, anyone with more than 7 cards must discard half. This creates a strategic incentive to keep your hand at 7 or fewer cards, or to spend resources before others roll.
+
+SUPPLY LIMITS
+The resource card supply is limited:
+- 19 of each resource type (19 Brick, 19 Lumber, 19 Ore, 19 Grain, 19 Wool)
+- If the supply of a resource runs out, no one can receive that resource until cards are returned to the supply.
+
+HARBORS
+There are 9 harbor locations around the coast:
+- 4 Generic Harbors (3:1 trade ratio for any resource)
+- 5 Special Harbors (2:1 trade ratio, one for each resource type: Brick, Lumber, Ore, Grain, Wool)
+
+To use a harbor, you must have a settlement or city on one of the two intersections connected to that harbor.
+
+STRATEGIC CONCEPTS
+
+Initial Placement Strategy:
+- Prioritize intersections adjacent to high-probability numbers (6, 8, 5, 9).
+- Aim for resource diversity: you need all 5 resources to build everything.
+- The total "pip count" of an intersection is the sum of pips on all adjacent number tokens. Higher pip count = more expected resources.
+- Consider which resources are scarce on the board and position to control them.
+- Think about expansion paths: where can you build toward for your next settlement?
+- Harbors can compensate for missing resources if you over-produce one type.
+
+Resource Value and Scarcity:
+- Ore and Wheat are the most valuable resources in the mid-to-late game because they are needed for cities (3 Ore + 2 Wheat) and development cards (1 Ore + 1 Wheat + 1 Wool).
+- Brick and Lumber are most valuable early game for roads and settlements.
+- Wool is often the least contested resource, making it good for development cards.
+- Resource scarcity depends on the specific board layout. A resource with few hexes or only low-probability numbers becomes very valuable for trading.
+
+Building Strategy:
+- Early game: Focus on roads and settlements to expand and claim territory.
+- Mid game: Transition to cities for double resource production.
+- Late game: Development cards for knights (Largest Army), Victory Points, and tactical advantages.
+- A common winning formula: 2-3 cities + Largest Army or Longest Road + a few other VP.
+
+Trading Strategy:
+- Never trade resources that help an opponent win immediately.
+- Track what opponents need and avoid feeding their strategy.
+- Offer trades that benefit you more than your trading partner.
+- Use harbors to reduce dependency on other players.
+- A 2:1 harbor for a resource you overproduce is extremely powerful.
+
+Robber Strategy:
+- Place the Robber on hexes that produce the most for the leading player.
+- Target hexes with high-probability numbers (6 or 8) for maximum disruption.
+- Consider blocking resources your opponents need most.
+- Knight cards give you Robber control without needing to roll a 7.
+
+EXPANSIONS REFERENCE (BASE GAME CONTEXT)
+
+While this document focuses on the base game, here are key expansions for reference:
+- Seafarers: Adds ships (like roads on water), gold hexes, and island scenarios.
+- Cities & Knights: Adds commodities (Cloth, Coin, Paper), city improvements, knights as pieces, and the Barbarian attack mechanic. Significantly more complex.
+- Traders & Barbarians: Collection of smaller scenarios and variants.
+
+COMMON RULE MISTAKES
+- City cost is 3 Ore + 2 Wheat (NOT 2 Ore + 3 Wheat or any other combination).
+- You CAN build multiple things per turn (e.g., a road and a settlement).
+- You CANNOT play a development card the same turn you buy it.
+- You CAN play a development card before rolling the dice (e.g., play a Knight before your roll).
+- The Robber must be MOVED to a DIFFERENT hex (cannot stay in place).
+- Victory Point cards are never "played" - they are revealed when you reach 10 VP to win.
+- Longest Road requires a CONTINUOUS path of at least 5 road segments. Branches do not count; only the longest single path through your road network counts.
+- When you discard for a 7, you choose which cards to discard. You discard half your hand, rounded DOWN (e.g., 9 cards -> discard 4).
+- You cannot build a settlement at an intersection occupied by another player's settlement or city.
+- Roads can pass through intersections occupied by other players' buildings, but this BREAKS the road for Longest Road purposes.

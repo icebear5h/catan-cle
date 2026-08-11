@@ -1,0 +1,262 @@
+{
+  "generated_at": "2026-05-14T23:03:52.929013+00:00",
+  "models": {
+    "qwen3-vl-8b": {
+      "attempted": 130,
+      "avg_latency_ms": 1365.4384615384615,
+      "categories": {
+        "color_building_counts": {
+          "attempted": 10,
+          "avg_latency_ms": 1130.1,
+          "component_accuracy": 0.1,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "color_road_count": {
+          "attempted": 10,
+          "avg_latency_ms": 1419.3,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "color_road_locations": {
+          "attempted": 10,
+          "avg_latency_ms": 1870.7,
+          "component_accuracy": 0.10416666666666667,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "edge_connects_nodes": {
+          "attempted": 10,
+          "avg_latency_ms": 1192.9,
+          "component_accuracy": 0.5,
+          "errors": 0,
+          "exact_accuracy": 0.5,
+          "requests": 10
+        },
+        "edge_road_owner": {
+          "attempted": 10,
+          "avg_latency_ms": 1241.1,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "node_occupancy": {
+          "attempted": 10,
+          "avg_latency_ms": 1616.4,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "nodes_connected": {
+          "attempted": 10,
+          "avg_latency_ms": 961.4,
+          "component_accuracy": 0.5,
+          "errors": 0,
+          "exact_accuracy": 0.5,
+          "requests": 10
+        },
+        "port_occupancy": {
+          "attempted": 10,
+          "avg_latency_ms": 1207.1,
+          "component_accuracy": 0.25,
+          "errors": 0,
+          "exact_accuracy": 0.5,
+          "requests": 10
+        },
+        "port_trade_type": {
+          "attempted": 10,
+          "avg_latency_ms": 1387.8,
+          "component_accuracy": 0.5,
+          "errors": 0,
+          "exact_accuracy": 0.5,
+          "requests": 10
+        },
+        "robber_resource_number": {
+          "attempted": 10,
+          "avg_latency_ms": 1621.0,
+          "component_accuracy": 0.03333333333333333,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "robber_tile": {
+          "attempted": 10,
+          "avg_latency_ms": 1579.9,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "tile_has_robber": {
+          "attempted": 10,
+          "avg_latency_ms": 1212.9,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "tile_resource_number": {
+          "attempted": 10,
+          "avg_latency_ms": 1310.1,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        }
+      },
+      "component_accuracy": 0.13865546218487396,
+      "errors": 0,
+      "exact_accuracy": 0.15384615384615385,
+      "requests": 130
+    },
+    "qwen3.5-9b": {
+      "attempted": 130,
+      "avg_latency_ms": 1458.7230769230769,
+      "categories": {
+        "color_building_counts": {
+          "attempted": 10,
+          "avg_latency_ms": 1004.3,
+          "component_accuracy": 0.3,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "color_road_count": {
+          "attempted": 10,
+          "avg_latency_ms": 1184.9,
+          "component_accuracy": 0.3,
+          "errors": 0,
+          "exact_accuracy": 0.3,
+          "requests": 10
+        },
+        "color_road_locations": {
+          "attempted": 10,
+          "avg_latency_ms": 4219.9,
+          "component_accuracy": 0.20833333333333334,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "edge_connects_nodes": {
+          "attempted": 10,
+          "avg_latency_ms": 1056.9,
+          "component_accuracy": 0.5,
+          "errors": 0,
+          "exact_accuracy": 0.5,
+          "requests": 10
+        },
+        "edge_road_owner": {
+          "attempted": 10,
+          "avg_latency_ms": 1414.7,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "node_occupancy": {
+          "attempted": 10,
+          "avg_latency_ms": 1019.7,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "nodes_connected": {
+          "attempted": 10,
+          "avg_latency_ms": 1057.8,
+          "component_accuracy": 0.5,
+          "errors": 0,
+          "exact_accuracy": 0.5,
+          "requests": 10
+        },
+        "port_occupancy": {
+          "attempted": 10,
+          "avg_latency_ms": 1054.1,
+          "component_accuracy": 0.15,
+          "errors": 0,
+          "exact_accuracy": 0.2,
+          "requests": 10
+        },
+        "port_trade_type": {
+          "attempted": 10,
+          "avg_latency_ms": 1325.8,
+          "component_accuracy": 0.45,
+          "errors": 0,
+          "exact_accuracy": 0.4,
+          "requests": 10
+        },
+        "robber_resource_number": {
+          "attempted": 10,
+          "avg_latency_ms": 1495.8,
+          "component_accuracy": 0.13333333333333333,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "robber_tile": {
+          "attempted": 10,
+          "avg_latency_ms": 1451.0,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "tile_has_robber": {
+          "attempted": 10,
+          "avg_latency_ms": 1151.5,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "tile_resource_number": {
+          "attempted": 10,
+          "avg_latency_ms": 1527.0,
+          "component_accuracy": 0.25,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        }
+      },
+      "component_accuracy": 0.21008403361344538,
+      "errors": 0,
+      "exact_accuracy": 0.14615384615384616,
+      "requests": 130
+    }
+  },
+  "plan": {
+    "atlas_prompt": true,
+    "bench_dir": "data_pipeline/catanbench/datasets/catanbench_100",
+    "categories": [
+      "robber_tile",
+      "robber_resource_number",
+      "tile_resource_number",
+      "tile_has_robber",
+      "node_occupancy",
+      "edge_road_owner",
+      "color_road_locations",
+      "port_trade_type",
+      "port_occupancy",
+      "nodes_connected",
+      "edge_connects_nodes",
+      "color_building_counts",
+      "color_road_count"
+    ],
+    "limit_samples": 10,
+    "models": {
+      "qwen3-vl-8b": "qwen/qwen3-vl-8b-instruct",
+      "qwen3.5-9b": "qwen/qwen3.5-9b"
+    },
+    "output_dir": "data_pipeline/catanbench/datasets/catanbench_100/openrouter_eval/20260514T230048Z_qwen3_vs_qwen3.5_full_suite",
+    "question_count": 130,
+    "question_dir": "data_pipeline/catanbench/datasets/catanbench_100/questions",
+    "questions_per_sample": 13,
+    "suite": "catanbench"
+  }
+}

@@ -39,6 +39,7 @@ class GameHistoryEntry:
     result: str  # "win", "loss", "draw"
     players: List[Dict[str, Any]]
     replay_url: str
+    turn_count: Optional[int] = None
 
 
 class ColonistAPI:
@@ -178,10 +179,24 @@ class ColonistAPI:
         response.raise_for_status()
         return response.json()
 
+    async def get_user_state(self) -> Dict[str, Any]:
+        """Get authenticated user state from the current JWT cookie."""
+        response = await self.client.get("/api/user-state")
+        response.raise_for_status()
+        return response.json()
+
+    async def get_current_username(self) -> str:
+        """Get the authenticated Colonist username from /api/user-state."""
+        data = await self.get_user_state()
+        username = data.get("userState", {}).get("username")
+        if not username:
+            raise Exception("Could not resolve authenticated username from /api/user-state")
+        return username
+
     async def get_player_games(
         self,
         username: str,
-        limit: int = 50,
+        limit: Optional[int] = 50,
     ) -> List[GameHistoryEntry]:
         """
         Get a player's game history.
@@ -200,7 +215,7 @@ class ColonistAPI:
             response.raise_for_status()
             data = response.json()
             games = self._parse_games_response(data, username)
-            return games[:limit]
+            return games[:limit] if limit is not None else games
         except Exception as e:
             logger.error(f"Failed to fetch games for {username}: {e}")
             raise Exception(f"Could not fetch games for {username}: {e}")
@@ -267,6 +282,7 @@ class ColonistAPI:
                     result=result,
                     players=players,
                     replay_url=f"https://colonist.io/replay?gameId={game_id}&playerColor={player_color}",
+                    turn_count=item.get("turnCount"),
                 )
                 entries.append(entry)
             except Exception as e:

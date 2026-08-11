@@ -1,0 +1,2702 @@
+[
+  {
+    "game_id": "157348754",
+    "username": "19popscouts",
+    "player_rank": 3,
+    "player_rating": 1987,
+    "turnCount": 72,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "195220811",
+    "username": "1drpepper1",
+    "player_rank": 15,
+    "player_rating": 1915,
+    "turnCount": 71,
+    "player_color": 4,
+    "result": "win"
+  },
+  {
+    "game_id": "193379094",
+    "username": "6paths",
+    "player_rank": 60,
+    "player_rating": 1854,
+    "turnCount": 73,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "191409287",
+    "username": "88ym88",
+    "player_rank": 81,
+    "player_rating": 1842,
+    "turnCount": 70,
+    "player_color": 4,
+    "result": "win"
+  },
+  {
+    "game_id": "193899417",
+    "username": "Advik19",
+    "player_rank": 100,
+    "player_rating": 1834,
+    "turnCount": 71,
+    "player_color": 8,
+    "result": "win"
+  },
+  {
+    "game_id": "191831087",
+    "username": "AsstRgnMng",
+    "player_rank": 52,
+    "player_rating": 1862,
+    "turnCount": 75,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "187949640",
+    "username": "Avogadro",
+    "player_rank": 11,
+    "player_rating": 1922,
+    "turnCount": 74,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "192302493",
+    "username": "BagpipeBoy",
+    "player_rank": 43,
+    "player_rating": 1871,
+    "turnCount": 71,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "178964322",
+    "username": "Bludy",
+    "player_rank": 68,
+    "player_rating": 1850,
+    "turnCount": 72,
+    "player_color": 3,
+    "result": "win"
+  },
+  {
+    "game_id": "189649315",
+    "username": "Bludyrush",
+    "player_rank": 19,
+    "player_rating": 1908,
+    "turnCount": 70,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "193497471",
+    "username": "BootlessBill",
+    "player_rank": 25,
+    "player_rating": 1900,
+    "turnCount": 72,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "193299252",
+    "username": "BotTrader",
+    "player_rank": 35,
+    "player_rating": 1881,
+    "turnCount": 71,
+    "player_color": 4,
+    "result": "win"
+  },
+  {
+    "game_id": "191834170",
+    "username": "Bradyn",
+    "player_rank": 10,
+    "player_rating": 1931,
+    "turnCount": 73,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "194209320",
+    "username": "BrickedUp25",
+    "player_rank": 18,
+    "player_rating": 1910,
+    "turnCount": 70,
+    "player_color": 6,
+    "result": "loss"
+  },
+  {
+    "game_id": "191006009",
+    "username": "Cho3572",
+    "player_rank": 27,
+    "player_rating": 1900,
+    "turnCount": 73,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "187315228",
+    "username": "ChooChooMoFo",
+    "player_rank": 99,
+    "player_rating": 1835,
+    "turnCount": 73,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "193960562",
+    "username": "CrougyFarmer",
+    "player_rank": 5,
+    "player_rating": 1960,
+    "turnCount": 71,
+    "player_color": 4,
+    "result": "win"
+  },
+  {
+    "game_id": "195231359",
+    "username": "Dahminator",
+    "player_rank": 61,
+    "player_rating": 1854,
+    "turnCount": 69,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "191622286",
+    "username": "DandyDrewYT",
+    "player_rank": 2,
+    "player_rating": 1989,
+    "turnCount": 73,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "194372526",
+    "username": "Dibri4428",
+    "player_rank": 24,
+    "player_rating": 1901,
+    "turnCount": 69,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "191981351",
+    "username": "DosMonos",
+    "player_rank": 13,
+    "player_rating": 1920,
+    "turnCount": 75,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "192193520",
+    "username": "Early0135",
+    "player_rank": 83,
+    "player_rating": 1842,
+    "turnCount": 73,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "192998713",
+    "username": "EggBacnToast",
+    "player_rank": 76,
+    "player_rating": 1845,
+    "turnCount": 75,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "194560883",
+    "username": "Emblaze",
+    "player_rank": 28,
+    "player_rating": 1898,
+    "turnCount": 74,
+    "player_color": 4,
+    "result": "loss"
+  },
+  {
+    "game_id": "194198328",
+    "username": "Estell1709",
+    "player_rank": 90,
+    "player_rating": 1840,
+    "turnCount": 74,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "191493206",
+    "username": "FamousTable",
+    "player_rank": 22,
+    "player_rating": 1905,
+    "turnCount": 77,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "194050989",
+    "username": "Fanni2874",
+    "player_rank": 36,
+    "player_rating": 1881,
+    "turnCount": 72,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "189933021",
+    "username": "Fu3869",
+    "player_rank": 98,
+    "player_rating": 1836,
+    "turnCount": 74,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "191397826",
+    "username": "GG5225LMR",
+    "player_rank": 48,
+    "player_rating": 1866,
+    "turnCount": 72,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "192058835",
+    "username": "GG55",
+    "player_rank": 84,
+    "player_rating": 1842,
+    "turnCount": 73,
+    "player_color": 4,
+    "result": "win"
+  },
+  {
+    "game_id": "190066582",
+    "username": "Gingko",
+    "player_rank": 30,
+    "player_rating": 1885,
+    "turnCount": 73,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "192754858",
+    "username": "Glen3464",
+    "player_rank": 66,
+    "player_rating": 1851,
+    "turnCount": 73,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "193008240",
+    "username": "Gnormous33",
+    "player_rank": 86,
+    "player_rating": 1841,
+    "turnCount": 75,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "193062324",
+    "username": "HomeDepotFan",
+    "player_rank": 70,
+    "player_rating": 1849,
+    "turnCount": 67,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "195313419",
+    "username": "IChooseYou",
+    "player_rank": 14,
+    "player_rating": 1918,
+    "turnCount": 73,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "193426507",
+    "username": "IamPonzi",
+    "player_rank": 77,
+    "player_rating": 1844,
+    "turnCount": 70,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "194507661",
+    "username": "JBOWKNOWS",
+    "player_rank": 53,
+    "player_rating": 1862,
+    "turnCount": 70,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "192514349",
+    "username": "Jayant10",
+    "player_rank": 16,
+    "player_rating": 1913,
+    "turnCount": 73,
+    "player_color": 4,
+    "result": "win"
+  },
+  {
+    "game_id": "195196260",
+    "username": "JejeBenoSG",
+    "player_rank": 67,
+    "player_rating": 1851,
+    "turnCount": 73,
+    "player_color": 4,
+    "result": "win"
+  },
+  {
+    "game_id": "192900367",
+    "username": "Jnathaniel",
+    "player_rank": 44,
+    "player_rating": 1870,
+    "turnCount": 75,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "191170335",
+    "username": "KevBoy",
+    "player_rank": 56,
+    "player_rating": 1858,
+    "turnCount": 73,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "195204584",
+    "username": "Landa5535",
+    "player_rank": 80,
+    "player_rating": 1843,
+    "turnCount": 71,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "193963991",
+    "username": "MarkCook",
+    "player_rank": 34,
+    "player_rating": 1883,
+    "turnCount": 71,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "186086820",
+    "username": "Meto123",
+    "player_rank": 31,
+    "player_rating": 1884,
+    "turnCount": 71,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "194158047",
+    "username": "Michey0823",
+    "player_rank": 54,
+    "player_rating": 1860,
+    "turnCount": 75,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "193905959",
+    "username": "Moxissheep",
+    "player_rank": 45,
+    "player_rating": 1869,
+    "turnCount": 71,
+    "player_color": 11,
+    "result": "win"
+  },
+  {
+    "game_id": "194864812",
+    "username": "MrPennybags",
+    "player_rank": 9,
+    "player_rating": 1935,
+    "turnCount": 73,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "192669054",
+    "username": "NJ181223",
+    "player_rank": 63,
+    "player_rating": 1853,
+    "turnCount": 71,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "186549889",
+    "username": "Nrwhite33",
+    "player_rank": 74,
+    "player_rating": 1846,
+    "turnCount": 74,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "194467169",
+    "username": "NukeLaloosh",
+    "player_rank": 20,
+    "player_rating": 1907,
+    "turnCount": 67,
+    "player_color": 4,
+    "result": "loss"
+  },
+  {
+    "game_id": "192480627",
+    "username": "Orehoar55",
+    "player_rank": 65,
+    "player_rating": 1852,
+    "turnCount": 74,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "194266148",
+    "username": "Pietka11",
+    "player_rank": 26,
+    "player_rating": 1900,
+    "turnCount": 74,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "190195874",
+    "username": "PizzaPenguin",
+    "player_rank": 95,
+    "player_rating": 1838,
+    "turnCount": 76,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "185934353",
+    "username": "Plauto5",
+    "player_rank": 75,
+    "player_rating": 1846,
+    "turnCount": 75,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "195012341",
+    "username": "Reidy",
+    "player_rank": 79,
+    "player_rating": 1843,
+    "turnCount": 73,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "188618945",
+    "username": "Residente",
+    "player_rank": 29,
+    "player_rating": 1889,
+    "turnCount": 69,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "184922406",
+    "username": "Rhetta7182",
+    "player_rank": 50,
+    "player_rating": 1863,
+    "turnCount": 74,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "192796648",
+    "username": "Robijs",
+    "player_rank": 1,
+    "player_rating": 2034,
+    "turnCount": 69,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "194174160",
+    "username": "Romeoore",
+    "player_rank": 64,
+    "player_rating": 1853,
+    "turnCount": 67,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "193779987",
+    "username": "Rondi3697",
+    "player_rank": 12,
+    "player_rating": 1922,
+    "turnCount": 72,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "195177818",
+    "username": "RunGoodRick",
+    "player_rank": 58,
+    "player_rating": 1855,
+    "turnCount": 73,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "193263000",
+    "username": "Saint9",
+    "player_rank": 39,
+    "player_rating": 1878,
+    "turnCount": 72,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "194280043",
+    "username": "SapereAude",
+    "player_rank": 8,
+    "player_rating": 1939,
+    "turnCount": 71,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "193894937",
+    "username": "Schm0li",
+    "player_rank": 62,
+    "player_rating": 1853,
+    "turnCount": 71,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "194992556",
+    "username": "ShadysBack",
+    "player_rank": 71,
+    "player_rating": 1849,
+    "turnCount": 70,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "193691582",
+    "username": "SheepKebab",
+    "player_rank": 89,
+    "player_rating": 1840,
+    "turnCount": 74,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "190204972",
+    "username": "Tabzz",
+    "player_rank": 87,
+    "player_rating": 1840,
+    "turnCount": 73,
+    "player_color": 4,
+    "result": "loss"
+  },
+  {
+    "game_id": "188248686",
+    "username": "Thogg",
+    "player_rank": 37,
+    "player_rating": 1879,
+    "turnCount": 73,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "195097080",
+    "username": "Track10",
+    "player_rank": 32,
+    "player_rating": 1884,
+    "turnCount": 72,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "191056267",
+    "username": "andreas03",
+    "player_rank": 33,
+    "player_rating": 1883,
+    "turnCount": 72,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "190963579",
+    "username": "aulasdocria",
+    "player_rank": 57,
+    "player_rating": 1858,
+    "turnCount": 74,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "189546713",
+    "username": "bnoah",
+    "player_rank": 47,
+    "player_rating": 1867,
+    "turnCount": 73,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "191650058",
+    "username": "boogyboy",
+    "player_rank": 97,
+    "player_rating": 1837,
+    "turnCount": 69,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "191311796",
+    "username": "brolysaurus",
+    "player_rank": 82,
+    "player_rating": 1842,
+    "turnCount": 70,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "194139573",
+    "username": "cactusjackal",
+    "player_rank": 94,
+    "player_rating": 1838,
+    "turnCount": 75,
+    "player_color": 4,
+    "result": "win"
+  },
+  {
+    "game_id": "192652332",
+    "username": "craze",
+    "player_rank": 23,
+    "player_rating": 1902,
+    "turnCount": 70,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "195015501",
+    "username": "daylastocks",
+    "player_rank": 78,
+    "player_rating": 1844,
+    "turnCount": 71,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "190796932",
+    "username": "deported17",
+    "player_rank": 85,
+    "player_rating": 1841,
+    "turnCount": 75,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "193966179",
+    "username": "forest753",
+    "player_rank": 96,
+    "player_rating": 1837,
+    "turnCount": 71,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "190823538",
+    "username": "fromtheriver",
+    "player_rank": 7,
+    "player_rating": 1944,
+    "turnCount": 71,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "193386993",
+    "username": "grayman",
+    "player_rank": 91,
+    "player_rating": 1839,
+    "turnCount": 72,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "192169298",
+    "username": "iMango",
+    "player_rank": 49,
+    "player_rating": 1865,
+    "turnCount": 73,
+    "player_color": 3,
+    "result": "win"
+  },
+  {
+    "game_id": "193947541",
+    "username": "jim87",
+    "player_rank": 88,
+    "player_rating": 1840,
+    "turnCount": 69,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "194854779",
+    "username": "juliusV",
+    "player_rank": 42,
+    "player_rating": 1874,
+    "turnCount": 74,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "187457141",
+    "username": "kakuro",
+    "player_rank": 59,
+    "player_rating": 1855,
+    "turnCount": 74,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "193550523",
+    "username": "kalaeimai",
+    "player_rank": 92,
+    "player_rating": 1839,
+    "turnCount": 72,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "192549177",
+    "username": "khack",
+    "player_rank": 38,
+    "player_rating": 1879,
+    "turnCount": 72,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "193304240",
+    "username": "lucske",
+    "player_rank": 6,
+    "player_rating": 1952,
+    "turnCount": 72,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "192095947",
+    "username": "moethelester",
+    "player_rank": 93,
+    "player_rating": 1839,
+    "turnCount": 69,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "192089633",
+    "username": "momfis",
+    "player_rank": 40,
+    "player_rating": 1875,
+    "turnCount": 71,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "193003341",
+    "username": "mortyb",
+    "player_rank": 21,
+    "player_rating": 1906,
+    "turnCount": 73,
+    "player_color": 4,
+    "result": "loss"
+  },
+  {
+    "game_id": "189815461",
+    "username": "mtblanc",
+    "player_rank": 55,
+    "player_rating": 1859,
+    "turnCount": 74,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "193942488",
+    "username": "portlandhawk",
+    "player_rank": 41,
+    "player_rating": 1874,
+    "turnCount": 74,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "194870740",
+    "username": "progamer777",
+    "player_rank": 17,
+    "player_rating": 1912,
+    "turnCount": 73,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "193753773",
+    "username": "scrumm",
+    "player_rank": 4,
+    "player_rating": 1966,
+    "turnCount": 74,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "194990977",
+    "username": "snackjar",
+    "player_rank": 72,
+    "player_rating": 1848,
+    "turnCount": 56,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "194482820",
+    "username": "snolof",
+    "player_rank": 46,
+    "player_rating": 1868,
+    "turnCount": 73,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "194057812",
+    "username": "stuhlmensch",
+    "player_rank": 73,
+    "player_rating": 1847,
+    "turnCount": 75,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "189061504",
+    "username": "tjurack9",
+    "player_rank": 51,
+    "player_rating": 1863,
+    "turnCount": 74,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "134031954",
+    "username": "19popscouts",
+    "player_rank": 3,
+    "player_rating": 1987,
+    "turnCount": 110,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "191461877",
+    "username": "1drpepper1",
+    "player_rank": 15,
+    "player_rating": 1915,
+    "turnCount": 96,
+    "player_color": 4,
+    "result": "loss"
+  },
+  {
+    "game_id": "168594971",
+    "username": "6paths",
+    "player_rank": 60,
+    "player_rating": 1854,
+    "turnCount": 102,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "192097208",
+    "username": "88ym88",
+    "player_rank": 81,
+    "player_rating": 1842,
+    "turnCount": 99,
+    "player_color": 4,
+    "result": "win"
+  },
+  {
+    "game_id": "193752852",
+    "username": "Advik19",
+    "player_rank": 100,
+    "player_rating": 1834,
+    "turnCount": 97,
+    "player_color": 8,
+    "result": "win"
+  },
+  {
+    "game_id": "192009889",
+    "username": "AsstRgnMng",
+    "player_rank": 52,
+    "player_rating": 1862,
+    "turnCount": 102,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "184363447",
+    "username": "Avogadro",
+    "player_rank": 11,
+    "player_rating": 1922,
+    "turnCount": 120,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "194588360",
+    "username": "BagpipeBoy",
+    "player_rank": 43,
+    "player_rating": 1871,
+    "turnCount": 116,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "191759870",
+    "username": "Bludy",
+    "player_rank": 68,
+    "player_rating": 1850,
+    "turnCount": 94,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "188765606",
+    "username": "Bludyrush",
+    "player_rank": 19,
+    "player_rating": 1908,
+    "turnCount": 119,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "189809276",
+    "username": "BootlessBill",
+    "player_rank": 25,
+    "player_rating": 1900,
+    "turnCount": 113,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "193536757",
+    "username": "BotTrader",
+    "player_rank": 35,
+    "player_rating": 1881,
+    "turnCount": 113,
+    "player_color": 4,
+    "result": "loss"
+  },
+  {
+    "game_id": "193565204",
+    "username": "Bradyn",
+    "player_rank": 10,
+    "player_rating": 1931,
+    "turnCount": 118,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "194894112",
+    "username": "BrickedUp25",
+    "player_rank": 18,
+    "player_rating": 1910,
+    "turnCount": 103,
+    "player_color": 6,
+    "result": "loss"
+  },
+  {
+    "game_id": "191032819",
+    "username": "Cho3572",
+    "player_rank": 27,
+    "player_rating": 1900,
+    "turnCount": 109,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "189720498",
+    "username": "ChooChooMoFo",
+    "player_rank": 99,
+    "player_rating": 1835,
+    "turnCount": 109,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "186351711",
+    "username": "CrougyFarmer",
+    "player_rank": 5,
+    "player_rating": 1960,
+    "turnCount": 107,
+    "player_color": 4,
+    "result": "win"
+  },
+  {
+    "game_id": "194347589",
+    "username": "Dahminator",
+    "player_rank": 61,
+    "player_rating": 1854,
+    "turnCount": 99,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "186997303",
+    "username": "DandyDrewYT",
+    "player_rank": 2,
+    "player_rating": 1989,
+    "turnCount": 107,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "193605689",
+    "username": "Dibri4428",
+    "player_rank": 24,
+    "player_rating": 1901,
+    "turnCount": 98,
+    "player_color": 3,
+    "result": "win"
+  },
+  {
+    "game_id": "192099623",
+    "username": "DosMonos",
+    "player_rank": 13,
+    "player_rating": 1920,
+    "turnCount": 125,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "192292927",
+    "username": "Early0135",
+    "player_rank": 83,
+    "player_rating": 1842,
+    "turnCount": 98,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "193019783",
+    "username": "EggBacnToast",
+    "player_rank": 76,
+    "player_rating": 1845,
+    "turnCount": 102,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "189392791",
+    "username": "Emblaze",
+    "player_rank": 28,
+    "player_rating": 1898,
+    "turnCount": 101,
+    "player_color": 4,
+    "result": "loss"
+  },
+  {
+    "game_id": "194121507",
+    "username": "Estell1709",
+    "player_rank": 90,
+    "player_rating": 1840,
+    "turnCount": 103,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "194640466",
+    "username": "FamousTable",
+    "player_rank": 22,
+    "player_rating": 1905,
+    "turnCount": 109,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "192960643",
+    "username": "Fanni2874",
+    "player_rank": 36,
+    "player_rating": 1881,
+    "turnCount": 106,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "189763916",
+    "username": "Fu3869",
+    "player_rank": 98,
+    "player_rating": 1836,
+    "turnCount": 109,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "193905046",
+    "username": "GG5225LMR",
+    "player_rank": 48,
+    "player_rating": 1866,
+    "turnCount": 105,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "190171120",
+    "username": "GG55",
+    "player_rank": 84,
+    "player_rating": 1842,
+    "turnCount": 107,
+    "player_color": 4,
+    "result": "loss"
+  },
+  {
+    "game_id": "193396280",
+    "username": "Gingko",
+    "player_rank": 30,
+    "player_rating": 1885,
+    "turnCount": 105,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "191298259",
+    "username": "Glen3464",
+    "player_rank": 66,
+    "player_rating": 1851,
+    "turnCount": 102,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "192888229",
+    "username": "Gnormous33",
+    "player_rank": 86,
+    "player_rating": 1841,
+    "turnCount": 117,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "194001273",
+    "username": "HomeDepotFan",
+    "player_rank": 70,
+    "player_rating": 1849,
+    "turnCount": 97,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "192826873",
+    "username": "IChooseYou",
+    "player_rank": 14,
+    "player_rating": 1918,
+    "turnCount": 120,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "195152481",
+    "username": "IamPonzi",
+    "player_rank": 77,
+    "player_rating": 1844,
+    "turnCount": 103,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "194283660",
+    "username": "JBOWKNOWS",
+    "player_rank": 53,
+    "player_rating": 1862,
+    "turnCount": 99,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "192236062",
+    "username": "Jayant10",
+    "player_rank": 16,
+    "player_rating": 1913,
+    "turnCount": 120,
+    "player_color": 4,
+    "result": "loss"
+  },
+  {
+    "game_id": "195163359",
+    "username": "JejeBenoSG",
+    "player_rank": 67,
+    "player_rating": 1851,
+    "turnCount": 104,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "187304767",
+    "username": "Jnathaniel",
+    "player_rank": 44,
+    "player_rating": 1870,
+    "turnCount": 116,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "192085202",
+    "username": "KevBoy",
+    "player_rank": 56,
+    "player_rating": 1858,
+    "turnCount": 104,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "191630681",
+    "username": "Landa5535",
+    "player_rank": 80,
+    "player_rating": 1843,
+    "turnCount": 113,
+    "player_color": 4,
+    "result": "loss"
+  },
+  {
+    "game_id": "193950800",
+    "username": "MarkCook",
+    "player_rank": 34,
+    "player_rating": 1883,
+    "turnCount": 101,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "191724622",
+    "username": "Meto123",
+    "player_rank": 31,
+    "player_rating": 1884,
+    "turnCount": 106,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "195006632",
+    "username": "Michey0823",
+    "player_rank": 54,
+    "player_rating": 1860,
+    "turnCount": 113,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "194093634",
+    "username": "Moxissheep",
+    "player_rank": 45,
+    "player_rating": 1869,
+    "turnCount": 107,
+    "player_color": 11,
+    "result": "loss"
+  },
+  {
+    "game_id": "189961819",
+    "username": "MrPennybags",
+    "player_rank": 9,
+    "player_rating": 1935,
+    "turnCount": 103,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "194361329",
+    "username": "NJ181223",
+    "player_rank": 63,
+    "player_rating": 1853,
+    "turnCount": 112,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "191547629",
+    "username": "Nrwhite33",
+    "player_rank": 74,
+    "player_rating": 1846,
+    "turnCount": 111,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "194035180",
+    "username": "NukeLaloosh",
+    "player_rank": 20,
+    "player_rating": 1907,
+    "turnCount": 99,
+    "player_color": 4,
+    "result": "win"
+  },
+  {
+    "game_id": "192683707",
+    "username": "Orehoar55",
+    "player_rank": 65,
+    "player_rating": 1852,
+    "turnCount": 104,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "195211831",
+    "username": "Pietka11",
+    "player_rank": 26,
+    "player_rating": 1900,
+    "turnCount": 105,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "190321205",
+    "username": "PizzaPenguin",
+    "player_rank": 95,
+    "player_rating": 1838,
+    "turnCount": 101,
+    "player_color": 4,
+    "result": "loss"
+  },
+  {
+    "game_id": "190893941",
+    "username": "Plauto5",
+    "player_rank": 75,
+    "player_rating": 1846,
+    "turnCount": 102,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "193417064",
+    "username": "Reidy",
+    "player_rank": 79,
+    "player_rating": 1843,
+    "turnCount": 103,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "186975138",
+    "username": "Residente",
+    "player_rank": 29,
+    "player_rating": 1889,
+    "turnCount": 115,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "186481990",
+    "username": "Rhetta7182",
+    "player_rank": 50,
+    "player_rating": 1863,
+    "turnCount": 103,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "193667642",
+    "username": "Robijs",
+    "player_rank": 1,
+    "player_rating": 2034,
+    "turnCount": 102,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "194378739",
+    "username": "Romeoore",
+    "player_rank": 64,
+    "player_rating": 1853,
+    "turnCount": 91,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "192452380",
+    "username": "Rondi3697",
+    "player_rank": 12,
+    "player_rating": 1922,
+    "turnCount": 106,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "190641399",
+    "username": "RunGoodRick",
+    "player_rank": 58,
+    "player_rating": 1855,
+    "turnCount": 93,
+    "player_color": 4,
+    "result": "win"
+  },
+  {
+    "game_id": "192848741",
+    "username": "Saint9",
+    "player_rank": 39,
+    "player_rating": 1878,
+    "turnCount": 94,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "186901146",
+    "username": "SapereAude",
+    "player_rank": 8,
+    "player_rating": 1939,
+    "turnCount": 107,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "193869533",
+    "username": "Schm0li",
+    "player_rank": 62,
+    "player_rating": 1853,
+    "turnCount": 97,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "194483831",
+    "username": "ShadysBack",
+    "player_rank": 71,
+    "player_rating": 1849,
+    "turnCount": 102,
+    "player_color": 4,
+    "result": "loss"
+  },
+  {
+    "game_id": "188480533",
+    "username": "SheepKebab",
+    "player_rank": 89,
+    "player_rating": 1840,
+    "turnCount": 110,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "187115924",
+    "username": "Tabzz",
+    "player_rank": 87,
+    "player_rating": 1840,
+    "turnCount": 104,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "191150372",
+    "username": "Thogg",
+    "player_rank": 37,
+    "player_rating": 1879,
+    "turnCount": 112,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "191735658",
+    "username": "Track10",
+    "player_rank": 32,
+    "player_rating": 1884,
+    "turnCount": 108,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "192590766",
+    "username": "andreas03",
+    "player_rank": 33,
+    "player_rating": 1883,
+    "turnCount": 98,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "191161179",
+    "username": "aulasdocria",
+    "player_rank": 57,
+    "player_rating": 1858,
+    "turnCount": 107,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "191616964",
+    "username": "bnoah",
+    "player_rank": 47,
+    "player_rating": 1867,
+    "turnCount": 109,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "192513068",
+    "username": "boogyboy",
+    "player_rank": 97,
+    "player_rating": 1837,
+    "turnCount": 110,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "193629747",
+    "username": "brolysaurus",
+    "player_rank": 82,
+    "player_rating": 1842,
+    "turnCount": 112,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "192842826",
+    "username": "cactusjackal",
+    "player_rank": 94,
+    "player_rating": 1838,
+    "turnCount": 111,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "193157288",
+    "username": "craze",
+    "player_rank": 23,
+    "player_rating": 1902,
+    "turnCount": 113,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "194615657",
+    "username": "daylastocks",
+    "player_rank": 78,
+    "player_rating": 1844,
+    "turnCount": 103,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "190195341",
+    "username": "deported17",
+    "player_rank": 85,
+    "player_rating": 1841,
+    "turnCount": 106,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "193747893",
+    "username": "forest753",
+    "player_rank": 96,
+    "player_rating": 1837,
+    "turnCount": 112,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "193323657",
+    "username": "fromtheriver",
+    "player_rank": 7,
+    "player_rating": 1944,
+    "turnCount": 109,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "194305802",
+    "username": "grayman",
+    "player_rank": 91,
+    "player_rating": 1839,
+    "turnCount": 114,
+    "player_color": 3,
+    "result": "win"
+  },
+  {
+    "game_id": "194710606",
+    "username": "iMango",
+    "player_rank": 49,
+    "player_rating": 1865,
+    "turnCount": 107,
+    "player_color": 3,
+    "result": "win"
+  },
+  {
+    "game_id": "194281453",
+    "username": "jim87",
+    "player_rank": 88,
+    "player_rating": 1840,
+    "turnCount": 77,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "193130575",
+    "username": "juliusV",
+    "player_rank": 42,
+    "player_rating": 1874,
+    "turnCount": 121,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "188136090",
+    "username": "kakuro",
+    "player_rank": 59,
+    "player_rating": 1855,
+    "turnCount": 110,
+    "player_color": 3,
+    "result": "win"
+  },
+  {
+    "game_id": "192410806",
+    "username": "kalaeimai",
+    "player_rank": 92,
+    "player_rating": 1839,
+    "turnCount": 98,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "192656978",
+    "username": "khack",
+    "player_rank": 38,
+    "player_rating": 1879,
+    "turnCount": 99,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "187151640",
+    "username": "lucske",
+    "player_rank": 6,
+    "player_rating": 1952,
+    "turnCount": 107,
+    "player_color": 3,
+    "result": "win"
+  },
+  {
+    "game_id": "191917220",
+    "username": "moethelester",
+    "player_rank": 93,
+    "player_rating": 1839,
+    "turnCount": 125,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "194641587",
+    "username": "momfis",
+    "player_rank": 40,
+    "player_rating": 1875,
+    "turnCount": 101,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "193279417",
+    "username": "mortyb",
+    "player_rank": 21,
+    "player_rating": 1906,
+    "turnCount": 97,
+    "player_color": 4,
+    "result": "loss"
+  },
+  {
+    "game_id": "188437519",
+    "username": "mtblanc",
+    "player_rank": 55,
+    "player_rating": 1859,
+    "turnCount": 104,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "191664918",
+    "username": "portlandhawk",
+    "player_rank": 41,
+    "player_rating": 1874,
+    "turnCount": 117,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "194459037",
+    "username": "progamer777",
+    "player_rank": 17,
+    "player_rating": 1912,
+    "turnCount": 113,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "193778517",
+    "username": "scrumm",
+    "player_rank": 4,
+    "player_rating": 1966,
+    "turnCount": 109,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "191724263",
+    "username": "snolof",
+    "player_rank": 46,
+    "player_rating": 1868,
+    "turnCount": 106,
+    "player_color": 3,
+    "result": "win"
+  },
+  {
+    "game_id": "194148583",
+    "username": "stuhlmensch",
+    "player_rank": 73,
+    "player_rating": 1847,
+    "turnCount": 108,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "188054387",
+    "username": "tjurack9",
+    "player_rank": 51,
+    "player_rating": 1863,
+    "turnCount": 126,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "193441230",
+    "username": "19popscouts",
+    "player_rank": 3,
+    "player_rating": 1987,
+    "turnCount": 44,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "191171341",
+    "username": "1drpepper1",
+    "player_rank": 15,
+    "player_rating": 1915,
+    "turnCount": 52,
+    "player_color": 4,
+    "result": "win"
+  },
+  {
+    "game_id": "190567944",
+    "username": "6paths",
+    "player_rank": 60,
+    "player_rating": 1854,
+    "turnCount": 45,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "195246283",
+    "username": "88ym88",
+    "player_rank": 81,
+    "player_rating": 1842,
+    "turnCount": 49,
+    "player_color": 4,
+    "result": "loss"
+  },
+  {
+    "game_id": "193556326",
+    "username": "Advik19",
+    "player_rank": 100,
+    "player_rating": 1834,
+    "turnCount": 44,
+    "player_color": 8,
+    "result": "loss"
+  },
+  {
+    "game_id": "191907037",
+    "username": "AsstRgnMng",
+    "player_rank": 52,
+    "player_rating": 1862,
+    "turnCount": 45,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "188003658",
+    "username": "Avogadro",
+    "player_rank": 11,
+    "player_rating": 1922,
+    "turnCount": 44,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "192315551",
+    "username": "BagpipeBoy",
+    "player_rank": 43,
+    "player_rating": 1871,
+    "turnCount": 47,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "191698781",
+    "username": "Bludy",
+    "player_rank": 68,
+    "player_rating": 1850,
+    "turnCount": 47,
+    "player_color": 3,
+    "result": "win"
+  },
+  {
+    "game_id": "189107521",
+    "username": "Bludyrush",
+    "player_rank": 19,
+    "player_rating": 1908,
+    "turnCount": 41,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "187736284",
+    "username": "BootlessBill",
+    "player_rank": 25,
+    "player_rating": 1900,
+    "turnCount": 45,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "192696794",
+    "username": "BotTrader",
+    "player_rank": 35,
+    "player_rating": 1881,
+    "turnCount": 51,
+    "player_color": 4,
+    "result": "win"
+  },
+  {
+    "game_id": "190621939",
+    "username": "Bradyn",
+    "player_rank": 10,
+    "player_rating": 1931,
+    "turnCount": 40,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "195263720",
+    "username": "BrickedUp25",
+    "player_rank": 18,
+    "player_rating": 1910,
+    "turnCount": 49,
+    "player_color": 6,
+    "result": "win"
+  },
+  {
+    "game_id": "193861336",
+    "username": "Cho3572",
+    "player_rank": 27,
+    "player_rating": 1900,
+    "turnCount": 42,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "187627394",
+    "username": "ChooChooMoFo",
+    "player_rank": 99,
+    "player_rating": 1835,
+    "turnCount": 51,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "191043302",
+    "username": "CrougyFarmer",
+    "player_rank": 5,
+    "player_rating": 1960,
+    "turnCount": 40,
+    "player_color": 4,
+    "result": "loss"
+  },
+  {
+    "game_id": "192174664",
+    "username": "Dahminator",
+    "player_rank": 61,
+    "player_rating": 1854,
+    "turnCount": 42,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "188166370",
+    "username": "DandyDrewYT",
+    "player_rank": 2,
+    "player_rating": 1989,
+    "turnCount": 43,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "194174695",
+    "username": "Dibri4428",
+    "player_rank": 24,
+    "player_rating": 1901,
+    "turnCount": 46,
+    "player_color": 3,
+    "result": "win"
+  },
+  {
+    "game_id": "188346683",
+    "username": "DosMonos",
+    "player_rank": 13,
+    "player_rating": 1920,
+    "turnCount": 47,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "190616791",
+    "username": "Early0135",
+    "player_rank": 83,
+    "player_rating": 1842,
+    "turnCount": 42,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "185924321",
+    "username": "EggBacnToast",
+    "player_rank": 76,
+    "player_rating": 1845,
+    "turnCount": 48,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "190059257",
+    "username": "Emblaze",
+    "player_rank": 28,
+    "player_rating": 1898,
+    "turnCount": 47,
+    "player_color": 4,
+    "result": "win"
+  },
+  {
+    "game_id": "194972751",
+    "username": "Estell1709",
+    "player_rank": 90,
+    "player_rating": 1840,
+    "turnCount": 45,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "194646496",
+    "username": "FamousTable",
+    "player_rank": 22,
+    "player_rating": 1905,
+    "turnCount": 50,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "191047171",
+    "username": "Fanni2874",
+    "player_rank": 36,
+    "player_rating": 1881,
+    "turnCount": 49,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "186293706",
+    "username": "Fu3869",
+    "player_rank": 98,
+    "player_rating": 1836,
+    "turnCount": 42,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "191787243",
+    "username": "GG5225LMR",
+    "player_rank": 48,
+    "player_rating": 1866,
+    "turnCount": 50,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "189796793",
+    "username": "GG55",
+    "player_rank": 84,
+    "player_rating": 1842,
+    "turnCount": 44,
+    "player_color": 4,
+    "result": "loss"
+  },
+  {
+    "game_id": "187089383",
+    "username": "Gingko",
+    "player_rank": 30,
+    "player_rating": 1885,
+    "turnCount": 41,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "193828881",
+    "username": "Glen3464",
+    "player_rank": 66,
+    "player_rating": 1851,
+    "turnCount": 43,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "190342945",
+    "username": "Gnormous33",
+    "player_rank": 86,
+    "player_rating": 1841,
+    "turnCount": 45,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "193620238",
+    "username": "HomeDepotFan",
+    "player_rank": 70,
+    "player_rating": 1849,
+    "turnCount": 29,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "194151052",
+    "username": "IChooseYou",
+    "player_rank": 14,
+    "player_rating": 1918,
+    "turnCount": 44,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "193036705",
+    "username": "IamPonzi",
+    "player_rank": 77,
+    "player_rating": 1844,
+    "turnCount": 46,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "193183859",
+    "username": "JBOWKNOWS",
+    "player_rank": 53,
+    "player_rating": 1862,
+    "turnCount": 49,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "193472941",
+    "username": "Jayant10",
+    "player_rank": 16,
+    "player_rating": 1913,
+    "turnCount": 50,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "194166928",
+    "username": "JejeBenoSG",
+    "player_rank": 67,
+    "player_rating": 1851,
+    "turnCount": 45,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "187127308",
+    "username": "Jnathaniel",
+    "player_rank": 44,
+    "player_rating": 1870,
+    "turnCount": 44,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "188841832",
+    "username": "KevBoy",
+    "player_rank": 56,
+    "player_rating": 1858,
+    "turnCount": 52,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "193236108",
+    "username": "Landa5535",
+    "player_rank": 80,
+    "player_rating": 1843,
+    "turnCount": 48,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "190144909",
+    "username": "MarkCook",
+    "player_rank": 34,
+    "player_rating": 1883,
+    "turnCount": 49,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "193592239",
+    "username": "Meto123",
+    "player_rank": 31,
+    "player_rating": 1884,
+    "turnCount": 46,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "192993386",
+    "username": "Michey0823",
+    "player_rank": 54,
+    "player_rating": 1860,
+    "turnCount": 51,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "194105269",
+    "username": "Moxissheep",
+    "player_rank": 45,
+    "player_rating": 1869,
+    "turnCount": 44,
+    "player_color": 11,
+    "result": "loss"
+  },
+  {
+    "game_id": "190865037",
+    "username": "MrPennybags",
+    "player_rank": 9,
+    "player_rating": 1935,
+    "turnCount": 45,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "194412205",
+    "username": "NJ181223",
+    "player_rank": 63,
+    "player_rating": 1853,
+    "turnCount": 41,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "181005473",
+    "username": "Nrwhite33",
+    "player_rank": 74,
+    "player_rating": 1846,
+    "turnCount": 46,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "194279971",
+    "username": "NukeLaloosh",
+    "player_rank": 20,
+    "player_rating": 1907,
+    "turnCount": 42,
+    "player_color": 4,
+    "result": "win"
+  },
+  {
+    "game_id": "190541543",
+    "username": "Orehoar55",
+    "player_rank": 65,
+    "player_rating": 1852,
+    "turnCount": 50,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "193864845",
+    "username": "Pietka11",
+    "player_rank": 26,
+    "player_rating": 1900,
+    "turnCount": 53,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "191541386",
+    "username": "PizzaPenguin",
+    "player_rank": 95,
+    "player_rating": 1838,
+    "turnCount": 44,
+    "player_color": 4,
+    "result": "loss"
+  },
+  {
+    "game_id": "185532203",
+    "username": "Plauto5",
+    "player_rank": 75,
+    "player_rating": 1846,
+    "turnCount": 55,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "193373028",
+    "username": "Reidy",
+    "player_rank": 79,
+    "player_rating": 1843,
+    "turnCount": 51,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "190080896",
+    "username": "Residente",
+    "player_rank": 29,
+    "player_rating": 1889,
+    "turnCount": 44,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "190183563",
+    "username": "Rhetta7182",
+    "player_rank": 50,
+    "player_rating": 1863,
+    "turnCount": 42,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "193686773",
+    "username": "Robijs",
+    "player_rank": 1,
+    "player_rating": 2034,
+    "turnCount": 48,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "192332877",
+    "username": "Romeoore",
+    "player_rank": 64,
+    "player_rating": 1853,
+    "turnCount": 48,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "193417606",
+    "username": "Rondi3697",
+    "player_rank": 12,
+    "player_rating": 1922,
+    "turnCount": 39,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "189777149",
+    "username": "RunGoodRick",
+    "player_rank": 58,
+    "player_rating": 1855,
+    "turnCount": 24,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "192826153",
+    "username": "Saint9",
+    "player_rank": 39,
+    "player_rating": 1878,
+    "turnCount": 53,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "189874966",
+    "username": "SapereAude",
+    "player_rank": 8,
+    "player_rating": 1939,
+    "turnCount": 42,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "190592954",
+    "username": "Schm0li",
+    "player_rank": 62,
+    "player_rating": 1853,
+    "turnCount": 45,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "195243229",
+    "username": "ShadysBack",
+    "player_rank": 71,
+    "player_rating": 1849,
+    "turnCount": 52,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "193668270",
+    "username": "SheepKebab",
+    "player_rank": 89,
+    "player_rating": 1840,
+    "turnCount": 50,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "195043706",
+    "username": "Tabzz",
+    "player_rank": 87,
+    "player_rating": 1840,
+    "turnCount": 41,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "192704064",
+    "username": "Thogg",
+    "player_rank": 37,
+    "player_rating": 1879,
+    "turnCount": 52,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "191072109",
+    "username": "Track10",
+    "player_rank": 32,
+    "player_rating": 1884,
+    "turnCount": 47,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "193026252",
+    "username": "andreas03",
+    "player_rank": 33,
+    "player_rating": 1883,
+    "turnCount": 45,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "192623668",
+    "username": "aulasdocria",
+    "player_rank": 57,
+    "player_rating": 1858,
+    "turnCount": 44,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "193249519",
+    "username": "bnoah",
+    "player_rank": 47,
+    "player_rating": 1867,
+    "turnCount": 46,
+    "player_color": 3,
+    "result": "win"
+  },
+  {
+    "game_id": "187528168",
+    "username": "boogyboy",
+    "player_rank": 97,
+    "player_rating": 1837,
+    "turnCount": 43,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "193645150",
+    "username": "brolysaurus",
+    "player_rank": 82,
+    "player_rating": 1842,
+    "turnCount": 50,
+    "player_color": 3,
+    "result": "win"
+  },
+  {
+    "game_id": "194127848",
+    "username": "cactusjackal",
+    "player_rank": 94,
+    "player_rating": 1838,
+    "turnCount": 45,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "193163435",
+    "username": "craze",
+    "player_rank": 23,
+    "player_rating": 1902,
+    "turnCount": 47,
+    "player_color": 3,
+    "result": "win"
+  },
+  {
+    "game_id": "191921855",
+    "username": "daylastocks",
+    "player_rank": 78,
+    "player_rating": 1844,
+    "turnCount": 36,
+    "player_color": 3,
+    "result": "win"
+  },
+  {
+    "game_id": "190186550",
+    "username": "deported17",
+    "player_rank": 85,
+    "player_rating": 1841,
+    "turnCount": 50,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "195277690",
+    "username": "forest753",
+    "player_rank": 96,
+    "player_rating": 1837,
+    "turnCount": 49,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "189964037",
+    "username": "fromtheriver",
+    "player_rank": 7,
+    "player_rating": 1944,
+    "turnCount": 42,
+    "player_color": 3,
+    "result": "loss"
+  },
+  {
+    "game_id": "192450108",
+    "username": "grayman",
+    "player_rank": 91,
+    "player_rating": 1839,
+    "turnCount": 50,
+    "player_color": 3,
+    "result": "win"
+  },
+  {
+    "game_id": "191962506",
+    "username": "iMango",
+    "player_rank": 49,
+    "player_rating": 1865,
+    "turnCount": 48,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "194817570",
+    "username": "jim87",
+    "player_rank": 88,
+    "player_rating": 1840,
+    "turnCount": 38,
+    "player_color": 4,
+    "result": "win"
+  },
+  {
+    "game_id": "194442373",
+    "username": "juliusV",
+    "player_rank": 42,
+    "player_rating": 1874,
+    "turnCount": 45,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "186665121",
+    "username": "kakuro",
+    "player_rank": 59,
+    "player_rating": 1855,
+    "turnCount": 50,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "192917008",
+    "username": "kalaeimai",
+    "player_rank": 92,
+    "player_rating": 1839,
+    "turnCount": 50,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "193202189",
+    "username": "khack",
+    "player_rank": 38,
+    "player_rating": 1879,
+    "turnCount": 50,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "188630235",
+    "username": "lucske",
+    "player_rank": 6,
+    "player_rating": 1952,
+    "turnCount": 51,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "192628921",
+    "username": "moethelester",
+    "player_rank": 93,
+    "player_rating": 1839,
+    "turnCount": 47,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "194463078",
+    "username": "momfis",
+    "player_rank": 40,
+    "player_rating": 1875,
+    "turnCount": 41,
+    "player_color": 5,
+    "result": "loss"
+  },
+  {
+    "game_id": "193532359",
+    "username": "mortyb",
+    "player_rank": 21,
+    "player_rating": 1906,
+    "turnCount": 40,
+    "player_color": 4,
+    "result": "loss"
+  },
+  {
+    "game_id": "189996254",
+    "username": "mtblanc",
+    "player_rank": 55,
+    "player_rating": 1859,
+    "turnCount": 42,
+    "player_color": 2,
+    "result": "loss"
+  },
+  {
+    "game_id": "191636933",
+    "username": "portlandhawk",
+    "player_rank": 41,
+    "player_rating": 1874,
+    "turnCount": 46,
+    "player_color": 1,
+    "result": "loss"
+  },
+  {
+    "game_id": "193578605",
+    "username": "progamer777",
+    "player_rank": 17,
+    "player_rating": 1912,
+    "turnCount": 47,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "194851279",
+    "username": "scrumm",
+    "player_rank": 4,
+    "player_rating": 1966,
+    "turnCount": 46,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "192937062",
+    "username": "snolof",
+    "player_rank": 46,
+    "player_rating": 1868,
+    "turnCount": 45,
+    "player_color": 1,
+    "result": "win"
+  },
+  {
+    "game_id": "192684332",
+    "username": "stuhlmensch",
+    "player_rank": 73,
+    "player_rating": 1847,
+    "turnCount": 41,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "186678786",
+    "username": "tjurack9",
+    "player_rank": 51,
+    "player_rating": 1863,
+    "turnCount": 49,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "191102466",
+    "username": "19popscouts",
+    "player_rank": 3,
+    "player_rating": 1987,
+    "turnCount": 82,
+    "player_color": 2,
+    "result": "win"
+  },
+  {
+    "game_id": "193763737",
+    "username": "1drpepper1",
+    "player_rank": 15,
+    "player_rating": 1915,
+    "turnCount": 78,
+    "player_color": 4,
+    "result": "win"
+  },
+  {
+    "game_id": "177399323",
+    "username": "6paths",
+    "player_rank": 60,
+    "player_rating": 1854,
+    "turnCount": 81,
+    "player_color": 5,
+    "result": "win"
+  },
+  {
+    "game_id": "193494894",
+    "username": "88ym88",
+    "player_rank": 81,
+    "player_rating": 1842,
+    "turnCount": 81,
+    "player_color": 4,
+    "result": "loss"
+  },
+  {
+    "game_id": "193470075",
+    "username": "Advik19",
+    "player_rank": 100,
+    "player_rating": 1834,
+    "turnCount": 78,
+    "player_color": 8,
+    "result": "loss"
+  }
+]

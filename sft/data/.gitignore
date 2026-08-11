@@ -1,0 +1,6 @@
+*.jsonl
+*.json
+*.png
+!.gitignore
+!README.md
+*/README.md

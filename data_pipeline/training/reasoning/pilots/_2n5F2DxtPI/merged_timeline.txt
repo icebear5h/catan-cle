@@ -1,0 +1,795 @@
+[    0.0] SAY  What's going on? And cheerio, Danny
+[    3.0] SAY  Cruise saying Drew and we are back for
+[    4.8] SAY  another day of Catan. Guys,
+[    6.6] SAY  I've been playing some weird weird
+[    8.7] SAY  boards recently and this is definitely
+[   10.6] SAY  one of them.
+[   11.8] SAY  Holy cannoli.
+[   13.7] SAY  Stromboli.
+[   15.5] SAY  What's the sitch? Five wheats off in no
+[   18.8] SAY  man's land.
+[   20.6] SAY  I kind of like this 9 5 10. And one of
+[   23.0] SAY  the things that's interesting about the
+[   24.1] SAY  9 5 10 to me
+[   26.1] SAY  is that we do have this interesting 8 10
+[   28.7] SAY  to 8 5. Somebody will do that. Which
+[   32.6] SAY  one of the reasons I like this is that
+[   35.2] SAY  we get the wood and brick. I guess you
+[   36.4] SAY  can go 8 10 4,
+[   38.8] SAY  which gives you the sheep play.
+[   41.9] SAY  Man, all these players 6 9 3 can also
+[   44.8] SAY  run
+[   46.3] SAY  to the 8 10, right? 5 10 up. That's
+[   49.3] SAY  actually really interesting.
+[   51.6] SAY  Uh, it's all kind of doo-doo, though,
+[   54.2] SAY  isn't it? I mean, 8 4 10 has also an
+[   56.8] SAY  interesting idea where
+[   58.8] SAY  I think it's 8 4 10.
+[   60.7] SAY  And worst case, we play off of some of
+[   63.1] SAY  the wood and we kind of work that angle.
+[   65.2] SAY  Best case, we do like uh 8 10 down or 5
+[   67.7] SAY  10 up. But we have a 3 1 and a brick
+[   70.4] SAY  port here.
+[   71.8] SAY  The sheep is semi-useful. It feels It
+[   75.0] SAY  feels kind of good. I'm just concerned
+[   77.2] SAY  that I guess maybe 6 3 11 could be Let's
+[   79.4] SAY  just do it. Let's Let's just
+[   81.0] SAY  Trust my gut, man. I think one option
+[   83.2] SAY  here
+[   84.4] SAY  uh 6 4 11 is not bad.
+[   87.6] SAY  This is It's just a tricky spot, you
+[   89.5] SAY  know? You can take the ore, but I don't
+[   91.7] SAY  really see
+[   93.5] SAY  what are you getting there that makes a
+[   94.0] GAME  ** FunDipDevRip settlement at 10-WOOD / 8-BRICK / 4-SHEEP **
+[   95.0] GAME  ** FunDipDevRip road (edge 45) **
+[   95.0] SAY  ton of sense. Like 8 4 3 and then what?
+[   98.6] SAY  Versus if you go 8 4 10, you get a brick
+[  101.2] SAY  port and
+[  103.0] SAY  you get a 3 1. You get the sheep. I
+[  106.3] SAY  think we can play off of something like
+[  108.1] SAY  the 6 5
+[  110.3] SAY  11, maybe,
+[  112.4] SAY  which would be pretty sweet. We'll just
+[  115.0] SAY  play production.
+[  117.7] SAY  Uh, and if all else and if it gets
+[  119.7] SAY  really good for us then we can take 5 10
+[  121.6] SAY  up to 8 10.
+[  123.0] SAY  Yeah, yeah, yeah. I kind of like this.
+[  124.6] SAY  Yes. 8 5 10 is actually
+[  127.9] SAY  it's actually the same pippage as the 9
+[  129.6] SAY  5 10, but I think just having the sheep
+[  131.3] SAY  and knowing I can pick up wood on the
+[  132.4] SAY  way back just makes it a little bit
+[  134.2] SAY  sweeter for me.
+[  136.1] SAY  Honestly, not a great spot for us
+[  137.8] SAY  though. I think whoever gets the 5 10 to
+[  140.6] SAY  8 10's in a great spot and that's
+[  142.0] SAY  honestly 6 9 3 could play that. 9 5 10
+[  145.9] SAY  because of lack of sheep. I mean, it's
+[  147.4] SAY  really actually really good for 6 9 3.
+[  149.7] SAY  The more and more I look at that. Maybe
+[  151.8] SAY  that was Maybe that was the angle was
+[  153.3] SAY  take 6 9 3 left and then what we could
+[  155.6] SAY  do is potentially try to build a 5 2
+[  158.9] SAY  and then also have that that three to
+[  161.1] SAY  ourselves. Certainly an option.
+[  164.1] SAY  But I kind of like the port play here at
+[  165.6] SAY  least. I have the three one and the
+[  166.7] SAY  brick port. Who do we got? We got Booty
+[  169.0] SAY  Muncher. That's a name.
+[  171.8] SAY  From Maine. Number two out of Maine.
+[  173.4] SAY  That's fun.
+[  174.6] SAY  No bread.
+[  176.8] SAY  Coming out of Portugal.
+[  178.7] SAY  And then we got Harka. Seen Harka
+[  180.4] SAY  before.
+[  182.2] SAY  Germanin. Germany.
+[  184.4] SAY  Iron.
+[  186.4] SAY  6 9 3 smart. Smart man. Maybe he's
+[  189.0] SAY  stream sniping. I'm not I'm not live.
+[  190.8] SAY  I'm just saying that.
+[  192.4] SAY  It's actually very smart cuz then he's
+[  193.6] SAY  got a lot of angles with that. He can
+[  195.0] SAY  also play
+[  196.4] SAY  um
+[  197.6] SAY  he can also play on the wood as well if
+[  199.0] SAY  he wants to go that route. But I really
+[  201.3] SAY  like 5 10 for us or or 8 10 down, excuse
+[  203.6] SAY  me.
+[  205.5] SAY  Okay.
+[  207.1] SAY  Cool. So we actually have full access to
+[  207.4] GAME  ** bootymunchr settlement at 9-SHEEP / 6-BRICK / 3-ORE **
+[  208.4] GAME  ** bootymunchr road (edge 35) **
+[  208.9] SAY  both the brick port and the three one
+[  210.9] SAY  now. Kind of crazy that fourth has been
+[  213.6] SAY  given the best ore, but it's also not so
+[  215.3] GAME  ** Nobretti settlement at 10-WOOD / 9-BRICK / 5-WHEAT **
+[  216.5] SAY  obvious to what you do about that. There
+[  219.4] SAY  is an angle of like 6 4 3. It's the
+[  221.8] SAY  wheat. The wheat sucks here.
+[  223.8] SAY  It's really tough.
+[  225.8] SAY  I'm hoping
+[  228.1] SAY  that black is going to pair this brick
+[  228.7] GAME  ** Nobretti road (edge 53) **
+[  231.2] SAY  with the best wood. Right? Go for cord
+[  233.8] SAY  sixes or like a 6411 angle. I don't
+[  236.4] SAY  think I think fourth will take 843
+[  238.7] SAY  because I just think that's his better
+[  240.4] SAY  option. It's just not so clear what you
+[  242.4] SAY  do with it.
+[  243.9] SAY  Maybe you play like a a side-by-side.
+[  247.4] SAY  Nah, you need a wood you need a good
+[  249.2] SAY  port.
+[  251.5] SAY  Super ugly.
+[  253.0] SAY  Sheep port sucks. Ore port is okay.
+[  257.1] SAY  Uh the other option is like 843 6411. So
+[  259.6] SAY  you you take kind of the whole left side
+[  261.2] SAY  of the board.
+[  262.3] SAY  And the idea is like you make a couple
+[  263.5] SAY  trades, you get to a 31.
+[  265.7] SAY  Uh maybe you're you're getting a sheep
+[  267.4] SAY  plus on the ore trades. The ore port has
+[  270.7] SAY  a little bit of sting, but not really.
+[  274.4] SAY  Tough. Uh you can also look at
+[  279.2] SAY  very interestingly the 8103.
+[  282.5] SAY  Ooh, that is opening up two spots. So
+[  285.0] SAY  opening up 84.
+[  288.2] SAY  Oh, bruh.
+[  291.6] SAY  Bro bro bro bro bro.
+[  294.0] SAY  That is
+[  296.4] SAY  that is vicious. That is wild. I think
+[  299.2] SAY  we can take 84 here.
+[  303.4] SAY  Yeah.
+[  304.6] SAY  >> [laughter]
+[  305.2] SAY  >> Yep.
+[  307.1] SAY  Crazy crazy stuff.
+[  309.9] SAY  I don't think now that he's got the
+[  311.3] SAY  sheep port in his hands, I don't think
+[  312.7] SAY  he's uh
+[  314.4] SAY  I think we're actually set up really
+[  315.6] SAY  nicely here for a four left.
+[  318.2] SAY  I want him to point up so bad.
+[  322.7] SAY  Smart.
+[  326.8] SAY  Well, now the whole idea of 510 doesn't
+[  327.4] GAME  ** Harka settlement at 6-WHEAT / 4-ORE / 3-SHEEP **
+[  329.0] SAY  pan out at all. Red really threw a
+[  329.9] GAME  ** Harka road (edge 6) **
+[  331.0] SAY  wrench into this game. Kind of smart if
+[  333.3] GAME  ** Harka settlement at 6-BRICK / 2-WOOD **
+[  333.4] SAY  you look at the long-term vision here,
+[  334.9] SAY  which is he wants to road settle road
+[  335.0] GAME  ** Harka road (edge 28) **
+[  336.4] SAY  settle.
+[  338.1] SAY  But my thought is
+[  340.0] SAY  we might actually be able to kind of get
+[  342.0] SAY  some big headway
+[  344.2] SAY  before that becomes a really big issue.
+[  345.9] GAME  ** Nobretti settlement at 10-WHEAT / 8-ORE / 3-SHEEP **
+[  351.9] SAY  What if I take five
+[  353.6] SAY  five 10 and run to the eight? Now, we go
+[  355.8] SAY  eight four. We're going to eight four
+[  357.1] SAY  and then um eight four 10 city.
+[  359.3] SAY  Cuz then with the eight 10 four city, we
+[  361.5] SAY  get our ore our wheat and sheep up.
+[  364.4] SAY  We're going to have a ton of ore. We've
+[  365.4] SAY  got a great production. And if we ever
+[  367.4] GAME  ** Nobretti road (edge 16) **
+[  367.7] SAY  pull like a road builder and run back to
+[  369.1] SAY  something like the five four 11, we're
+[  370.2] SAY  just so so golden.
+[  372.9] SAY  So,
+[  374.1] SAY  I just don't see him taking eight four
+[  375.8] SAY  here. I think he's going to play off of
+[  377.3] SAY  the spacing.
+[  379.4] SAY  And if he does, then we have to re-
+[  380.9] SAY  re-evaluate.
+[  387.6] SAY  Call me crazy.
+[  390.4] SAY  I guess if he goes eight four, it's not
+[  392.6] SAY  horrible cuz he does have like a a good
+[  396.0] SAY  ore sheep connection.
+[  399.1] SAY  But man, does it look ugly. And then we
+[  401.3] SAY  can play like six five 12 down maybe.
+[  405.2] SAY  Just lock the board a little bit.
+[  407.6] SAY  Maybe.
+[  412.3] SAY  Yeah.
+[  416.2] SAY  All right. All in to the eight four 10
+[  418.4] SAY  city. All in.
+[  421.9] SAY  We're
+[  422.9] SAY  we're not the best numbers in the world,
+[  424.6] SAY  but we're not the worst. And of course,
+[  427.4] SAY  sixes roll like crazy.
+[  431.6] SAY  Yeah, I mean this this was a bad play. I
+[  433.7] SAY  mean, this shouldn't never have
+[  435.4] SAY  happened.
+[  436.8] SAY  But it did.
+[  438.8] SAY  All right. We need to take advantage of
+[  440.1] SAY  having this this 10 wheat right now. It
+[  442.3] SAY  is certainly our our golden goose.
+[  451.8] SAY  Um is it the five or is it the eight
+[  454.4] SAY  maybe?
+[  455.4] SAY  What have I done? You've made
+[  457.4] GAME  ** bootymunchr settlement at 12-WOOD / 6-WHEAT / 5-WHEAT **
+[  457.6] SAY  very bad mistakes, my friend.
+[  458.7] GAME  ** bootymunchr road (edge 60) **
+[  459.4] GAME  ** FunDipDevRip settlement at 8-ORE / 4-ORE **
+[  460.3] GAME  ** FunDipDevRip road (edge 15) **
+[  460.8] SAY  I think you're going to go actually for
+[  461.0] GAME  ** FunDipDevRip rolls 5 **
+[  463.0] SAY  uh the five.
+[  466.0] GAME  ** bootymunchr rolls 3 **
+[  466.7] SAY  Oh.
+[  469.2] SAY  That kind of kills us right there.
+[  489.6] SAY  I mean it was a six brick.
+[  492.2] GAME  ** Harka rolls 7 **
+[  496.0] SAY  I mean pretty good win for him early on,
+[  497.9] SAY  right?
+[  499.4] SAY  No doubt about it.
+[  503.8] SAY  Yep, and he's getting some good stuff,
+[  505.2] SAY  too.
+[  506.1] SAY  All right, the rule is we have to roll
+[  508.1] SAY  something.
+[  511.3] SAY  That's something. Okay, cool, cool. Now
+[  511.3] GAME  ** ? move_robber **
+[  512.9] SAY  we're like a 10 and eight away.
+[  517.9] SAY  We definitely want to invest into the
+[  519.3] SAY  brick port as well.
+[  520.2] GAME  ** Harka road (edge 29) **
+[  521.1] SAY  Uh yeah, brick port. Yep, yep. Because
+[  521.6] GAME  ** Harka settlement at 5-WOOD / 2-WOOD **
+[  522.8] SAY  um it it gives us more wheat on the 10.
+[  523.4] GAME  ** FunDipDevRip rolls 7 **
+[  524.8] SAY  We've already got the three one in our
+[  526.0] SAY  back pocket. We don't have to kind of uh
+[  528.5] SAY  waste our time.
+[  530.7] SAY  Ooh.
+[  531.6] GAME  ** ? move_robber **
+[  536.5] GAME  ** bootymunchr road (edge 71) **
+[  539.2] GAME  ** Nobretti rolls 9 **
+[  541.0] SAY  Wow.
+[  544.9] SAY  Let's do the one for one here.
+[  547.6] GAME  ** Nobretti road (edge 17) **
+[  550.1] GAME  ** Harka rolls 9 **
+[  552.2] GAME  ** FunDipDevRip rolls 11 **
+[  554.8] SAY  And then we're a 10 away.
+[  555.9] GAME  ** bootymunchr rolls 8 **
+[  559.0] SAY  Wow.
+[  559.2] GAME  ** Nobretti rolls 9 **
+[  574.0] SAY  All right.
+[  575.8] GAME  ** Harka rolls 10 **
+[  577.7] GAME  ** FunDipDevRip rolls 6 **
+[  599.4] GAME  ** FunDipDevRip road (edge 47) **
+[  603.6] GAME  ** ? move_robber **
+[  607.8] GAME  ** Nobretti rolls 10 **
+[  615.9] GAME  ** Nobretti settlement at 10-WHEAT / 5-WOOD / DESERT **
+[  618.0] SAY  >> Bro, bro, bro, bro, bro.
+[  621.4] SAY  This is a tough situation.
+[  628.2] SAY  Hey.
+[  629.2] SAY  We like fours.
+[  640.2] SAY  Okay. I mean, okay, we get the brick
+[  641.9] GAME  ** Nobretti road (edge 54) **
+[  642.3] SAY  port makes the eights a little bit more
+[  643.8] SAY  digestible for sure.
+[  644.1] GAME  ** Harka rolls 8 **
+[  646.6] GAME  ** FunDipDevRip rolls 9 **
+[  653.1] SAY  I'm not going to I'm not going to say
+[  654.6] SAY  anything.
+[  667.4] GAME  ** bootymunchr rolls 12 **
+[  676.1] GAME  ** bootymunchr settlement at 11-SHEEP / 5-WHEAT / 4-SHEEP **
+[  678.2] GAME  ** bootymunchr road (edge 26) **
+[  678.8] SAY  Oh, man.
+[  683.1] SAY  At least the eight.
+[  684.8] SAY  Um I might even if the eight if we get
+[  686.3] GAME  ** FunDipDevRip rolls 10 **
+[  687.6] SAY  another or I might port for the city.
+[  698.0] SAY  >> Like two or maybe?
+[  700.4] SAY  Wow.
+[  702.7] SAY  Well, we'll take that. Geez.
+[  713.1] SAY  We need to see a seven here.
+[  717.3] GAME  ** bootymunchr rolls 4 **
+[  718.3] SAY  Four. Incredible. Incredible play.
+[  720.2] GAME  ** Nobretti rolls 10 **
+[  724.8] SAY  Um seven would light this up for sure.
+[  728.0] SAY  And then we actually have the
+[  728.8] SAY  coordinated eights, which are really
+[  730.4] SAY  nice.
+[  735.4] SAY  Nope. Nope. Nope. Nope. Nope. Nope.
+[  738.8] SAY  Yeah.
+[  739.9] SAY  Last couple rolls have been really juicy
+[  741.5] SAY  for us, honestly. Really nice.
+[  743.6] SAY  Um I'll take a wheat if he has one. I
+[  745.1] SAY  don't know if he has an extra wheat.
+[  746.7] SAY  This would be a great deal for me.
+[  750.0] SAY  That puts me over.
+[  757.6] SAY  Puts me over, folks.
+[  759.7] SAY  Um eight doesn't do Bro, he is he's
+[  762.6] SAY  killing it.
+[  765.3] SAY  Oh.
+[  769.9] GAME  ** Nobretti road (edge 18) **
+[  770.0] SAY  Uh it'd be really nice to get the
+[  771.3] SAY  settlement down.
+[  771.4] GAME  ** Nobretti road (edge 25) **
+[  791.6] GAME  ** FunDipDevRip rolls 5 **
+[  801.2] GAME  ** ? city at 10-WOOD / 8-BRICK / 4-SHEEP **
+[  807.0] SAY  Yay! All right. All right. Come on, 10.
+[  810.4] SAY  All right, perfect. I think
+[  814.3] SAY  I'll block the five. Five is my best
+[  816.4] SAY  block.
+[  818.7] SAY  110%. There's no doubt about it.
+[  822.9] SAY  Um
+[  824.9] SAY  Six is pretty decent. Four, it's like
+[  826.8] SAY  whatever. And I mean, shouldn't hit me,
+[  829.0] SAY  but of course he hits me.
+[  832.7] SAY  All right. Um
+[  834.4] GAME  ** Nobretti rolls 11 **
+[  835.8] SAY  All right, we like a good 10.
+[  844.5] SAY  Uh
+[  846.5] SAY  we have
+[  848.4] SAY  settle double pop on an eight, which is
+[  850.4] SAY  actually phenomenal.
+[  853.5] SAY  We're just not on good numbers. Like, we
+[  855.2] SAY  don't have a lot of numbers.
+[  856.8] SAY  We have three numbers and five axes.
+[  859.2] SAY  So, it's just kind of tough.
+[  860.3] GAME  ** Nobretti settlement at 5-WOOD **
+[  862.5] SAY  What we need to do is we need to roll an
+[  863.0] GAME  ** Harka rolls 9 **
+[  863.6] SAY  eight here, do our shenanigans, and then
+[  865.2] GAME  ** ? city at 6-WHEAT / 4-ORE / 3-SHEEP **
+[  866.1] SAY  roll a seven on the next turn so that
+[  866.9] GAME  ** FunDipDevRip rolls 6 **
+[  867.8] SAY  orange gets smushed.
+[  874.0] SAY  All right, now red is he's taking his
+[  875.9] SAY  sweet time.
+[  883.6] SAY  What a weird game.
+[  887.2] SAY  Just the the whole vibe, everything.
+[  889.0] SAY  Just super weird.
+[  891.1] SAY  From this board.
+[  893.4] SAY  I don't think red's here now, either.
+[  896.0] SAY  Wow.
+[  897.6] GAME  ** bootymunchr rolls 12 **
+[  898.5] SAY  Pop.
+[  900.8] SAY  Pop. And then we said we'll roll a seven
+[  902.0] GAME  ** bootymunchr settlement at 9-SHEEP / 2-WOOD / DESERT **
+[  902.9] SAY  next turn. It's too easy.
+[  905.2] SAY  Oh my goodness. What was that? That was
+[  905.5] GAME  ** Nobretti rolls 7 **
+[  908.0] SAY  perfect. That was That was just too
+[  910.8] SAY  good.
+[  912.6] SAY  Called it. How I got to know the the
+[  915.3] SAY  combination. What is the the probability
+[  918.0] SAY  of hitting that sequence?
+[  921.4] SAY  All right. He does put it on the 10.
+[  924.0] SAY  Makes a lot of sense. We hit a four. Now
+[  924.1] GAME  ** ? move_robber **
+[  926.1] SAY  we're Now we're doing a lot better.
+[  929.4] SAY  Especially if the eights start coming in
+[  930.9] SAY  really strongly.
+[  933.0] SAY  Um should I be worried about black?
+[  933.0] GAME  ** Harka rolls 10 **
+[  935.8] SAY  I am.
+[  938.4] SAY  Let's see what happens. Let's see what
+[  939.6] SAY  happens. I I do think
+[  942.9] SAY  black will run out of steam eventually.
+[  945.4] SAY  And who knows, he might seven out as
+[  946.6] SAY  well, which could certainly
+[  950.9] SAY  become problematic. I think the five's
+[  952.5] SAY  still my best play right now.
+[  956.8] SAY  I think seeing the a settle in a city
+[  959.0] SAY  for orange is really strong.
+[  961.7] SAY  That being said, he did just seven out,
+[  963.0] SAY  so maybe I can punish him a little bit.
+[  964.9] SAY  We did roll the 10 earlier
+[  969.6] SAY  from nobody.
+[  973.4] SAY  He rolled. He didn't use it.
+[  983.7] SAY  Okay.
+[  996.3] GAME  ** FunDipDevRip settlement at 10-WOOD **
+[ 1003.6] SAY  All right, good stuff. Good stuff. 10
+[ 1005.2] SAY  here would be phenomenal. 10 here is
+[ 1006.9] SAY  phenomenal. We like phenomenal around
+[ 1009.3] SAY  here. I think black is doing a good job.
+[ 1011.4] SAY  He's kind of going for this double play
+[ 1012.7] SAY  angle, which
+[ 1014.2] SAY  certainly could pay. I mean, 10 I think
+[ 1016.9] SAY  could seal the deal for us. It's
+[ 1018.7] SAY  certainly an option.
+[ 1020.5] GAME  ** ? move_robber **
+[ 1021.1] SAY  So, let's see here. Eight's also really
+[ 1022.9] SAY  nice, too, right?
+[ 1023.2] GAME  ** Nobretti rolls 4 **
+[ 1027.2] SAY  Don't know if he has it.
+[ 1029.8] GAME  ** Harka rolls 6 **
+[ 1033.4] SAY  The problem is I think I I we we
+[ 1035.8] SAY  actually double pop with the op if we
+[ 1037.3] SAY  don't roll anything here.
+[ 1041.3] SAY  Because I don't want to three for one
+[ 1042.4] SAY  the sheep, empty all the sheep,
+[ 1045.0] SAY  and then have only two ore in hand. I
+[ 1046.3] SAY  would rather double pop, which is more
+[ 1048.7] SAY  value for me. Keep an ore and two sheep
+[ 1049.0] GAME  ** Harka road (edge 34) **
+[ 1050.8] SAY  in my hand, and then I have a ton of
+[ 1052.0] SAY  actual rolls with the 10 and 8.
+[ 1052.1] GAME  ** Harka road (edge 33) **
+[ 1054.3] SAY  I think that's a little bit better.
+[ 1057.9] SAY  Um I like red building. It keeps the the
+[ 1060.8] GAME  ** ? move_robber **
+[ 1061.2] SAY  parity of the game interesting.
+[ 1063.1] SAY  I do think though black is in a great
+[ 1065.1] SAY  spot. But luckily the port's not that
+[ 1066.8] SAY  useful for him.
+[ 1068.1] SAY  So there is that in our play.
+[ 1072.6] SAY  But we've just got a good game here. I
+[ 1073.9] SAY  think we've got a little bit of a scrap.
+[ 1075.0] GAME  ** FunDipDevRip rolls 5 **
+[ 1075.5] SAY  I really do.
+[ 1081.6] SAY  Okay.
+[ 1082.5] SAY  We're going to do what I said.
+[ 1085.4] SAY  Yep.
+[ 1088.6] GAME  ** bootymunchr rolls 6 **
+[ 1088.8] SAY  Does he flip a knight here?
+[ 1091.6] SAY  He might.
+[ 1094.1] SAY  Oh my god.
+[ 1094.4] GAME  ** bootymunchr road (edge 31) **
+[ 1095.6] GAME  ** bootymunchr road (edge 38) **
+[ 1096.1] SAY  Um he probably should at this point.
+[ 1102.4] SAY  Hopefully he's got like um
+[ 1104.2] GAME  ** Harka rolls 9 **
+[ 1104.6] SAY  Yeah, if he's got two Wow, he doesn't.
+[ 1110.9] SAY  Road builder's very interesting. I just
+[ 1112.4] SAY  don't know how we're going to play it
+[ 1113.4] SAY  quite yet.
+[ 1118.1] SAY  Oh my goodness, that is such a good
+[ 1120.1] SAY  roll.
+[ 1121.8] SAY  Such a good roll.
+[ 1123.3] SAY  >> [laughter]
+[ 1125.2] SAY  >> Um okay, best case here is we we double
+[ 1128.0] SAY  pop.
+[ 1130.2] SAY  I guess the eight is also a really
+[ 1131.9] SAY  interesting play for us.
+[ 1140.0] SAY  We're probably not getting road. I don't
+[ 1141.4] SAY  think we're getting road.
+[ 1145.4] SAY  Wow, if we if we hit a roll here, we're
+[ 1148.5] SAY  Guys, we're in good spot.
+[ 1152.4] SAY  Oh Oh god.
+[ 1153.8] GAME  ** Harka road (edge 3) **
+[ 1154.1] SAY  Um pop.
+[ 1161.6] SAY  Now we have to play a knight, don't we?
+[ 1173.3] SAY  Me think here.
+[ 1175.9] GAME  ** Harka settlement at 6-BRICK **
+[ 1175.9] SAY  I do think long term black is going to
+[ 1178.2] GAME  ** FunDipDevRip rolls 3 **
+[ 1178.4] SAY  get
+[ 1180.0] SAY  army or road, excuse me.
+[ 1208.8] SAY  This would be my best play.
+[ 1210.8] GAME  ** Nobretti road (edge 12) **
+[ 1213.5] GAME  ** Harka rolls 10 **
+[ 1222.2] SAY  That's great. Now what's beautiful about
+[ 1224.9] SAY  this
+[ 1226.0] SAY  is
+[ 1227.6] SAY  we have a lot of ways that we can
+[ 1229.0] SAY  actually
+[ 1230.0] SAY  wrap this up, but we have no cards,
+[ 1231.7] SAY  right? No knight is insane.
+[ 1237.0] SAY  Think he was waiting for uh the roll
+[ 1238.7] SAY  there.
+[ 1239.2] GAME  ** Harka settlement at 11-WHEAT / 4-ORE **
+[ 1241.3] SAY  Well, now we have to play the knight,
+[ 1242.6] SAY  right? Assuming black has something to
+[ 1244.5] SAY  work there.
+[ 1247.6] SAY  Is it um
+[ 1249.7] SAY  Yeah, we got to go back to the five, I
+[ 1251.1] SAY  think. But again, it's weird because I
+[ 1253.0] SAY  just assume
+[ 1255.2] SAY  black takes road long term. Okay, okay,
+[ 1257.4] SAY  he's got wheat in his hand.
+[ 1260.9] SAY  Oh, it's no longer I don't know what the
+[ 1262.6] SAY  right block is.
+[ 1269.0] SAY  It's kind of tricky, isn't it?
+[ 1271.4] SAY  >> [bell]
+[ 1272.6] SAY  >> It's not so obvious what the right play
+[ 1274.0] SAY  is here.
+[ 1275.8] SAY  Um, I guess if we steal the wheat
+[ 1278.4] SAY  rolling eight, we're doing a little bit
+[ 1280.0] SAY  better here.
+[ 1283.7] GAME  ** ? move_robber **
+[ 1288.9] SAY  A little bit better.
+[ 1296.1] SAY  Big block, wow.
+[ 1299.5] SAY  >> [snorts]
+[ 1299.9] SAY  >> I think that's reasonable, like
+[ 1313.9] SAY  He's doing a good job popping.
+[ 1316.1] GAME  ** FunDipDevRip road (edge 41) **
+[ 1317.1] GAME  ** FunDipDevRip settlement at 8-BRICK **
+[ 1326.9] GAME  ** bootymunchr rolls 9 **
+[ 1330.6] SAY  All right, 4 10 here would be
+[ 1331.8] SAY  phenomenal.
+[ 1332.1] GAME  ** ? move_robber **
+[ 1335.1] GAME  ** Nobretti rolls 3 **
+[ 1338.6] SAY  Is he just going to keep buying devs?
+[ 1347.1] SAY  Damn.
+[ 1348.4] GAME  ** Nobretti road (edge 20) **
+[ 1349.2] SAY  Um, I think it's the four for sure. I
+[ 1351.2] GAME  ** Harka rolls 5 **
+[ 1351.8] SAY  probably actually have to hit black
+[ 1353.1] SAY  here.
+[ 1354.9] SAY  Unfortunately.
+[ 1380.5] GAME  ** ? move_robber **
+[ 1382.7] GAME  ** FunDipDevRip rolls 5 **
+[ 1386.1] SAY  >> Um five is a huge huge roll here.
+[ 1389.7] GAME  ** ? move_robber **
+[ 1390.9] GAME  ** bootymunchr rolls 8 **
+[ 1401.0] SAY  Also a huge roll.
+[ 1402.8] SAY  Okay, I think we just keep popping here.
+[ 1405.8] SAY  All right. Well, army secure.
+[ 1423.1] SAY  No knight here is devastating. He's got
+[ 1424.5] SAY  a knight. Perfect.
+[ 1425.9] SAY  Okay. Perfect. Perfect. We can we can
+[ 1428.4] SAY  deal with this.
+[ 1447.7] GAME  ** ? move_robber **
+[ 1455.8] SAY  Okay.
+[ 1461.4] GAME  ** ? city at 10-WOOD / 9-BRICK / 5-WHEAT **
+[ 1465.8] SAY  Mean red taking roads kind of lame, but
+[ 1467.8] SAY  it'd be nice if he did.
+[ 1474.6] SAY  Nope. Nope.
+[ 1476.2] SAY  Nope.
+[ 1477.9] SAY  Watch him pull all the freaking VPs,
+[ 1479.4] SAY  man. That's what we need.
+[ 1481.6] SAY  I think here that the play is just block
+[ 1483.1] SAY  the nine and see if we can get black to
+[ 1484.8] SAY  take road and then the game goes on.
+[ 1487.9] SAY  We're just kind of in a weird spot now.
+[ 1490.3] SAY  We're in the end game as they say,
+[ 1491.6] SAY  folks.
+[ 1494.1] GAME  ** ? move_robber **
+[ 1495.4] GAME  ** FunDipDevRip rolls 8 **
+[ 1496.5] SAY  Are we looking for eight, 10, or are
+[ 1498.8] SAY  looking for any of our rolls? All
+[ 1500.7] SAY  action.
+[ 1502.0] SAY  Someone.
+[ 1519.0] SAY  Three
+[ 1520.2] SAY  Three devs is insane.
+[ 1520.8] GAME  ** ? move_robber **
+[ 1522.6] GAME  ** Nobretti rolls 3 **
+[ 1537.7] GAME  ** Nobretti settlement at 12-WOOD / 9-BRICK **
+[ 1544.9] SAY  Wow, okay. Okay. I like where you're
+[ 1547.0] SAY  going with this.
+[ 1551.6] SAY  We're actually really close to taking it
+[ 1553.2] SAY  our freaking selves.
+[ 1567.6] SAY  Okay.
+[ 1573.8] SAY  Come on, red.
+[ 1575.2] SAY  Be my guy.
+[ 1581.6] SAY  Yep, I'm getting hit here again.
+[ 1590.3] SAY  Let's go. All right. All right.
+[ 1594.7] SAY  Big block. Wow.
+[ 1600.9] SAY  Nine.
+[ 1618.6] SAY  >> The 10 doesn't hurt, bro.
+[ 1621.2] SAY  All right, this could be the turning
+[ 1622.8] SAY  point.
+[ 1625.3] SAY  I have to say red's doing very well.
+[ 1626.7] SAY  We're kind of in a little bit of a world
+[ 1628.5] SAY  of trouble here.
+[ 1631.5] GAME  ** Harka road (edge 62) **
+[ 1632.4] SAY  Without the VP, I just don't see how we
+[ 1634.6] SAY  win. We needed a lot more juice and we
+[ 1636.7] SAY  just never really got it, unfortunately.
+[ 1639.6] SAY  Uh
+[ 1642.0] SAY  I don't like that because
+[ 1651.8] SAY  No.
+[ 1654.6] GAME  ** ? move_robber **
+[ 1656.0] GAME  ** FunDipDevRip rolls 2 **
+[ 1667.2] GAME  ** bootymunchr rolls 7 **
+[ 1676.7] GAME  ** ? move_robber **
+[ 1680.0] SAY  The problem is if I if I take 8 3, he's
+[ 1682.4] SAY  going to get really upset with me.
+[ 1693.0] SAY  I mean, I'll take the risk.
+[ 1702.1] GAME  ** ? move_robber **
+[ 1718.7] SAY  All right, now we just have to pray.
+[ 1720.6] SAY  Four is for days, baby.
+[ 1722.4] GAME  ** Harka road (edge 63) **
+[ 1722.6] SAY  Bro, take take it. Take road.
+[ 1723.9] GAME  ** Harka road (edge 64) **
+[ 1726.4] SAY  Take road. I guess he can't win, but I
+[ 1729.1] SAY  actually think red might be able to win,
+[ 1730.4] SAY  too. All right, 10 gives us city settle.
+[ 1734.6] SAY  That's nine.
+[ 1736.3] SAY  Eight is also very interesting. Eight is
+[ 1738.1] SAY  a city.
+[ 1740.3] SAY  Eight could be close to the win.
+[ 1742.5] SAY  Eight is the win, right? Cuz we city
+[ 1744.3] SAY  drop
+[ 1745.4] SAY  Wow, that's crazy. We drop four roads in
+[ 1747.6] SAY  a city on an eight. So, we go to seven.
+[ 1749.9] SAY  I think that's the play.
+[ 1751.6] SAY  Like really, what he should do is he
+[ 1752.9] SAY  should connect.
+[ 1754.9] SAY  The problem is if if red drops two
+[ 1757.0] SAY  roads,
+[ 1758.4] SAY  he goes to seven, so we would actually
+[ 1760.1] SAY  need more. Okay.
+[ 1763.3] SAY  Oh, man.
+[ 1765.8] SAY  I mean, we know what he's got.
+[ 1774.4] SAY  >> [snorts]
+[ 1780.9] SAY  >> Eight or 10 here is the a really great
+[ 1783.0] SAY  play.
+[ 1784.7] SAY  Shh.
+[ 1788.8] GAME  ** FunDipDevRip rolls 7 **
+[ 1789.4] SAY  Damn.
+[ 1794.8] SAY  So, he's got
+[ 1794.9] GAME  ** ? move_robber **
+[ 1796.3] SAY  He says a yop and a knight. So, I don't
+[ 1798.6] SAY  know if I fully believe that.
+[ 1801.8] SAY  Well, we know black's got He's got
+[ 1803.6] SAY  something good here.
+[ 1806.1] GAME  ** bootymunchr rolls 4 **
+[ 1806.7] SAY  Um eight or 10 win assuming he doesn't
+[ 1809.9] SAY  uh take road.
+[ 1812.2] SAY  Think.
+[ 1814.1] SAY  Wow, eight or 10 win? Is that where
+[ 1816.0] SAY  we're at, folks?
+[ 1817.6] SAY  >> [laughter]
+[ 1818.8] SAY  >> That's so insane.
+[ 1820.8] SAY  Well, he's got two roads in hand. He
+[ 1822.0] SAY  should take it.
+[ 1824.0] SAY  But then black takes it back, which is
+[ 1825.8] SAY  fine.
+[ 1828.4] SAY  Holy cannoli.
+[ 1835.9] SAY  Um
+[ 1845.9] GAME  ** bootymunchr road (edge 66) **
+[ 1846.7] GAME  ** bootymunchr road (edge 68) **
+[ 1848.9] GAME  ** Nobretti rolls 5 **
+[ 1861.4] SAY  >> Let me think here.
+[ 1866.0] SAY  So freaking close, bro.
+[ 1871.9] SAY  There's no There's no like special port
+[ 1874.0] SAY  we can go to. The problem is if I take
+[ 1876.3] SAY  83, I think black just freaks out at me.
+[ 1879.7] SAY  But I also think black's doing well.
+[ 1881.4] SAY  Let's just do it. Let's just take 83.
+[ 1884.3] SAY  I think this is the way we win.
+[ 1890.9] SAY  Cuz I I think the idea is um
+[ 1893.4] SAY  he doesn't have a settle.
+[ 1900.3] SAY  Does he connect?
+[ 1901.7] SAY  Yeah, my boy.
+[ 1903.6] SAY  My boy.
+[ 1904.4] GAME  ** Harka settlement at 11-SHEEP / 3-SHEEP / DESERT **
+[ 1905.6] SAY  I have to. And then And then he doesn't
+[ 1906.9] GAME  ** FunDipDevRip rolls 11 **
+[ 1907.4] SAY  win with the settle. It's perfect. It's
+[ 1909.3] SAY  exactly what needs to happen there.
+[ 1914.6] SAY  Well, now red's probably going to win.
+[ 1917.4] SAY  Yeah.
+[ 1918.6] SAY  And then eight's just a freaking
+[ 1919.8] SAY  monster, right? Every eight's a a city
+[ 1921.8] SAY  essentially.
+[ 1926.4] SAY  I actually think that was the right
+[ 1927.8] SAY  play.
+[ 1934.6] SAY  Um
+[ 1959.7] GAME  ** FunDipDevRip road (edge 44) **
+[ 1960.0] GAME  ** FunDipDevRip road (edge 36) **
+[ 1960.5] GAME  ** FunDipDevRip settlement at 8-BRICK / 3-ORE **
+[ 1963.9] GAME  ** bootymunchr rolls 4 **
+[ 1973.3] SAY  >> Wow, okay. We still have the the monster
+[ 1975.8] SAY  eight.
+[ 1977.6] SAY  Which
+[ 1977.8] GAME  ** bootymunchr road (edge 69) **
+[ 1979.2] SAY  we're cool with that.
+[ 1979.9] GAME  ** Nobretti rolls 7 **
+[ 1983.8] SAY  Interesting, he puts it there though.
+[ 1990.8] SAY  Now the big question is, what do we do?
+[ 1991.4] GAME  ** ? move_robber **
+[ 2005.0] SAY  I mean, there's no way we get army.
+[ 2009.6] SAY  >> [sighs]
+[ 2013.4] SAY  >> Oh,
+[ 2015.2] SAY  six, seven, eight.
+[ 2018.7] SAY  Are there monos out there?
+[ 2028.4] GAME  ** ? move_robber **
+[ 2054.4] SAY  So, how do we win? I think the idea is
+[ 2056.8] SAY  that if we can build a city this turn
+[ 2058.6] SAY  with our eights being open,
+[ 2089.1] GAME  ** Nobretti rolls 9 **
+[ 2115.4] SAY  >> All right, so orange is actually out of
+[ 2116.6] SAY  settles, which gives us a little bit
+[ 2118.4] SAY  more liberty to drop some roads here.
+[ 2125.7] SAY  Three maybe.
+[ 2131.6] SAY  Yeah, I think that's also reasonable,
+[ 2133.2] SAY  too. I I don't think I don't believe
+[ 2135.0] SAY  red.
+[ 2137.0] SAY  I'll be wild, though.
+[ 2139.9] SAY  We can also try to
+[ 2142.8] SAY  Oh my god.
+[ 2145.2] GAME  ** Nobretti road (edge 56) **
+[ 2146.0] SAY  I don't think you get army, right? Not
+[ 2146.2] GAME  ** Nobretti road (edge 59) **
+[ 2147.6] SAY  possible. Not possible.
+[ 2149.8] SAY  All right, we're in a good spot to drop
+[ 2151.0] SAY  roads here.
+[ 2152.2] SAY  There's no way we can actually take
+[ 2153.3] SAY  road.
+[ 2154.6] SAY  Road is so insane.
+[ 2156.8] SAY  So insane.
+[ 2160.3] SAY  Just 11s.
+[ 2163.7] SAY  Yeah, GG.
+[ 2167.0] SAY  Choker.
+[ 2171.4] SAY  He's short.
+[ 2175.7] GAME  ** Nobretti settlement at 12-WOOD / 11-WHEAT **
+[ 2178.4] SAY  Good thing I took away the settle spot.
+[ 2180.6] SAY  So now if we hit like a flurry of
+[ 2180.8] GAME  ** Harka rolls 2 **
+[ 2182.2] SAY  eights, we're fine.
+[ 2193.6] SAY  >> [laughter]
+[ 2194.3] SAY  [snorts]
+[ 2199.9] SAY  >> Um, does eight win?
+[ 2202.9] SAY  Eight is actually the win.
+[ 2207.2] GAME  ** ? move_robber **
+[ 2213.3] SAY  >> [snorts]
+[ 2213.8] SAY  >> Poor man, poor poor man.
+[ 2217.6] SAY  He's super close though.
+[ 2222.5] SAY  So, what does that mean? He's got three
+[ 2223.5] SAY  VPs, he's got one, he's got one. So,
+[ 2225.1] SAY  he's on eight.
+[ 2228.2] SAY  No way we we knocking eight here.
+[ 2230.4] GAME  ** FunDipDevRip rolls 6 **
+[ 2232.5] GAME  ** FunDipDevRip road (edge 14) **
+[ 2235.2] GAME  ** bootymunchr rolls 11 **
+[ 2239.2] SAY  Yeah, that's smart.
+[ 2242.6] SAY  Bro, these sixes are nuts.
+[ 2245.1] SAY  These sixes are nuts.
+[ 2247.7] SAY  Um,
+[ 2249.3] SAY  is it possible if I drop the Yeah, so if
+[ 2252.2] SAY  I put eight four, eight becomes a
+[ 2253.6] SAY  winning roll. It's all a winning roll
+[ 2254.9] SAY  either way.
+[ 2256.3] SAY  That's probably my better play.
+[ 2259.3] GAME  ** bootymunchr road (edge 58) **
+[ 2260.0] SAY  I don't
+[ 2261.4] SAY  think he's got it.
+[ 2270.8] SAY  All right, 18 for the boys and girls.
+[ 2273.6] SAY  Does four Four doesn't do it.
+[ 2280.1] SAY  So, red is literally
+[ 2283.1] SAY  That's so unfortunate for him.
+[ 2286.4] SAY  18. Oh my goodness. Oh my goodness, this
+[ 2290.6] SAY  game this game.
+[ 2292.8] SAY  Oh, man oh man.
+[ 2295.8] SAY  >> [laughter]
+[ 2301.9] SAY  >> What like El Primo rolls. We got very
+[ 2305.4] SAY  lucky. I think um
+[ 2308.7] SAY  a lot [music] of things went our way
+[ 2310.2] SAY  there. Like I'm just going to be real. A
+[ 2312.2] GAME  ** ? move_robber **
+[ 2312.4] SAY  lot of things went our way. We got very
+[ 2314.4] SAY  timely. Look at these dice just maxed
+[ 2315.9] GAME  ** Harka rolls 6 **
+[ 2316.8] SAY  out.
+[ 2317.9] SAY  Dice maxing for sure.
+[ 2320.0] SAY  Then what's crazy though is we actually
+[ 2321.5] SAY  didn't roll the most. We we rolled the
+[ 2323.7] SAY  least amount of cards. But it really was
+[ 2326.2] SAY  just the efficiency of the development
+[ 2327.9] SAY  cards. We pulled no VPs.
+[ 2330.2] SAY  It This is not an easy situation.
+[ 2333.0] SAY  Um playing coastal port
+[ 2336.6] SAY  uh no VPs.
+[ 2339.1] SAY  We did have a monopoly I believe. No.
+[ 2342.4] SAY  No. We What were our devs?
+[ 2346.4] SAY  We pulled yop, road builder.
+[ 2351.1] SAY  And then I think just knights. Is that
+[ 2352.7] SAY  correct?
+[ 2357.4] SAY  Crazy stuff.
+[ 2359.3] SAY  Let me see here. A total of seven. So
+[ 2361.0] GAME  ** FunDipDevRip rolls 8 **
+[ 2361.8] SAY  five knights and a yop and road builder.
+[ 2363.1] GAME  ** ? city at 8-ORE / 4-ORE **
+[ 2363.4] SAY  Honestly
+[ 2364.9] SAY  I think that is a perfect example of
+[ 2366.2] GAME  ** FunDipDevRip settlement at 8-ORE **
+[ 2366.7] SAY  just straight up
+[ 2368.8] SAY  killer efficiency. And also we got very
+[ 2370.6] SAY  lucky with the how the the the dice
+[ 2372.8] SAY  rolled and how it kind of the end game
+[ 2374.1] SAY  played out. But
+[ 2375.6] SAY  there you guys go. Hope you enjoyed
+[ 2377.0] SAY  that. We're on our way back to number
+[ 2378.6] SAY  one and we're definitely making some
+[ 2380.9] SAY  good strides. So I'll catch you guys
+[ 2382.7] SAY  later. Don't forget to like, subscribe,
+[ 2383.9] SAY  do what you got to do. I'll see you
+[ 2385.5] SAY  soon. Thanks crew. Peace.

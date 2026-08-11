@@ -1,0 +1,4714 @@
+{
+  "achievements": {
+    "largest_army": {
+      "holder": "BLUE",
+      "holder_token": "<BLUE>",
+      "size": 3
+    },
+    "longest_road": {
+      "holder": "RED",
+      "holder_token": "<RED>",
+      "length": 11
+    }
+  },
+  "current": {
+    "current_color": "BLUE",
+    "current_color_token": "<BLUE>",
+    "current_prompt": "PLAY_TURN",
+    "is_initial_build_phase": false,
+    "num_completed_turns": 73,
+    "player_index": 3,
+    "turn_index": 3
+  },
+  "edges": [
+    {
+      "id": [
+        0,
+        1
+      ],
+      "node_tokens": [
+        "<N00>",
+        "<N01>"
+      ],
+      "nodes": [
+        0,
+        1
+      ],
+      "road_color": "ORANGE",
+      "road_color_token": "<ORANGE>",
+      "token": "<E00_01>"
+    },
+    {
+      "id": [
+        0,
+        5
+      ],
+      "node_tokens": [
+        "<N00>",
+        "<N05>"
+      ],
+      "nodes": [
+        0,
+        5
+      ],
+      "road_color": "ORANGE",
+      "road_color_token": "<ORANGE>",
+      "token": "<E00_05>"
+    },
+    {
+      "id": [
+        0,
+        20
+      ],
+      "node_tokens": [
+        "<N00>",
+        "<N20>"
+      ],
+      "nodes": [
+        0,
+        20
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E00_20>"
+    },
+    {
+      "id": [
+        1,
+        2
+      ],
+      "node_tokens": [
+        "<N01>",
+        "<N02>"
+      ],
+      "nodes": [
+        1,
+        2
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E01_02>"
+    },
+    {
+      "id": [
+        1,
+        6
+      ],
+      "node_tokens": [
+        "<N01>",
+        "<N06>"
+      ],
+      "nodes": [
+        1,
+        6
+      ],
+      "road_color": "ORANGE",
+      "road_color_token": "<ORANGE>",
+      "token": "<E01_06>"
+    },
+    {
+      "id": [
+        2,
+        3
+      ],
+      "node_tokens": [
+        "<N02>",
+        "<N03>"
+      ],
+      "nodes": [
+        2,
+        3
+      ],
+      "road_color": "RED",
+      "road_color_token": "<RED>",
+      "token": "<E02_03>"
+    },
+    {
+      "id": [
+        2,
+        9
+      ],
+      "node_tokens": [
+        "<N02>",
+        "<N09>"
+      ],
+      "nodes": [
+        2,
+        9
+      ],
+      "road_color": "RED",
+      "road_color_token": "<RED>",
+      "token": "<E02_09>"
+    },
+    {
+      "id": [
+        3,
+        4
+      ],
+      "node_tokens": [
+        "<N03>",
+        "<N04>"
+      ],
+      "nodes": [
+        3,
+        4
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E03_04>"
+    },
+    {
+      "id": [
+        3,
+        12
+      ],
+      "node_tokens": [
+        "<N03>",
+        "<N12>"
+      ],
+      "nodes": [
+        3,
+        12
+      ],
+      "road_color": "RED",
+      "road_color_token": "<RED>",
+      "token": "<E03_12>"
+    },
+    {
+      "id": [
+        4,
+        5
+      ],
+      "node_tokens": [
+        "<N04>",
+        "<N05>"
+      ],
+      "nodes": [
+        4,
+        5
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E04_05>"
+    },
+    {
+      "id": [
+        4,
+        15
+      ],
+      "node_tokens": [
+        "<N04>",
+        "<N15>"
+      ],
+      "nodes": [
+        4,
+        15
+      ],
+      "road_color": "BLACK",
+      "road_color_token": "<BLACK>",
+      "token": "<E04_15>"
+    },
+    {
+      "id": [
+        5,
+        16
+      ],
+      "node_tokens": [
+        "<N05>",
+        "<N16>"
+      ],
+      "nodes": [
+        5,
+        16
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E05_16>"
+    },
+    {
+      "id": [
+        6,
+        7
+      ],
+      "node_tokens": [
+        "<N06>",
+        "<N07>"
+      ],
+      "nodes": [
+        6,
+        7
+      ],
+      "road_color": "ORANGE",
+      "road_color_token": "<ORANGE>",
+      "token": "<E06_07>"
+    },
+    {
+      "id": [
+        6,
+        23
+      ],
+      "node_tokens": [
+        "<N06>",
+        "<N23>"
+      ],
+      "nodes": [
+        6,
+        23
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E06_23>"
+    },
+    {
+      "id": [
+        7,
+        8
+      ],
+      "node_tokens": [
+        "<N07>",
+        "<N08>"
+      ],
+      "nodes": [
+        7,
+        8
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E07_08>"
+    },
+    {
+      "id": [
+        7,
+        24
+      ],
+      "node_tokens": [
+        "<N07>",
+        "<N24>"
+      ],
+      "nodes": [
+        7,
+        24
+      ],
+      "road_color": "ORANGE",
+      "road_color_token": "<ORANGE>",
+      "token": "<E07_24>"
+    },
+    {
+      "id": [
+        8,
+        9
+      ],
+      "node_tokens": [
+        "<N08>",
+        "<N09>"
+      ],
+      "nodes": [
+        8,
+        9
+      ],
+      "road_color": "RED",
+      "road_color_token": "<RED>",
+      "token": "<E08_09>"
+    },
+    {
+      "id": [
+        8,
+        27
+      ],
+      "node_tokens": [
+        "<N08>",
+        "<N27>"
+      ],
+      "nodes": [
+        8,
+        27
+      ],
+      "road_color": "RED",
+      "road_color_token": "<RED>",
+      "token": "<E08_27>"
+    },
+    {
+      "id": [
+        9,
+        10
+      ],
+      "node_tokens": [
+        "<N09>",
+        "<N10>"
+      ],
+      "nodes": [
+        9,
+        10
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E09_10>"
+    },
+    {
+      "id": [
+        10,
+        11
+      ],
+      "node_tokens": [
+        "<N10>",
+        "<N11>"
+      ],
+      "nodes": [
+        10,
+        11
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E10_11>"
+    },
+    {
+      "id": [
+        10,
+        29
+      ],
+      "node_tokens": [
+        "<N10>",
+        "<N29>"
+      ],
+      "nodes": [
+        10,
+        29
+      ],
+      "road_color": "ORANGE",
+      "road_color_token": "<ORANGE>",
+      "token": "<E10_29>"
+    },
+    {
+      "id": [
+        11,
+        12
+      ],
+      "node_tokens": [
+        "<N11>",
+        "<N12>"
+      ],
+      "nodes": [
+        11,
+        12
+      ],
+      "road_color": "RED",
+      "road_color_token": "<RED>",
+      "token": "<E11_12>"
+    },
+    {
+      "id": [
+        11,
+        32
+      ],
+      "node_tokens": [
+        "<N11>",
+        "<N32>"
+      ],
+      "nodes": [
+        11,
+        32
+      ],
+      "road_color": "RED",
+      "road_color_token": "<RED>",
+      "token": "<E11_32>"
+    },
+    {
+      "id": [
+        12,
+        13
+      ],
+      "node_tokens": [
+        "<N12>",
+        "<N13>"
+      ],
+      "nodes": [
+        12,
+        13
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E12_13>"
+    },
+    {
+      "id": [
+        13,
+        14
+      ],
+      "node_tokens": [
+        "<N13>",
+        "<N14>"
+      ],
+      "nodes": [
+        13,
+        14
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E13_14>"
+    },
+    {
+      "id": [
+        13,
+        34
+      ],
+      "node_tokens": [
+        "<N13>",
+        "<N34>"
+      ],
+      "nodes": [
+        13,
+        34
+      ],
+      "road_color": "BLUE",
+      "road_color_token": "<BLUE>",
+      "token": "<E13_34>"
+    },
+    {
+      "id": [
+        14,
+        15
+      ],
+      "node_tokens": [
+        "<N14>",
+        "<N15>"
+      ],
+      "nodes": [
+        14,
+        15
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E14_15>"
+    },
+    {
+      "id": [
+        14,
+        37
+      ],
+      "node_tokens": [
+        "<N14>",
+        "<N37>"
+      ],
+      "nodes": [
+        14,
+        37
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E14_37>"
+    },
+    {
+      "id": [
+        15,
+        17
+      ],
+      "node_tokens": [
+        "<N15>",
+        "<N17>"
+      ],
+      "nodes": [
+        15,
+        17
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E15_17>"
+    },
+    {
+      "id": [
+        16,
+        18
+      ],
+      "node_tokens": [
+        "<N16>",
+        "<N18>"
+      ],
+      "nodes": [
+        16,
+        18
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E16_18>"
+    },
+    {
+      "id": [
+        16,
+        21
+      ],
+      "node_tokens": [
+        "<N16>",
+        "<N21>"
+      ],
+      "nodes": [
+        16,
+        21
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E16_21>"
+    },
+    {
+      "id": [
+        17,
+        18
+      ],
+      "node_tokens": [
+        "<N17>",
+        "<N18>"
+      ],
+      "nodes": [
+        17,
+        18
+      ],
+      "road_color": "BLUE",
+      "road_color_token": "<BLUE>",
+      "token": "<E17_18>"
+    },
+    {
+      "id": [
+        17,
+        39
+      ],
+      "node_tokens": [
+        "<N17>",
+        "<N39>"
+      ],
+      "nodes": [
+        17,
+        39
+      ],
+      "road_color": "BLUE",
+      "road_color_token": "<BLUE>",
+      "token": "<E17_39>"
+    },
+    {
+      "id": [
+        18,
+        40
+      ],
+      "node_tokens": [
+        "<N18>",
+        "<N40>"
+      ],
+      "nodes": [
+        18,
+        40
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E18_40>"
+    },
+    {
+      "id": [
+        19,
+        20
+      ],
+      "node_tokens": [
+        "<N19>",
+        "<N20>"
+      ],
+      "nodes": [
+        19,
+        20
+      ],
+      "road_color": "BLACK",
+      "road_color_token": "<BLACK>",
+      "token": "<E19_20>"
+    },
+    {
+      "id": [
+        19,
+        21
+      ],
+      "node_tokens": [
+        "<N19>",
+        "<N21>"
+      ],
+      "nodes": [
+        19,
+        21
+      ],
+      "road_color": "BLACK",
+      "road_color_token": "<BLACK>",
+      "token": "<E19_21>"
+    },
+    {
+      "id": [
+        19,
+        46
+      ],
+      "node_tokens": [
+        "<N19>",
+        "<N46>"
+      ],
+      "nodes": [
+        19,
+        46
+      ],
+      "road_color": "BLACK",
+      "road_color_token": "<BLACK>",
+      "token": "<E19_46>"
+    },
+    {
+      "id": [
+        20,
+        22
+      ],
+      "node_tokens": [
+        "<N20>",
+        "<N22>"
+      ],
+      "nodes": [
+        20,
+        22
+      ],
+      "road_color": "BLACK",
+      "road_color_token": "<BLACK>",
+      "token": "<E20_22>"
+    },
+    {
+      "id": [
+        21,
+        43
+      ],
+      "node_tokens": [
+        "<N21>",
+        "<N43>"
+      ],
+      "nodes": [
+        21,
+        43
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E21_43>"
+    },
+    {
+      "id": [
+        22,
+        23
+      ],
+      "node_tokens": [
+        "<N22>",
+        "<N23>"
+      ],
+      "nodes": [
+        22,
+        23
+      ],
+      "road_color": "BLACK",
+      "road_color_token": "<BLACK>",
+      "token": "<E22_23>"
+    },
+    {
+      "id": [
+        22,
+        49
+      ],
+      "node_tokens": [
+        "<N22>",
+        "<N49>"
+      ],
+      "nodes": [
+        22,
+        49
+      ],
+      "road_color": "BLACK",
+      "road_color_token": "<BLACK>",
+      "token": "<E22_49>"
+    },
+    {
+      "id": [
+        23,
+        52
+      ],
+      "node_tokens": [
+        "<N23>",
+        "<N52>"
+      ],
+      "nodes": [
+        23,
+        52
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E23_52>"
+    },
+    {
+      "id": [
+        24,
+        25
+      ],
+      "node_tokens": [
+        "<N24>",
+        "<N25>"
+      ],
+      "nodes": [
+        24,
+        25
+      ],
+      "road_color": "RED",
+      "road_color_token": "<RED>",
+      "token": "<E24_25>"
+    },
+    {
+      "id": [
+        24,
+        53
+      ],
+      "node_tokens": [
+        "<N24>",
+        "<N53>"
+      ],
+      "nodes": [
+        24,
+        53
+      ],
+      "road_color": "ORANGE",
+      "road_color_token": "<ORANGE>",
+      "token": "<E24_53>"
+    },
+    {
+      "id": [
+        25,
+        26
+      ],
+      "node_tokens": [
+        "<N25>",
+        "<N26>"
+      ],
+      "nodes": [
+        25,
+        26
+      ],
+      "road_color": "RED",
+      "road_color_token": "<RED>",
+      "token": "<E25_26>"
+    },
+    {
+      "id": [
+        26,
+        27
+      ],
+      "node_tokens": [
+        "<N26>",
+        "<N27>"
+      ],
+      "nodes": [
+        26,
+        27
+      ],
+      "road_color": "RED",
+      "road_color_token": "<RED>",
+      "token": "<E26_27>"
+    },
+    {
+      "id": [
+        27,
+        28
+      ],
+      "node_tokens": [
+        "<N27>",
+        "<N28>"
+      ],
+      "nodes": [
+        27,
+        28
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E27_28>"
+    },
+    {
+      "id": [
+        28,
+        29
+      ],
+      "node_tokens": [
+        "<N28>",
+        "<N29>"
+      ],
+      "nodes": [
+        28,
+        29
+      ],
+      "road_color": "ORANGE",
+      "road_color_token": "<ORANGE>",
+      "token": "<E28_29>"
+    },
+    {
+      "id": [
+        29,
+        30
+      ],
+      "node_tokens": [
+        "<N29>",
+        "<N30>"
+      ],
+      "nodes": [
+        29,
+        30
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E29_30>"
+    },
+    {
+      "id": [
+        30,
+        31
+      ],
+      "node_tokens": [
+        "<N30>",
+        "<N31>"
+      ],
+      "nodes": [
+        30,
+        31
+      ],
+      "road_color": "RED",
+      "road_color_token": "<RED>",
+      "token": "<E30_31>"
+    },
+    {
+      "id": [
+        31,
+        32
+      ],
+      "node_tokens": [
+        "<N31>",
+        "<N32>"
+      ],
+      "nodes": [
+        31,
+        32
+      ],
+      "road_color": "RED",
+      "road_color_token": "<RED>",
+      "token": "<E31_32>"
+    },
+    {
+      "id": [
+        32,
+        33
+      ],
+      "node_tokens": [
+        "<N32>",
+        "<N33>"
+      ],
+      "nodes": [
+        32,
+        33
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E32_33>"
+    },
+    {
+      "id": [
+        33,
+        34
+      ],
+      "node_tokens": [
+        "<N33>",
+        "<N34>"
+      ],
+      "nodes": [
+        33,
+        34
+      ],
+      "road_color": "BLUE",
+      "road_color_token": "<BLUE>",
+      "token": "<E33_34>"
+    },
+    {
+      "id": [
+        34,
+        35
+      ],
+      "node_tokens": [
+        "<N34>",
+        "<N35>"
+      ],
+      "nodes": [
+        34,
+        35
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E34_35>"
+    },
+    {
+      "id": [
+        35,
+        36
+      ],
+      "node_tokens": [
+        "<N35>",
+        "<N36>"
+      ],
+      "nodes": [
+        35,
+        36
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E35_36>"
+    },
+    {
+      "id": [
+        36,
+        37
+      ],
+      "node_tokens": [
+        "<N36>",
+        "<N37>"
+      ],
+      "nodes": [
+        36,
+        37
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E36_37>"
+    },
+    {
+      "id": [
+        37,
+        38
+      ],
+      "node_tokens": [
+        "<N37>",
+        "<N38>"
+      ],
+      "nodes": [
+        37,
+        38
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E37_38>"
+    },
+    {
+      "id": [
+        38,
+        39
+      ],
+      "node_tokens": [
+        "<N38>",
+        "<N39>"
+      ],
+      "nodes": [
+        38,
+        39
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E38_39>"
+    },
+    {
+      "id": [
+        39,
+        41
+      ],
+      "node_tokens": [
+        "<N39>",
+        "<N41>"
+      ],
+      "nodes": [
+        39,
+        41
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E39_41>"
+    },
+    {
+      "id": [
+        40,
+        42
+      ],
+      "node_tokens": [
+        "<N40>",
+        "<N42>"
+      ],
+      "nodes": [
+        40,
+        42
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E40_42>"
+    },
+    {
+      "id": [
+        40,
+        44
+      ],
+      "node_tokens": [
+        "<N40>",
+        "<N44>"
+      ],
+      "nodes": [
+        40,
+        44
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E40_44>"
+    },
+    {
+      "id": [
+        41,
+        42
+      ],
+      "node_tokens": [
+        "<N41>",
+        "<N42>"
+      ],
+      "nodes": [
+        41,
+        42
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E41_42>"
+    },
+    {
+      "id": [
+        43,
+        44
+      ],
+      "node_tokens": [
+        "<N43>",
+        "<N44>"
+      ],
+      "nodes": [
+        43,
+        44
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E43_44>"
+    },
+    {
+      "id": [
+        43,
+        47
+      ],
+      "node_tokens": [
+        "<N43>",
+        "<N47>"
+      ],
+      "nodes": [
+        43,
+        47
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E43_47>"
+    },
+    {
+      "id": [
+        45,
+        46
+      ],
+      "node_tokens": [
+        "<N45>",
+        "<N46>"
+      ],
+      "nodes": [
+        45,
+        46
+      ],
+      "road_color": "BLACK",
+      "road_color_token": "<BLACK>",
+      "token": "<E45_46>"
+    },
+    {
+      "id": [
+        45,
+        47
+      ],
+      "node_tokens": [
+        "<N45>",
+        "<N47>"
+      ],
+      "nodes": [
+        45,
+        47
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E45_47>"
+    },
+    {
+      "id": [
+        46,
+        48
+      ],
+      "node_tokens": [
+        "<N46>",
+        "<N48>"
+      ],
+      "nodes": [
+        46,
+        48
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E46_48>"
+    },
+    {
+      "id": [
+        48,
+        49
+      ],
+      "node_tokens": [
+        "<N48>",
+        "<N49>"
+      ],
+      "nodes": [
+        48,
+        49
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E48_49>"
+    },
+    {
+      "id": [
+        49,
+        50
+      ],
+      "node_tokens": [
+        "<N49>",
+        "<N50>"
+      ],
+      "nodes": [
+        49,
+        50
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E49_50>"
+    },
+    {
+      "id": [
+        50,
+        51
+      ],
+      "node_tokens": [
+        "<N50>",
+        "<N51>"
+      ],
+      "nodes": [
+        50,
+        51
+      ],
+      "road_color": null,
+      "road_color_token": null,
+      "token": "<E50_51>"
+    },
+    {
+      "id": [
+        51,
+        52
+      ],
+      "node_tokens": [
+        "<N51>",
+        "<N52>"
+      ],
+      "nodes": [
+        51,
+        52
+      ],
+      "road_color": "ORANGE",
+      "road_color_token": "<ORANGE>",
+      "token": "<E51_52>"
+    },
+    {
+      "id": [
+        52,
+        53
+      ],
+      "node_tokens": [
+        "<N52>",
+        "<N53>"
+      ],
+      "nodes": [
+        52,
+        53
+      ],
+      "road_color": "ORANGE",
+      "road_color_token": "<ORANGE>",
+      "token": "<E52_53>"
+    }
+  ],
+  "nodes": [
+    {
+      "adjacent_edge_tokens": [
+        "<E00_01>",
+        "<E00_05>",
+        "<E00_20>"
+      ],
+      "adjacent_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          5
+        ],
+        [
+          0,
+          20
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T00>",
+        "<T05>",
+        "<T06>"
+      ],
+      "adjacent_tiles": [
+        0,
+        5,
+        6
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 0,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N00>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E00_01>",
+        "<E01_02>",
+        "<E01_06>"
+      ],
+      "adjacent_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          6
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T00>",
+        "<T01>",
+        "<T06>"
+      ],
+      "adjacent_tiles": [
+        0,
+        1,
+        6
+      ],
+      "building": "SETTLEMENT",
+      "building_token": "<SETTLEMENT>",
+      "color": "ORANGE",
+      "color_token": "<ORANGE>",
+      "id": 1,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N01>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E01_02>",
+        "<E02_03>",
+        "<E02_09>"
+      ],
+      "adjacent_edges": [
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          9
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T00>",
+        "<T01>",
+        "<T02>"
+      ],
+      "adjacent_tiles": [
+        0,
+        1,
+        2
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 2,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N02>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E02_03>",
+        "<E03_04>",
+        "<E03_12>"
+      ],
+      "adjacent_edges": [
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          3,
+          12
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T00>",
+        "<T02>",
+        "<T03>"
+      ],
+      "adjacent_tiles": [
+        0,
+        2,
+        3
+      ],
+      "building": "SETTLEMENT",
+      "building_token": "<SETTLEMENT>",
+      "color": "RED",
+      "color_token": "<RED>",
+      "id": 3,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N03>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E03_04>",
+        "<E04_05>",
+        "<E04_15>"
+      ],
+      "adjacent_edges": [
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          4,
+          15
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T00>",
+        "<T03>",
+        "<T04>"
+      ],
+      "adjacent_tiles": [
+        0,
+        3,
+        4
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 4,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N04>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E00_05>",
+        "<E04_05>",
+        "<E05_16>"
+      ],
+      "adjacent_edges": [
+        [
+          0,
+          5
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          16
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T00>",
+        "<T04>",
+        "<T05>"
+      ],
+      "adjacent_tiles": [
+        0,
+        4,
+        5
+      ],
+      "building": "SETTLEMENT",
+      "building_token": "<SETTLEMENT>",
+      "color": "ORANGE",
+      "color_token": "<ORANGE>",
+      "id": 5,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N05>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E01_06>",
+        "<E06_07>",
+        "<E06_23>"
+      ],
+      "adjacent_edges": [
+        [
+          1,
+          6
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          6,
+          23
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T01>",
+        "<T06>",
+        "<T18>"
+      ],
+      "adjacent_tiles": [
+        1,
+        6,
+        18
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 6,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N06>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E06_07>",
+        "<E07_08>",
+        "<E07_24>"
+      ],
+      "adjacent_edges": [
+        [
+          6,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          7,
+          24
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T01>",
+        "<T07>",
+        "<T18>"
+      ],
+      "adjacent_tiles": [
+        1,
+        7,
+        18
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 7,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N07>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E07_08>",
+        "<E08_09>",
+        "<E08_27>"
+      ],
+      "adjacent_edges": [
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          9
+        ],
+        [
+          8,
+          27
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T01>",
+        "<T07>",
+        "<T08>"
+      ],
+      "adjacent_tiles": [
+        1,
+        7,
+        8
+      ],
+      "building": "CITY",
+      "building_token": "<CITY>",
+      "color": "RED",
+      "color_token": "<RED>",
+      "id": 8,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N08>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E02_09>",
+        "<E08_09>",
+        "<E09_10>"
+      ],
+      "adjacent_edges": [
+        [
+          2,
+          9
+        ],
+        [
+          8,
+          9
+        ],
+        [
+          9,
+          10
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T01>",
+        "<T02>",
+        "<T08>"
+      ],
+      "adjacent_tiles": [
+        1,
+        2,
+        8
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 9,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N09>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E09_10>",
+        "<E10_11>",
+        "<E10_29>"
+      ],
+      "adjacent_edges": [
+        [
+          9,
+          10
+        ],
+        [
+          10,
+          11
+        ],
+        [
+          10,
+          29
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T02>",
+        "<T08>",
+        "<T09>"
+      ],
+      "adjacent_tiles": [
+        2,
+        8,
+        9
+      ],
+      "building": "CITY",
+      "building_token": "<CITY>",
+      "color": "ORANGE",
+      "color_token": "<ORANGE>",
+      "id": 10,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N10>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E10_11>",
+        "<E11_12>",
+        "<E11_32>"
+      ],
+      "adjacent_edges": [
+        [
+          10,
+          11
+        ],
+        [
+          11,
+          12
+        ],
+        [
+          11,
+          32
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T02>",
+        "<T09>",
+        "<T10>"
+      ],
+      "adjacent_tiles": [
+        2,
+        9,
+        10
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 11,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N11>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E03_12>",
+        "<E11_12>",
+        "<E12_13>"
+      ],
+      "adjacent_edges": [
+        [
+          3,
+          12
+        ],
+        [
+          11,
+          12
+        ],
+        [
+          12,
+          13
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T02>",
+        "<T03>",
+        "<T10>"
+      ],
+      "adjacent_tiles": [
+        2,
+        3,
+        10
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 12,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N12>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E12_13>",
+        "<E13_14>",
+        "<E13_34>"
+      ],
+      "adjacent_edges": [
+        [
+          12,
+          13
+        ],
+        [
+          13,
+          14
+        ],
+        [
+          13,
+          34
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T03>",
+        "<T10>",
+        "<T11>"
+      ],
+      "adjacent_tiles": [
+        3,
+        10,
+        11
+      ],
+      "building": "CITY",
+      "building_token": "<CITY>",
+      "color": "BLUE",
+      "color_token": "<BLUE>",
+      "id": 13,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N13>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E13_14>",
+        "<E14_15>",
+        "<E14_37>"
+      ],
+      "adjacent_edges": [
+        [
+          13,
+          14
+        ],
+        [
+          14,
+          15
+        ],
+        [
+          14,
+          37
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T03>",
+        "<T11>",
+        "<T12>"
+      ],
+      "adjacent_tiles": [
+        3,
+        11,
+        12
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 14,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N14>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E04_15>",
+        "<E14_15>",
+        "<E15_17>"
+      ],
+      "adjacent_edges": [
+        [
+          4,
+          15
+        ],
+        [
+          14,
+          15
+        ],
+        [
+          15,
+          17
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T03>",
+        "<T04>",
+        "<T12>"
+      ],
+      "adjacent_tiles": [
+        3,
+        4,
+        12
+      ],
+      "building": "SETTLEMENT",
+      "building_token": "<SETTLEMENT>",
+      "color": "BLACK",
+      "color_token": "<BLACK>",
+      "id": 15,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N15>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E05_16>",
+        "<E16_18>",
+        "<E16_21>"
+      ],
+      "adjacent_edges": [
+        [
+          5,
+          16
+        ],
+        [
+          16,
+          18
+        ],
+        [
+          16,
+          21
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T04>",
+        "<T05>",
+        "<T14>"
+      ],
+      "adjacent_tiles": [
+        4,
+        5,
+        14
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 16,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N16>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E15_17>",
+        "<E17_18>",
+        "<E17_39>"
+      ],
+      "adjacent_edges": [
+        [
+          15,
+          17
+        ],
+        [
+          17,
+          18
+        ],
+        [
+          17,
+          39
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T04>",
+        "<T12>",
+        "<T13>"
+      ],
+      "adjacent_tiles": [
+        4,
+        12,
+        13
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 17,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N17>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E16_18>",
+        "<E17_18>",
+        "<E18_40>"
+      ],
+      "adjacent_edges": [
+        [
+          16,
+          18
+        ],
+        [
+          17,
+          18
+        ],
+        [
+          18,
+          40
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T04>",
+        "<T13>",
+        "<T14>"
+      ],
+      "adjacent_tiles": [
+        4,
+        13,
+        14
+      ],
+      "building": "CITY",
+      "building_token": "<CITY>",
+      "color": "BLUE",
+      "color_token": "<BLUE>",
+      "id": 18,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N18>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E19_20>",
+        "<E19_21>",
+        "<E19_46>"
+      ],
+      "adjacent_edges": [
+        [
+          19,
+          20
+        ],
+        [
+          19,
+          21
+        ],
+        [
+          19,
+          46
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T05>",
+        "<T15>",
+        "<T16>"
+      ],
+      "adjacent_tiles": [
+        5,
+        15,
+        16
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 19,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N19>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E00_20>",
+        "<E19_20>",
+        "<E20_22>"
+      ],
+      "adjacent_edges": [
+        [
+          0,
+          20
+        ],
+        [
+          19,
+          20
+        ],
+        [
+          20,
+          22
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T05>",
+        "<T06>",
+        "<T16>"
+      ],
+      "adjacent_tiles": [
+        5,
+        6,
+        16
+      ],
+      "building": "SETTLEMENT",
+      "building_token": "<SETTLEMENT>",
+      "color": "BLACK",
+      "color_token": "<BLACK>",
+      "id": 20,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N20>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E16_21>",
+        "<E19_21>",
+        "<E21_43>"
+      ],
+      "adjacent_edges": [
+        [
+          16,
+          21
+        ],
+        [
+          19,
+          21
+        ],
+        [
+          21,
+          43
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T05>",
+        "<T14>",
+        "<T15>"
+      ],
+      "adjacent_tiles": [
+        5,
+        14,
+        15
+      ],
+      "building": "SETTLEMENT",
+      "building_token": "<SETTLEMENT>",
+      "color": "BLACK",
+      "color_token": "<BLACK>",
+      "id": 21,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N21>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E20_22>",
+        "<E22_23>",
+        "<E22_49>"
+      ],
+      "adjacent_edges": [
+        [
+          20,
+          22
+        ],
+        [
+          22,
+          23
+        ],
+        [
+          22,
+          49
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T06>",
+        "<T16>",
+        "<T17>"
+      ],
+      "adjacent_tiles": [
+        6,
+        16,
+        17
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 22,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N22>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E06_23>",
+        "<E22_23>",
+        "<E23_52>"
+      ],
+      "adjacent_edges": [
+        [
+          6,
+          23
+        ],
+        [
+          22,
+          23
+        ],
+        [
+          23,
+          52
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T06>",
+        "<T17>",
+        "<T18>"
+      ],
+      "adjacent_tiles": [
+        6,
+        17,
+        18
+      ],
+      "building": "SETTLEMENT",
+      "building_token": "<SETTLEMENT>",
+      "color": "BLACK",
+      "color_token": "<BLACK>",
+      "id": 23,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N23>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E07_24>",
+        "<E24_25>",
+        "<E24_53>"
+      ],
+      "adjacent_edges": [
+        [
+          7,
+          24
+        ],
+        [
+          24,
+          25
+        ],
+        [
+          24,
+          53
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T07>",
+        "<T18>"
+      ],
+      "adjacent_tiles": [
+        7,
+        18
+      ],
+      "building": "SETTLEMENT",
+      "building_token": "<SETTLEMENT>",
+      "color": "ORANGE",
+      "color_token": "<ORANGE>",
+      "id": 24,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N24>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E24_25>",
+        "<E25_26>"
+      ],
+      "adjacent_edges": [
+        [
+          24,
+          25
+        ],
+        [
+          25,
+          26
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T07>"
+      ],
+      "adjacent_tiles": [
+        7
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 25,
+      "port_ids": [
+        0
+      ],
+      "port_tokens": [
+        "<P00>"
+      ],
+      "token": "<N25>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E25_26>",
+        "<E26_27>"
+      ],
+      "adjacent_edges": [
+        [
+          25,
+          26
+        ],
+        [
+          26,
+          27
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T07>"
+      ],
+      "adjacent_tiles": [
+        7
+      ],
+      "building": "SETTLEMENT",
+      "building_token": "<SETTLEMENT>",
+      "color": "RED",
+      "color_token": "<RED>",
+      "id": 26,
+      "port_ids": [
+        0
+      ],
+      "port_tokens": [
+        "<P00>"
+      ],
+      "token": "<N26>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E08_27>",
+        "<E26_27>",
+        "<E27_28>"
+      ],
+      "adjacent_edges": [
+        [
+          8,
+          27
+        ],
+        [
+          26,
+          27
+        ],
+        [
+          27,
+          28
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T07>",
+        "<T08>"
+      ],
+      "adjacent_tiles": [
+        7,
+        8
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 27,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N27>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E27_28>",
+        "<E28_29>"
+      ],
+      "adjacent_edges": [
+        [
+          27,
+          28
+        ],
+        [
+          28,
+          29
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T08>"
+      ],
+      "adjacent_tiles": [
+        8
+      ],
+      "building": "SETTLEMENT",
+      "building_token": "<SETTLEMENT>",
+      "color": "ORANGE",
+      "color_token": "<ORANGE>",
+      "id": 28,
+      "port_ids": [
+        1
+      ],
+      "port_tokens": [
+        "<P01>"
+      ],
+      "token": "<N28>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E10_29>",
+        "<E28_29>",
+        "<E29_30>"
+      ],
+      "adjacent_edges": [
+        [
+          10,
+          29
+        ],
+        [
+          28,
+          29
+        ],
+        [
+          29,
+          30
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T08>",
+        "<T09>"
+      ],
+      "adjacent_tiles": [
+        8,
+        9
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 29,
+      "port_ids": [
+        1
+      ],
+      "port_tokens": [
+        "<P01>"
+      ],
+      "token": "<N29>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E29_30>",
+        "<E30_31>"
+      ],
+      "adjacent_edges": [
+        [
+          29,
+          30
+        ],
+        [
+          30,
+          31
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T09>"
+      ],
+      "adjacent_tiles": [
+        9
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 30,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N30>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E30_31>",
+        "<E31_32>"
+      ],
+      "adjacent_edges": [
+        [
+          30,
+          31
+        ],
+        [
+          31,
+          32
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T09>"
+      ],
+      "adjacent_tiles": [
+        9
+      ],
+      "building": "SETTLEMENT",
+      "building_token": "<SETTLEMENT>",
+      "color": "RED",
+      "color_token": "<RED>",
+      "id": 31,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N31>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E11_32>",
+        "<E31_32>",
+        "<E32_33>"
+      ],
+      "adjacent_edges": [
+        [
+          11,
+          32
+        ],
+        [
+          31,
+          32
+        ],
+        [
+          32,
+          33
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T09>",
+        "<T10>"
+      ],
+      "adjacent_tiles": [
+        9,
+        10
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 32,
+      "port_ids": [
+        2
+      ],
+      "port_tokens": [
+        "<P02>"
+      ],
+      "token": "<N32>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E32_33>",
+        "<E33_34>"
+      ],
+      "adjacent_edges": [
+        [
+          32,
+          33
+        ],
+        [
+          33,
+          34
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T10>"
+      ],
+      "adjacent_tiles": [
+        10
+      ],
+      "building": "SETTLEMENT",
+      "building_token": "<SETTLEMENT>",
+      "color": "BLUE",
+      "color_token": "<BLUE>",
+      "id": 33,
+      "port_ids": [
+        2
+      ],
+      "port_tokens": [
+        "<P02>"
+      ],
+      "token": "<N33>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E13_34>",
+        "<E33_34>",
+        "<E34_35>"
+      ],
+      "adjacent_edges": [
+        [
+          13,
+          34
+        ],
+        [
+          33,
+          34
+        ],
+        [
+          34,
+          35
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T10>",
+        "<T11>"
+      ],
+      "adjacent_tiles": [
+        10,
+        11
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 34,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N34>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E34_35>",
+        "<E35_36>"
+      ],
+      "adjacent_edges": [
+        [
+          34,
+          35
+        ],
+        [
+          35,
+          36
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T11>"
+      ],
+      "adjacent_tiles": [
+        11
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 35,
+      "port_ids": [
+        3
+      ],
+      "port_tokens": [
+        "<P03>"
+      ],
+      "token": "<N35>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E35_36>",
+        "<E36_37>"
+      ],
+      "adjacent_edges": [
+        [
+          35,
+          36
+        ],
+        [
+          36,
+          37
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T11>"
+      ],
+      "adjacent_tiles": [
+        11
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 36,
+      "port_ids": [
+        3
+      ],
+      "port_tokens": [
+        "<P03>"
+      ],
+      "token": "<N36>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E14_37>",
+        "<E36_37>",
+        "<E37_38>"
+      ],
+      "adjacent_edges": [
+        [
+          14,
+          37
+        ],
+        [
+          36,
+          37
+        ],
+        [
+          37,
+          38
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T11>",
+        "<T12>"
+      ],
+      "adjacent_tiles": [
+        11,
+        12
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 37,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N37>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E37_38>",
+        "<E38_39>"
+      ],
+      "adjacent_edges": [
+        [
+          37,
+          38
+        ],
+        [
+          38,
+          39
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T12>"
+      ],
+      "adjacent_tiles": [
+        12
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 38,
+      "port_ids": [
+        4
+      ],
+      "port_tokens": [
+        "<P04>"
+      ],
+      "token": "<N38>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E17_39>",
+        "<E38_39>",
+        "<E39_41>"
+      ],
+      "adjacent_edges": [
+        [
+          17,
+          39
+        ],
+        [
+          38,
+          39
+        ],
+        [
+          39,
+          41
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T12>",
+        "<T13>"
+      ],
+      "adjacent_tiles": [
+        12,
+        13
+      ],
+      "building": "SETTLEMENT",
+      "building_token": "<SETTLEMENT>",
+      "color": "BLUE",
+      "color_token": "<BLUE>",
+      "id": 39,
+      "port_ids": [
+        4
+      ],
+      "port_tokens": [
+        "<P04>"
+      ],
+      "token": "<N39>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E18_40>",
+        "<E40_42>",
+        "<E40_44>"
+      ],
+      "adjacent_edges": [
+        [
+          18,
+          40
+        ],
+        [
+          40,
+          42
+        ],
+        [
+          40,
+          44
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T13>",
+        "<T14>"
+      ],
+      "adjacent_tiles": [
+        13,
+        14
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 40,
+      "port_ids": [
+        5
+      ],
+      "port_tokens": [
+        "<P05>"
+      ],
+      "token": "<N40>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E39_41>",
+        "<E41_42>"
+      ],
+      "adjacent_edges": [
+        [
+          39,
+          41
+        ],
+        [
+          41,
+          42
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T13>"
+      ],
+      "adjacent_tiles": [
+        13
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 41,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N41>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E40_42>",
+        "<E41_42>"
+      ],
+      "adjacent_edges": [
+        [
+          40,
+          42
+        ],
+        [
+          41,
+          42
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T13>"
+      ],
+      "adjacent_tiles": [
+        13
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 42,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N42>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E21_43>",
+        "<E43_44>",
+        "<E43_47>"
+      ],
+      "adjacent_edges": [
+        [
+          21,
+          43
+        ],
+        [
+          43,
+          44
+        ],
+        [
+          43,
+          47
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T14>",
+        "<T15>"
+      ],
+      "adjacent_tiles": [
+        14,
+        15
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 43,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N43>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E40_44>",
+        "<E43_44>"
+      ],
+      "adjacent_edges": [
+        [
+          40,
+          44
+        ],
+        [
+          43,
+          44
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T14>"
+      ],
+      "adjacent_tiles": [
+        14
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 44,
+      "port_ids": [
+        5
+      ],
+      "port_tokens": [
+        "<P05>"
+      ],
+      "token": "<N44>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E45_46>",
+        "<E45_47>"
+      ],
+      "adjacent_edges": [
+        [
+          45,
+          46
+        ],
+        [
+          45,
+          47
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T15>"
+      ],
+      "adjacent_tiles": [
+        15
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 45,
+      "port_ids": [
+        6
+      ],
+      "port_tokens": [
+        "<P06>"
+      ],
+      "token": "<N45>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E19_46>",
+        "<E45_46>",
+        "<E46_48>"
+      ],
+      "adjacent_edges": [
+        [
+          19,
+          46
+        ],
+        [
+          45,
+          46
+        ],
+        [
+          46,
+          48
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T15>",
+        "<T16>"
+      ],
+      "adjacent_tiles": [
+        15,
+        16
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 46,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N46>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E43_47>",
+        "<E45_47>"
+      ],
+      "adjacent_edges": [
+        [
+          43,
+          47
+        ],
+        [
+          45,
+          47
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T15>"
+      ],
+      "adjacent_tiles": [
+        15
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 47,
+      "port_ids": [
+        6
+      ],
+      "port_tokens": [
+        "<P06>"
+      ],
+      "token": "<N47>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E46_48>",
+        "<E48_49>"
+      ],
+      "adjacent_edges": [
+        [
+          46,
+          48
+        ],
+        [
+          48,
+          49
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T16>"
+      ],
+      "adjacent_tiles": [
+        16
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 48,
+      "port_ids": [
+        7
+      ],
+      "port_tokens": [
+        "<P07>"
+      ],
+      "token": "<N48>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E22_49>",
+        "<E48_49>",
+        "<E49_50>"
+      ],
+      "adjacent_edges": [
+        [
+          22,
+          49
+        ],
+        [
+          48,
+          49
+        ],
+        [
+          49,
+          50
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T16>",
+        "<T17>"
+      ],
+      "adjacent_tiles": [
+        16,
+        17
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 49,
+      "port_ids": [
+        7
+      ],
+      "port_tokens": [
+        "<P07>"
+      ],
+      "token": "<N49>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E49_50>",
+        "<E50_51>"
+      ],
+      "adjacent_edges": [
+        [
+          49,
+          50
+        ],
+        [
+          50,
+          51
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T17>"
+      ],
+      "adjacent_tiles": [
+        17
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 50,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N50>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E50_51>",
+        "<E51_52>"
+      ],
+      "adjacent_edges": [
+        [
+          50,
+          51
+        ],
+        [
+          51,
+          52
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T17>"
+      ],
+      "adjacent_tiles": [
+        17
+      ],
+      "building": "SETTLEMENT",
+      "building_token": "<SETTLEMENT>",
+      "color": "ORANGE",
+      "color_token": "<ORANGE>",
+      "id": 51,
+      "port_ids": [],
+      "port_tokens": [],
+      "token": "<N51>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E23_52>",
+        "<E51_52>",
+        "<E52_53>"
+      ],
+      "adjacent_edges": [
+        [
+          23,
+          52
+        ],
+        [
+          51,
+          52
+        ],
+        [
+          52,
+          53
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T17>",
+        "<T18>"
+      ],
+      "adjacent_tiles": [
+        17,
+        18
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 52,
+      "port_ids": [
+        8
+      ],
+      "port_tokens": [
+        "<P08>"
+      ],
+      "token": "<N52>"
+    },
+    {
+      "adjacent_edge_tokens": [
+        "<E24_53>",
+        "<E52_53>"
+      ],
+      "adjacent_edges": [
+        [
+          24,
+          53
+        ],
+        [
+          52,
+          53
+        ]
+      ],
+      "adjacent_tile_tokens": [
+        "<T18>"
+      ],
+      "adjacent_tiles": [
+        18
+      ],
+      "building": null,
+      "building_token": null,
+      "color": null,
+      "color_token": null,
+      "id": 53,
+      "port_ids": [
+        8
+      ],
+      "port_tokens": [
+        "<P08>"
+      ],
+      "token": "<N53>"
+    }
+  ],
+  "players": [
+    {
+      "city_count": 1,
+      "color": "ORANGE",
+      "color_token": "<ORANGE>",
+      "longest_road_length": 8,
+      "played_knights": 2,
+      "road_count": 10,
+      "settlement_count": 5,
+      "visible_victory_points": 7
+    },
+    {
+      "city_count": 1,
+      "color": "RED",
+      "color_token": "<RED>",
+      "longest_road_length": 11,
+      "played_knights": 0,
+      "road_count": 12,
+      "settlement_count": 3,
+      "visible_victory_points": 7
+    },
+    {
+      "city_count": 0,
+      "color": "BLACK",
+      "color_token": "<BLACK>",
+      "longest_road_length": 5,
+      "played_knights": 0,
+      "road_count": 8,
+      "settlement_count": 4,
+      "visible_victory_points": 4
+    },
+    {
+      "city_count": 2,
+      "color": "BLUE",
+      "color_token": "<BLUE>",
+      "longest_road_length": 2,
+      "played_knights": 3,
+      "road_count": 4,
+      "settlement_count": 2,
+      "visible_victory_points": 8
+    }
+  ],
+  "ports": [
+    {
+      "attached_node_tokens": [
+        "<N25>",
+        "<N26>"
+      ],
+      "attached_nodes": [
+        25,
+        26
+      ],
+      "coord": [
+        3,
+        -3,
+        0
+      ],
+      "direction": "WEST",
+      "id": 0,
+      "kind": "resource",
+      "ratio": "2:1",
+      "resource": "WHEAT",
+      "resource_token": "<WHEAT>",
+      "token": "<P00>"
+    },
+    {
+      "attached_node_tokens": [
+        "<N28>",
+        "<N29>"
+      ],
+      "attached_nodes": [
+        28,
+        29
+      ],
+      "coord": [
+        1,
+        -3,
+        2
+      ],
+      "direction": "NORTHWEST",
+      "id": 1,
+      "kind": "generic",
+      "ratio": "3:1",
+      "resource": null,
+      "resource_token": null,
+      "token": "<P01>"
+    },
+    {
+      "attached_node_tokens": [
+        "<N32>",
+        "<N33>"
+      ],
+      "attached_nodes": [
+        32,
+        33
+      ],
+      "coord": [
+        -1,
+        -2,
+        3
+      ],
+      "direction": "NORTHWEST",
+      "id": 2,
+      "kind": "generic",
+      "ratio": "3:1",
+      "resource": null,
+      "resource_token": null,
+      "token": "<P02>"
+    },
+    {
+      "attached_node_tokens": [
+        "<N35>",
+        "<N36>"
+      ],
+      "attached_nodes": [
+        35,
+        36
+      ],
+      "coord": [
+        -3,
+        0,
+        3
+      ],
+      "direction": "NORTHEAST",
+      "id": 3,
+      "kind": "resource",
+      "ratio": "2:1",
+      "resource": "WOOD",
+      "resource_token": "<WOOD>",
+      "token": "<P03>"
+    },
+    {
+      "attached_node_tokens": [
+        "<N38>",
+        "<N39>"
+      ],
+      "attached_nodes": [
+        38,
+        39
+      ],
+      "coord": [
+        -3,
+        2,
+        1
+      ],
+      "direction": "EAST",
+      "id": 4,
+      "kind": "generic",
+      "ratio": "3:1",
+      "resource": null,
+      "resource_token": null,
+      "token": "<P04>"
+    },
+    {
+      "attached_node_tokens": [
+        "<N40>",
+        "<N44>"
+      ],
+      "attached_nodes": [
+        40,
+        44
+      ],
+      "coord": [
+        -2,
+        3,
+        -1
+      ],
+      "direction": "EAST",
+      "id": 5,
+      "kind": "generic",
+      "ratio": "3:1",
+      "resource": null,
+      "resource_token": null,
+      "token": "<P05>"
+    },
+    {
+      "attached_node_tokens": [
+        "<N47>",
+        "<N45>"
+      ],
+      "attached_nodes": [
+        47,
+        45
+      ],
+      "coord": [
+        0,
+        3,
+        -3
+      ],
+      "direction": "SOUTHEAST",
+      "id": 6,
+      "kind": "resource",
+      "ratio": "2:1",
+      "resource": "BRICK",
+      "resource_token": "<BRICK>",
+      "token": "<P06>"
+    },
+    {
+      "attached_node_tokens": [
+        "<N48>",
+        "<N49>"
+      ],
+      "attached_nodes": [
+        48,
+        49
+      ],
+      "coord": [
+        2,
+        1,
+        -3
+      ],
+      "direction": "SOUTHWEST",
+      "id": 7,
+      "kind": "resource",
+      "ratio": "2:1",
+      "resource": "ORE",
+      "resource_token": "<ORE>",
+      "token": "<P07>"
+    },
+    {
+      "attached_node_tokens": [
+        "<N52>",
+        "<N53>"
+      ],
+      "attached_nodes": [
+        52,
+        53
+      ],
+      "coord": [
+        3,
+        -1,
+        -2
+      ],
+      "direction": "SOUTHWEST",
+      "id": 8,
+      "kind": "resource",
+      "ratio": "2:1",
+      "resource": "SHEEP",
+      "resource_token": "<SHEEP>",
+      "token": "<P08>"
+    }
+  ],
+  "robber": {
+    "coord": [
+      1,
+      -2,
+      1
+    ],
+    "object_token": "<ROBBER>",
+    "tile_id": 8,
+    "tile_token": "<T08>"
+  },
+  "sample": {
+    "contract_path": "contracts/sample_031.json",
+    "id": "sample_031",
+    "image_path": "images/sample_031.png",
+    "image_size": [
+      512,
+      512
+    ],
+    "index": 31
+  },
+  "schema": "catan_public_board_contract/v0",
+  "source": {
+    "engine_action_count": 537,
+    "game_id": "191196714",
+    "kind": "colonist_replay",
+    "replay_file": "data_pipeline/bootstrapping/data/raw_replays/191196714.json",
+    "replay_semantic_issue_count": 35,
+    "replay_step": 572,
+    "total_replay_steps": 573
+  },
+  "tiles": [
+    {
+      "coord": [
+        0,
+        0,
+        0
+      ],
+      "edge_tokens": [
+        "<E00_01>",
+        "<E00_05>",
+        "<E01_02>",
+        "<E02_03>",
+        "<E03_04>",
+        "<E04_05>"
+      ],
+      "edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          5
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "has_robber": false,
+      "id": 0,
+      "node_tokens": [
+        "<N00>",
+        "<N01>",
+        "<N02>",
+        "<N03>",
+        "<N04>",
+        "<N05>"
+      ],
+      "nodes": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "number": 11,
+      "resource": "SHEEP",
+      "resource_token": "<SHEEP>",
+      "token": "<T00>"
+    },
+    {
+      "coord": [
+        1,
+        -1,
+        0
+      ],
+      "edge_tokens": [
+        "<E01_02>",
+        "<E01_06>",
+        "<E02_09>",
+        "<E06_07>",
+        "<E07_08>",
+        "<E08_09>"
+      ],
+      "edges": [
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          6
+        ],
+        [
+          2,
+          9
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          9
+        ]
+      ],
+      "has_robber": false,
+      "id": 1,
+      "node_tokens": [
+        "<N01>",
+        "<N02>",
+        "<N06>",
+        "<N07>",
+        "<N08>",
+        "<N09>"
+      ],
+      "nodes": [
+        1,
+        2,
+        6,
+        7,
+        8,
+        9
+      ],
+      "number": 6,
+      "resource": "WOOD",
+      "resource_token": "<WOOD>",
+      "token": "<T01>"
+    },
+    {
+      "coord": [
+        0,
+        -1,
+        1
+      ],
+      "edge_tokens": [
+        "<E02_03>",
+        "<E02_09>",
+        "<E03_12>",
+        "<E09_10>",
+        "<E10_11>",
+        "<E11_12>"
+      ],
+      "edges": [
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          9
+        ],
+        [
+          3,
+          12
+        ],
+        [
+          9,
+          10
+        ],
+        [
+          10,
+          11
+        ],
+        [
+          11,
+          12
+        ]
+      ],
+      "has_robber": false,
+      "id": 2,
+      "node_tokens": [
+        "<N02>",
+        "<N03>",
+        "<N09>",
+        "<N10>",
+        "<N11>",
+        "<N12>"
+      ],
+      "nodes": [
+        2,
+        3,
+        9,
+        10,
+        11,
+        12
+      ],
+      "number": 5,
+      "resource": "WOOD",
+      "resource_token": "<WOOD>",
+      "token": "<T02>"
+    },
+    {
+      "coord": [
+        -1,
+        0,
+        1
+      ],
+      "edge_tokens": [
+        "<E03_04>",
+        "<E03_12>",
+        "<E04_15>",
+        "<E12_13>",
+        "<E13_14>",
+        "<E14_15>"
+      ],
+      "edges": [
+        [
+          3,
+          4
+        ],
+        [
+          3,
+          12
+        ],
+        [
+          4,
+          15
+        ],
+        [
+          12,
+          13
+        ],
+        [
+          13,
+          14
+        ],
+        [
+          14,
+          15
+        ]
+      ],
+      "has_robber": false,
+      "id": 3,
+      "node_tokens": [
+        "<N03>",
+        "<N04>",
+        "<N12>",
+        "<N13>",
+        "<N14>",
+        "<N15>"
+      ],
+      "nodes": [
+        3,
+        4,
+        12,
+        13,
+        14,
+        15
+      ],
+      "number": 4,
+      "resource": "BRICK",
+      "resource_token": "<BRICK>",
+      "token": "<T03>"
+    },
+    {
+      "coord": [
+        -1,
+        1,
+        0
+      ],
+      "edge_tokens": [
+        "<E04_05>",
+        "<E04_15>",
+        "<E05_16>",
+        "<E15_17>",
+        "<E16_18>",
+        "<E17_18>"
+      ],
+      "edges": [
+        [
+          4,
+          5
+        ],
+        [
+          4,
+          15
+        ],
+        [
+          5,
+          16
+        ],
+        [
+          15,
+          17
+        ],
+        [
+          16,
+          18
+        ],
+        [
+          17,
+          18
+        ]
+      ],
+      "has_robber": false,
+      "id": 4,
+      "node_tokens": [
+        "<N04>",
+        "<N05>",
+        "<N15>",
+        "<N16>",
+        "<N17>",
+        "<N18>"
+      ],
+      "nodes": [
+        4,
+        5,
+        15,
+        16,
+        17,
+        18
+      ],
+      "number": 9,
+      "resource": "BRICK",
+      "resource_token": "<BRICK>",
+      "token": "<T04>"
+    },
+    {
+      "coord": [
+        0,
+        1,
+        -1
+      ],
+      "edge_tokens": [
+        "<E00_05>",
+        "<E00_20>",
+        "<E05_16>",
+        "<E16_21>",
+        "<E19_20>",
+        "<E19_21>"
+      ],
+      "edges": [
+        [
+          0,
+          5
+        ],
+        [
+          0,
+          20
+        ],
+        [
+          5,
+          16
+        ],
+        [
+          16,
+          21
+        ],
+        [
+          19,
+          20
+        ],
+        [
+          19,
+          21
+        ]
+      ],
+      "has_robber": false,
+      "id": 5,
+      "node_tokens": [
+        "<N00>",
+        "<N05>",
+        "<N16>",
+        "<N19>",
+        "<N20>",
+        "<N21>"
+      ],
+      "nodes": [
+        0,
+        5,
+        16,
+        19,
+        20,
+        21
+      ],
+      "number": 3,
+      "resource": "WOOD",
+      "resource_token": "<WOOD>",
+      "token": "<T05>"
+    },
+    {
+      "coord": [
+        1,
+        0,
+        -1
+      ],
+      "edge_tokens": [
+        "<E00_01>",
+        "<E00_20>",
+        "<E01_06>",
+        "<E06_23>",
+        "<E20_22>",
+        "<E22_23>"
+      ],
+      "edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          20
+        ],
+        [
+          1,
+          6
+        ],
+        [
+          6,
+          23
+        ],
+        [
+          20,
+          22
+        ],
+        [
+          22,
+          23
+        ]
+      ],
+      "has_robber": false,
+      "id": 6,
+      "node_tokens": [
+        "<N00>",
+        "<N01>",
+        "<N06>",
+        "<N20>",
+        "<N22>",
+        "<N23>"
+      ],
+      "nodes": [
+        0,
+        1,
+        6,
+        20,
+        22,
+        23
+      ],
+      "number": null,
+      "resource": null,
+      "resource_token": "<DESERT>",
+      "token": "<T06>"
+    },
+    {
+      "coord": [
+        2,
+        -2,
+        0
+      ],
+      "edge_tokens": [
+        "<E07_08>",
+        "<E07_24>",
+        "<E08_27>",
+        "<E24_25>",
+        "<E25_26>",
+        "<E26_27>"
+      ],
+      "edges": [
+        [
+          7,
+          8
+        ],
+        [
+          7,
+          24
+        ],
+        [
+          8,
+          27
+        ],
+        [
+          24,
+          25
+        ],
+        [
+          25,
+          26
+        ],
+        [
+          26,
+          27
+        ]
+      ],
+      "has_robber": false,
+      "id": 7,
+      "node_tokens": [
+        "<N07>",
+        "<N08>",
+        "<N24>",
+        "<N25>",
+        "<N26>",
+        "<N27>"
+      ],
+      "nodes": [
+        7,
+        8,
+        24,
+        25,
+        26,
+        27
+      ],
+      "number": 9,
+      "resource": "SHEEP",
+      "resource_token": "<SHEEP>",
+      "token": "<T07>"
+    },
+    {
+      "coord": [
+        1,
+        -2,
+        1
+      ],
+      "edge_tokens": [
+        "<E08_09>",
+        "<E08_27>",
+        "<E09_10>",
+        "<E10_29>",
+        "<E27_28>",
+        "<E28_29>"
+      ],
+      "edges": [
+        [
+          8,
+          9
+        ],
+        [
+          8,
+          27
+        ],
+        [
+          9,
+          10
+        ],
+        [
+          10,
+          29
+        ],
+        [
+          27,
+          28
+        ],
+        [
+          28,
+          29
+        ]
+      ],
+      "has_robber": true,
+      "id": 8,
+      "node_tokens": [
+        "<N08>",
+        "<N09>",
+        "<N10>",
+        "<N27>",
+        "<N28>",
+        "<N29>"
+      ],
+      "nodes": [
+        8,
+        9,
+        10,
+        27,
+        28,
+        29
+      ],
+      "number": 10,
+      "resource": "ORE",
+      "resource_token": "<ORE>",
+      "token": "<T08>"
+    },
+    {
+      "coord": [
+        0,
+        -2,
+        2
+      ],
+      "edge_tokens": [
+        "<E10_11>",
+        "<E10_29>",
+        "<E11_32>",
+        "<E29_30>",
+        "<E30_31>",
+        "<E31_32>"
+      ],
+      "edges": [
+        [
+          10,
+          11
+        ],
+        [
+          10,
+          29
+        ],
+        [
+          11,
+          32
+        ],
+        [
+          29,
+          30
+        ],
+        [
+          30,
+          31
+        ],
+        [
+          31,
+          32
+        ]
+      ],
+      "has_robber": false,
+      "id": 9,
+      "node_tokens": [
+        "<N10>",
+        "<N11>",
+        "<N29>",
+        "<N30>",
+        "<N31>",
+        "<N32>"
+      ],
+      "nodes": [
+        10,
+        11,
+        29,
+        30,
+        31,
+        32
+      ],
+      "number": 8,
+      "resource": "WHEAT",
+      "resource_token": "<WHEAT>",
+      "token": "<T09>"
+    },
+    {
+      "coord": [
+        -1,
+        -1,
+        2
+      ],
+      "edge_tokens": [
+        "<E11_12>",
+        "<E11_32>",
+        "<E12_13>",
+        "<E13_34>",
+        "<E32_33>",
+        "<E33_34>"
+      ],
+      "edges": [
+        [
+          11,
+          12
+        ],
+        [
+          11,
+          32
+        ],
+        [
+          12,
+          13
+        ],
+        [
+          13,
+          34
+        ],
+        [
+          32,
+          33
+        ],
+        [
+          33,
+          34
+        ]
+      ],
+      "has_robber": false,
+      "id": 10,
+      "node_tokens": [
+        "<N11>",
+        "<N12>",
+        "<N13>",
+        "<N32>",
+        "<N33>",
+        "<N34>"
+      ],
+      "nodes": [
+        11,
+        12,
+        13,
+        32,
+        33,
+        34
+      ],
+      "number": 3,
+      "resource": "WHEAT",
+      "resource_token": "<WHEAT>",
+      "token": "<T10>"
+    },
+    {
+      "coord": [
+        -2,
+        0,
+        2
+      ],
+      "edge_tokens": [
+        "<E13_14>",
+        "<E13_34>",
+        "<E14_37>",
+        "<E34_35>",
+        "<E35_36>",
+        "<E36_37>"
+      ],
+      "edges": [
+        [
+          13,
+          14
+        ],
+        [
+          13,
+          34
+        ],
+        [
+          14,
+          37
+        ],
+        [
+          34,
+          35
+        ],
+        [
+          35,
+          36
+        ],
+        [
+          36,
+          37
+        ]
+      ],
+      "has_robber": false,
+      "id": 11,
+      "node_tokens": [
+        "<N13>",
+        "<N14>",
+        "<N34>",
+        "<N35>",
+        "<N36>",
+        "<N37>"
+      ],
+      "nodes": [
+        13,
+        14,
+        34,
+        35,
+        36,
+        37
+      ],
+      "number": 6,
+      "resource": "SHEEP",
+      "resource_token": "<SHEEP>",
+      "token": "<T11>"
+    },
+    {
+      "coord": [
+        -2,
+        1,
+        1
+      ],
+      "edge_tokens": [
+        "<E14_15>",
+        "<E14_37>",
+        "<E15_17>",
+        "<E17_39>",
+        "<E37_38>",
+        "<E38_39>"
+      ],
+      "edges": [
+        [
+          14,
+          15
+        ],
+        [
+          14,
+          37
+        ],
+        [
+          15,
+          17
+        ],
+        [
+          17,
+          39
+        ],
+        [
+          37,
+          38
+        ],
+        [
+          38,
+          39
+        ]
+      ],
+      "has_robber": false,
+      "id": 12,
+      "node_tokens": [
+        "<N14>",
+        "<N15>",
+        "<N17>",
+        "<N37>",
+        "<N38>",
+        "<N39>"
+      ],
+      "nodes": [
+        14,
+        15,
+        17,
+        37,
+        38,
+        39
+      ],
+      "number": 2,
+      "resource": "WHEAT",
+      "resource_token": "<WHEAT>",
+      "token": "<T12>"
+    },
+    {
+      "coord": [
+        -2,
+        2,
+        0
+      ],
+      "edge_tokens": [
+        "<E17_18>",
+        "<E17_39>",
+        "<E18_40>",
+        "<E39_41>",
+        "<E40_42>",
+        "<E41_42>"
+      ],
+      "edges": [
+        [
+          17,
+          18
+        ],
+        [
+          17,
+          39
+        ],
+        [
+          18,
+          40
+        ],
+        [
+          39,
+          41
+        ],
+        [
+          40,
+          42
+        ],
+        [
+          41,
+          42
+        ]
+      ],
+      "has_robber": false,
+      "id": 13,
+      "node_tokens": [
+        "<N17>",
+        "<N18>",
+        "<N39>",
+        "<N40>",
+        "<N41>",
+        "<N42>"
+      ],
+      "nodes": [
+        17,
+        18,
+        39,
+        40,
+        41,
+        42
+      ],
+      "number": 5,
+      "resource": "ORE",
+      "resource_token": "<ORE>",
+      "token": "<T13>"
+    },
+    {
+      "coord": [
+        -1,
+        2,
+        -1
+      ],
+      "edge_tokens": [
+        "<E16_18>",
+        "<E16_21>",
+        "<E18_40>",
+        "<E21_43>",
+        "<E40_44>",
+        "<E43_44>"
+      ],
+      "edges": [
+        [
+          16,
+          18
+        ],
+        [
+          16,
+          21
+        ],
+        [
+          18,
+          40
+        ],
+        [
+          21,
+          43
+        ],
+        [
+          40,
+          44
+        ],
+        [
+          43,
+          44
+        ]
+      ],
+      "has_robber": false,
+      "id": 14,
+      "node_tokens": [
+        "<N16>",
+        "<N18>",
+        "<N21>",
+        "<N40>",
+        "<N43>",
+        "<N44>"
+      ],
+      "nodes": [
+        16,
+        18,
+        21,
+        40,
+        43,
+        44
+      ],
+      "number": 10,
+      "resource": "ORE",
+      "resource_token": "<ORE>",
+      "token": "<T14>"
+    },
+    {
+      "coord": [
+        0,
+        2,
+        -2
+      ],
+      "edge_tokens": [
+        "<E19_21>",
+        "<E19_46>",
+        "<E21_43>",
+        "<E43_47>",
+        "<E45_46>",
+        "<E45_47>"
+      ],
+      "edges": [
+        [
+          19,
+          21
+        ],
+        [
+          19,
+          46
+        ],
+        [
+          21,
+          43
+        ],
+        [
+          43,
+          47
+        ],
+        [
+          45,
+          46
+        ],
+        [
+          45,
+          47
+        ]
+      ],
+      "has_robber": false,
+      "id": 15,
+      "node_tokens": [
+        "<N19>",
+        "<N21>",
+        "<N43>",
+        "<N45>",
+        "<N46>",
+        "<N47>"
+      ],
+      "nodes": [
+        19,
+        21,
+        43,
+        45,
+        46,
+        47
+      ],
+      "number": 8,
+      "resource": "SHEEP",
+      "resource_token": "<SHEEP>",
+      "token": "<T15>"
+    },
+    {
+      "coord": [
+        1,
+        1,
+        -2
+      ],
+      "edge_tokens": [
+        "<E19_20>",
+        "<E19_46>",
+        "<E20_22>",
+        "<E22_49>",
+        "<E46_48>",
+        "<E48_49>"
+      ],
+      "edges": [
+        [
+          19,
+          20
+        ],
+        [
+          19,
+          46
+        ],
+        [
+          20,
+          22
+        ],
+        [
+          22,
+          49
+        ],
+        [
+          46,
+          48
+        ],
+        [
+          48,
+          49
+        ]
+      ],
+      "has_robber": false,
+      "id": 16,
+      "node_tokens": [
+        "<N19>",
+        "<N20>",
+        "<N22>",
+        "<N46>",
+        "<N48>",
+        "<N49>"
+      ],
+      "nodes": [
+        19,
+        20,
+        22,
+        46,
+        48,
+        49
+      ],
+      "number": 4,
+      "resource": "WOOD",
+      "resource_token": "<WOOD>",
+      "token": "<T16>"
+    },
+    {
+      "coord": [
+        2,
+        0,
+        -2
+      ],
+      "edge_tokens": [
+        "<E22_23>",
+        "<E22_49>",
+        "<E23_52>",
+        "<E49_50>",
+        "<E50_51>",
+        "<E51_52>"
+      ],
+      "edges": [
+        [
+          22,
+          23
+        ],
+        [
+          22,
+          49
+        ],
+        [
+          23,
+          52
+        ],
+        [
+          49,
+          50
+        ],
+        [
+          50,
+          51
+        ],
+        [
+          51,
+          52
+        ]
+      ],
+      "has_robber": false,
+      "id": 17,
+      "node_tokens": [
+        "<N22>",
+        "<N23>",
+        "<N49>",
+        "<N50>",
+        "<N51>",
+        "<N52>"
+      ],
+      "nodes": [
+        22,
+        23,
+        49,
+        50,
+        51,
+        52
+      ],
+      "number": 11,
+      "resource": "WHEAT",
+      "resource_token": "<WHEAT>",
+      "token": "<T17>"
+    },
+    {
+      "coord": [
+        2,
+        -1,
+        -1
+      ],
+      "edge_tokens": [
+        "<E06_07>",
+        "<E06_23>",
+        "<E07_24>",
+        "<E23_52>",
+        "<E24_53>",
+        "<E52_53>"
+      ],
+      "edges": [
+        [
+          6,
+          7
+        ],
+        [
+          6,
+          23
+        ],
+        [
+          7,
+          24
+        ],
+        [
+          23,
+          52
+        ],
+        [
+          24,
+          53
+        ],
+        [
+          52,
+          53
+        ]
+      ],
+      "has_robber": false,
+      "id": 18,
+      "node_tokens": [
+        "<N06>",
+        "<N07>",
+        "<N23>",
+        "<N24>",
+        "<N52>",
+        "<N53>"
+      ],
+      "nodes": [
+        6,
+        7,
+        23,
+        24,
+        52,
+        53
+      ],
+      "number": 12,
+      "resource": "BRICK",
+      "resource_token": "<BRICK>",
+      "token": "<T18>"
+    }
+  ]
+}

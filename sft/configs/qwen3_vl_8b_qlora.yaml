@@ -1,0 +1,57 @@
+model:
+  model_name_or_path: Qwen/Qwen3-VL-8B-Instruct
+  torch_dtype: bfloat16
+  attn_implementation: eager
+  load_in_4bit: true
+  bnb_4bit_quant_type: nf4
+  bnb_4bit_use_double_quant: true
+  bnb_4bit_compute_dtype: bfloat16
+
+tokens:
+  add_catan_tokens: true
+  token_manifest: configs/training_configs/catan_added_tokens.json
+  resize_embeddings: true
+  modules_to_save:
+    - embed_tokens
+    - lm_head
+
+lora:
+  enabled: true
+  r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  bias: none
+  target_modules: all-linear
+  task_type: CAUSAL_LM
+  freeze_vision: true
+  freeze_module_name_fragments:
+    - visual
+    - vision_tower
+    - vision_model
+    - image_encoder
+
+training:
+  output_dir: sft/outputs/qwen3-vl-8b-catan-qlora
+  num_train_epochs: 1
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 8
+  gradient_checkpointing: true
+  learning_rate: 0.0001
+  warmup_ratio: 0.03
+  lr_scheduler_type: cosine
+  logging_steps: 10
+  save_steps: 250
+  save_total_limit: 3
+  bf16: true
+  report_to:
+    - tensorboard
+  remove_unused_columns: false
+  max_length: null
+  gradient_checkpointing_kwargs:
+    use_reentrant: false
+
+data:
+  max_pixels: null
+  min_pixels: null
+  prompt_prefix: >-
+    Answer exactly using the Catan tokens requested. Do not explain.

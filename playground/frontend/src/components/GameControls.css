@@ -1,7 +1,7 @@
 .game-controls {
-  background: #161b22;
-  border: 1px solid #30363d;
-  border-radius: 6px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 0;
   padding: 1rem;
 }
 
@@ -9,9 +9,9 @@
   font-size: 0.9rem;
   font-weight: 600;
   margin-bottom: 0.75rem;
-  color: #8b949e;
+  color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0;
 }
 
 .control-section {
@@ -23,11 +23,13 @@
 
 .btn {
   padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
   cursor: pointer;
+  text-transform: uppercase;
   transition: all 0.15s ease;
 }
 
@@ -37,39 +39,39 @@
 }
 
 .btn-primary {
-  background: #238636;
-  color: white;
+  background: rgba(60, 255, 205, 0.12);
+  color: var(--cyan);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #2ea043;
+  border-color: var(--cyan);
 }
 
 .btn-secondary {
-  background: #8b5cf6;
-  color: white;
+  background: rgba(105, 167, 255, 0.12);
+  color: var(--blue);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #9d6ff8;
+  border-color: var(--blue);
 }
 
 .btn-action {
-  background: #1f6feb;
-  color: white;
+  background: rgba(255, 209, 102, 0.12);
+  color: var(--amber);
 }
 
 .btn-action:hover:not(:disabled) {
-  background: #388bfd;
+  border-color: var(--amber);
 }
 
 .btn-danger {
-  background: #da3633;
-  color: white;
+  background: rgba(255, 95, 122, 0.12);
+  color: var(--pink);
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: #f85149;
+  border-color: var(--pink);
 }
 
 .status {
@@ -77,10 +79,11 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem;
-  background: #0d1117;
-  border-radius: 4px;
+  background: rgba(5, 7, 10, 0.9);
+  border: 1px solid var(--line);
+  border-radius: 0;
   font-size: 0.8rem;
-  color: #8b949e;
+  color: var(--muted);
 }
 
 .status-indicator {
@@ -90,10 +93,75 @@
 }
 
 .status-indicator.running {
-  background: #3fb950;
-  box-shadow: 0 0 8px #3fb950;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
 }
 
 .status-indicator.stopped {
-  background: #f85149;
+  background: var(--pink);
+}
+
+.replay-llm-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  margin: 0.25rem 0 0.5rem;
+  padding: 0.75rem 0;
+}
+
+.replay-llm-controls h4 {
+  color: var(--cyan);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+}
+
+.replay-model-select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: #05070a;
+  color: var(--text);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.72rem;
+  padding: 0.5rem 0.6rem;
+  margin-bottom: 0.4rem;
+}
+
+.replay-model-select:focus {
+  border-color: var(--cyan);
+  outline: none;
+}
+
+.replay-model-input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: #05070a;
+  color: var(--text);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.72rem;
+  padding: 0.55rem 0.6rem;
+}
+
+.replay-model-input:focus {
+  border-color: var(--cyan);
+  outline: none;
+}
+
+.replay-context-hint {
+  color: var(--muted);
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+.replay-llm-error {
+  background: rgba(255, 95, 122, 0.08);
+  border: 1px solid rgba(255, 95, 122, 0.45);
+  color: var(--pink);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  padding: 0.55rem;
 }

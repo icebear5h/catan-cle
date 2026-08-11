@@ -3,3 +3,96 @@
   height: 100%;
   background: #0967A5;
 }
+
+.board-annotations {
+  pointer-events: none;
+}
+
+.annotation-box {
+  fill: transparent;
+  vector-effect: non-scaling-stroke;
+}
+
+.annotation-box-tile {
+  stroke: rgba(60, 255, 205, 0.85);
+  stroke-width: 1.2;
+}
+
+.annotation-box-port {
+  stroke: rgba(255, 209, 102, 0.95);
+  stroke-width: 1.4;
+}
+
+.annotation-box-node {
+  stroke: rgba(255, 95, 122, 0.9);
+  stroke-width: 1.1;
+}
+
+.annotation-box-number {
+  stroke: rgba(255, 255, 255, 0.9);
+  stroke-width: 1.1;
+}
+
+.annotation-edge-line {
+  stroke: rgba(105, 167, 255, 0.7);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 4 4;
+  vector-effect: non-scaling-stroke;
+}
+
+.annotation-point {
+  vector-effect: non-scaling-stroke;
+  stroke: rgba(5, 7, 10, 0.92);
+  stroke-width: 1;
+}
+
+.annotation-point-tile {
+  fill: #3cffcd;
+}
+
+.annotation-point-edge {
+  fill: #69a7ff;
+}
+
+.annotation-point-port {
+  fill: #ffd166;
+}
+
+.annotation-point-node {
+  fill: #ff5f7a;
+}
+
+.annotation-point-number {
+  fill: #ffffff;
+}
+
+.annotation-label {
+  paint-order: stroke;
+  stroke: rgba(5, 7, 10, 0.92);
+  stroke-width: 3;
+  stroke-linejoin: round;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-anchor: middle;
+}
+
+.annotation-label-tile {
+  fill: #3cffcd;
+}
+
+.annotation-label-port {
+  fill: #ffd166;
+}
+
+.annotation-label-fact {
+  fill: #ffffff;
+  font-size: 7px;
+}
+
+.annotation-label-node {
+  fill: #ff8a9d;
+  text-anchor: start;
+}

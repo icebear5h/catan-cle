@@ -1,7 +1,7 @@
 .decision-log {
-  background: #161b22;
-  border: 1px solid #30363d;
-  border-radius: 6px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 0;
   padding: 1rem;
   max-height: calc(100vh - 200px);
   overflow-y: auto;
@@ -11,9 +11,9 @@
   font-size: 0.9rem;
   font-weight: 600;
   margin-bottom: 0.75rem;
-  color: #8b949e;
+  color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0;
 }
 
 .decisions-list {
@@ -23,21 +23,21 @@
 }
 
 .decision-card {
-  background: #0d1117;
-  border: 2px solid #30363d;
-  border-radius: 6px;
+  background: rgba(5, 7, 10, 0.9);
+  border: 1px solid var(--line);
+  border-radius: 0;
   padding: 0.75rem;
   transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .decision-card:hover {
-  border-color: #484f58;
+  border-color: var(--line-strong);
 }
 
 .decision-card.current {
-  border-color: #58a6ff;
-  box-shadow: 0 0 8px rgba(88, 166, 255, 0.3);
+  border-color: var(--cyan);
+  box-shadow: 0 0 12px rgba(60, 255, 205, 0.12);
 }
 
 .decision-card.expanded {
@@ -60,7 +60,7 @@
 
 .color-badge {
   padding: 0.2rem 0.6rem;
-  border-radius: 3px;
+  border-radius: 0;
   font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -87,19 +87,19 @@
 }
 
 .llm-badge {
-  background: #8b5cf6;
-  color: white;
+  background: rgba(105, 167, 255, 0.18);
+  color: var(--blue);
   padding: 0.2rem 0.4rem;
-  border-radius: 3px;
+  border-radius: 0;
   font-size: 0.65rem;
   font-weight: 600;
 }
 
 .current-badge {
-  background: #58a6ff;
-  color: white;
+  background: rgba(60, 255, 205, 0.16);
+  color: var(--cyan);
   padding: 0.2rem 0.4rem;
-  border-radius: 3px;
+  border-radius: 0;
   font-size: 0.65rem;
   font-weight: 600;
   animation: pulse 2s ease-in-out infinite;
@@ -115,7 +115,7 @@
 }
 
 .expand-icon {
-  color: #8b949e;
+  color: var(--muted);
   transition: transform 0.2s ease;
 }
 
@@ -124,12 +124,13 @@
 }
 
 .decision-action {
-  color: #e6edf3;
+  color: var(--text);
   font-size: 0.85rem;
   margin-bottom: 0.5rem;
   padding: 0.5rem;
-  background: #161b22;
-  border-radius: 4px;
+  background: rgba(10, 14, 19, 0.96);
+  border: 1px solid var(--line);
+  border-radius: 0;
   font-family: 'Monaco', 'Menlo', monospace;
   white-space: nowrap;
   overflow: hidden;
@@ -145,7 +146,7 @@
 .decision-details {
   margin-top: 0.75rem;
   padding-top: 0.75rem;
-  border-top: 1px solid #30363d;
+  border-top: 1px solid var(--line);
 }
 
 .detail-section {
@@ -158,16 +159,16 @@
 
 .detail-section h4 {
   font-size: 0.75rem;
-  color: #8b949e;
+  color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0;
   margin-bottom: 0.5rem;
   font-weight: 600;
 }
 
 .detail-section p {
   font-size: 0.85rem;
-  color: #c9d1d9;
+  color: #d7e2ee;
   line-height: 1.5;
   margin: 0;
 }
@@ -182,46 +183,46 @@
 
 .action-item {
   font-size: 0.75rem;
-  color: #8b949e;
+  color: var(--muted);
   padding: 0.4rem 0.5rem;
-  background: #0d1117;
-  border: 1px solid #21262d;
-  border-radius: 3px;
+  background: rgba(5, 7, 10, 0.9);
+  border: 1px solid var(--line);
+  border-radius: 0;
   font-family: 'Monaco', 'Menlo', monospace;
 }
 
 .action-item.more {
-  color: #58a6ff;
+  color: var(--blue);
   font-style: italic;
   text-align: center;
   border-style: dashed;
 }
 
 .detail-section.game-over {
-  background: #238636;
+  background: rgba(60, 255, 205, 0.16);
   padding: 0.75rem;
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 .detail-section.game-over h4 {
-  color: white;
+  color: var(--cyan);
   margin-bottom: 0.25rem;
 }
 
 .detail-section.game-over p {
-  color: white;
+  color: var(--text);
   font-weight: 600;
 }
 
 .observation-text {
   font-size: 0.75rem;
-  color: #c9d1d9;
+  color: #d7e2ee;
   line-height: 1.5;
   margin: 0;
   padding: 0.75rem;
-  background: #0d1117;
-  border: 1px solid #21262d;
-  border-radius: 4px;
+  background: #05070a;
+  border: 1px solid var(--line);
+  border-radius: 0;
   overflow-x: auto;
   white-space: pre-wrap;
   font-family: 'Monaco', 'Menlo', monospace;

@@ -225,6 +225,54 @@ export interface ReplayInfo {
   progress?: string;
 }
 
+export interface ReplayLLMAction {
+  index: number;
+  action: string;
+  description: string;
+}
+
+export interface ReplayActivityWindow {
+  start_replay_index: number;
+  end_replay_index: number;
+  row_count: number;
+  truncated: boolean;
+}
+
+export interface TableTalkEntry {
+  replayIndex: number;
+  player: string;
+  message: string;
+  model: string;
+}
+
+export interface ReplayLLMResponse {
+  context_version: string;
+  game_id: string;
+  replay_index: number;
+  player_color: string;
+  requested_model: string;
+  model: string;
+  goals: string;
+  reasoning: string;
+  message: string;
+  action_index: number | null;
+  action: string | null;
+  action_description: string | null;
+  parse_error: string | null;
+  finish_reason: string | null;
+  response_truncated: boolean;
+  observation: string;
+  recent_activity: string[];
+  activity_window: ReplayActivityWindow;
+  available_actions: ReplayLLMAction[];
+  raw_response: string;
+  latency_ms: number | null;
+  usage: Record<string, unknown>;
+  system_prompt: string;
+  context_prompt: string;
+  stale: boolean;
+}
+
 // Helper types
 export interface HexPosition {
   x: number;

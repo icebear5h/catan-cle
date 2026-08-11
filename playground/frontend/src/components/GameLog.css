@@ -1,7 +1,7 @@
 .game-log {
-  background: #161b22;
-  border: 1px solid #30363d;
-  border-radius: 6px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 0;
   padding: 1rem;
   max-height: 600px;
   min-height: 400px;
@@ -13,9 +13,9 @@
   font-size: 0.9rem;
   font-weight: 600;
   margin-bottom: 0.75rem;
-  color: #8b949e;
+  color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0;
 }
 
 .log-entries {
@@ -32,17 +32,15 @@
 }
 
 .log-entries::-webkit-scrollbar-track {
-  background: #0d1117;
-  border-radius: 3px;
+  background: #080c11;
 }
 
 .log-entries::-webkit-scrollbar-thumb {
-  background: #30363d;
-  border-radius: 3px;
+  background: var(--line-strong);
 }
 
 .log-entries::-webkit-scrollbar-thumb:hover {
-  background: #484f58;
+  background: rgba(60, 255, 205, 0.5);
 }
 
 .log-entry {
@@ -50,15 +48,15 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.4rem 0.6rem;
-  background: #0d1117;
-  border-radius: 4px;
+  background: rgba(5, 7, 10, 0.9);
+  border-radius: 0;
   font-size: 0.8rem;
   border-left: 3px solid transparent;
   transition: background 0.15s ease;
 }
 
 .log-entry:hover {
-  background: #161b22;
+  background: rgba(16, 23, 31, 0.96);
 }
 
 .log-entry.dice {
@@ -88,14 +86,14 @@
 
 .log-time {
   font-family: 'Monaco', 'Menlo', monospace;
-  color: #6e7681;
+  color: var(--muted);
   font-size: 0.7rem;
   min-width: 60px;
 }
 
 .log-color {
   padding: 0.15rem 0.4rem;
-  border-radius: 3px;
+  border-radius: 0;
   font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -159,7 +157,7 @@
 }
 
 .log-message {
-  color: #c9d1d9;
+  color: #d7e2ee;
   flex: 1;
   line-height: 1.4;
 }

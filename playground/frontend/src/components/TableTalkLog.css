@@ -1,0 +1,67 @@
+.table-talk-log {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 0;
+  padding: 1rem;
+  max-height: 320px;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-talk-log h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.table-talk-note {
+  color: var(--muted);
+  font-size: 0.68rem;
+  line-height: 1.4;
+  margin-bottom: 0.6rem;
+}
+
+.table-talk-entries {
+  flex: 1;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.table-talk-entry {
+  border-left: 3px solid rgba(120, 170, 255, 0.55);
+  background: rgba(120, 170, 255, 0.06);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  padding: 0.45rem 0.55rem;
+}
+
+.table-talk-step {
+  color: var(--muted);
+  font-size: 0.66rem;
+  margin-right: 0.5rem;
+  text-transform: uppercase;
+}
+
+.table-talk-player {
+  font-weight: 700;
+  margin-right: 0.45rem;
+}
+
+.table-talk-player.player-red { color: #ff6b6b; }
+.table-talk-player.player-blue { color: #74a9ff; }
+.table-talk-player.player-white { color: #e8e8e8; }
+.table-talk-player.player-orange { color: #ffa94d; }
+.table-talk-player.player-green { color: #69db7c; }
+
+.table-talk-text {
+  color: #d7e2ee;
+  font-style: italic;
+  white-space: pre-wrap;
+}

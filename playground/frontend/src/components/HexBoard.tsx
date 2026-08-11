@@ -5,6 +5,8 @@ import './HexBoard.css';
 interface HexBoardProps {
   gameState: GameState;
   onNodeClick?: (node: Node) => void;
+  showAnnotations?: boolean;
+  showControls?: boolean;
 }
 
 const HEX_SIZE = 50;
@@ -68,6 +70,15 @@ function getNodePosition(tileCoord: [number, number, number], direction: string)
   };
 }
 
+function token(prefix: string, id: number): string {
+  return `<${prefix}${String(id).padStart(2, '0')}>`;
+}
+
+function edgeToken(edgeId: [number, number]): string {
+  const [a, b] = edgeId[0] <= edgeId[1] ? edgeId : [edgeId[1], edgeId[0]];
+  return `<E${String(a).padStart(2, '0')}_${String(b).padStart(2, '0')}>`;
+}
+
 // Resource colors (fallback)
 const RESOURCE_COLORS: Record<string, string> = {
   WOOD: '#228b22',
@@ -103,26 +114,12 @@ const NUMBER_ASSETS: Record<number, string> = {
 
 // Number token size relative to hex (~40% of tile width, shifted slightly below center)
 const NUMBER_TOKEN_SIZE = HEX_SIZE * 0.7;
-const NUMBER_TOKEN_Y_OFFSET = HEX_SIZE * 0.25;
+const NUMBER_TOKEN_Y_OFFSET = HEX_SIZE * 0.30;
 
 // Tile image dimensions (pointy-top hex) with slight bleed to eliminate sub-pixel gaps
 const TILE_BLEED = 1.5;
 const TILE_WIDTH = Math.sqrt(3) * HEX_SIZE + TILE_BLEED;   // ~88.1
 const TILE_HEIGHT = 2 * HEX_SIZE + TILE_BLEED;             // 101.5
-
-const PLAYER_COLORS: Record<string, string> = {
-  RED: '#dc2626',
-  BLUE: '#2563eb',
-  WHITE: '#f3f4f6',
-  ORANGE: '#ea580c',
-  BLACK: '#1f2937',
-  GREEN: '#16a34a',
-  BRONZE: '#cd7f32',
-  SILVER: '#c0c0c0',
-  GOLD: '#ffd700',
-  PINK: '#ec4899',
-  MYSTIC_BLUE: '#c7e5fd',
-};
 
 // Port ship assets (resource-specific)
 const PORT_SHIP_ASSETS: Record<string, string> = {
@@ -147,9 +144,9 @@ function getRoadAsset(color: string): string {
 const ROBBER_ASSET = '/assets/pieces/robber.svg';
 
 // Building and road sizing
-const SETTLEMENT_SIZE = HEX_SIZE * 0.5;
-const CITY_SIZE = HEX_SIZE * 0.55;
-const ROAD_WIDTH = HEX_SIZE * 0.22;
+const SETTLEMENT_SIZE = HEX_SIZE * 0.63;
+const CITY_SIZE = HEX_SIZE * 0.80;
+const ROAD_WIDTH = HEX_SIZE * 1;
 const ROBBER_SIZE = HEX_SIZE * 0.55;
 
 // Coastline border assets (placed on water hex positions, same size as tiles)
@@ -167,7 +164,12 @@ const CUBE_DIRS: [number, number, number][] = [
   [0, 1, -1],   // 5: NW
 ];
 
-export default function HexBoard({ gameState, onNodeClick }: HexBoardProps) {
+export default function HexBoard({
+  gameState,
+  onNodeClick,
+  showAnnotations = false,
+  showControls = true,
+}: HexBoardProps) {
   const [hoveredNodeId, setHoveredNodeId] = useState<number | null>(null);
   const [showAllNodes, setShowAllNodes] = useState(false);
   const [showCoords, setShowCoords] = useState(false);
@@ -261,6 +263,7 @@ export default function HexBoard({ gameState, onNodeClick }: HexBoardProps) {
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      {showControls && (
       <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 10, display: 'flex', gap: '4px' }}>
         <button
           onClick={() => setShowCoords(!showCoords)}
@@ -291,6 +294,7 @@ export default function HexBoard({ gameState, onNodeClick }: HexBoardProps) {
           {showAllNodes ? 'Hide Nodes' : 'Show Nodes'}
         </button>
       </div>
+      )}
       <svg
         className="hex-board"
         viewBox={`${minX} ${minY} ${width} ${height}`}
@@ -364,8 +368,8 @@ export default function HexBoard({ gameState, onNodeClick }: HexBoardProps) {
             {hasRobber && (
               <image
                 href={ROBBER_ASSET}
-                x={x - ROBBER_SIZE / 2}
-                y={y - ROBBER_SIZE / 2}
+                x={x - ROBBER_SIZE / 2 - HEX_SIZE * 0.52}
+                y={y - ROBBER_SIZE / 2 - HEX_SIZE * 0.15}
                 width={ROBBER_SIZE}
                 height={ROBBER_SIZE}
               />
@@ -421,7 +425,7 @@ export default function HexBoard({ gameState, onNodeClick }: HexBoardProps) {
           : PORT_SHIP_ASSETS.GENERIC;
 
         // Dock plank rendering - wide enough to show wood grain
-        const dockWidth = 10;
+        const dockWidth = 9;
 
         const renderDock = (x1: number, y1: number, x2: number, y2: number, key: string) => {
           const dx = x2 - x1;
@@ -514,7 +518,7 @@ export default function HexBoard({ gameState, onNodeClick }: HexBoardProps) {
               key={`node-${node.id}`}
               href={getSettlementAsset(node.color)}
               x={pos.x - SETTLEMENT_SIZE / 2}
-              y={pos.y - SETTLEMENT_SIZE * 0.85}
+              y={pos.y - SETTLEMENT_SIZE * 0.7}
               width={SETTLEMENT_SIZE}
               height={SETTLEMENT_SIZE}
             />
@@ -527,7 +531,7 @@ export default function HexBoard({ gameState, onNodeClick }: HexBoardProps) {
               key={`node-${node.id}`}
               href={getCityAsset(node.color)}
               x={pos.x - CITY_SIZE / 2}
-              y={pos.y - CITY_SIZE * 0.85}
+              y={pos.y - CITY_SIZE * 0.67}
               width={CITY_SIZE}
               height={CITY_SIZE}
             />
@@ -577,6 +581,175 @@ export default function HexBoard({ gameState, onNodeClick }: HexBoardProps) {
           </g>
         );
       })}
+
+      {showAnnotations && (
+        <g className="board-annotations" aria-hidden="true">
+          <g className="annotation-layer annotation-tiles">
+            {tiles.map((tileData) => {
+              const tile = tileData.tile;
+              if (tile.type === 'PORT') return null;
+
+              const { x, y } = hexToPixel(tileData.coordinate[0], tileData.coordinate[1], tileData.coordinate[2]);
+              const tileLabel = token('T', tile.id);
+              const factLabel = tile.type === 'DESERT'
+                ? 'DESERT'
+                : `${tile.resource} ${tile.number}`;
+              return (
+                <g
+                  key={`annotation-tile-${tile.id}`}
+                  data-catan-kind="tile"
+                  data-catan-token={tileLabel}
+                  data-catan-point-x={x}
+                  data-catan-point-y={y}
+                >
+                  <rect
+                    className="annotation-box annotation-box-tile"
+                    x={x - TILE_WIDTH / 2}
+                    y={y - TILE_HEIGHT / 2}
+                    width={TILE_WIDTH}
+                    height={TILE_HEIGHT}
+                  />
+                  <circle className="annotation-point annotation-point-tile" cx={x} cy={y} r={2.8} />
+                  <text className="annotation-label annotation-label-tile" x={x} y={y - HEX_SIZE * 0.43}>
+                    {tileLabel}
+                  </text>
+                  <text className="annotation-label annotation-label-fact" x={x} y={y + HEX_SIZE * 0.72}>
+                    {factLabel}
+                  </text>
+                </g>
+              );
+            })}
+          </g>
+
+          <g className="annotation-layer annotation-tile-content">
+            {tiles.map((tileData) => {
+              const tile = tileData.tile;
+              if (tile.type !== 'RESOURCE_TILE') return null;
+
+              const { x, y } = hexToPixel(tileData.coordinate[0], tileData.coordinate[1], tileData.coordinate[2]);
+              const tileLabel = token('T', tile.id);
+              return (
+                <g
+                  key={`annotation-number-${tile.id}`}
+                  data-catan-kind="tile_number"
+                  data-catan-token={`${tileLabel}:${tile.number}`}
+                  data-catan-point-x={x}
+                  data-catan-point-y={y + NUMBER_TOKEN_Y_OFFSET}
+                >
+                  <rect
+                    className="annotation-box annotation-box-number"
+                    x={x - NUMBER_TOKEN_SIZE / 2}
+                    y={y - NUMBER_TOKEN_SIZE / 2 + NUMBER_TOKEN_Y_OFFSET}
+                    width={NUMBER_TOKEN_SIZE}
+                    height={NUMBER_TOKEN_SIZE}
+                  />
+                  <circle
+                    className="annotation-point annotation-point-number"
+                    cx={x}
+                    cy={y + NUMBER_TOKEN_Y_OFFSET}
+                    r={2.4}
+                  />
+                </g>
+              );
+            })}
+          </g>
+
+          <g className="annotation-layer annotation-edges">
+            {edges.map((edge) => {
+              const [node1Id, node2Id] = edge.id;
+              const pos1 = nodePositions.get(node1Id);
+              const pos2 = nodePositions.get(node2Id);
+              if (!pos1 || !pos2) return null;
+
+              const midX = (pos1.x + pos2.x) / 2;
+              const midY = (pos1.y + pos2.y) / 2;
+              const label = edgeToken(edge.id);
+              return (
+                <g
+                  key={`annotation-edge-${node1Id}-${node2Id}`}
+                  data-catan-kind="edge"
+                  data-catan-token={label}
+                  data-catan-point-x={midX}
+                  data-catan-point-y={midY}
+                >
+                  <line
+                    className="annotation-edge-line"
+                    x1={pos1.x}
+                    y1={pos1.y}
+                    x2={pos2.x}
+                    y2={pos2.y}
+                  />
+                  <circle className="annotation-point annotation-point-edge" cx={midX} cy={midY} r={2.2} />
+                </g>
+              );
+            })}
+          </g>
+
+          <g className="annotation-layer annotation-ports">
+            {tiles.map((tileData) => {
+              const tile = tileData.tile;
+              if (tile.type !== 'PORT') return null;
+
+              const { x, y } = hexToPixel(tileData.coordinate[0], tileData.coordinate[1], tileData.coordinate[2]);
+              const shipSize = HEX_SIZE * 1.05;
+              const shipXOffset = -shipSize * 0.1;
+              const shipYOffset = -shipSize * 0.25;
+              const label = token('P', tile.id);
+              return (
+                <g
+                  key={`annotation-port-${tile.id}`}
+                  data-catan-kind="port"
+                  data-catan-token={label}
+                  data-catan-point-x={x}
+                  data-catan-point-y={y}
+                >
+                  <rect
+                    className="annotation-box annotation-box-port"
+                    x={x - shipSize / 2 + shipXOffset}
+                    y={y - shipSize / 2 + shipYOffset}
+                    width={shipSize}
+                    height={shipSize}
+                  />
+                  <circle className="annotation-point annotation-point-port" cx={x} cy={y} r={2.8} />
+                  <text className="annotation-label annotation-label-port" x={x} y={y - shipSize * 0.62}>
+                    {label}
+                  </text>
+                </g>
+              );
+            })}
+          </g>
+
+          <g className="annotation-layer annotation-nodes">
+            {nodes.map((node) => {
+              const pos = nodePositions.get(node.id);
+              if (!pos) return null;
+
+              const label = token('N', node.id);
+              return (
+                <g
+                  key={`annotation-node-${node.id}`}
+                  data-catan-kind="node"
+                  data-catan-token={label}
+                  data-catan-point-x={pos.x}
+                  data-catan-point-y={pos.y}
+                >
+                  <rect
+                    className="annotation-box annotation-box-node"
+                    x={pos.x - 8}
+                    y={pos.y - 8}
+                    width={16}
+                    height={16}
+                  />
+                  <circle className="annotation-point annotation-point-node" cx={pos.x} cy={pos.y} r={3.2} />
+                  <text className="annotation-label annotation-label-node" x={pos.x + 7} y={pos.y - 7}>
+                    {label}
+                  </text>
+                </g>
+              );
+            })}
+          </g>
+        </g>
+      )}
       </svg>
     </div>
   );

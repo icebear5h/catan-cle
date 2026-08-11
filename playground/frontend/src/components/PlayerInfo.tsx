@@ -13,6 +13,9 @@ interface PlayerInfoProps {
   allPlayerDevCards: Record<string, DevCardCounts> | null;
   playerTypes: Record<string, string> | null;
   replayInfo: ReplayInfo | null;
+  currentPlayerObservation: string | null;
+  isLoadingObservation: boolean;
+  onLoadCurrentPlayerObservation: () => void;
 }
 
 const RESOURCES = ['WOOD', 'BRICK', 'SHEEP', 'WHEAT', 'ORE'];
@@ -49,7 +52,16 @@ const DEV_CARD_LABELS: Record<string, string> = {
   'VICTORY_POINT': 'VP',
 };
 
-export default function PlayerInfo({ gameState, allPlayerResources, allPlayerDevCards, playerTypes, replayInfo }: PlayerInfoProps) {
+export default function PlayerInfo({
+  gameState,
+  allPlayerResources,
+  allPlayerDevCards,
+  playerTypes,
+  replayInfo,
+  currentPlayerObservation,
+  isLoadingObservation,
+  onLoadCurrentPlayerObservation,
+}: PlayerInfoProps) {
   const getPlayerValue = (prefix: string, key: string): number => {
     if (!prefix) return 0;
     const fullKey = `${prefix}_${key}`;
@@ -75,7 +87,7 @@ export default function PlayerInfo({ gameState, allPlayerResources, allPlayerDev
           const vp = getPlayerValue(prefix, 'VICTORY_POINTS');
           const colonistPlayer = getColonistPlayer(index);
 
-          return (
+	          return (
             <div
               key={color}
               className={`player-card ${isCurrent ? 'current' : ''} ${isWinner ? 'winner' : ''}`}
@@ -148,7 +160,7 @@ export default function PlayerInfo({ gameState, allPlayerResources, allPlayerDev
                 <span>Knights: {gameState.played_knights_by_player[color as keyof typeof gameState.played_knights_by_player] || 0}</span>
               </div>
 
-              <div className="player-flags">
+	              <div className="player-flags">
                 {getPlayerValue(prefix, 'HAS_ARMY') === 1 && (
                   <span className="flag army">Largest Army</span>
                 )}
@@ -156,6 +168,23 @@ export default function PlayerInfo({ gameState, allPlayerResources, allPlayerDev
                   <span className="flag road">Longest Road</span>
                 )}
               </div>
+
+              {isCurrent && (
+                <div className="player-observation-section">
+                  <button
+                    type="button"
+                    className="observation-button"
+                    onClick={onLoadCurrentPlayerObservation}
+                    disabled={isLoadingObservation}
+                  >
+                    {isLoadingObservation ? 'Loading...' : 'Observation'}
+                  </button>
+
+                  {currentPlayerObservation && (
+                    <pre className="player-observation-text">{currentPlayerObservation}</pre>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}

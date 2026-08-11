@@ -1,8 +1,31 @@
 import { useState } from 'react';
 import './GameControls.css';
 
+const REPLAY_MODEL_PRESETS: Array<{ id: string; label: string }> = [
+  // Teacher tier (large / frontier)
+  { id: 'thinkingmachines/inkling-small', label: 'Inkling-Small · 276B/12B · VL' },
+  { id: 'deepseek/deepseek-v4-flash-0731', label: 'DeepSeek V4 Flash · 284B/13B · cheap' },
+  { id: 'z-ai/glm-5.2', label: 'GLM-5.2 · 744B/40B · frontier value' },
+  { id: 'qwen/qwen3.5-397b-a17b', label: 'Qwen3.5-397B · VL teacher' },
+  { id: 'xiaomi/mimo-v2.5', label: 'MiMo V2.5 · 310B/15B · VL value' },
+  { id: 'minimax/minimax-m2.7', label: 'MiniMax M2.7 · 230B/10B' },
+  { id: 'moonshotai/kimi-k3', label: 'Kimi K3 · 2.8T/104B · frontier' },
+  { id: 'thinkingmachines/inkling', label: 'Inkling · 975B/41B' },
+  { id: 'qwen/qwen3.8-max', label: 'Qwen3.8-Max · 2.4T/95B' },
+  { id: 'qwen/qwen3.7-flash', label: 'Qwen3.7 Flash · VL · cheap' },
+  { id: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash · default' },
+  // Student tier (small)
+  { id: 'qwen/qwen3.6-35b-a3b', label: 'Qwen3.6 35B-A3B · student' },
+  { id: 'qwen/qwen3.5-27b', label: 'Qwen3.5-27B · student' },
+  { id: 'google/gemma-4-31b-it', label: 'Gemma 4 31B · student' },
+  { id: 'google/gemma-4-26b-a4b-it', label: 'Gemma 4 26B-A4B · MoE student' },
+  { id: 'qwen/qwen3.5-9b', label: 'Qwen3.5-9B · local SFT twin' },
+  { id: 'openai/gpt-oss-20b', label: 'GPT-OSS-20B · MoE student' },
+  { id: 'nvidia/nemotron-3-nano-30b-a3b', label: 'Nemotron 3 Nano · student' },
+];
+
 interface GameControlsProps {
-  onStartGame: (useLlm: boolean) => void;
+  onStartGame: (mode: string) => void;
   onStep: () => void;
   onAutoPlay: (delay: number) => void;
   onStopAutoPlay: () => void;
@@ -12,6 +35,11 @@ interface GameControlsProps {
   onReplayUndo: () => void;
   onSetReplayStep?: (step: number) => void;
   onRunUntilDrift?: () => void;
+  onGenerateReplayResponse: () => void;
+  replayModel: string;
+  onReplayModelChange: (model: string) => void;
+  isReplayLlmProcessing?: boolean;
+  replayLlmError?: string | null;
   isRunning: boolean;
   hasGame: boolean;
   isLlmProcessing?: boolean;
@@ -31,6 +59,11 @@ export default function GameControls({
   onReplayUndo,
   onSetReplayStep,
   onRunUntilDrift,
+  onGenerateReplayResponse,
+  replayModel,
+  onReplayModelChange,
+  isReplayLlmProcessing = false,
+  replayLlmError = null,
   isRunning,
   hasGame,
   isLlmProcessing = false,
@@ -48,14 +81,21 @@ export default function GameControls({
       <div className="control-section">
         <button
           className="btn btn-primary"
-          onClick={() => onStartGame(false)}
+          onClick={() => onStartGame('random')}
         >
           Start Game (Random)
         </button>
 
         <button
           className="btn btn-secondary"
-          onClick={() => onStartGame(true)}
+          onClick={() => onStartGame('llm_vs_random')}
+        >
+          LLM vs Random
+        </button>
+
+        <button
+          className="btn btn-secondary"
+          onClick={() => onStartGame('llm')}
         >
           Start Game (LLM)
         </button>
@@ -168,6 +208,57 @@ export default function GameControls({
               Run Until Drift
             </button>
           )}
+
+          <div className="replay-llm-controls">
+            <h4>LLM Response</h4>
+            <label className="field-label" htmlFor="replay-model-id">
+              OpenRouter model ID
+            </label>
+            <select
+              className="replay-model-select"
+              aria-label="Model presets"
+              value={REPLAY_MODEL_PRESETS.some((preset) => preset.id === replayModel) ? replayModel : ''}
+              onChange={(event) => {
+                if (event.target.value) {
+                  onReplayModelChange(event.target.value);
+                }
+              }}
+              disabled={isReplayLlmProcessing}
+            >
+              <option value="">Presets…</option>
+              {REPLAY_MODEL_PRESETS.map((preset) => (
+                <option key={preset.id} value={preset.id}>
+                  {preset.label} — {preset.id}
+                </option>
+              ))}
+            </select>
+            <input
+              id="replay-model-id"
+              className="replay-model-input"
+              type="text"
+              value={replayModel}
+              onChange={(event) => onReplayModelChange(event.target.value)}
+              placeholder="provider/model"
+              spellCheck={false}
+              disabled={isReplayLlmProcessing}
+            />
+            <p className="replay-context-hint">
+              Context: safe goals + prior turn + current observation.
+            </p>
+            <button
+              className="btn btn-primary"
+              onClick={onGenerateReplayResponse}
+              disabled={!replayModel.trim() || isReplayLlmProcessing}
+            >
+              {isReplayLlmProcessing ? 'Generating...' : 'Generate Response'}
+            </button>
+            {replayLlmError && (
+              <div className="replay-llm-error" role="alert">
+                {replayLlmError}
+              </div>
+            )}
+          </div>
+
           <button
             className="btn btn-danger"
             onClick={onReset}

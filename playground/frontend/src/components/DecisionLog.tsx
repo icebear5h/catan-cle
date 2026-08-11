@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import type { GameState } from '../types';
 import './DecisionLog.css';
 
 interface Decision {
@@ -12,6 +11,7 @@ interface Decision {
   game_plan?: string;
   observation?: string;
   strategic_notes?: string;
+  has_screenshot?: boolean;
   game_over?: boolean;
   winner?: string;
 }
@@ -82,31 +82,35 @@ export default function DecisionLog({ decisions, currentColor }: DecisionLogProp
 
               {isExpanded && (
                 <div className="decision-details">
-                  {decision.observation && (
+                  {decision.has_screenshot && (
                     <div className="detail-section">
-                      <h4>Observation</h4>
-                      <pre className="observation-text">{decision.observation}</pre>
+                      <h4>Board Screenshot</h4>
+                      <img
+                        src={`http://localhost:5001/api/latest-screenshot?t=${decision.timestamp}`}
+                        alt="Board state"
+                        style={{ width: '100%', borderRadius: '4px', border: '1px solid #30363d' }}
+                      />
                     </div>
                   )}
 
-                  {decision.strategic_notes && (
-                    <div className="detail-section">
-                      <h4>Strategic Notes</h4>
-                      <pre className="observation-text">{decision.strategic_notes}</pre>
-                    </div>
-                  )}
-
-                  {decision.game_plan && (
+                  {(decision.strategic_notes || decision.game_plan) && (
                     <div className="detail-section">
                       <h4>Game Plan</h4>
-                      <p>{decision.game_plan}</p>
+                      <pre className="observation-text">{decision.strategic_notes || decision.game_plan}</pre>
                     </div>
                   )}
 
                   {decision.reasoning && (
                     <div className="detail-section">
-                      <h4>Reasoning</h4>
-                      <p>{decision.reasoning}</p>
+                      <h4>Turn Plan</h4>
+                      <pre className="observation-text">{decision.reasoning}</pre>
+                    </div>
+                  )}
+
+                  {decision.observation && (
+                    <div className="detail-section">
+                      <h4>Observation</h4>
+                      <pre className="observation-text">{decision.observation}</pre>
                     </div>
                   )}
 

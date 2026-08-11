@@ -1,32 +1,94 @@
-import { useEffect, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
-import type { GameState, Color, Resource, ReplayInfo } from './types';
+import { useEffect, useRef, useState } from 'react';
+import { io } from 'socket.io-client';
+import type {
+  GameState,
+  Color,
+  Resource,
+  ReplayInfo,
+  ReplayLLMResponse,
+  TableTalkEntry,
+  LLMDecision,
+} from './types';
 import HexBoard from './components/HexBoard';
 import GameControls from './components/GameControls';
 import PlayerInfo from './components/PlayerInfo';
 import DecisionLog from './components/DecisionLog';
 import GameLog from './components/GameLog';
+import BenchmarkVerifier from './components/BenchmarkVerifier';
+import ReplayResponseCard from './components/ReplayResponseCard';
+import TableTalkLog from './components/TableTalkLog';
 import './App.css';
 
 // Toggle between servers: 5001 (mixed) or 5002 (4-LLM)
-const SERVER_URL = 'http://localhost:5001';  // Main server
+const SERVER_URL = 'http://127.0.0.1:5001';  // Main server
+const REPLAY_MODEL_STORAGE_KEY = 'catan-lab.replay-model';
+const DEFAULT_REPLAY_MODEL = 'google/gemini-2.5-flash';
+
+interface ReplayCursor {
+  gameId: string;
+  eventIndex: number;
+}
+
+interface GameLogEntry {
+  type: 'dice' | 'resource' | 'building' | 'trade' | 'robber' | 'general';
+  timestamp: number;
+  message: string;
+  color?: string;
+  details?: unknown;
+}
+
+interface DevCardCounts {
+  in_hand: Record<string, number>;
+  played: Record<string, number>;
+  total_in_hand: number;
+}
+
+interface ReplayStepResult {
+  action?: string;
+  engine_translation?: unknown;
+  colonist_event?: unknown;
+}
+
+function getApiError(payload: unknown, fallback: string): string {
+  if (
+    typeof payload === 'object'
+    && payload !== null
+    && 'error' in payload
+    && typeof payload.error === 'string'
+  ) {
+    return payload.error;
+  }
+  return fallback;
+}
 
 function App() {
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [viewMode, setViewMode] = useState<'bench' | 'game'>('bench');
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [isRunning, setIsRunning] = useState(false);
-  const [llmThinking, setLlmThinking] = useState<any[]>([]);
-  const [gameLog, setGameLog] = useState<any[]>([]);
+  const [llmThinking, setLlmThinking] = useState<LLMDecision[]>([]);
+  const [gameLog, setGameLog] = useState<GameLogEntry[]>([]);
   const [allPlayerResources, setAllPlayerResources] = useState<Record<Color, Record<Resource, number>> | null>(null);
-  const [allPlayerDevCards, setAllPlayerDevCards] = useState<Record<string, any> | null>(null);
+  const [allPlayerDevCards, setAllPlayerDevCards] = useState<Record<string, DevCardCounts> | null>(null);
   const [isLlmProcessing, setIsLlmProcessing] = useState(false);
   const [isCurrentPlayerLlm, setIsCurrentPlayerLlm] = useState(false);
   const [playerTypes, setPlayerTypes] = useState<Record<string, string> | null>(null);
   const [replayMode, setReplayMode] = useState(false);
   const [replayProgress, setReplayProgress] = useState('');
   const [replayInfo, setReplayInfo] = useState<ReplayInfo | null>(null);
-  const [lastReplayStep, setLastReplayStep] = useState<any>(null);
+  const [lastReplayStep, setLastReplayStep] = useState<ReplayStepResult | null>(null);
   const [lastDiceRoll, setLastDiceRoll] = useState<[number, number] | null>(null);
+  const [currentPlayerObservation, setCurrentPlayerObservation] = useState<string | null>(null);
+  const [isLoadingObservation, setIsLoadingObservation] = useState(false);
+  const [replayModel, setReplayModel] = useState(
+    () => window.localStorage.getItem(REPLAY_MODEL_STORAGE_KEY) || DEFAULT_REPLAY_MODEL,
+  );
+  const [replayGoals, setReplayGoals] = useState('');
+  const [replayLlmResponse, setReplayLlmResponse] = useState<ReplayLLMResponse | null>(null);
+  const [tableTalkLog, setTableTalkLog] = useState<TableTalkEntry[]>([]);
+  const [replayLlmError, setReplayLlmError] = useState<string | null>(null);
+  const [isReplayLlmProcessing, setIsReplayLlmProcessing] = useState(false);
+  const replayCursorRef = useRef<ReplayCursor | null>(null);
+  const replayModelRef = useRef(replayModel);
 
   useEffect(() => {
     const newSocket = io(SERVER_URL);
@@ -56,29 +118,71 @@ function App() {
       setAllPlayerDevCards(data.all_player_dev_cards || null);
       setIsCurrentPlayerLlm(data.is_current_player_llm || false);
       setPlayerTypes(data.player_types || null);
-      setReplayMode(data.replay_mode || false);
-      setReplayProgress(data.replay?.progress || '');
-      setReplayInfo(data.replay || null);
+
+      const nextReplayMode = Boolean(data.replay_mode);
+      const nextReplay = (data.replay || null) as ReplayInfo | null;
+      const previousCursor = replayCursorRef.current;
+      if (!nextReplayMode || !nextReplay) {
+        replayCursorRef.current = null;
+        setReplayGoals('');
+        setReplayLlmResponse(null);
+        setReplayLlmError(null);
+        setTableTalkLog([]);
+      } else {
+        const changedGame = previousCursor?.gameId !== nextReplay.game_id;
+        const changedCursor = previousCursor?.eventIndex !== nextReplay.event_index;
+        const movedBackward = (
+          previousCursor?.gameId === nextReplay.game_id
+          && nextReplay.event_index < previousCursor.eventIndex
+        );
+
+        if (changedGame) {
+          setTableTalkLog([]);
+        } else if (movedBackward) {
+          setTableTalkLog((prev) => prev.filter(
+            (entry) => entry.replayIndex <= nextReplay.event_index,
+          ));
+        }
+        if (changedGame || movedBackward) {
+          setReplayGoals('');
+        }
+        if (changedGame || changedCursor) {
+          setReplayLlmResponse(null);
+          setReplayLlmError(null);
+        }
+        replayCursorRef.current = {
+          gameId: nextReplay.game_id,
+          eventIndex: nextReplay.event_index,
+        };
+      }
+
+      setReplayMode(nextReplayMode);
+      setReplayProgress(nextReplay?.progress || '');
+      setReplayInfo(nextReplay);
       setLastDiceRoll(data.last_dice_roll || null);
+      setCurrentPlayerObservation(null);
     });
 
     newSocket.on('disconnect', () => {
       console.log('Disconnected from server');
     });
 
-    setSocket(newSocket);
-
     return () => {
       newSocket.close();
     };
   }, []);
 
-  const startGame = async (useLlm: boolean = false) => {
+  const startGame = async (mode: string = 'random') => {
+    replayCursorRef.current = null;
+    setReplayGoals('');
+    setReplayLlmResponse(null);
+    setReplayLlmError(null);
+    setTableTalkLog([]);
     try {
       const response = await fetch(`${SERVER_URL}/api/start-game`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ use_llm: useLlm }),
+        body: JSON.stringify({ mode }),
       });
       const data = await response.json();
       console.log('Game started:', data);
@@ -138,6 +242,10 @@ function App() {
   };
 
   const resetGame = async () => {
+    replayCursorRef.current = null;
+    setReplayGoals('');
+    setReplayLlmResponse(null);
+    setReplayLlmError(null);
     try {
       const response = await fetch(`${SERVER_URL}/api/reset`, {
         method: 'POST',
@@ -150,6 +258,9 @@ function App() {
   };
 
   const loadReplay = async (gameId: string) => {
+    setReplayGoals('');
+    setReplayLlmResponse(null);
+    setReplayLlmError(null);
     try {
       console.log('[FRONTEND] Loading replay:', gameId);
       const response = await fetch(`${SERVER_URL}/api/load-replay`, {
@@ -227,6 +338,74 @@ function App() {
     }
   };
 
+  const updateReplayModel = (model: string) => {
+    replayModelRef.current = model;
+    setReplayModel(model);
+    window.localStorage.setItem(REPLAY_MODEL_STORAGE_KEY, model);
+    setReplayGoals('');
+    setReplayLlmResponse(null);
+    setReplayLlmError(null);
+  };
+
+  const generateReplayResponse = async () => {
+    const requestCursor = replayCursorRef.current;
+    const requestModel = replayModel.trim();
+    if (!requestCursor) {
+      setReplayLlmError('Navigate to a loaded replay position first.');
+      return;
+    }
+
+    try {
+      setIsReplayLlmProcessing(true);
+      setReplayLlmError(null);
+
+      const response = await fetch(`${SERVER_URL}/api/replay-llm-response`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: requestModel, goals: replayGoals }),
+      });
+      const payload: unknown = await response.json();
+      if (!response.ok) {
+        throw new Error(getApiError(payload, 'Failed to generate replay response'));
+      }
+
+      const generated = payload as ReplayLLMResponse;
+      const currentCursor = replayCursorRef.current;
+      const clientDetectedStale = (
+        currentCursor === null
+        || currentCursor.gameId !== requestCursor.gameId
+        || currentCursor.eventIndex !== requestCursor.eventIndex
+        || replayModelRef.current.trim() !== requestModel
+      );
+      const result = {
+        ...generated,
+        stale: generated.stale || clientDetectedStale,
+      };
+
+      setReplayLlmResponse(result);
+      if (!result.stale && result.goals) {
+        setReplayGoals(result.goals);
+      }
+      if (!result.stale && result.message) {
+        setTableTalkLog((prev) => [
+          ...prev,
+          {
+            replayIndex: result.replay_index,
+            player: result.player_color,
+            message: result.message,
+            model: result.model,
+          },
+        ]);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('Error generating replay response:', error);
+      setReplayLlmError(message);
+    } finally {
+      setIsReplayLlmProcessing(false);
+    }
+  };
+
   const fetchState = async () => {
     try {
       const response = await fetch(`${SERVER_URL}/api/state`);
@@ -239,17 +418,60 @@ function App() {
       setAllPlayerResources(data.all_player_resources || null);
       setAllPlayerDevCards(data.all_player_dev_cards || null);
       setPlayerTypes(data.player_types || null);
+      setCurrentPlayerObservation(null);
     } catch (error) {
       console.error('Error fetching state:', error);
+    }
+  };
+
+  const loadCurrentPlayerObservation = async () => {
+    try {
+      setIsLoadingObservation(true);
+      const response = await fetch(`${SERVER_URL}/api/current-player-observation`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to load observation');
+      }
+
+      setCurrentPlayerObservation(data.observation || '');
+    } catch (error) {
+      console.error('Error fetching current player observation:', error);
+      alert(`Error fetching observation: ${error}`);
+    } finally {
+      setIsLoadingObservation(false);
     }
   };
 
   return (
     <div className="app">
       <header>
-        <h1>Catan Game Viewer</h1>
+        <div className="brand-lockup">
+          <span className="brand-mark" aria-hidden="true" />
+          <div>
+            <h1>Catan Lab</h1>
+            <p>engine oracle / visual grounding</p>
+          </div>
+        </div>
+        <div className="mode-switch" aria-label="View mode">
+          <button
+            className={viewMode === 'bench' ? 'active' : ''}
+            onClick={() => setViewMode('bench')}
+          >
+            Bench Verify
+          </button>
+          <button
+            className={viewMode === 'game' ? 'active' : ''}
+            onClick={() => setViewMode('game')}
+          >
+            Game Viewer
+          </button>
+        </div>
       </header>
 
+      {viewMode === 'bench' ? (
+        <BenchmarkVerifier />
+      ) : (
       <div className="main-container">
         <div className="left-panel">
           <GameControls
@@ -269,6 +491,11 @@ function App() {
             replayMode={replayMode}
             replayProgress={replayProgress}
             onRunUntilDrift={runUntilDrift}
+            onGenerateReplayResponse={generateReplayResponse}
+            replayModel={replayModel}
+            onReplayModelChange={updateReplayModel}
+            isReplayLlmProcessing={isReplayLlmProcessing}
+            replayLlmError={replayLlmError}
           />
 
           <div style={{ marginTop: '10px' }}>
@@ -278,7 +505,16 @@ function App() {
           </div>
 
           {gameState && (
-            <PlayerInfo gameState={gameState} allPlayerResources={allPlayerResources} allPlayerDevCards={allPlayerDevCards} playerTypes={playerTypes} replayInfo={replayInfo} />
+            <PlayerInfo
+              gameState={gameState}
+              allPlayerResources={allPlayerResources}
+              allPlayerDevCards={allPlayerDevCards}
+              playerTypes={playerTypes}
+              replayInfo={replayInfo}
+              currentPlayerObservation={currentPlayerObservation}
+              isLoadingObservation={isLoadingObservation}
+              onLoadCurrentPlayerObservation={loadCurrentPlayerObservation}
+            />
           )}
 
           {replayMode && lastReplayStep && (
@@ -361,8 +597,16 @@ function App() {
           )}
         </div>
 
-        {gameState && (gameLog.length > 0 || llmThinking.length > 0) && (
+        {gameState && (gameLog.length > 0 || llmThinking.length > 0 || replayLlmResponse || tableTalkLog.length > 0) && (
           <div className="right-panel">
+            {replayLlmResponse && (
+              <ReplayResponseCard response={replayLlmResponse} />
+            )}
+
+            {tableTalkLog.length > 0 && (
+              <TableTalkLog entries={tableTalkLog} />
+            )}
+
             {gameLog.length > 0 && (
               <GameLog entries={gameLog} />
             )}
@@ -376,6 +620,7 @@ function App() {
           </div>
         )}
       </div>
+      )}
     </div>
   );
 }

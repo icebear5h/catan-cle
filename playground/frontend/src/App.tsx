@@ -14,7 +14,6 @@ import GameControls from './components/GameControls';
 import PlayerInfo from './components/PlayerInfo';
 import DecisionLog from './components/DecisionLog';
 import GameLog from './components/GameLog';
-import BenchmarkVerifier from './components/BenchmarkVerifier';
 import ReplayResponseCard from './components/ReplayResponseCard';
 import TableTalkLog from './components/TableTalkLog';
 import './App.css';
@@ -62,7 +61,6 @@ function getApiError(payload: unknown, fallback: string): string {
 }
 
 function App() {
-  const [viewMode, setViewMode] = useState<'bench' | 'game'>('bench');
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [llmThinking, setLlmThinking] = useState<LLMDecision[]>([]);
@@ -453,25 +451,8 @@ function App() {
             <p>engine oracle / visual grounding</p>
           </div>
         </div>
-        <div className="mode-switch" aria-label="View mode">
-          <button
-            className={viewMode === 'bench' ? 'active' : ''}
-            onClick={() => setViewMode('bench')}
-          >
-            Bench Verify
-          </button>
-          <button
-            className={viewMode === 'game' ? 'active' : ''}
-            onClick={() => setViewMode('game')}
-          >
-            Game Viewer
-          </button>
-        </div>
       </header>
 
-      {viewMode === 'bench' ? (
-        <BenchmarkVerifier />
-      ) : (
       <div className="main-container">
         <div className="left-panel">
           <GameControls
@@ -620,7 +601,6 @@ function App() {
           </div>
         )}
       </div>
-      )}
     </div>
   );
 }

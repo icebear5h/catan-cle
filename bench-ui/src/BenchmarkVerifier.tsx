@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { GameState } from '../types';
-import HexBoard from './HexBoard';
+import type { GameState } from '@playground/types';
+import HexBoard from '@playground/components/HexBoard';
 import './BenchmarkVerifier.css';
 
 const SERVER_URL = 'http://127.0.0.1:5001';

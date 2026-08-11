@@ -1,0 +1,3 @@
+[submodule "references/external/linear-mech-vlms"]
+	path = references/external/linear-mech-vlms
+	url = https://github.com/Raphoo/linear-mech-vlms.git

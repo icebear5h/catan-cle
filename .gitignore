@@ -9,6 +9,7 @@ venv/
 .venv/
 !cle/env/
 !cle/env/**
+cle/env/__pycache__/
 *.egg-info/
 dist/
 build/
@@ -22,12 +23,19 @@ build/
 # Environment
 .env
 .env.local
+.colonist-playwright-profile/
+.colonist-cdp-profile/
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+
+# Tool caches
+.ruff_cache/
+.claude/
+.playwright-cli/
 
 # Testing
 .pytest_cache/

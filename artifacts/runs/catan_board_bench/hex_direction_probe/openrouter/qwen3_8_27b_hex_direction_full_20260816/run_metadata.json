@@ -1,0 +1,41 @@
+{
+  "command": "uv run python scripts/eval_catan_board_bench_openrouter.py --suite probe --bench-dir data_pipeline/catan_board_bench/datasets/hex_direction_probe --question-dir data_pipeline/catan_board_bench/datasets/hex_direction_probe/questions --models qwen/qwen3.8-27b --categories isolated_hex_direction_to_label,isolated_hex_label_to_direction --limit-samples 0 --max-requests 72 --concurrency 2 --temperature 0 --max-tokens 64 --timeout 180 --output-dir artifacts/runs/catan_board_bench/hex_direction_probe/openrouter/qwen3_8_27b_hex_direction_full_20260816",
+  "model": "qwen/qwen3.8-27b",
+  "provider_provenance": {
+    "catalog_endpoints_observed": [
+      {
+        "completion_usd_per_million": 3.0,
+        "prompt_usd_per_million": 0.4,
+        "provider": "Chutes",
+        "quantization": "fp8"
+      },
+      {
+        "completion_usd_per_million": 3.2,
+        "prompt_usd_per_million": 0.45,
+        "provider": "AkashML",
+        "quantization": "bf16"
+      }
+    ],
+    "completion_price_fingerprints": {
+      "3.0_usd_per_million_requests": 58,
+      "3.2_usd_per_million_requests": 14
+    },
+    "direct_provider_identity_persisted": false,
+    "interpretation": "Pricing is consistent with mixed routing across the two catalog endpoints, but provider identity was not returned into the persisted response rows; endpoint attribution is inferred, not directly observed."
+  },
+  "request_settings": {
+    "atlas_prompt": false,
+    "concurrency": 2,
+    "effective_max_tokens": 256,
+    "effective_max_tokens_note": "The runner clamps recent Qwen no-reasoning requests to at least 256 tokens.",
+    "provider_routing": "openrouter_default_unpinned",
+    "reasoning": {
+      "enabled": false
+    },
+    "requested_max_tokens": 64,
+    "temperature": 0.0,
+    "timeout_seconds": 180.0
+  },
+  "schema": "catan_board_bench_openrouter_run_metadata/v1",
+  "suite": "probe"
+}

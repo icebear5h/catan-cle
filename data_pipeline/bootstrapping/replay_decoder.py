@@ -6,10 +6,10 @@ Extracts valid moves at each game state for training data generation.
 """
 
 import json
+import sys
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Set, Tuple
+from typing import Dict, List, Optional, Any, Tuple
 from enum import IntEnum
-from copy import deepcopy
 
 
 class TileType(IntEnum):
@@ -649,7 +649,7 @@ class ReplayDecoder:
         }
 
     def get_board_state(self) -> Dict:
-        """Get static board layout for training"""
+        """Get the static board layout for replay inspection."""
         return {
             'tiles': {
                 tid: {
@@ -676,43 +676,9 @@ class ReplayDecoder:
             }
         }
 
-    def generate_training_data(self) -> Dict:
-        """Generate complete training data from replay"""
-        states = self.replay_with_states()
-
-        training_samples = []
-        for i, s in enumerate(states):
-            if s['action_taken'] is None:
-                continue
-
-            sample = {
-                'state': s['state'],
-                'valid_moves': s['valid_moves'],
-                'action_taken': {
-                    'type': s['action_taken']['action_type'],
-                    'player': s['action_taken']['player'],
-                    **s['action_taken']['details']
-                }
-            }
-            training_samples.append(sample)
-
-        return {
-            'game_id': self.data.get('databaseGameId'),
-            'play_order': self.play_order,
-            'board': self.get_board_state(),
-            'player_info': {
-                p['userId']: {
-                    'username': p['username'],
-                    'color': p['selectedColor']
-                }
-                for p in self.data.get('playerUserStates', [])
-            },
-            'samples': training_samples
-        }
 
 
 def main():
-    import sys
 
     if len(sys.argv) < 2:
         print("Usage: python replay_decoder.py <replay_file.json>")
@@ -720,7 +686,7 @@ def main():
 
     decoder = ReplayDecoder(sys.argv[1])
 
-    print(f"=== GAME INFO ===")
+    print("=== GAME INFO ===")
     print(f"Play order: {decoder.play_order}")
     print(f"Total events: {len(decoder.events)}")
     print()

@@ -1,0 +1,51 @@
+{
+  "generated_at": "2026-05-16T06:35:09.654116+00:00",
+  "models": {
+    "qwen_qwen3-vl-8b-instruct": {
+      "attempted": 0,
+      "avg_latency_ms": null,
+      "categories": {
+        "robber_tile": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        }
+      },
+      "component_accuracy": 0.0,
+      "errors": 1,
+      "exact_accuracy": 0.0,
+      "requests": 1
+    }
+  },
+  "plan": {
+    "atlas_prompt": true,
+    "bench_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100",
+    "categories": [
+      "robber_tile",
+      "robber_resource_number",
+      "tile_resource_number",
+      "tile_has_robber",
+      "node_occupancy",
+      "edge_road_owner",
+      "color_road_locations",
+      "port_trade_type",
+      "port_occupancy",
+      "nodes_connected",
+      "edge_connects_nodes",
+      "color_building_counts",
+      "color_road_count"
+    ],
+    "limit_samples": 1,
+    "models": {
+      "qwen_qwen3-vl-8b-instruct": "qwen/qwen3-vl-8b-instruct"
+    },
+    "output_dir": "artifacts/runs/catan_board_bench/catan_board_bench_100/openrouter/qwen3_instruct_smoke2",
+    "question_count": 1,
+    "question_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100/questions",
+    "questions_per_sample": 1,
+    "suite": "catan_board_bench"
+  }
+}

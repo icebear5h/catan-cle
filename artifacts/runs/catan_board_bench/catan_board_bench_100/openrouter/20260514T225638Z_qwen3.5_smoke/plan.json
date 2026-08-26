@@ -1,0 +1,17 @@
+{
+  "atlas_prompt": true,
+  "bench_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100",
+  "categories": [
+    "robber_tile",
+    "node_occupancy"
+  ],
+  "limit_samples": 1,
+  "models": {
+    "qwen3.5-9b": "qwen/qwen3.5-9b"
+  },
+  "output_dir": "artifacts/runs/catan_board_bench/catan_board_bench_100/openrouter/20260514T225638Z_qwen3.5_smoke",
+  "question_count": 1,
+  "question_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100/questions",
+  "questions_per_sample": 1,
+  "suite": "catan_board_bench"
+}

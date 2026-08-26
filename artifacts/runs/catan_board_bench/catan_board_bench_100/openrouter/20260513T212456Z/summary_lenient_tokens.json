@@ -1,0 +1,101 @@
+{
+  "generated_at": "2026-05-13T21:27:24.259781+00:00",
+  "models": {
+    "google_gemini-3.1-pro-preview": {
+      "attempted": 40,
+      "avg_latency_ms": 4362.25,
+      "categories": {
+        "color_building_counts": {
+          "attempted": 5,
+          "avg_latency_ms": 4994.8,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 5
+        },
+        "edge_road_owner": {
+          "attempted": 5,
+          "avg_latency_ms": 5073.6,
+          "component_accuracy": 0.6,
+          "errors": 0,
+          "exact_accuracy": 0.6,
+          "requests": 5
+        },
+        "node_occupancy": {
+          "attempted": 5,
+          "avg_latency_ms": 4266.2,
+          "component_accuracy": 0.3,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 5
+        },
+        "port_trade_type": {
+          "attempted": 5,
+          "avg_latency_ms": 3954.8,
+          "component_accuracy": 0.2,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 5
+        },
+        "robber_resource_number": {
+          "attempted": 5,
+          "avg_latency_ms": 4665.8,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 5
+        },
+        "robber_tile": {
+          "attempted": 5,
+          "avg_latency_ms": 4735.2,
+          "component_accuracy": 0.4,
+          "errors": 0,
+          "exact_accuracy": 0.4,
+          "requests": 5
+        },
+        "tile_has_robber": {
+          "attempted": 5,
+          "avg_latency_ms": 3600.4,
+          "component_accuracy": 0.2,
+          "errors": 0,
+          "exact_accuracy": 0.2,
+          "requests": 5
+        },
+        "tile_resource_number": {
+          "attempted": 5,
+          "avg_latency_ms": 3607.2,
+          "component_accuracy": 0.5,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 5
+        }
+      },
+      "component_accuracy": 0.21333333333333335,
+      "errors": 0,
+      "exact_accuracy": 0.15,
+      "requests": 40
+    }
+  },
+  "plan": {
+    "atlas_prompt": true,
+    "bench_dir": "data_pipeline/benchmarks/catan_board_bench_100",
+    "categories": [
+      "robber_tile",
+      "robber_resource_number",
+      "tile_resource_number",
+      "tile_has_robber",
+      "node_occupancy",
+      "edge_road_owner",
+      "port_trade_type",
+      "color_building_counts",
+      "color_road_count"
+    ],
+    "limit_samples": 5,
+    "models": {
+      "google_gemini-3.1-pro-preview": "google/gemini-3.1-pro-preview"
+    },
+    "output_dir": "data_pipeline/benchmarks/catan_board_bench_100/openrouter_eval/20260513T212456Z",
+    "question_count": 40,
+    "questions_per_sample": 8
+  }
+}

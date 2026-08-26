@@ -1,0 +1,1472 @@
+{
+  "complete": true,
+  "generated_at": "2026-08-17T20:16:30.323578+00:00",
+  "overall": {
+    "completion_tokens": 5704,
+    "cost": 1.14887405,
+    "errors": 0,
+    "exact": 250,
+    "exact_accuracy": 0.6944444444444444,
+    "json_valid": 360,
+    "json_valid_accuracy": 1.0,
+    "median_latency_ms": 2303.0,
+    "p95_latency_ms": 17562,
+    "prompt_tokens": 2548033,
+    "protocol_exact": 128,
+    "protocol_exact_accuracy": 0.35555555555555557,
+    "providers": {
+      "AkashML": 360
+    },
+    "reasoning_tokens": 0,
+    "requests": 360,
+    "successful": 360
+  },
+  "plan": {
+    "categories": [
+      "building_counts",
+      "direction_to_tile",
+      "edge_state",
+      "node_adjacent_tiles",
+      "node_state",
+      "nodes_connected",
+      "port_occupancy",
+      "road_inventory",
+      "roll_production",
+      "tile_to_direction"
+    ],
+    "dataset_dir": "data_pipeline/catan_board_bench/datasets/ascii_variation_probe",
+    "manifest_sha256": "ac88d3f0d07669b369e51158400f9e73ffdf67776b27600133a02069bb314789",
+    "model": "qwen/qwen3.8-27b",
+    "output_dir": "artifacts/runs/catan_board_bench/ascii_variation_probe/openrouter/qwen3_8_27b_ascii_smoke_20260816",
+    "question_count": 60,
+    "question_ids": [
+      "ascii_q000_direction_to_tile",
+      "ascii_q001_direction_to_tile",
+      "ascii_q002_direction_to_tile",
+      "ascii_q003_direction_to_tile",
+      "ascii_q004_direction_to_tile",
+      "ascii_q005_direction_to_tile",
+      "ascii_q006_tile_to_direction",
+      "ascii_q007_tile_to_direction",
+      "ascii_q008_tile_to_direction",
+      "ascii_q009_tile_to_direction",
+      "ascii_q010_tile_to_direction",
+      "ascii_q011_tile_to_direction",
+      "ascii_q012_node_state",
+      "ascii_q013_node_state",
+      "ascii_q014_node_state",
+      "ascii_q015_node_state",
+      "ascii_q016_node_state",
+      "ascii_q017_node_state",
+      "ascii_q018_edge_state",
+      "ascii_q019_edge_state",
+      "ascii_q020_edge_state",
+      "ascii_q021_edge_state",
+      "ascii_q022_edge_state",
+      "ascii_q023_edge_state",
+      "ascii_q024_nodes_connected",
+      "ascii_q025_nodes_connected",
+      "ascii_q026_nodes_connected",
+      "ascii_q027_nodes_connected",
+      "ascii_q028_nodes_connected",
+      "ascii_q029_nodes_connected",
+      "ascii_q030_node_adjacent_tiles",
+      "ascii_q031_node_adjacent_tiles",
+      "ascii_q032_node_adjacent_tiles",
+      "ascii_q033_node_adjacent_tiles",
+      "ascii_q034_node_adjacent_tiles",
+      "ascii_q035_node_adjacent_tiles",
+      "ascii_q036_port_occupancy",
+      "ascii_q037_port_occupancy",
+      "ascii_q038_port_occupancy",
+      "ascii_q039_port_occupancy",
+      "ascii_q040_port_occupancy",
+      "ascii_q041_port_occupancy",
+      "ascii_q042_roll_production",
+      "ascii_q043_roll_production",
+      "ascii_q044_roll_production",
+      "ascii_q045_roll_production",
+      "ascii_q046_roll_production",
+      "ascii_q047_roll_production",
+      "ascii_q048_building_counts",
+      "ascii_q049_building_counts",
+      "ascii_q050_building_counts",
+      "ascii_q051_building_counts",
+      "ascii_q052_building_counts",
+      "ascii_q053_building_counts",
+      "ascii_q054_road_inventory",
+      "ascii_q055_road_inventory",
+      "ascii_q056_road_inventory",
+      "ascii_q057_road_inventory",
+      "ascii_q058_road_inventory",
+      "ascii_q059_road_inventory"
+    ],
+    "request_count": 360,
+    "request_settings": {
+      "allow_fallbacks": false,
+      "concurrency": 2,
+      "effective_max_tokens": 256,
+      "image_input": false,
+      "provider": "openrouter",
+      "provider_order": [
+        "AkashML"
+      ],
+      "reasoning_disabled": true,
+      "requested_max_tokens": 256,
+      "response_format_api_constraint": false,
+      "strict_local_json_scoring": true,
+      "temperature": 0.0,
+      "timeout_seconds": 180.0
+    },
+    "schema": "catan_ascii_variation_eval/v1",
+    "scorer": {
+      "sha256": "b80971f02ef525a56f5e84bd97801276f953620d82211cabc4a716baf9b9ed3e",
+      "version": "strict_typed_json/v2"
+    },
+    "suite": "ascii_variation_probe",
+    "system_prompt": "You are answering strict engine-scored questions about an authoritative public Catan board graph encoded as ASCII text.\n\nRules:\n- Use only the supplied board graph. Entity IDs are opaque and board-local.\n- Every tile, node, edge, and port record is explicit. A dash (-) means absent/empty.\n- Pointy-top cube direction deltas are:\n  LEFT=(-1,+1,0), RIGHT=(+1,-1,0),\n  UP-LEFT=(0,+1,-1), UP-RIGHT=(+1,0,-1),\n  DOWN-LEFT=(-1,0,+1), DOWN-RIGHT=(0,-1,+1).\n- For nominal roll production: a settlement produces 1, a city produces 2, and a robber blocks its tile. Aggregate by color and resource.\n- Return exactly one JSON object matching the requested shape. No markdown, prose, or extra keys.\n- Use null for absent scalar values and [] for empty lists.\n- Sort entity-ID lists lexicographically. Preserve tuple associations in lists of objects.\n- Wrap color, resource, and building values in angle brackets, for example <BLUE>, <WOOD>, and <CITY>. Board-local entity IDs such as T03, N14, and E27 do not use angle brackets.\n",
+    "variants": [
+      "flat_sorted",
+      "flat_shuffled",
+      "sectioned",
+      "tile_rows",
+      "local_blocks",
+      "topology_diagram"
+    ]
+  },
+  "records": 360,
+  "variants": {
+    "flat_shuffled": {
+      "categories": {
+        "building_counts": {
+          "completion_tokens": 111,
+          "cost": 0.01781655,
+          "errors": 0,
+          "exact": 5,
+          "exact_accuracy": 0.8333333333333334,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1913.0,
+          "p95_latency_ms": 9113,
+          "prompt_tokens": 38803,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "direction_to_tile": {
+          "completion_tokens": 48,
+          "cost": 0.0175605,
+          "errors": 0,
+          "exact": 3,
+          "exact_accuracy": 0.5,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2259.5,
+          "p95_latency_ms": 32072,
+          "prompt_tokens": 38682,
+          "protocol_exact": 3,
+          "protocol_exact_accuracy": 0.5,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "edge_state": {
+          "completion_tokens": 45,
+          "cost": 0.0175608,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2707.0,
+          "p95_latency_ms": 8437,
+          "prompt_tokens": 38704,
+          "protocol_exact": 6,
+          "protocol_exact_accuracy": 1.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "node_adjacent_tiles": {
+          "completion_tokens": 72,
+          "cost": 0.0176346,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1815.0,
+          "p95_latency_ms": 3141,
+          "prompt_tokens": 38676,
+          "protocol_exact": 6,
+          "protocol_exact_accuracy": 1.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "node_state": {
+          "completion_tokens": 81,
+          "cost": 0.0177138,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 3193.0,
+          "p95_latency_ms": 13928,
+          "prompt_tokens": 38788,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "nodes_connected": {
+          "completion_tokens": 36,
+          "cost": 0.0175293,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 3684.0,
+          "p95_latency_ms": 31482,
+          "prompt_tokens": 38698,
+          "protocol_exact": 1,
+          "protocol_exact_accuracy": 0.16666666666666666,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "port_occupancy": {
+          "completion_tokens": 141,
+          "cost": 0.017936399999999998,
+          "errors": 0,
+          "exact": 3,
+          "exact_accuracy": 0.5,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1955.0,
+          "p95_latency_ms": 13087,
+          "prompt_tokens": 38856,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "road_inventory": {
+          "completion_tokens": 187,
+          "cost": 0.0180566,
+          "errors": 0,
+          "exact": 5,
+          "exact_accuracy": 0.8333333333333334,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2437.5,
+          "p95_latency_ms": 3408,
+          "prompt_tokens": 38796,
+          "protocol_exact": 4,
+          "protocol_exact_accuracy": 0.6666666666666666,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "roll_production": {
+          "completion_tokens": 195,
+          "cost": 0.01805745,
+          "errors": 0,
+          "exact": 1,
+          "exact_accuracy": 0.16666666666666666,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2118.0,
+          "p95_latency_ms": 3225,
+          "prompt_tokens": 38741,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "tile_to_direction": {
+          "completion_tokens": 44,
+          "cost": 0.0175747,
+          "errors": 0,
+          "exact": 0,
+          "exact_accuracy": 0.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1677.5,
+          "p95_latency_ms": 2500,
+          "prompt_tokens": 38742,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        }
+      },
+      "completion_tokens": 960,
+      "cost": 0.1774407,
+      "errors": 0,
+      "exact": 41,
+      "exact_accuracy": 0.6833333333333333,
+      "json_valid": 60,
+      "json_valid_accuracy": 1.0,
+      "median_latency_ms": 2276.0,
+      "p95_latency_ms": 13087,
+      "prompt_tokens": 387486,
+      "protocol_exact": 20,
+      "protocol_exact_accuracy": 0.3333333333333333,
+      "providers": {
+        "AkashML": 60
+      },
+      "reasoning_tokens": 0,
+      "requests": 60,
+      "successful": 60
+    },
+    "flat_sorted": {
+      "categories": {
+        "building_counts": {
+          "completion_tokens": 111,
+          "cost": 0.01781115,
+          "errors": 0,
+          "exact": 4,
+          "exact_accuracy": 0.6666666666666666,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2341.0,
+          "p95_latency_ms": 9181,
+          "prompt_tokens": 38791,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "direction_to_tile": {
+          "completion_tokens": 48,
+          "cost": 0.0175551,
+          "errors": 0,
+          "exact": 1,
+          "exact_accuracy": 0.16666666666666666,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2610.5,
+          "p95_latency_ms": 9998,
+          "prompt_tokens": 38670,
+          "protocol_exact": 1,
+          "protocol_exact_accuracy": 0.16666666666666666,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "edge_state": {
+          "completion_tokens": 45,
+          "cost": 0.0150466,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 11184.5,
+          "p95_latency_ms": 27521,
+          "prompt_tokens": 38692,
+          "protocol_exact": 6,
+          "protocol_exact_accuracy": 1.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "node_adjacent_tiles": {
+          "completion_tokens": 72,
+          "cost": 0.0176292,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1836.5,
+          "p95_latency_ms": 2838,
+          "prompt_tokens": 38664,
+          "protocol_exact": 6,
+          "protocol_exact_accuracy": 1.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "node_state": {
+          "completion_tokens": 79,
+          "cost": 0.017702,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 5047.5,
+          "p95_latency_ms": 46526,
+          "prompt_tokens": 38776,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "nodes_connected": {
+          "completion_tokens": 36,
+          "cost": 0.017523900000000002,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2341.5,
+          "p95_latency_ms": 9976,
+          "prompt_tokens": 38686,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "port_occupancy": {
+          "completion_tokens": 148,
+          "cost": 0.0154446,
+          "errors": 0,
+          "exact": 3,
+          "exact_accuracy": 0.5,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2055.0,
+          "p95_latency_ms": 34652,
+          "prompt_tokens": 38844,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "road_inventory": {
+          "completion_tokens": 194,
+          "cost": 0.0180736,
+          "errors": 0,
+          "exact": 5,
+          "exact_accuracy": 0.8333333333333334,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2441.5,
+          "p95_latency_ms": 7828,
+          "prompt_tokens": 38784,
+          "protocol_exact": 4,
+          "protocol_exact_accuracy": 0.6666666666666666,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "roll_production": {
+          "completion_tokens": 178,
+          "cost": 0.01548885,
+          "errors": 0,
+          "exact": 0,
+          "exact_accuracy": 0.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1531.5,
+          "p95_latency_ms": 3935,
+          "prompt_tokens": 38729,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "tile_to_direction": {
+          "completion_tokens": 48,
+          "cost": 0.0175821,
+          "errors": 0,
+          "exact": 2,
+          "exact_accuracy": 0.3333333333333333,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2070.5,
+          "p95_latency_ms": 10154,
+          "prompt_tokens": 38730,
+          "protocol_exact": 2,
+          "protocol_exact_accuracy": 0.3333333333333333,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        }
+      },
+      "completion_tokens": 959,
+      "cost": 0.1698571,
+      "errors": 0,
+      "exact": 39,
+      "exact_accuracy": 0.65,
+      "json_valid": 60,
+      "json_valid_accuracy": 1.0,
+      "median_latency_ms": 2222.0,
+      "p95_latency_ms": 25952,
+      "prompt_tokens": 387366,
+      "protocol_exact": 19,
+      "protocol_exact_accuracy": 0.31666666666666665,
+      "providers": {
+        "AkashML": 60
+      },
+      "reasoning_tokens": 0,
+      "requests": 60,
+      "successful": 60
+    },
+    "local_blocks": {
+      "categories": {
+        "building_counts": {
+          "completion_tokens": 111,
+          "cost": 0.0243258,
+          "errors": 0,
+          "exact": 3,
+          "exact_accuracy": 0.5,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 3859.5,
+          "p95_latency_ms": 10032,
+          "prompt_tokens": 53268,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "direction_to_tile": {
+          "completion_tokens": 48,
+          "cost": 0.0240171,
+          "errors": 0,
+          "exact": 4,
+          "exact_accuracy": 0.6666666666666666,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1168.5,
+          "p95_latency_ms": 2037,
+          "prompt_tokens": 53030,
+          "protocol_exact": 4,
+          "protocol_exact_accuracy": 0.6666666666666666,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "edge_state": {
+          "completion_tokens": 45,
+          "cost": 0.024047100000000002,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2500.0,
+          "p95_latency_ms": 15210,
+          "prompt_tokens": 53118,
+          "protocol_exact": 6,
+          "protocol_exact_accuracy": 1.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "node_adjacent_tiles": {
+          "completion_tokens": 72,
+          "cost": 0.02409435,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2703.0,
+          "p95_latency_ms": 36313,
+          "prompt_tokens": 53031,
+          "protocol_exact": 6,
+          "protocol_exact_accuracy": 1.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "node_state": {
+          "completion_tokens": 79,
+          "cost": 0.024164,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 8087.5,
+          "p95_latency_ms": 15766,
+          "prompt_tokens": 53136,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "nodes_connected": {
+          "completion_tokens": 36,
+          "cost": 0.02401515,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1964.5,
+          "p95_latency_ms": 2804,
+          "prompt_tokens": 53111,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "port_occupancy": {
+          "completion_tokens": 141,
+          "cost": 0.024417750000000002,
+          "errors": 0,
+          "exact": 3,
+          "exact_accuracy": 0.5,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 3002.0,
+          "p95_latency_ms": 5175,
+          "prompt_tokens": 53259,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "road_inventory": {
+          "completion_tokens": 167,
+          "cost": 0.0244492,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1913.0,
+          "p95_latency_ms": 15497,
+          "prompt_tokens": 53144,
+          "protocol_exact": 5,
+          "protocol_exact_accuracy": 0.8333333333333334,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "roll_production": {
+          "completion_tokens": 196,
+          "cost": 0.021013650000000002,
+          "errors": 0,
+          "exact": 1,
+          "exact_accuracy": 0.16666666666666666,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1426.0,
+          "p95_latency_ms": 2748,
+          "prompt_tokens": 52969,
+          "protocol_exact": 1,
+          "protocol_exact_accuracy": 0.16666666666666666,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "tile_to_direction": {
+          "completion_tokens": 46,
+          "cost": 0.02404085,
+          "errors": 0,
+          "exact": 2,
+          "exact_accuracy": 0.3333333333333333,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 5985.0,
+          "p95_latency_ms": 36248,
+          "prompt_tokens": 53097,
+          "protocol_exact": 2,
+          "protocol_exact_accuracy": 0.3333333333333333,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        }
+      },
+      "completion_tokens": 941,
+      "cost": 0.23858495,
+      "errors": 0,
+      "exact": 43,
+      "exact_accuracy": 0.7166666666666667,
+      "json_valid": 60,
+      "json_valid_accuracy": 1.0,
+      "median_latency_ms": 2219.0,
+      "p95_latency_ms": 15497,
+      "prompt_tokens": 531163,
+      "protocol_exact": 24,
+      "protocol_exact_accuracy": 0.4,
+      "providers": {
+        "AkashML": 60
+      },
+      "reasoning_tokens": 0,
+      "requests": 60,
+      "successful": 60
+    },
+    "sectioned": {
+      "categories": {
+        "building_counts": {
+          "completion_tokens": 111,
+          "cost": 0.01784355,
+          "errors": 0,
+          "exact": 4,
+          "exact_accuracy": 0.6666666666666666,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2436.5,
+          "p95_latency_ms": 8074,
+          "prompt_tokens": 38863,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "direction_to_tile": {
+          "completion_tokens": 48,
+          "cost": 0.0175875,
+          "errors": 0,
+          "exact": 1,
+          "exact_accuracy": 0.16666666666666666,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1865.5,
+          "p95_latency_ms": 8745,
+          "prompt_tokens": 38742,
+          "protocol_exact": 1,
+          "protocol_exact_accuracy": 0.16666666666666666,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "edge_state": {
+          "completion_tokens": 45,
+          "cost": 0.0175878,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1673.0,
+          "p95_latency_ms": 4938,
+          "prompt_tokens": 38764,
+          "protocol_exact": 6,
+          "protocol_exact_accuracy": 1.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "node_adjacent_tiles": {
+          "completion_tokens": 72,
+          "cost": 0.0176616,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2201.5,
+          "p95_latency_ms": 22106,
+          "prompt_tokens": 38736,
+          "protocol_exact": 6,
+          "protocol_exact_accuracy": 1.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "node_state": {
+          "completion_tokens": 79,
+          "cost": 0.0152256,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 8167.5,
+          "p95_latency_ms": 17616,
+          "prompt_tokens": 38848,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "nodes_connected": {
+          "completion_tokens": 36,
+          "cost": 0.0175563,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1355.0,
+          "p95_latency_ms": 4089,
+          "prompt_tokens": 38758,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "port_occupancy": {
+          "completion_tokens": 148,
+          "cost": 0.015477,
+          "errors": 0,
+          "exact": 3,
+          "exact_accuracy": 0.5,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1881.0,
+          "p95_latency_ms": 22428,
+          "prompt_tokens": 38916,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "road_inventory": {
+          "completion_tokens": 187,
+          "cost": 0.0180836,
+          "errors": 0,
+          "exact": 5,
+          "exact_accuracy": 0.8333333333333334,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2140.5,
+          "p95_latency_ms": 25667,
+          "prompt_tokens": 38856,
+          "protocol_exact": 4,
+          "protocol_exact_accuracy": 0.6666666666666666,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "roll_production": {
+          "completion_tokens": 178,
+          "cost": 0.01803005,
+          "errors": 0,
+          "exact": 0,
+          "exact_accuracy": 0.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 4087.0,
+          "p95_latency_ms": 14530,
+          "prompt_tokens": 38801,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "tile_to_direction": {
+          "completion_tokens": 46,
+          "cost": 0.0176081,
+          "errors": 0,
+          "exact": 2,
+          "exact_accuracy": 0.3333333333333333,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1981.0,
+          "p95_latency_ms": 15598,
+          "prompt_tokens": 38802,
+          "protocol_exact": 2,
+          "protocol_exact_accuracy": 0.3333333333333333,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        }
+      },
+      "completion_tokens": 950,
+      "cost": 0.1726611,
+      "errors": 0,
+      "exact": 39,
+      "exact_accuracy": 0.65,
+      "json_valid": 60,
+      "json_valid_accuracy": 1.0,
+      "median_latency_ms": 2164.5,
+      "p95_latency_ms": 17616,
+      "prompt_tokens": 388086,
+      "protocol_exact": 19,
+      "protocol_exact_accuracy": 0.31666666666666665,
+      "providers": {
+        "AkashML": 60
+      },
+      "reasoning_tokens": 0,
+      "requests": 60,
+      "successful": 60
+    },
+    "tile_rows": {
+      "categories": {
+        "building_counts": {
+          "completion_tokens": 111,
+          "cost": 0.01872375,
+          "errors": 0,
+          "exact": 4,
+          "exact_accuracy": 0.6666666666666666,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2088.5,
+          "p95_latency_ms": 2519,
+          "prompt_tokens": 40819,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "direction_to_tile": {
+          "completion_tokens": 48,
+          "cost": 0.0184677,
+          "errors": 0,
+          "exact": 3,
+          "exact_accuracy": 0.5,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1692.5,
+          "p95_latency_ms": 7074,
+          "prompt_tokens": 40698,
+          "protocol_exact": 3,
+          "protocol_exact_accuracy": 0.5,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "edge_state": {
+          "completion_tokens": 45,
+          "cost": 0.018468,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2121.5,
+          "p95_latency_ms": 8052,
+          "prompt_tokens": 40720,
+          "protocol_exact": 6,
+          "protocol_exact_accuracy": 1.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "node_adjacent_tiles": {
+          "completion_tokens": 72,
+          "cost": 0.0185418,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2878.0,
+          "p95_latency_ms": 10948,
+          "prompt_tokens": 40692,
+          "protocol_exact": 6,
+          "protocol_exact_accuracy": 1.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "node_state": {
+          "completion_tokens": 81,
+          "cost": 0.018621,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2781.0,
+          "p95_latency_ms": 13049,
+          "prompt_tokens": 40804,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "nodes_connected": {
+          "completion_tokens": 36,
+          "cost": 0.0184365,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1607.5,
+          "p95_latency_ms": 4365,
+          "prompt_tokens": 40714,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "port_occupancy": {
+          "completion_tokens": 141,
+          "cost": 0.018843600000000002,
+          "errors": 0,
+          "exact": 3,
+          "exact_accuracy": 0.5,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2551.5,
+          "p95_latency_ms": 6521,
+          "prompt_tokens": 40872,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "road_inventory": {
+          "completion_tokens": 167,
+          "cost": 0.0188998,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 4461.0,
+          "p95_latency_ms": 8349,
+          "prompt_tokens": 40812,
+          "protocol_exact": 5,
+          "protocol_exact_accuracy": 0.8333333333333334,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "roll_production": {
+          "completion_tokens": 200,
+          "cost": 0.01898065,
+          "errors": 0,
+          "exact": 1,
+          "exact_accuracy": 0.16666666666666666,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2136.5,
+          "p95_latency_ms": 7841,
+          "prompt_tokens": 40757,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "tile_to_direction": {
+          "completion_tokens": 44,
+          "cost": 0.0184819,
+          "errors": 0,
+          "exact": 3,
+          "exact_accuracy": 0.5,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2316.0,
+          "p95_latency_ms": 6776,
+          "prompt_tokens": 40758,
+          "protocol_exact": 3,
+          "protocol_exact_accuracy": 0.5,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        }
+      },
+      "completion_tokens": 945,
+      "cost": 0.1864647,
+      "errors": 0,
+      "exact": 44,
+      "exact_accuracy": 0.7333333333333333,
+      "json_valid": 60,
+      "json_valid_accuracy": 1.0,
+      "median_latency_ms": 2201.0,
+      "p95_latency_ms": 8052,
+      "prompt_tokens": 407646,
+      "protocol_exact": 23,
+      "protocol_exact_accuracy": 0.38333333333333336,
+      "providers": {
+        "AkashML": 60
+      },
+      "reasoning_tokens": 0,
+      "requests": 60,
+      "successful": 60
+    },
+    "topology_diagram": {
+      "categories": {
+        "building_counts": {
+          "completion_tokens": 111,
+          "cost": 0.02046255,
+          "errors": 0,
+          "exact": 4,
+          "exact_accuracy": 0.6666666666666666,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2621.0,
+          "p95_latency_ms": 5558,
+          "prompt_tokens": 44683,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "direction_to_tile": {
+          "completion_tokens": 48,
+          "cost": 0.020206500000000002,
+          "errors": 0,
+          "exact": 3,
+          "exact_accuracy": 0.5,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1949.0,
+          "p95_latency_ms": 11654,
+          "prompt_tokens": 44562,
+          "protocol_exact": 3,
+          "protocol_exact_accuracy": 0.5,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "edge_state": {
+          "completion_tokens": 45,
+          "cost": 0.0202068,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 5372.5,
+          "p95_latency_ms": 10867,
+          "prompt_tokens": 44584,
+          "protocol_exact": 6,
+          "protocol_exact_accuracy": 1.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "node_adjacent_tiles": {
+          "completion_tokens": 72,
+          "cost": 0.0202806,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2316.0,
+          "p95_latency_ms": 2983,
+          "prompt_tokens": 44556,
+          "protocol_exact": 6,
+          "protocol_exact_accuracy": 1.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "node_state": {
+          "completion_tokens": 82,
+          "cost": 0.020363,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 7567.5,
+          "p95_latency_ms": 37778,
+          "prompt_tokens": 44668,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "nodes_connected": {
+          "completion_tokens": 36,
+          "cost": 0.0201753,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 5020.5,
+          "p95_latency_ms": 17562,
+          "prompt_tokens": 44578,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "port_occupancy": {
+          "completion_tokens": 141,
+          "cost": 0.0205824,
+          "errors": 0,
+          "exact": 3,
+          "exact_accuracy": 0.5,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2398.5,
+          "p95_latency_ms": 16200,
+          "prompt_tokens": 44736,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "road_inventory": {
+          "completion_tokens": 194,
+          "cost": 0.020725,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 5678.0,
+          "p95_latency_ms": 71989,
+          "prompt_tokens": 44676,
+          "protocol_exact": 4,
+          "protocol_exact_accuracy": 0.6666666666666666,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "roll_production": {
+          "completion_tokens": 178,
+          "cost": 0.02064905,
+          "errors": 0,
+          "exact": 0,
+          "exact_accuracy": 0.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 2379.5,
+          "p95_latency_ms": 4285,
+          "prompt_tokens": 44621,
+          "protocol_exact": 0,
+          "protocol_exact_accuracy": 0.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "tile_to_direction": {
+          "completion_tokens": 42,
+          "cost": 0.0202143,
+          "errors": 0,
+          "exact": 4,
+          "exact_accuracy": 0.6666666666666666,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 4369.0,
+          "p95_latency_ms": 37009,
+          "prompt_tokens": 44622,
+          "protocol_exact": 4,
+          "protocol_exact_accuracy": 0.6666666666666666,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        }
+      },
+      "completion_tokens": 949,
+      "cost": 0.2038655,
+      "errors": 0,
+      "exact": 44,
+      "exact_accuracy": 0.7333333333333333,
+      "json_valid": 60,
+      "json_valid_accuracy": 1.0,
+      "median_latency_ms": 3089.0,
+      "p95_latency_ms": 28437,
+      "prompt_tokens": 446286,
+      "protocol_exact": 23,
+      "protocol_exact_accuracy": 0.38333333333333336,
+      "providers": {
+        "AkashML": 60
+      },
+      "reasoning_tokens": 0,
+      "requests": 60,
+      "successful": 60
+    }
+  }
+}

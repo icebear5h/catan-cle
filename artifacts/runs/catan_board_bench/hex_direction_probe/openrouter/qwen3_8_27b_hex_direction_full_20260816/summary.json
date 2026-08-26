@@ -1,0 +1,48 @@
+{
+  "generated_at": "2026-08-16T22:35:10.909816+00:00",
+  "models": {
+    "qwen_qwen3.8-27b": {
+      "attempted": 72,
+      "avg_latency_ms": 1774.111111111111,
+      "categories": {
+        "isolated_hex_direction_to_label": {
+          "attempted": 36,
+          "avg_latency_ms": 1715.8055555555557,
+          "component_accuracy": 0.8333333333333334,
+          "errors": 0,
+          "exact_accuracy": 0.8333333333333334,
+          "requests": 36
+        },
+        "isolated_hex_label_to_direction": {
+          "attempted": 36,
+          "avg_latency_ms": 1832.4166666666667,
+          "component_accuracy": 1.0,
+          "errors": 0,
+          "exact_accuracy": 1.0,
+          "requests": 36
+        }
+      },
+      "component_accuracy": 0.9166666666666666,
+      "errors": 0,
+      "exact_accuracy": 0.9166666666666666,
+      "requests": 72
+    }
+  },
+  "plan": {
+    "atlas_prompt": false,
+    "bench_dir": "data_pipeline/catan_board_bench/datasets/hex_direction_probe",
+    "categories": [
+      "isolated_hex_direction_to_label",
+      "isolated_hex_label_to_direction"
+    ],
+    "limit_samples": 0,
+    "models": {
+      "qwen_qwen3.8-27b": "qwen/qwen3.8-27b"
+    },
+    "output_dir": "artifacts/runs/catan_board_bench/hex_direction_probe/openrouter/qwen3_8_27b_hex_direction_full_20260816",
+    "question_count": 72,
+    "question_dir": "data_pipeline/catan_board_bench/datasets/hex_direction_probe/questions",
+    "questions_per_sample": 2,
+    "suite": "probe"
+  }
+}

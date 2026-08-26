@@ -11,6 +11,7 @@ API Endpoint:
 Returns full event history with structured state changes.
 """
 
+import argparse
 import asyncio
 import httpx
 import json
@@ -27,6 +28,12 @@ from dotenv import load_dotenv
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+DEFAULT_INDEX_FILE = (
+    PROJECT_ROOT / "artifacts" / "raw" / "colonist" / "indexes" / "4p_games_top100.json"
+)
+DEFAULT_STAGING_DIR = PROJECT_ROOT / "artifacts" / "staging" / "colonist" / "replays"
 
 
 # Resource enum mapping (from Colonist)
@@ -154,7 +161,7 @@ class ReplayAPIClient:
         Returns:
             Raw API response or None if failed
         """
-        url = f"/api/replay/data-from-game-id"
+        url = "/api/replay/data-from-game-id"
         params = {"gameId": game_id, "playerColor": player_color}
 
         try:
@@ -297,85 +304,6 @@ def parse_replay(game_id: str, player_color: int, raw_data: Dict[str, Any]) -> P
     )
 
 
-def extract_training_examples(replay: ParsedReplay) -> List[Dict[str, Any]]:
-    """
-    Extract state-action pairs for training.
-
-    Returns list of examples with:
-    - game_state: Current observable state
-    - action: The action taken
-    - player: Who took the action
-    - outcome: win/loss (for the acting player)
-    """
-    examples = []
-
-    # Build cumulative state
-    cumulative_state = {
-        "buildings": {},  # corner_id -> {owner, type}
-        "roads": {},  # edge_id -> {owner, type}
-        "resources": {},  # player -> [cards]
-        "vp": {},  # player -> vp
-        "turn": 0,
-    }
-
-    for event in replay.events:
-        # Skip events without clear actions
-        if not event.action_type:
-            continue
-
-        # Create training example
-        example = {
-            "game_id": replay.game_id,
-            "event_index": event.event_index,
-            "game_state": dict(cumulative_state),  # Snapshot before action
-            "action": {
-                "type": event.action_type,
-                "player": event.acting_player,
-                "dice_roll": event.dice_roll,
-                "building": event.building_placed,
-                "road": event.road_placed,
-                "trade": event.trade_offer,
-            },
-            "is_winner": event.acting_player == replay.winner if replay.winner else None,
-        }
-        examples.append(example)
-
-        # Update cumulative state
-        if event.building_placed:
-            corner_id = event.building_placed["corner_id"]
-            cumulative_state["buildings"][corner_id] = event.building_placed
-
-        if event.road_placed:
-            edge_id = event.road_placed["edge_id"]
-            cumulative_state["roads"][edge_id] = event.road_placed
-
-        if event.resources_gained:
-            for player, cards in event.resources_gained.items():
-                cumulative_state["resources"][player] = cards
-
-        # Update VP from state changes
-        for player_id, p_state in event.state_change.get("playerStates", {}).items():
-            vp_state = p_state.get("victoryPointsState", {})
-            if vp_state:
-                cumulative_state["vp"][int(player_id)] = sum(vp_state.values())
-
-        # Track turn changes
-        current_state = event.state_change.get("currentState", {})
-        if "completedTurns" in current_state:
-            cumulative_state["turn"] = current_state["completedTurns"]
-
-    return examples
-
-
-async def scrape_replay(game_id: str, player_color: int = 0, jwt_token: Optional[str] = None) -> Optional[ParsedReplay]:
-    """Scrape a single replay."""
-    async with ReplayAPIClient(jwt_token=jwt_token) as client:
-        raw_data = await client.get_replay_data(game_id, player_color)
-        if not raw_data:
-            return None
-        return parse_replay(game_id, player_color, raw_data)
-
-
 async def scrape_replays_from_index(
     index_file: str,
     output_dir: str,
@@ -383,21 +311,17 @@ async def scrape_replays_from_index(
     max_games: Optional[int] = None,
     max_attempts: Optional[int] = None,
     skip_existing: bool = True,
-    use_supabase: bool = False,
-    save_raw: bool = False,
 ) -> Dict[str, int]:
     """
     Scrape replays from the game index file.
 
     Args:
         index_file: Path to 4p_games_top100.json
-        output_dir: Directory to save parsed replays
+        output_dir: Directory to save raw replay payloads
         jwt_token: Authentication token
         max_games: Maximum successful new games to scrape (None for all)
         max_attempts: Maximum non-skipped games to try before stopping
         skip_existing: Skip already-scraped games
-        use_supabase: Save to Supabase instead of local files
-        save_raw: Save raw Colonist API JSON instead of parsed replay wrapper
 
     Returns:
         Stats dict with success/failure counts
@@ -412,20 +336,6 @@ async def scrape_replays_from_index(
     stats = {"success": 0, "failed": 0, "skipped": 0}
     attempts = 0
 
-    # Setup Supabase if requested
-    db = None
-    if use_supabase:
-        try:
-            sys.path.insert(0, str(Path(__file__).parent.parent))
-            from db import save_replay, is_configured, get_replay
-            if is_configured():
-                db = {"save": save_replay, "get": get_replay}
-                logger.info("Supabase configured, will save to database")
-            else:
-                logger.warning("Supabase not configured, saving to files only")
-        except ImportError as e:
-            logger.warning(f"Could not import db module: {e}")
-
     async with ReplayAPIClient(jwt_token=jwt_token) as client:
         for i, game in enumerate(games):
             game_id = game["game_id"]
@@ -433,15 +343,9 @@ async def scrape_replays_from_index(
 
             # Check if already scraped
             output_file = output_path / f"{game_id}.json"
-            if skip_existing:
-                if db:
-                    existing = db["get"](game_id)
-                    if existing:
-                        stats["skipped"] += 1
-                        continue
-                elif output_file.exists():
-                    stats["skipped"] += 1
-                    continue
+            if skip_existing and output_file.exists():
+                stats["skipped"] += 1
+                continue
 
             if max_games is not None and stats["success"] >= max_games:
                 break
@@ -456,23 +360,14 @@ async def scrape_replays_from_index(
                 if raw_data:
                     replay = parse_replay(game_id, player_color, raw_data)
 
-                    # Save to Supabase or file
-                    if db:
-                        metadata = {
-                            "username": game.get("username"),
-                            "player_color": player_color,
-                            "result": game.get("result"),
-                        }
-                        db["save"](game_id, raw_data, metadata)
-                    else:
-                        with open(output_file, "w") as f:
-                            json.dump(raw_data if save_raw else replay.to_dict(), f)
+                    with open(output_file, "w") as f:
+                        json.dump(raw_data, f)
 
                     stats["success"] += 1
                     logger.info(f"  Saved: {replay.total_events} events")
                 else:
                     stats["failed"] += 1
-                    logger.warning(f"  Failed: No data returned")
+                    logger.warning("  Failed: No data returned")
 
             except Exception as e:
                 stats["failed"] += 1
@@ -505,22 +400,20 @@ def validate_jwt(token: str) -> bool:
 
 async def main():
     """CLI entry point."""
-    import argparse
-
     load_dotenv(dotenv_path=Path.cwd() / ".env")
     load_dotenv()
 
     parser = argparse.ArgumentParser(description="Scrape Colonist.io replays via API")
     parser.add_argument("--game-id", type=str, help="Single game ID to scrape")
-    parser.add_argument("--index-file", type=str, default="4p_games_top100.json", help="Game index file")
-    parser.add_argument("--output-dir", type=str, default="./data/replays_api", help="Output directory")
+    parser.add_argument(
+        "--index-file", type=str, default=str(DEFAULT_INDEX_FILE), help="Game index file"
+    )
+    parser.add_argument(
+        "--output-dir", type=str, default=str(DEFAULT_STAGING_DIR), help="Output directory"
+    )
     parser.add_argument("--max-games", type=int, help="Max successful new games to scrape")
     parser.add_argument("--max-attempts", type=int, help="Max non-skipped games to try")
     parser.add_argument("--player-color", type=int, default=0, help="Player color perspective")
-    parser.add_argument("--supabase", action="store_true",
-                       help="Save to Supabase (requires SUPABASE_URL and SUPABASE_KEY)")
-    parser.add_argument("--raw", action="store_true",
-                       help="Save raw Colonist API JSON for replay viewer compatibility")
 
     args = parser.parse_args()
 
@@ -536,31 +429,19 @@ async def main():
         sys.exit(1)
 
     if args.game_id:
-        # Single game mode
-        replay = await scrape_replay(args.game_id, args.player_color, jwt_token)
-        if replay:
-            print(f"\nGame {replay.game_id}:")
-            print(f"  Total events: {replay.total_events}")
-            print(f"  Winner: Player {replay.winner}")
-
-            # Show some sample events
-            actions = [e for e in replay.events if e.action_type]
-            print(f"  Actions: {len(actions)}")
-            for event in actions[:10]:
-                print(f"    [{event.event_index}] {event.action_type} by player {event.acting_player}")
-
-            # Extract training examples
-            examples = extract_training_examples(replay)
-            print(f"\n  Training examples: {len(examples)}")
-
-            # Save
-            output_file = f"{args.game_id}_parsed.json"
-            with open(output_file, "w") as f:
-                json.dump(replay.to_dict(), f, indent=2)
-            print(f"\n  Saved to {output_file}")
-        else:
+        async with ReplayAPIClient(jwt_token=jwt_token) as client:
+            raw_data = await client.get_replay_data(args.game_id, args.player_color)
+        if not raw_data:
             print("Failed to scrape replay")
             sys.exit(1)
+
+        replay = parse_replay(args.game_id, args.player_color, raw_data)
+        output_dir = Path(args.output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        output_file = output_dir / f"{args.game_id}.json"
+        output_file.write_text(json.dumps(raw_data))
+        print(f"\nGame {replay.game_id}: {replay.total_events} events")
+        print(f"Saved raw payload to {output_file}")
     else:
         # Batch mode from index
         stats = await scrape_replays_from_index(
@@ -569,15 +450,11 @@ async def main():
             jwt_token=jwt_token,
             max_games=args.max_games,
             max_attempts=args.max_attempts,
-            use_supabase=args.supabase,
-            save_raw=args.raw,
         )
-        print(f"\nScraping complete:")
+        print("\nScraping complete:")
         print(f"  Success: {stats['success']}")
         print(f"  Failed: {stats['failed']}")
         print(f"  Skipped: {stats['skipped']}")
-        if args.supabase:
-            print("  Saved to Supabase")
 
 
 if __name__ == "__main__":

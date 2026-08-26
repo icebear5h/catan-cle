@@ -1,0 +1,20 @@
+{
+  "atlas_prompt": true,
+  "bench_dir": "data_pipeline/benchmarks/catan_board_bench_100",
+  "categories": [
+    "edge_road_owner",
+    "largest_army_holder",
+    "longest_road_holder",
+    "node_occupancy",
+    "port_type_nodes",
+    "robber_tile",
+    "tile_resource_number"
+  ],
+  "limit_samples": 1,
+  "models": {
+    "gemma3-4b-free": "google/gemma-3-4b-it:free"
+  },
+  "output_dir": "data_pipeline/benchmarks/catan_board_bench_100/openrouter_eval/20260513T200505Z",
+  "question_count": 2,
+  "questions_per_sample": 2
+}

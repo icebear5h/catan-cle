@@ -1,0 +1,1093 @@
+{
+  "generated_at": "2026-08-16T23:12:19.637987+00:00",
+  "plan": {
+    "bench_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100",
+    "categories": [
+      "robber_tile",
+      "robber_resource_number",
+      "tile_resource_number",
+      "tile_has_robber",
+      "node_occupancy",
+      "edge_road_owner",
+      "color_road_locations",
+      "port_trade_type",
+      "port_occupancy",
+      "color_building_counts",
+      "color_road_count"
+    ],
+    "fact_digests": {
+      "sample_000": "c59ce65d600a450b027433132f2ed3c4a99a45611162d13a8a43338b65968622",
+      "sample_001": "65c3f3dea0c20587651dfd98f4cbef3024c63cdd430a87f3863adac6bf424042",
+      "sample_002": "70af6eeaf9b81dd67c25dd1fced92db9aa89c179a20a7fe212160e1f4fb30d9c",
+      "sample_003": "9425cd183340dfb878bc5f4eccb8b0d75d6809ed4b9b608ba182665e27df6c9e",
+      "sample_004": "11fcd80e788e4989be46bccf6cfaf624c5c5f2c142f8b1755afed7b6d86be81e",
+      "sample_005": "754be44535f68081195df9dcba658c7bc06b19ba95575429e34c000822aa656f",
+      "sample_006": "a6d625e8e75cc3e53e61e52a3d974ca6c0659eacc9fe66a9983e80ea38388d37",
+      "sample_007": "0652044c1f5bc97d2e788d3c6f889328e44aa8281bbfa749b32043b82655bffc",
+      "sample_008": "8825b689e2031c9150316152c5d633f12ae854cb0e62517aba8b9ef74b54b75f",
+      "sample_009": "b50d0bd7d1dbd31b7ac35bf30b42c5f67ad2ba3a560176164b4cafcabef04cfa"
+    },
+    "limit_samples": 10,
+    "model": "qwen/qwen3.8-27b",
+    "output_dir": "artifacts/runs/catan_board_bench/catan_board_bench_100/text_formats/qwen3_8_27b_full_20260816",
+    "question_count_per_representation": 110,
+    "question_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100/questions",
+    "question_ids": [
+      "sample_000_q00_robber_tile",
+      "sample_000_q01_robber_resource_number",
+      "sample_000_q04_tile_resource_number",
+      "sample_000_q07_tile_has_robber",
+      "sample_000_q09_node_occupancy",
+      "sample_000_q13_edge_road_owner",
+      "sample_000_q25_color_road_locations",
+      "sample_000_q17_port_trade_type",
+      "sample_000_q19_port_occupancy",
+      "sample_000_q23_color_building_counts",
+      "sample_000_q24_color_road_count",
+      "sample_001_q00_robber_tile",
+      "sample_001_q01_robber_resource_number",
+      "sample_001_q04_tile_resource_number",
+      "sample_001_q07_tile_has_robber",
+      "sample_001_q09_node_occupancy",
+      "sample_001_q13_edge_road_owner",
+      "sample_001_q25_color_road_locations",
+      "sample_001_q17_port_trade_type",
+      "sample_001_q19_port_occupancy",
+      "sample_001_q23_color_building_counts",
+      "sample_001_q24_color_road_count",
+      "sample_002_q00_robber_tile",
+      "sample_002_q01_robber_resource_number",
+      "sample_002_q04_tile_resource_number",
+      "sample_002_q07_tile_has_robber",
+      "sample_002_q09_node_occupancy",
+      "sample_002_q13_edge_road_owner",
+      "sample_002_q25_color_road_locations",
+      "sample_002_q17_port_trade_type",
+      "sample_002_q19_port_occupancy",
+      "sample_002_q23_color_building_counts",
+      "sample_002_q24_color_road_count",
+      "sample_003_q00_robber_tile",
+      "sample_003_q01_robber_resource_number",
+      "sample_003_q04_tile_resource_number",
+      "sample_003_q07_tile_has_robber",
+      "sample_003_q09_node_occupancy",
+      "sample_003_q13_edge_road_owner",
+      "sample_003_q25_color_road_locations",
+      "sample_003_q17_port_trade_type",
+      "sample_003_q19_port_occupancy",
+      "sample_003_q23_color_building_counts",
+      "sample_003_q24_color_road_count",
+      "sample_004_q00_robber_tile",
+      "sample_004_q01_robber_resource_number",
+      "sample_004_q04_tile_resource_number",
+      "sample_004_q07_tile_has_robber",
+      "sample_004_q09_node_occupancy",
+      "sample_004_q13_edge_road_owner",
+      "sample_004_q25_color_road_locations",
+      "sample_004_q17_port_trade_type",
+      "sample_004_q19_port_occupancy",
+      "sample_004_q23_color_building_counts",
+      "sample_004_q24_color_road_count",
+      "sample_005_q00_robber_tile",
+      "sample_005_q01_robber_resource_number",
+      "sample_005_q05_tile_resource_number",
+      "sample_005_q08_tile_has_robber",
+      "sample_005_q10_node_occupancy",
+      "sample_005_q14_edge_road_owner",
+      "sample_005_q26_color_road_locations",
+      "sample_005_q18_port_trade_type",
+      "sample_005_q20_port_occupancy",
+      "sample_005_q24_color_building_counts",
+      "sample_005_q25_color_road_count",
+      "sample_006_q00_robber_tile",
+      "sample_006_q01_robber_resource_number",
+      "sample_006_q06_tile_resource_number",
+      "sample_006_q09_tile_has_robber",
+      "sample_006_q11_node_occupancy",
+      "sample_006_q15_edge_road_owner",
+      "sample_006_q27_color_road_locations",
+      "sample_006_q19_port_trade_type",
+      "sample_006_q21_port_occupancy",
+      "sample_006_q25_color_building_counts",
+      "sample_006_q26_color_road_count",
+      "sample_007_q00_robber_tile",
+      "sample_007_q01_robber_resource_number",
+      "sample_007_q06_tile_resource_number",
+      "sample_007_q09_tile_has_robber",
+      "sample_007_q11_node_occupancy",
+      "sample_007_q15_edge_road_owner",
+      "sample_007_q27_color_road_locations",
+      "sample_007_q19_port_trade_type",
+      "sample_007_q21_port_occupancy",
+      "sample_007_q25_color_building_counts",
+      "sample_007_q26_color_road_count",
+      "sample_008_q00_robber_tile",
+      "sample_008_q01_robber_resource_number",
+      "sample_008_q04_tile_resource_number",
+      "sample_008_q07_tile_has_robber",
+      "sample_008_q09_node_occupancy",
+      "sample_008_q13_edge_road_owner",
+      "sample_008_q25_color_road_locations",
+      "sample_008_q17_port_trade_type",
+      "sample_008_q19_port_occupancy",
+      "sample_008_q23_color_building_counts",
+      "sample_008_q24_color_road_count",
+      "sample_009_q00_robber_tile",
+      "sample_009_q01_robber_resource_number",
+      "sample_009_q04_tile_resource_number",
+      "sample_009_q07_tile_has_robber",
+      "sample_009_q09_node_occupancy",
+      "sample_009_q13_edge_road_owner",
+      "sample_009_q25_color_road_locations",
+      "sample_009_q17_port_trade_type",
+      "sample_009_q19_port_occupancy",
+      "sample_009_q23_color_building_counts",
+      "sample_009_q24_color_road_count"
+    ],
+    "questions_per_sample": 11,
+    "representations": [
+      "verbose_json",
+      "compact_json",
+      "graph_dsl",
+      "spatial_ascii"
+    ],
+    "request_count": 440,
+    "request_settings": {
+      "allow_fallbacks": false,
+      "concurrency": 2,
+      "effective_max_tokens": 256,
+      "image_input": false,
+      "provider": "openrouter",
+      "provider_order": [
+        "AkashML"
+      ],
+      "reasoning_disabled": true,
+      "requested_max_tokens": 64,
+      "temperature": 0.0,
+      "timeout_seconds": 180.0
+    },
+    "suite": "catan_board_bench_text_formats"
+  },
+  "representations": {
+    "compact_json": {
+      "attempted": 110,
+      "avg_latency_ms": 1281.0181818181818,
+      "categories": {
+        "color_building_counts": {
+          "attempted": 10,
+          "avg_latency_ms": 1295.3,
+          "component_accuracy": 0.25,
+          "component_correct": 5,
+          "component_total": 20,
+          "errors": 0,
+          "exact": 0,
+          "exact_accuracy": 0.0,
+          "median_latency_ms": 790.5,
+          "prompt_characters": 24344,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 20,
+            "cost": 0.00507995,
+            "prompt_tokens": 14631,
+            "total_tokens": 14651
+          }
+        },
+        "color_road_count": {
+          "attempted": 10,
+          "avg_latency_ms": 952.2,
+          "component_accuracy": 0.7,
+          "component_correct": 7,
+          "component_total": 10,
+          "errors": 0,
+          "exact": 7,
+          "exact_accuracy": 0.7,
+          "median_latency_ms": 726.0,
+          "prompt_characters": 24174,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 20,
+            "cost": 0.00507095,
+            "prompt_tokens": 14611,
+            "total_tokens": 14631
+          }
+        },
+        "color_road_locations": {
+          "attempted": 10,
+          "avg_latency_ms": 1376.1,
+          "component_accuracy": 1.0,
+          "component_correct": 48,
+          "component_total": 48,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 1307.0,
+          "prompt_characters": 25024,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 304,
+            "cost": 0.00512445,
+            "prompt_tokens": 14801,
+            "total_tokens": 15105
+          }
+        },
+        "edge_road_owner": {
+          "attempted": 10,
+          "avg_latency_ms": 793,
+          "component_accuracy": 1.0,
+          "component_correct": 10,
+          "component_total": 10,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 738.5,
+          "prompt_characters": 24642,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 34,
+            "cost": 0.00549235,
+            "prompt_tokens": 14751,
+            "total_tokens": 14785
+          }
+        },
+        "node_occupancy": {
+          "attempted": 10,
+          "avg_latency_ms": 1362.7,
+          "component_accuracy": 0.5,
+          "component_correct": 10,
+          "component_total": 20,
+          "errors": 0,
+          "exact": 0,
+          "exact_accuracy": 0.0,
+          "median_latency_ms": 784.0,
+          "prompt_characters": 24692,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 54,
+            "cost": 0.00492915,
+            "prompt_tokens": 14751,
+            "total_tokens": 14805
+          }
+        },
+        "port_occupancy": {
+          "attempted": 10,
+          "avg_latency_ms": 1868.6,
+          "component_accuracy": 1.0,
+          "component_correct": 20,
+          "component_total": 20,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 1302.5,
+          "prompt_characters": 25162,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 80,
+            "cost": 0.00474375,
+            "prompt_tokens": 14851,
+            "total_tokens": 14931
+          }
+        },
+        "port_trade_type": {
+          "attempted": 10,
+          "avg_latency_ms": 962.2,
+          "component_accuracy": 1.0,
+          "component_correct": 20,
+          "component_total": 20,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 968.0,
+          "prompt_characters": 25052,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 74,
+            "cost": 0.00537875,
+            "prompt_tokens": 14911,
+            "total_tokens": 14985
+          }
+        },
+        "robber_resource_number": {
+          "attempted": 10,
+          "avg_latency_ms": 1300.9,
+          "component_accuracy": 1.0,
+          "component_correct": 30,
+          "component_total": 30,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 1008.5,
+          "prompt_characters": 25532,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 96,
+            "cost": 0.00673955,
+            "prompt_tokens": 14991,
+            "total_tokens": 15087
+          }
+        },
+        "robber_tile": {
+          "attempted": 10,
+          "avg_latency_ms": 780.9,
+          "component_accuracy": 1.0,
+          "component_correct": 10,
+          "component_total": 10,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 837.0,
+          "prompt_characters": 24002,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 50,
+            "cost": 0.00639885,
+            "prompt_tokens": 14561,
+            "total_tokens": 14611
+          }
+        },
+        "tile_has_robber": {
+          "attempted": 10,
+          "avg_latency_ms": 1062.9,
+          "component_accuracy": 1.0,
+          "component_correct": 10,
+          "component_total": 10,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 941.0,
+          "prompt_characters": 24222,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 20,
+            "cost": 0.00634335,
+            "prompt_tokens": 14651,
+            "total_tokens": 14671
+          }
+        },
+        "tile_resource_number": {
+          "attempted": 10,
+          "avg_latency_ms": 2336.4,
+          "component_accuracy": 1.0,
+          "component_correct": 20,
+          "component_total": 20,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 1178.5,
+          "prompt_characters": 24742,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 66,
+            "cost": 0.00654455,
+            "prompt_tokens": 14771,
+            "total_tokens": 14837
+          }
+        }
+      },
+      "component_accuracy": 0.8715596330275229,
+      "component_correct": 190,
+      "component_total": 218,
+      "errors": 0,
+      "exact": 87,
+      "exact_accuracy": 0.7909090909090909,
+      "median_latency_ms": 881.0,
+      "prompt_characters": 271588,
+      "requests": 110,
+      "usage": {
+        "completion_tokens": 818,
+        "cost": 0.06184565,
+        "prompt_tokens": 162281,
+        "total_tokens": 163099
+      }
+    },
+    "graph_dsl": {
+      "attempted": 110,
+      "avg_latency_ms": 1172.3909090909092,
+      "categories": {
+        "color_building_counts": {
+          "attempted": 10,
+          "avg_latency_ms": 1027.5,
+          "component_accuracy": 0.2,
+          "component_correct": 4,
+          "component_total": 20,
+          "errors": 0,
+          "exact": 0,
+          "exact_accuracy": 0.0,
+          "median_latency_ms": 820.5,
+          "prompt_characters": 18508,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 20,
+            "cost": 0.0051258,
+            "prompt_tokens": 14036,
+            "total_tokens": 14056
+          }
+        },
+        "color_road_count": {
+          "attempted": 10,
+          "avg_latency_ms": 854.4,
+          "component_accuracy": 0.6,
+          "component_correct": 6,
+          "component_total": 10,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 0.6,
+          "median_latency_ms": 778.0,
+          "prompt_characters": 18338,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 21,
+            "cost": 0.0048064,
+            "prompt_tokens": 14016,
+            "total_tokens": 14037
+          }
+        },
+        "color_road_locations": {
+          "attempted": 10,
+          "avg_latency_ms": 1148.3,
+          "component_accuracy": 1.0,
+          "component_correct": 48,
+          "component_total": 48,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 1162.0,
+          "prompt_characters": 19188,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 304,
+            "cost": 0.0054839,
+            "prompt_tokens": 14206,
+            "total_tokens": 14510
+          }
+        },
+        "edge_road_owner": {
+          "attempted": 10,
+          "avg_latency_ms": 1223,
+          "component_accuracy": 1.0,
+          "component_correct": 10,
+          "component_total": 10,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 773.0,
+          "prompt_characters": 18806,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 34,
+            "cost": 0.0055382,
+            "prompt_tokens": 14156,
+            "total_tokens": 14190
+          }
+        },
+        "node_occupancy": {
+          "attempted": 10,
+          "avg_latency_ms": 963.5,
+          "component_accuracy": 0.6,
+          "component_correct": 12,
+          "component_total": 20,
+          "errors": 0,
+          "exact": 2,
+          "exact_accuracy": 0.2,
+          "median_latency_ms": 936.5,
+          "prompt_characters": 18856,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 60,
+            "cost": 0.005935,
+            "prompt_tokens": 14156,
+            "total_tokens": 14216
+          }
+        },
+        "port_occupancy": {
+          "attempted": 10,
+          "avg_latency_ms": 867.1,
+          "component_accuracy": 0.85,
+          "component_correct": 17,
+          "component_total": 20,
+          "errors": 0,
+          "exact": 9,
+          "exact_accuracy": 0.9,
+          "median_latency_ms": 882.5,
+          "prompt_characters": 19326,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 76,
+            "cost": 0.005404,
+            "prompt_tokens": 14256,
+            "total_tokens": 14332
+          }
+        },
+        "port_trade_type": {
+          "attempted": 10,
+          "avg_latency_ms": 697.8,
+          "component_accuracy": 1.0,
+          "component_correct": 20,
+          "component_total": 20,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 695.5,
+          "prompt_characters": 19216,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 72,
+            "cost": 0.004791,
+            "prompt_tokens": 14316,
+            "total_tokens": 14388
+          }
+        },
+        "robber_resource_number": {
+          "attempted": 10,
+          "avg_latency_ms": 1460.3,
+          "component_accuracy": 1.0,
+          "component_correct": 30,
+          "component_total": 30,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 901.5,
+          "prompt_characters": 19696,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 95,
+            "cost": 0.0067822,
+            "prompt_tokens": 14396,
+            "total_tokens": 14491
+          }
+        },
+        "robber_tile": {
+          "attempted": 10,
+          "avg_latency_ms": 2595,
+          "component_accuracy": 1.0,
+          "component_correct": 10,
+          "component_total": 10,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 743.0,
+          "prompt_characters": 18166,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 50,
+            "cost": 0.0061311,
+            "prompt_tokens": 13966,
+            "total_tokens": 14016
+          }
+        },
+        "tile_has_robber": {
+          "attempted": 10,
+          "avg_latency_ms": 1021.6,
+          "component_accuracy": 1.0,
+          "component_correct": 10,
+          "component_total": 10,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 942.0,
+          "prompt_characters": 18386,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 20,
+            "cost": 0.005762,
+            "prompt_tokens": 14056,
+            "total_tokens": 14076
+          }
+        },
+        "tile_resource_number": {
+          "attempted": 10,
+          "avg_latency_ms": 1037.8,
+          "component_accuracy": 1.0,
+          "component_correct": 20,
+          "component_total": 20,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 942.0,
+          "prompt_characters": 18906,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 67,
+            "cost": 0.0056528,
+            "prompt_tokens": 14176,
+            "total_tokens": 14243
+          }
+        }
+      },
+      "component_accuracy": 0.8577981651376146,
+      "component_correct": 187,
+      "component_total": 218,
+      "errors": 0,
+      "exact": 87,
+      "exact_accuracy": 0.7909090909090909,
+      "median_latency_ms": 863.0,
+      "prompt_characters": 207392,
+      "requests": 110,
+      "usage": {
+        "completion_tokens": 819,
+        "cost": 0.0614124,
+        "prompt_tokens": 155736,
+        "total_tokens": 156555
+      }
+    },
+    "spatial_ascii": {
+      "attempted": 110,
+      "avg_latency_ms": 1186.8545454545454,
+      "categories": {
+        "color_building_counts": {
+          "attempted": 10,
+          "avg_latency_ms": 733,
+          "component_accuracy": 0.2,
+          "component_correct": 4,
+          "component_total": 20,
+          "errors": 0,
+          "exact": 0,
+          "exact_accuracy": 0.0,
+          "median_latency_ms": 751.5,
+          "prompt_characters": 19577,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 20,
+            "cost": 0.00402745,
+            "prompt_tokens": 12989,
+            "total_tokens": 13009
+          }
+        },
+        "color_road_count": {
+          "attempted": 10,
+          "avg_latency_ms": 1547.2,
+          "component_accuracy": 0.6,
+          "component_correct": 6,
+          "component_total": 10,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 0.6,
+          "median_latency_ms": 787.5,
+          "prompt_characters": 19407,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 20,
+            "cost": 0.00495925,
+            "prompt_tokens": 12969,
+            "total_tokens": 12989
+          }
+        },
+        "color_road_locations": {
+          "attempted": 10,
+          "avg_latency_ms": 1405.9,
+          "component_accuracy": 1.0,
+          "component_correct": 48,
+          "component_total": 48,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 1127.5,
+          "prompt_characters": 20257,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 304,
+            "cost": 0.00595355,
+            "prompt_tokens": 13159,
+            "total_tokens": 13463
+          }
+        },
+        "edge_road_owner": {
+          "attempted": 10,
+          "avg_latency_ms": 711.8,
+          "component_accuracy": 1.0,
+          "component_correct": 10,
+          "component_total": 10,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 672.5,
+          "prompt_characters": 19875,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 22,
+            "cost": 0.00565585,
+            "prompt_tokens": 13109,
+            "total_tokens": 13131
+          }
+        },
+        "node_occupancy": {
+          "attempted": 10,
+          "avg_latency_ms": 959.7,
+          "component_accuracy": 0.85,
+          "component_correct": 17,
+          "component_total": 20,
+          "errors": 0,
+          "exact": 7,
+          "exact_accuracy": 0.7,
+          "median_latency_ms": 840.0,
+          "prompt_characters": 19925,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 62,
+            "cost": 0.00547025,
+            "prompt_tokens": 13109,
+            "total_tokens": 13171
+          }
+        },
+        "port_occupancy": {
+          "attempted": 10,
+          "avg_latency_ms": 877.3,
+          "component_accuracy": 1.0,
+          "component_correct": 20,
+          "component_total": 20,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 940.0,
+          "prompt_characters": 20395,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 79,
+            "cost": 0.00525605,
+            "prompt_tokens": 13209,
+            "total_tokens": 13288
+          }
+        },
+        "port_trade_type": {
+          "attempted": 10,
+          "avg_latency_ms": 1692.6,
+          "component_accuracy": 1.0,
+          "component_correct": 20,
+          "component_total": 20,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 827.5,
+          "prompt_characters": 20285,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 76,
+            "cost": 0.00527345,
+            "prompt_tokens": 13269,
+            "total_tokens": 13345
+          }
+        },
+        "robber_resource_number": {
+          "attempted": 10,
+          "avg_latency_ms": 1384.1,
+          "component_accuracy": 1.0,
+          "component_correct": 30,
+          "component_total": 30,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 838.0,
+          "prompt_characters": 20765,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 105,
+            "cost": 0.0060294500000000004,
+            "prompt_tokens": 13349,
+            "total_tokens": 13454
+          }
+        },
+        "robber_tile": {
+          "attempted": 10,
+          "avg_latency_ms": 1036.5,
+          "component_accuracy": 1.0,
+          "component_correct": 10,
+          "component_total": 10,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 851.5,
+          "prompt_characters": 19235,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 50,
+            "cost": 0.00597355,
+            "prompt_tokens": 12919,
+            "total_tokens": 12969
+          }
+        },
+        "tile_has_robber": {
+          "attempted": 10,
+          "avg_latency_ms": 939.9,
+          "component_accuracy": 1.0,
+          "component_correct": 10,
+          "component_total": 10,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 670.0,
+          "prompt_characters": 19455,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 20,
+            "cost": 0.00529085,
+            "prompt_tokens": 13009,
+            "total_tokens": 13029
+          }
+        },
+        "tile_resource_number": {
+          "attempted": 10,
+          "avg_latency_ms": 1767.4,
+          "component_accuracy": 1.0,
+          "component_correct": 20,
+          "component_total": 20,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 955.0,
+          "prompt_characters": 19975,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 66,
+            "cost": 0.00549205,
+            "prompt_tokens": 13129,
+            "total_tokens": 13195
+          }
+        }
+      },
+      "component_accuracy": 0.8944954128440367,
+      "component_correct": 195,
+      "component_total": 218,
+      "errors": 0,
+      "exact": 93,
+      "exact_accuracy": 0.8454545454545455,
+      "median_latency_ms": 828.0,
+      "prompt_characters": 219151,
+      "requests": 110,
+      "usage": {
+        "completion_tokens": 824,
+        "cost": 0.059381750000000004,
+        "prompt_tokens": 144219,
+        "total_tokens": 145043
+      }
+    },
+    "verbose_json": {
+      "attempted": 110,
+      "avg_latency_ms": 1242.3909090909092,
+      "categories": {
+        "color_building_counts": {
+          "attempted": 10,
+          "avg_latency_ms": 923.7,
+          "component_accuracy": 0.2,
+          "component_correct": 4,
+          "component_total": 20,
+          "errors": 0,
+          "exact": 0,
+          "exact_accuracy": 0.0,
+          "median_latency_ms": 809.0,
+          "prompt_characters": 85733,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 20,
+            "cost": 0.00910735,
+            "prompt_tokens": 34731,
+            "total_tokens": 34751
+          }
+        },
+        "color_road_count": {
+          "attempted": 10,
+          "avg_latency_ms": 836.7,
+          "component_accuracy": 0.5,
+          "component_correct": 5,
+          "component_total": 10,
+          "errors": 0,
+          "exact": 5,
+          "exact_accuracy": 0.5,
+          "median_latency_ms": 884.5,
+          "prompt_characters": 85563,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 21,
+            "cost": 0.01066955,
+            "prompt_tokens": 34711,
+            "total_tokens": 34732
+          }
+        },
+        "color_road_locations": {
+          "attempted": 10,
+          "avg_latency_ms": 1100.2,
+          "component_accuracy": 1.0,
+          "component_correct": 48,
+          "component_total": 48,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 1168.0,
+          "prompt_characters": 86413,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 304,
+            "cost": 0.01040625,
+            "prompt_tokens": 34901,
+            "total_tokens": 35205
+          }
+        },
+        "edge_road_owner": {
+          "attempted": 10,
+          "avg_latency_ms": 873.7,
+          "component_accuracy": 1.0,
+          "component_correct": 10,
+          "component_total": 10,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 841.0,
+          "prompt_characters": 86031,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 30,
+            "cost": 0.01327015,
+            "prompt_tokens": 34851,
+            "total_tokens": 34881
+          }
+        },
+        "node_occupancy": {
+          "attempted": 10,
+          "avg_latency_ms": 1936.9,
+          "component_accuracy": 0.5,
+          "component_correct": 10,
+          "component_total": 20,
+          "errors": 0,
+          "exact": 0,
+          "exact_accuracy": 0.0,
+          "median_latency_ms": 1196.5,
+          "prompt_characters": 86081,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 54,
+            "cost": 0.01428775,
+            "prompt_tokens": 34851,
+            "total_tokens": 34905
+          }
+        },
+        "port_occupancy": {
+          "attempted": 10,
+          "avg_latency_ms": 1030.9,
+          "component_accuracy": 0.85,
+          "component_correct": 17,
+          "component_total": 20,
+          "errors": 0,
+          "exact": 9,
+          "exact_accuracy": 0.9,
+          "median_latency_ms": 1003.0,
+          "prompt_characters": 86551,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 62,
+            "cost": 0.01341755,
+            "prompt_tokens": 34951,
+            "total_tokens": 35013
+          }
+        },
+        "port_trade_type": {
+          "attempted": 10,
+          "avg_latency_ms": 1195.4,
+          "component_accuracy": 1.0,
+          "component_correct": 20,
+          "component_total": 20,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 1088.5,
+          "prompt_characters": 86441,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 72,
+            "cost": 0.01190855,
+            "prompt_tokens": 35011,
+            "total_tokens": 35083
+          }
+        },
+        "robber_resource_number": {
+          "attempted": 10,
+          "avg_latency_ms": 1025.6,
+          "component_accuracy": 1.0,
+          "component_correct": 30,
+          "component_total": 30,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 973.0,
+          "prompt_characters": 86921,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 109,
+            "cost": 0.01613975,
+            "prompt_tokens": 35091,
+            "total_tokens": 35200
+          }
+        },
+        "robber_tile": {
+          "attempted": 10,
+          "avg_latency_ms": 2492.6,
+          "component_accuracy": 1.0,
+          "component_correct": 10,
+          "component_total": 10,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 1151.5,
+          "prompt_characters": 85391,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 50,
+            "cost": 0.01513025,
+            "prompt_tokens": 34661,
+            "total_tokens": 34711
+          }
+        },
+        "tile_has_robber": {
+          "attempted": 10,
+          "avg_latency_ms": 1207,
+          "component_accuracy": 1.0,
+          "component_correct": 10,
+          "component_total": 10,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 1133.0,
+          "prompt_characters": 85611,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 20,
+            "cost": 0.01319315,
+            "prompt_tokens": 34751,
+            "total_tokens": 34771
+          }
+        },
+        "tile_resource_number": {
+          "attempted": 10,
+          "avg_latency_ms": 1043.6,
+          "component_accuracy": 1.0,
+          "component_correct": 20,
+          "component_total": 20,
+          "errors": 0,
+          "exact": 10,
+          "exact_accuracy": 1.0,
+          "median_latency_ms": 1081.0,
+          "prompt_characters": 86131,
+          "requests": 10,
+          "usage": {
+            "completion_tokens": 68,
+            "cost": 0.01183275,
+            "prompt_tokens": 34871,
+            "total_tokens": 34939
+          }
+        }
+      },
+      "component_accuracy": 0.8440366972477065,
+      "component_correct": 184,
+      "component_total": 218,
+      "errors": 0,
+      "exact": 84,
+      "exact_accuracy": 0.7636363636363637,
+      "median_latency_ms": 1071.5,
+      "prompt_characters": 946867,
+      "requests": 110,
+      "usage": {
+        "completion_tokens": 810,
+        "cost": 0.13936305,
+        "prompt_tokens": 383381,
+        "total_tokens": 384191
+      }
+    }
+  }
+}

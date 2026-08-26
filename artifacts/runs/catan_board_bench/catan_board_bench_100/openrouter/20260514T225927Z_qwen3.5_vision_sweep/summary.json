@@ -1,0 +1,76 @@
+{
+  "generated_at": "2026-05-14T23:00:17.473182+00:00",
+  "models": {
+    "qwen3.5-9b": {
+      "attempted": 12,
+      "avg_latency_ms": 8180.916666666667,
+      "categories": {
+        "edge_road_owner": {
+          "attempted": 2,
+          "avg_latency_ms": 3606.0,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 2
+        },
+        "node_occupancy": {
+          "attempted": 2,
+          "avg_latency_ms": 10803.5,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 2
+        },
+        "port_type_nodes": {
+          "attempted": 2,
+          "avg_latency_ms": 12293.5,
+          "component_accuracy": 0.625,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 2
+        },
+        "robber_tile": {
+          "attempted": 2,
+          "avg_latency_ms": 2986.0,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 2
+        },
+        "tile_resource_number": {
+          "attempted": 4,
+          "avg_latency_ms": 9698.25,
+          "component_accuracy": 0.375,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 4
+        }
+      },
+      "component_accuracy": 0.3333333333333333,
+      "errors": 0,
+      "exact_accuracy": 0.0,
+      "requests": 12
+    }
+  },
+  "plan": {
+    "atlas_prompt": true,
+    "bench_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100",
+    "categories": [
+      "robber_tile",
+      "tile_resource_number",
+      "node_occupancy",
+      "edge_road_owner",
+      "port_type_nodes",
+      "longest_road_holder"
+    ],
+    "limit_samples": 2,
+    "models": {
+      "qwen3.5-9b": "qwen/qwen3.5-9b"
+    },
+    "output_dir": "artifacts/runs/catan_board_bench/catan_board_bench_100/openrouter/20260514T225927Z_qwen3.5_vision_sweep",
+    "question_count": 12,
+    "question_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100/questions",
+    "questions_per_sample": 6,
+    "suite": "catan_board_bench"
+  }
+}

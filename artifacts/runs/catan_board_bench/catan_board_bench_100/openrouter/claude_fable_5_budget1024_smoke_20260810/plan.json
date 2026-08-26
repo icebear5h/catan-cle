@@ -1,0 +1,26 @@
+{
+  "atlas_prompt": true,
+  "bench_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100",
+  "categories": [
+    "robber_tile",
+    "robber_resource_number",
+    "tile_resource_number",
+    "tile_has_robber",
+    "node_occupancy",
+    "edge_road_owner",
+    "color_road_locations",
+    "port_trade_type",
+    "port_occupancy",
+    "color_building_counts",
+    "color_road_count"
+  ],
+  "limit_samples": 1,
+  "models": {
+    "anthropic_claude-fable-5": "anthropic/claude-fable-5"
+  },
+  "output_dir": "artifacts/runs/catan_board_bench/catan_board_bench_100/openrouter/claude_fable_5_budget1024_smoke_20260810",
+  "question_count": 11,
+  "question_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100/questions",
+  "questions_per_sample": 11,
+  "suite": "catan_board_bench"
+}

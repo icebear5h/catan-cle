@@ -1,0 +1,12 @@
+# Reports
+
+Reviewed human-readable experiment findings live here, grouped by domain.
+Machine plans, raw provider responses, and deterministic summaries live under
+`artifacts/runs/` and remain the evidence behind each report.
+
+A report should link its exact run directory and identify the dataset version,
+model/provider settings, scoring version, verification performed, and known
+limitations.
+
+- `catan_board_bench/`: benchmark and format-evaluation findings.
+- `sft/`: supervised fine-tuning run records and conclusions.

@@ -1,180 +1,35 @@
 #!/usr/bin/env python3
-"""
-Main script to scrape replays from top Colonist.io players.
+"""Build replay-candidate indexes from Colonist player histories.
 
-Pipeline:
-1. Fetch top players from leaderboard
-2. Get their game history
-3. Scrape replays from their winning games
-4. Save structured data for training
+This module discovers game IDs and lightweight metadata only. Replay payload
+capture is owned by ``replay_playwright_scraper`` and defaults to staging.
 
-Usage:
-    python scrape_top_players.py --mode index --top 100 --games 100 --all-games
-    python scrape_top_players.py --mode index --me --games 100 --all-games --game-modes all
+Run from the repository root:
 
-Requirements:
-    pip install playwright httpx msgpack
-    playwright install chromium
+    python -m data_pipeline.bootstrapping.scrapers.scrape_top_players --mode index
 """
 
-import asyncio
 import argparse
+import asyncio
 import json
 import logging
 import os
 from pathlib import Path
 from typing import Optional
 
-from colonist_api import ColonistAPI
+from .colonist_api import ColonistAPI
 
-try:
-    from replay_scraper import ReplayScraper
-except ImportError:
-    ReplayScraper = None
 
-try:
-    from colonist_schema import ReplayDataStore
-except ImportError:
-    ReplayDataStore = None
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+DEFAULT_INDEX_OUTPUT = (
+    PROJECT_ROOT / "artifacts" / "raw" / "colonist" / "indexes" / "4p_games_top100.json"
 )
+
 logger = logging.getLogger(__name__)
 
 
-class TopPlayerReplayScraper:
-    """
-    Orchestrates scraping replays from top players.
-    """
-
-    def __init__(
-        self,
-        output_dir: str = "./data/replays",
-        leaderboard_type: str = "Classic4P",
-        jwt_token: Optional[str] = None,
-    ):
-        if ReplayScraper is None or ReplayDataStore is None:
-            raise RuntimeError(
-                "Browser replay scraping dependencies are unavailable. "
-                "Use --mode index to build a game-id list, then replay_api_scraper.py "
-                "to download raw replay JSON."
-            )
-        self.output_dir = Path(output_dir)
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-        self.leaderboard_type = leaderboard_type
-        self.store = ReplayDataStore(str(output_dir))
-        self.jwt_token = jwt_token
-
-    async def run(
-        self,
-        top_n_players: int = 10,
-        games_per_player: int = 20,
-        wins_only: bool = True,
-        headless: bool = True,
-        max_total_games: Optional[int] = None,
-    ):
-        """
-        Run the full scraping pipeline.
-
-        Args:
-            top_n_players: Number of top players to scrape
-            games_per_player: Games to fetch per player
-            wins_only: Only scrape winning games
-            headless: Run browser in headless mode
-            max_total_games: Maximum total games to scrape
-        """
-        logger.info(f"Starting scrape: top {top_n_players} players, {games_per_player} games each")
-
-        # Step 1: Get replay URLs from top players
-        async with ColonistAPI() as api:
-            games = await api.get_top_player_replays(
-                leaderboard_type=self.leaderboard_type,
-                top_n_players=top_n_players,
-                games_per_player=games_per_player,
-                wins_only=wins_only,
-            )
-
-        if not games:
-            logger.error("No games found to scrape")
-            return
-
-        logger.info(f"Found {len(games)} games to scrape")
-
-        # Limit total if specified
-        if max_total_games:
-            games = games[:max_total_games]
-
-        # Step 2: Filter out already-scraped games
-        existing = set(self.store.list_replays())
-        games_to_scrape = [g for g in games if g.game_id not in existing]
-
-        logger.info(f"{len(games_to_scrape)} new games to scrape ({len(existing)} already in store)")
-
-        # Step 3: Scrape each replay
-        successful = 0
-        failed = 0
-
-        for i, game in enumerate(games_to_scrape):
-            logger.info(f"[{i+1}/{len(games_to_scrape)}] Scraping game {game.game_id}...")
-
-            try:
-                scraper = ReplayScraper(headless=headless, jwt_token=self.jwt_token)
-                replay = await scraper.scrape_replay(
-                    game_id=game.game_id,
-                    player_color=game.player_color,
-                )
-
-                if replay:
-                    self.store.save_replay(replay)
-                    successful += 1
-                    logger.info(f"  Saved: {len(replay.steps)} steps captured")
-                else:
-                    failed += 1
-                    logger.warning(f"  Failed: No data captured")
-
-            except Exception as e:
-                failed += 1
-                logger.error(f"  Failed: {e}")
-
-            # Rate limiting
-            await asyncio.sleep(2)
-
-        # Summary
-        logger.info(f"\n{'='*50}")
-        logger.info(f"Scraping complete!")
-        logger.info(f"  Successful: {successful}")
-        logger.info(f"  Failed: {failed}")
-        logger.info(f"  Total in store: {len(self.store.list_replays())}")
-
-    def export_training_data(
-        self,
-        output_file: str = "./data/training_examples.jsonl",
-        winner_only: bool = True,
-    ):
-        """
-        Export all scraped replays as training examples.
-
-        Args:
-            output_file: Output JSONL file path
-            winner_only: Only include winning player's decisions
-        """
-        import json
-
-        examples = self.store.get_all_training_examples(winner_only=winner_only)
-
-        logger.info(f"Exporting {len(examples)} training examples to {output_file}")
-
-        with open(output_file, "w") as f:
-            for example in examples:
-                f.write(json.dumps(example) + "\n")
-
-        logger.info("Export complete!")
-
-
 async def build_game_index(
-    output_file: str = "4p_games_top100.json",
+    output_file: str | Path = DEFAULT_INDEX_OUTPUT,
     leaderboard_type: str = "Classic4P",
     top_n_players: int = 100,
     games_per_player: int = 100,
@@ -345,168 +200,71 @@ async def test_api_connection():
         # Test leaderboard
         try:
             entries = await api.get_leaderboard("Classic4P", start=1, end=5)
-            logger.info(f"Top 5 Classic4P players:")
+            logger.info("Top 5 Classic4P players:")
             for entry in entries:
                 logger.info(f"  #{entry.rank}: {entry.username} (rating: {entry.rating})")
         except Exception as e:
             logger.error(f"Failed to get leaderboard: {e}")
 
 
-async def test_single_replay(game_id: str, headless: bool = False, jwt_token: Optional[str] = None):
-    """Test scraping a single replay."""
-    if ReplayScraper is None or ReplayDataStore is None:
-        raise RuntimeError(
-            "Browser replay scraper is unavailable. Use replay_api_scraper.py for direct API downloads."
-        )
-
-    logger.info(f"Testing replay scrape for game {game_id}...")
-
-    scraper = ReplayScraper(headless=headless, jwt_token=jwt_token)
-    replay = await scraper.scrape_replay(game_id)
-
-    if replay:
-        logger.info(f"Success! Captured {len(replay.steps)} steps")
-        logger.info(f"Players: {[p['username'] for p in replay.players]}")
-        logger.info(f"Winner: Player {replay.winner_index}")
-
-        # Save it
-        store = ReplayDataStore()
-        store.save_replay(replay)
-        logger.info(f"Saved to {store.base_dir}/{game_id}.json")
-    else:
-        logger.error("Failed to scrape replay")
-
-
-def main():
-    parser = argparse.ArgumentParser(
-        description="Scrape replays from top Colonist.io players for training data"
+def main() -> int:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--mode",
-        choices=["index", "scrape", "test-api", "test-replay", "export"],
+        choices=["index", "test-api"],
         default="index",
-        help="Mode of operation",
+        help="Build an index or test public API connectivity",
     )
-
-    parser.add_argument(
-        "--top",
-        type=int,
-        default=10,
-        help="Number of top players to scrape (default: 10)",
-    )
-
-    parser.add_argument(
-        "--games",
-        type=int,
-        default=20,
-        help="Games per player to fetch (default: 20)",
-    )
-
-    parser.add_argument(
-        "--max-total",
-        type=int,
-        default=None,
-        help="Maximum total games to scrape",
-    )
-
-    parser.add_argument(
-        "--leaderboard",
-        type=str,
-        default="Classic4P",
-        help="Leaderboard type (default: Classic4P)",
-    )
-
+    parser.add_argument("--top", type=int, default=10, help="Top players to index")
+    parser.add_argument("--games", type=int, default=20, help="Games per player")
+    parser.add_argument("--max-total", type=int, help="Maximum index records")
+    parser.add_argument("--leaderboard", default="Classic4P")
     parser.add_argument(
         "--username",
-        type=str,
-        help="Comma-separated Colonist username(s) to index instead of leaderboard players",
+        help="Comma-separated Colonist usernames instead of leaderboard players",
     )
-
     parser.add_argument(
         "--me",
         action="store_true",
-        help="Index the authenticated JWT user's public history instead of leaderboard players",
+        help="Index the authenticated JWT user's public history",
     )
-
-    parser.add_argument(
-        "--headless",
-        action="store_true",
-        help="Run browser in headless mode",
-    )
-
-    parser.add_argument(
-        "--output-dir",
-        type=str,
-        default="./data/replays",
-        help="Output directory for replays",
-    )
-
     parser.add_argument(
         "--index-output",
-        type=str,
-        default="4p_games_top100.json",
-        help="Output JSON file for index mode",
+        type=Path,
+        default=DEFAULT_INDEX_OUTPUT,
+        help="Output JSON path",
     )
-
-    parser.add_argument(
-        "--game-id",
-        type=str,
-        help="Game ID for test-replay mode",
-    )
-
-    parser.add_argument(
-        "--all-games",
-        action="store_true",
-        help="Include losses as well as wins",
-    )
-
+    parser.add_argument("--all-games", action="store_true", help="Include losses")
     parser.add_argument(
         "--game-modes",
-        type=str,
         default="Classic4P,Tournament",
-        help="Comma-separated history modes to index, or 'all' to disable filtering",
+        help="Comma-separated history modes, or 'all'",
     )
-
     parser.add_argument(
         "--allow-duplicates",
         action="store_true",
-        help="Keep duplicate game IDs when multiple indexed players share a game",
+        help="Keep shared game IDs from multiple indexed players",
     )
-
     args = parser.parse_args()
-
-    # Get JWT token from environment
-    jwt_token = os.environ.get("COLONIST_JWT")
-    if jwt_token and args.mode in ("scrape", "test-replay"):
-        logger.info(f"Using JWT token: {jwt_token[:20]}...")
-    elif args.mode in ("scrape", "test-replay"):
-        logger.warning("No COLONIST_JWT env var set. Replay scraping requires authentication.")
-        logger.warning("Get token from DevTools > Application > Cookies > jwt_colonist.io")
 
     if args.mode == "test-api":
         asyncio.run(test_api_connection())
+        return 0
 
-    elif args.mode == "test-replay":
-        if not args.game_id:
-            print("Error: --game-id required for test-replay mode")
-            return
-        asyncio.run(test_single_replay(args.game_id, headless=args.headless, jwt_token=jwt_token))
+    jwt_token = os.environ.get("COLONIST_JWT")
+    usernames = parse_usernames(args.username)
+    if args.me and usernames:
+        parser.error("use either --me or --username, not both")
+    if args.me and not jwt_token:
+        parser.error("--me requires COLONIST_JWT")
 
-    elif args.mode == "export":
-        scraper = TopPlayerReplayScraper(output_dir=args.output_dir)
-        scraper.export_training_data()
-
-    elif args.mode == "index":
-        usernames = parse_usernames(args.username)
-        if args.me and usernames:
-            print("Error: use either --me or --username, not both")
-            return
-        if args.me and not jwt_token:
-            print("Error: --me requires COLONIST_JWT")
-            return
-
-        asyncio.run(build_game_index(
+    asyncio.run(
+        build_game_index(
             output_file=args.index_output,
             leaderboard_type=args.leaderboard,
             top_n_players=args.top,
@@ -518,22 +276,10 @@ def main():
             usernames=usernames,
             use_authenticated_user=args.me,
             jwt_token=jwt_token,
-        ))
-
-    else:  # scrape
-        scraper = TopPlayerReplayScraper(
-            output_dir=args.output_dir,
-            leaderboard_type=args.leaderboard,
-            jwt_token=jwt_token,
         )
-        asyncio.run(scraper.run(
-            top_n_players=args.top,
-            games_per_player=args.games,
-            wins_only=not args.all_games,
-            headless=args.headless,
-            max_total_games=args.max_total,
-        ))
+    )
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

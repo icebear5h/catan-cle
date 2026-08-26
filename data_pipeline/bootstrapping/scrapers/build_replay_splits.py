@@ -3,7 +3,7 @@
 
 This script operates on lightweight game-index JSON files from
 ``scrape_top_players.py --mode index``. It does not download replays. It removes
-CatanBench holdout games, deduplicates game IDs, preserves color-balance metadata,
+CatanBoardBench holdout games, deduplicates game IDs, preserves color-balance metadata,
 and writes deterministic game-level splits plus step-fraction plans.
 """
 
@@ -20,10 +20,10 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_EXCLUDE_IDS = (
-    ROOT / "data_pipeline/catanbench/datasets/catanbench_100/leakage/benchmark_game_ids.json"
+    ROOT / "data_pipeline/catan_board_bench/datasets/catan_board_bench_100/leakage/benchmark_game_ids.json"
 )
-DEFAULT_RAW_REPLAY_DIR = ROOT / "data_pipeline/bootstrapping/data/raw_replays"
-DEFAULT_OUTPUT_DIR = ROOT / "data_pipeline/bootstrapping/splits"
+DEFAULT_RAW_REPLAY_DIR = ROOT / "artifacts" / "raw" / "colonist" / "replays"
+DEFAULT_OUTPUT_DIR = ROOT / "artifacts" / "manifests" / "colonist" / "splits"
 
 COLONIST_COLOR_NAMES = {
     1: "RED",
@@ -55,6 +55,17 @@ def load_json(path: Path) -> Any:
 def write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+
+
+def portable_path(value: str | Path) -> str:
+    """Return a repository-relative path when the target is inside the repo."""
+
+    path = Path(value).expanduser()
+    resolved = path.resolve()
+    try:
+        return str(resolved.relative_to(ROOT))
+    except ValueError:
+        return str(path)
 
 
 def norm_game_id(value: Any) -> str | None:
@@ -110,7 +121,7 @@ def load_index_records(paths: list[Path], modes: set[str] | None) -> dict[str, d
                     "replay_url": row.get("replay_url"),
                 },
             )
-            entry["source_index_files"].append(str(path))
+            entry["source_index_files"].append(portable_path(path))
             entry["source_records"].append(
                 {
                     "username": row.get("username"),
@@ -122,7 +133,7 @@ def load_index_records(paths: list[Path], modes: set[str] | None) -> dict[str, d
                     "mode": mode,
                     "turnCount": row.get("turnCount"),
                     "date": row.get("date"),
-                    "source_index": row.get("source_index") or str(path),
+                    "source_index": portable_path(row.get("source_index") or path),
                 }
             )
             if player_color:
@@ -335,8 +346,8 @@ def main() -> int:
     manifest = {
         "schema": "colonist_replay_splits/v0",
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "source_index_files": [str(path) for path in args.index_files],
-        "exclude_game_ids": str(args.exclude_game_ids),
+        "source_index_files": [portable_path(path) for path in args.index_files],
+        "exclude_game_ids": portable_path(args.exclude_game_ids),
         "excluded_game_count": excluded_count,
         "short_game_count": short_count,
         "modes": sorted(modes) if modes else "all",

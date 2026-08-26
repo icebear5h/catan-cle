@@ -1,0 +1,129 @@
+{
+  "generated_at": "2026-08-10T21:10:47.978759+00:00",
+  "models": {
+    "qwen_qwen3-vl-32b-instruct": {
+      "attempted": 110,
+      "avg_latency_ms": 6866.118181818182,
+      "categories": {
+        "color_building_counts": {
+          "attempted": 10,
+          "avg_latency_ms": 1435.3,
+          "component_accuracy": 0.25,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "color_road_count": {
+          "attempted": 10,
+          "avg_latency_ms": 1270.9,
+          "component_accuracy": 0.1,
+          "errors": 0,
+          "exact_accuracy": 0.1,
+          "requests": 10
+        },
+        "color_road_locations": {
+          "attempted": 10,
+          "avg_latency_ms": 62853.1,
+          "component_accuracy": 0.020833333333333332,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "edge_road_owner": {
+          "attempted": 10,
+          "avg_latency_ms": 1318.3,
+          "component_accuracy": 0.3,
+          "errors": 0,
+          "exact_accuracy": 0.3,
+          "requests": 10
+        },
+        "node_occupancy": {
+          "attempted": 10,
+          "avg_latency_ms": 1203.2,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "port_occupancy": {
+          "attempted": 10,
+          "avg_latency_ms": 1130.9,
+          "component_accuracy": 0.25,
+          "errors": 0,
+          "exact_accuracy": 0.5,
+          "requests": 10
+        },
+        "port_trade_type": {
+          "attempted": 10,
+          "avg_latency_ms": 1283.4,
+          "component_accuracy": 0.5,
+          "errors": 0,
+          "exact_accuracy": 0.5,
+          "requests": 10
+        },
+        "robber_resource_number": {
+          "attempted": 10,
+          "avg_latency_ms": 1401.7,
+          "component_accuracy": 0.03333333333333333,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "robber_tile": {
+          "attempted": 10,
+          "avg_latency_ms": 1260.5,
+          "component_accuracy": 0.1,
+          "errors": 0,
+          "exact_accuracy": 0.1,
+          "requests": 10
+        },
+        "tile_has_robber": {
+          "attempted": 10,
+          "avg_latency_ms": 1166.8,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "tile_resource_number": {
+          "attempted": 10,
+          "avg_latency_ms": 1203.2,
+          "component_accuracy": 0.25,
+          "errors": 0,
+          "exact_accuracy": 0.2,
+          "requests": 10
+        }
+      },
+      "component_accuracy": 0.14678899082568808,
+      "errors": 0,
+      "exact_accuracy": 0.15454545454545454,
+      "requests": 110
+    }
+  },
+  "plan": {
+    "atlas_prompt": true,
+    "bench_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100",
+    "categories": [
+      "robber_tile",
+      "robber_resource_number",
+      "tile_resource_number",
+      "tile_has_robber",
+      "node_occupancy",
+      "edge_road_owner",
+      "color_road_locations",
+      "port_trade_type",
+      "port_occupancy",
+      "color_building_counts",
+      "color_road_count"
+    ],
+    "limit_samples": 10,
+    "models": {
+      "qwen_qwen3-vl-32b-instruct": "qwen/qwen3-vl-32b-instruct"
+    },
+    "output_dir": "artifacts/runs/catan_board_bench/catan_board_bench_100/openrouter/qwen3_vl_32b_dense_20260810",
+    "question_count": 110,
+    "question_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100/questions",
+    "questions_per_sample": 11,
+    "suite": "catan_board_bench"
+  }
+}

@@ -6,7 +6,6 @@ processing to build a pretraining corpus from top Catan creators.
 """
 
 import json
-import os
 import re
 import time
 from pathlib import Path
@@ -40,7 +39,8 @@ SEARCH_QUERIES = [
 ]
 
 # Cache directory for raw transcripts (avoid re-fetching)
-CACHE_DIR = Path(__file__).parent.parent / "cache" / "youtube"
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
+CACHE_DIR = PROJECT_ROOT / "artifacts" / "cache" / "pretraining" / "youtube"
 
 
 def _clean_transcript_text(text: str) -> str:

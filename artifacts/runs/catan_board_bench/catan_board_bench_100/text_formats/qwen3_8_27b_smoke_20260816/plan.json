@@ -1,0 +1,60 @@
+{
+  "bench_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100",
+  "categories": [
+    "robber_tile",
+    "robber_resource_number",
+    "tile_resource_number",
+    "tile_has_robber",
+    "node_occupancy",
+    "edge_road_owner",
+    "color_road_locations",
+    "port_trade_type",
+    "port_occupancy",
+    "color_building_counts",
+    "color_road_count"
+  ],
+  "fact_digests": {
+    "sample_000": "c59ce65d600a450b027433132f2ed3c4a99a45611162d13a8a43338b65968622"
+  },
+  "limit_samples": 1,
+  "model": "qwen/qwen3.8-27b",
+  "output_dir": "artifacts/runs/catan_board_bench/catan_board_bench_100/text_formats/qwen3_8_27b_smoke_20260816",
+  "question_count_per_representation": 11,
+  "question_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100/questions",
+  "question_ids": [
+    "sample_000_q00_robber_tile",
+    "sample_000_q01_robber_resource_number",
+    "sample_000_q04_tile_resource_number",
+    "sample_000_q07_tile_has_robber",
+    "sample_000_q09_node_occupancy",
+    "sample_000_q13_edge_road_owner",
+    "sample_000_q25_color_road_locations",
+    "sample_000_q17_port_trade_type",
+    "sample_000_q19_port_occupancy",
+    "sample_000_q23_color_building_counts",
+    "sample_000_q24_color_road_count"
+  ],
+  "questions_per_sample": 11,
+  "representations": [
+    "verbose_json",
+    "compact_json",
+    "graph_dsl",
+    "spatial_ascii"
+  ],
+  "request_count": 44,
+  "request_settings": {
+    "allow_fallbacks": false,
+    "concurrency": 2,
+    "effective_max_tokens": 256,
+    "image_input": false,
+    "provider": "openrouter",
+    "provider_order": [
+      "AkashML"
+    ],
+    "reasoning_disabled": true,
+    "requested_max_tokens": 64,
+    "temperature": 0.0,
+    "timeout_seconds": 180.0
+  },
+  "suite": "catan_board_bench_text_formats"
+}

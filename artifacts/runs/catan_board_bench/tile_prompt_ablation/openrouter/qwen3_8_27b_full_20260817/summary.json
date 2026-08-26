@@ -1,0 +1,1106 @@
+{
+  "complete": true,
+  "conditions": {
+    "angle_described": {
+      "completion_tokens": 699,
+      "cost": 0.017842800000000002,
+      "median_latency_ms": 811.5,
+      "number_accuracy": 0.99,
+      "number_exact": 99,
+      "number_requests": 100,
+      "p95_latency_ms": 1976,
+      "pair_accuracy": 0.9901960784313726,
+      "pair_exact": 101,
+      "per_resource": {
+        "BRICK": {
+          "completion_tokens": 145,
+          "cost": 0.0035240000000000002,
+          "median_latency_ms": 756.0,
+          "number_accuracy": 0.95,
+          "number_exact": 19,
+          "number_requests": 20,
+          "p95_latency_ms": 978,
+          "pair_accuracy": 0.95,
+          "pair_exact": 19,
+          "prompt_tokens": 6800,
+          "protocol_exact": 19,
+          "protocol_valid": 19,
+          "reasoning_tokens": 0,
+          "requests": 20,
+          "resource_accuracy": 0.95,
+          "resource_confusion": {
+            "BRICK": {
+              "BRICK": 19,
+              "INVALID": 1
+            }
+          },
+          "resource_exact": 19,
+          "wrapper_rescued": 0
+        },
+        "DESERT": {
+          "completion_tokens": 10,
+          "cost": 0.000338,
+          "median_latency_ms": 773.0,
+          "number_accuracy": null,
+          "number_exact": 0,
+          "number_requests": 0,
+          "p95_latency_ms": 811,
+          "pair_accuracy": 1.0,
+          "pair_exact": 2,
+          "prompt_tokens": 680,
+          "protocol_exact": 2,
+          "protocol_valid": 2,
+          "reasoning_tokens": 0,
+          "requests": 2,
+          "resource_accuracy": 1.0,
+          "resource_confusion": {
+            "DESERT": {
+              "DESERT": 2
+            }
+          },
+          "resource_exact": 2,
+          "wrapper_rescued": 0
+        },
+        "ORE": {
+          "completion_tokens": 126,
+          "cost": 0.0034632,
+          "median_latency_ms": 839.0,
+          "number_accuracy": 1.0,
+          "number_exact": 20,
+          "number_requests": 20,
+          "p95_latency_ms": 8759,
+          "pair_accuracy": 1.0,
+          "pair_exact": 20,
+          "prompt_tokens": 6800,
+          "protocol_exact": 20,
+          "protocol_valid": 20,
+          "reasoning_tokens": 0,
+          "requests": 20,
+          "resource_accuracy": 1.0,
+          "resource_confusion": {
+            "ORE": {
+              "ORE": 20
+            }
+          },
+          "resource_exact": 20,
+          "wrapper_rescued": 0
+        },
+        "SHEEP": {
+          "completion_tokens": 146,
+          "cost": 0.0035272000000000003,
+          "median_latency_ms": 823.0,
+          "number_accuracy": 1.0,
+          "number_exact": 20,
+          "number_requests": 20,
+          "p95_latency_ms": 1282,
+          "pair_accuracy": 1.0,
+          "pair_exact": 20,
+          "prompt_tokens": 6800,
+          "protocol_exact": 20,
+          "protocol_valid": 20,
+          "reasoning_tokens": 0,
+          "requests": 20,
+          "resource_accuracy": 1.0,
+          "resource_confusion": {
+            "SHEEP": {
+              "SHEEP": 20
+            }
+          },
+          "resource_exact": 20,
+          "wrapper_rescued": 0
+        },
+        "WHEAT": {
+          "completion_tokens": 146,
+          "cost": 0.0035272000000000003,
+          "median_latency_ms": 799.0,
+          "number_accuracy": 1.0,
+          "number_exact": 20,
+          "number_requests": 20,
+          "p95_latency_ms": 949,
+          "pair_accuracy": 1.0,
+          "pair_exact": 20,
+          "prompt_tokens": 6800,
+          "protocol_exact": 20,
+          "protocol_valid": 20,
+          "reasoning_tokens": 0,
+          "requests": 20,
+          "resource_accuracy": 1.0,
+          "resource_confusion": {
+            "WHEAT": {
+              "WHEAT": 20
+            }
+          },
+          "resource_exact": 20,
+          "wrapper_rescued": 0
+        },
+        "WOOD": {
+          "completion_tokens": 126,
+          "cost": 0.0034632,
+          "median_latency_ms": 774.5,
+          "number_accuracy": 1.0,
+          "number_exact": 20,
+          "number_requests": 20,
+          "p95_latency_ms": 1992,
+          "pair_accuracy": 1.0,
+          "pair_exact": 20,
+          "prompt_tokens": 6800,
+          "protocol_exact": 20,
+          "protocol_valid": 20,
+          "reasoning_tokens": 0,
+          "requests": 20,
+          "resource_accuracy": 1.0,
+          "resource_confusion": {
+            "WOOD": {
+              "WOOD": 20
+            }
+          },
+          "resource_exact": 20,
+          "wrapper_rescued": 0
+        }
+      },
+      "prompt_tokens": 34680,
+      "protocol_exact": 101,
+      "protocol_valid": 101,
+      "reasoning_tokens": 0,
+      "requests": 102,
+      "resource_accuracy": 0.9901960784313726,
+      "resource_confusion": {
+        "BRICK": {
+          "BRICK": 19,
+          "INVALID": 1
+        },
+        "DESERT": {
+          "DESERT": 2
+        },
+        "ORE": {
+          "ORE": 20
+        },
+        "SHEEP": {
+          "SHEEP": 20
+        },
+        "WHEAT": {
+          "WHEAT": 20
+        },
+        "WOOD": {
+          "WOOD": 20
+        }
+      },
+      "resource_exact": 101,
+      "wrapper_rescued": 0
+    },
+    "angle_labels": {
+      "completion_tokens": 699,
+      "cost": 0.0141708,
+      "median_latency_ms": 795.5,
+      "number_accuracy": 1.0,
+      "number_exact": 100,
+      "number_requests": 100,
+      "p95_latency_ms": 2592,
+      "pair_accuracy": 0.9705882352941176,
+      "pair_exact": 99,
+      "per_resource": {
+        "BRICK": {
+          "completion_tokens": 145,
+          "cost": 0.002804,
+          "median_latency_ms": 794.0,
+          "number_accuracy": 1.0,
+          "number_exact": 20,
+          "number_requests": 20,
+          "p95_latency_ms": 1630,
+          "pair_accuracy": 0.85,
+          "pair_exact": 17,
+          "prompt_tokens": 5200,
+          "protocol_exact": 17,
+          "protocol_valid": 20,
+          "reasoning_tokens": 0,
+          "requests": 20,
+          "resource_accuracy": 0.85,
+          "resource_confusion": {
+            "BRICK": {
+              "BRICK": 17,
+              "ORE": 1,
+              "WHEAT": 2
+            }
+          },
+          "resource_exact": 17,
+          "wrapper_rescued": 0
+        },
+        "DESERT": {
+          "completion_tokens": 10,
+          "cost": 0.000266,
+          "median_latency_ms": 10135.0,
+          "number_accuracy": null,
+          "number_exact": 0,
+          "number_requests": 0,
+          "p95_latency_ms": 19669,
+          "pair_accuracy": 1.0,
+          "pair_exact": 2,
+          "prompt_tokens": 520,
+          "protocol_exact": 2,
+          "protocol_valid": 2,
+          "reasoning_tokens": 0,
+          "requests": 2,
+          "resource_accuracy": 1.0,
+          "resource_confusion": {
+            "DESERT": {
+              "DESERT": 2
+            }
+          },
+          "resource_exact": 2,
+          "wrapper_rescued": 0
+        },
+        "ORE": {
+          "completion_tokens": 126,
+          "cost": 0.0027432,
+          "median_latency_ms": 795.5,
+          "number_accuracy": 1.0,
+          "number_exact": 20,
+          "number_requests": 20,
+          "p95_latency_ms": 1445,
+          "pair_accuracy": 1.0,
+          "pair_exact": 20,
+          "prompt_tokens": 5200,
+          "protocol_exact": 20,
+          "protocol_valid": 20,
+          "reasoning_tokens": 0,
+          "requests": 20,
+          "resource_accuracy": 1.0,
+          "resource_confusion": {
+            "ORE": {
+              "ORE": 20
+            }
+          },
+          "resource_exact": 20,
+          "wrapper_rescued": 0
+        },
+        "SHEEP": {
+          "completion_tokens": 146,
+          "cost": 0.0028072,
+          "median_latency_ms": 859.0,
+          "number_accuracy": 1.0,
+          "number_exact": 20,
+          "number_requests": 20,
+          "p95_latency_ms": 7031,
+          "pair_accuracy": 1.0,
+          "pair_exact": 20,
+          "prompt_tokens": 5200,
+          "protocol_exact": 20,
+          "protocol_valid": 20,
+          "reasoning_tokens": 0,
+          "requests": 20,
+          "resource_accuracy": 1.0,
+          "resource_confusion": {
+            "SHEEP": {
+              "SHEEP": 20
+            }
+          },
+          "resource_exact": 20,
+          "wrapper_rescued": 0
+        },
+        "WHEAT": {
+          "completion_tokens": 146,
+          "cost": 0.0028072,
+          "median_latency_ms": 765.5,
+          "number_accuracy": 1.0,
+          "number_exact": 20,
+          "number_requests": 20,
+          "p95_latency_ms": 1397,
+          "pair_accuracy": 1.0,
+          "pair_exact": 20,
+          "prompt_tokens": 5200,
+          "protocol_exact": 20,
+          "protocol_valid": 20,
+          "reasoning_tokens": 0,
+          "requests": 20,
+          "resource_accuracy": 1.0,
+          "resource_confusion": {
+            "WHEAT": {
+              "WHEAT": 20
+            }
+          },
+          "resource_exact": 20,
+          "wrapper_rescued": 0
+        },
+        "WOOD": {
+          "completion_tokens": 126,
+          "cost": 0.0027432,
+          "median_latency_ms": 795.0,
+          "number_accuracy": 1.0,
+          "number_exact": 20,
+          "number_requests": 20,
+          "p95_latency_ms": 1356,
+          "pair_accuracy": 1.0,
+          "pair_exact": 20,
+          "prompt_tokens": 5200,
+          "protocol_exact": 20,
+          "protocol_valid": 20,
+          "reasoning_tokens": 0,
+          "requests": 20,
+          "resource_accuracy": 1.0,
+          "resource_confusion": {
+            "WOOD": {
+              "WOOD": 20
+            }
+          },
+          "resource_exact": 20,
+          "wrapper_rescued": 0
+        }
+      },
+      "prompt_tokens": 26520,
+      "protocol_exact": 99,
+      "protocol_valid": 102,
+      "reasoning_tokens": 0,
+      "requests": 102,
+      "resource_accuracy": 0.9705882352941176,
+      "resource_confusion": {
+        "BRICK": {
+          "BRICK": 17,
+          "ORE": 1,
+          "WHEAT": 2
+        },
+        "DESERT": {
+          "DESERT": 2
+        },
+        "ORE": {
+          "ORE": 20
+        },
+        "SHEEP": {
+          "SHEEP": 20
+        },
+        "WHEAT": {
+          "WHEAT": 20
+        },
+        "WOOD": {
+          "WOOD": 20
+        }
+      },
+      "resource_exact": 99,
+      "wrapper_rescued": 0
+    },
+    "plain_described": {
+      "completion_tokens": 536,
+      "cost": 0.0169081,
+      "median_latency_ms": 776.5,
+      "number_accuracy": 1.0,
+      "number_exact": 100,
+      "number_requests": 100,
+      "p95_latency_ms": 4712,
+      "pair_accuracy": 1.0,
+      "pair_exact": 102,
+      "per_resource": {
+        "BRICK": {
+          "completion_tokens": 106,
+          "cost": 0.0033182,
+          "median_latency_ms": 863.5,
+          "number_accuracy": 1.0,
+          "number_exact": 20,
+          "number_requests": 20,
+          "p95_latency_ms": 13421,
+          "pair_accuracy": 1.0,
+          "pair_exact": 20,
+          "prompt_tokens": 6620,
+          "protocol_exact": 20,
+          "protocol_valid": 20,
+          "reasoning_tokens": 0,
+          "requests": 20,
+          "resource_accuracy": 1.0,
+          "resource_confusion": {
+            "BRICK": {
+              "BRICK": 20
+            }
+          },
+          "resource_exact": 20,
+          "wrapper_rescued": 0
+        },
+        "DESERT": {
+          "completion_tokens": 6,
+          "cost": 0.0003171,
+          "median_latency_ms": 655.5,
+          "number_accuracy": null,
+          "number_exact": 0,
+          "number_requests": 0,
+          "p95_latency_ms": 707,
+          "pair_accuracy": 1.0,
+          "pair_exact": 2,
+          "prompt_tokens": 662,
+          "protocol_exact": 2,
+          "protocol_valid": 2,
+          "reasoning_tokens": 0,
+          "requests": 2,
+          "resource_accuracy": 1.0,
+          "resource_confusion": {
+            "DESERT": {
+              "DESERT": 2
+            }
+          },
+          "resource_exact": 2,
+          "wrapper_rescued": 0
+        },
+        "ORE": {
+          "completion_tokens": 86,
+          "cost": 0.0032542,
+          "median_latency_ms": 735.0,
+          "number_accuracy": 1.0,
+          "number_exact": 20,
+          "number_requests": 20,
+          "p95_latency_ms": 1638,
+          "pair_accuracy": 1.0,
+          "pair_exact": 20,
+          "prompt_tokens": 6620,
+          "protocol_exact": 20,
+          "protocol_valid": 20,
+          "reasoning_tokens": 0,
+          "requests": 20,
+          "resource_accuracy": 1.0,
+          "resource_confusion": {
+            "ORE": {
+              "ORE": 20
+            }
+          },
+          "resource_exact": 20,
+          "wrapper_rescued": 0
+        },
+        "SHEEP": {
+          "completion_tokens": 126,
+          "cost": 0.0033821999999999997,
+          "median_latency_ms": 767.0,
+          "number_accuracy": 1.0,
+          "number_exact": 20,
+          "number_requests": 20,
+          "p95_latency_ms": 1125,
+          "pair_accuracy": 1.0,
+          "pair_exact": 20,
+          "prompt_tokens": 6620,
+          "protocol_exact": 20,
+          "protocol_valid": 20,
+          "reasoning_tokens": 0,
+          "requests": 20,
+          "resource_accuracy": 1.0,
+          "resource_confusion": {
+            "SHEEP": {
+              "SHEEP": 20
+            }
+          },
+          "resource_exact": 20,
+          "wrapper_rescued": 0
+        },
+        "WHEAT": {
+          "completion_tokens": 126,
+          "cost": 0.0033821999999999997,
+          "median_latency_ms": 807.0,
+          "number_accuracy": 1.0,
+          "number_exact": 20,
+          "number_requests": 20,
+          "p95_latency_ms": 1021,
+          "pair_accuracy": 1.0,
+          "pair_exact": 20,
+          "prompt_tokens": 6620,
+          "protocol_exact": 20,
+          "protocol_valid": 20,
+          "reasoning_tokens": 0,
+          "requests": 20,
+          "resource_accuracy": 1.0,
+          "resource_confusion": {
+            "WHEAT": {
+              "WHEAT": 20
+            }
+          },
+          "resource_exact": 20,
+          "wrapper_rescued": 0
+        },
+        "WOOD": {
+          "completion_tokens": 86,
+          "cost": 0.0032542,
+          "median_latency_ms": 774.0,
+          "number_accuracy": 1.0,
+          "number_exact": 20,
+          "number_requests": 20,
+          "p95_latency_ms": 1638,
+          "pair_accuracy": 1.0,
+          "pair_exact": 20,
+          "prompt_tokens": 6620,
+          "protocol_exact": 20,
+          "protocol_valid": 20,
+          "reasoning_tokens": 0,
+          "requests": 20,
+          "resource_accuracy": 1.0,
+          "resource_confusion": {
+            "WOOD": {
+              "WOOD": 20
+            }
+          },
+          "resource_exact": 20,
+          "wrapper_rescued": 0
+        }
+      },
+      "prompt_tokens": 33762,
+      "protocol_exact": 102,
+      "protocol_valid": 102,
+      "reasoning_tokens": 0,
+      "requests": 102,
+      "resource_accuracy": 1.0,
+      "resource_confusion": {
+        "BRICK": {
+          "BRICK": 20
+        },
+        "DESERT": {
+          "DESERT": 2
+        },
+        "ORE": {
+          "ORE": 20
+        },
+        "SHEEP": {
+          "SHEEP": 20
+        },
+        "WHEAT": {
+          "WHEAT": 20
+        },
+        "WOOD": {
+          "WOOD": 20
+        }
+      },
+      "resource_exact": 102,
+      "wrapper_rescued": 0
+    },
+    "plain_labels": {
+      "completion_tokens": 538,
+      "cost": 0.0134261,
+      "median_latency_ms": 814.5,
+      "number_accuracy": 1.0,
+      "number_exact": 100,
+      "number_requests": 100,
+      "p95_latency_ms": 3693,
+      "pair_accuracy": 0.9803921568627451,
+      "pair_exact": 100,
+      "per_resource": {
+        "BRICK": {
+          "completion_tokens": 108,
+          "cost": 0.0026406,
+          "median_latency_ms": 815.0,
+          "number_accuracy": 1.0,
+          "number_exact": 20,
+          "number_requests": 20,
+          "p95_latency_ms": 1623,
+          "pair_accuracy": 0.9,
+          "pair_exact": 18,
+          "prompt_tokens": 5100,
+          "protocol_exact": 18,
+          "protocol_valid": 20,
+          "reasoning_tokens": 0,
+          "requests": 20,
+          "resource_accuracy": 0.9,
+          "resource_confusion": {
+            "BRICK": {
+              "BRICK": 18,
+              "WHEAT": 2
+            }
+          },
+          "resource_exact": 18,
+          "wrapper_rescued": 0
+        },
+        "DESERT": {
+          "completion_tokens": 6,
+          "cost": 0.0002487,
+          "median_latency_ms": 1327.5,
+          "number_accuracy": null,
+          "number_exact": 0,
+          "number_requests": 0,
+          "p95_latency_ms": 1996,
+          "pair_accuracy": 1.0,
+          "pair_exact": 2,
+          "prompt_tokens": 510,
+          "protocol_exact": 2,
+          "protocol_valid": 2,
+          "reasoning_tokens": 0,
+          "requests": 2,
+          "resource_accuracy": 1.0,
+          "resource_confusion": {
+            "DESERT": {
+              "DESERT": 2
+            }
+          },
+          "resource_exact": 2,
+          "wrapper_rescued": 0
+        },
+        "ORE": {
+          "completion_tokens": 86,
+          "cost": 0.0025702000000000003,
+          "median_latency_ms": 776.0,
+          "number_accuracy": 1.0,
+          "number_exact": 20,
+          "number_requests": 20,
+          "p95_latency_ms": 5397,
+          "pair_accuracy": 1.0,
+          "pair_exact": 20,
+          "prompt_tokens": 5100,
+          "protocol_exact": 20,
+          "protocol_valid": 20,
+          "reasoning_tokens": 0,
+          "requests": 20,
+          "resource_accuracy": 1.0,
+          "resource_confusion": {
+            "ORE": {
+              "ORE": 20
+            }
+          },
+          "resource_exact": 20,
+          "wrapper_rescued": 0
+        },
+        "SHEEP": {
+          "completion_tokens": 126,
+          "cost": 0.0026982,
+          "median_latency_ms": 845.5,
+          "number_accuracy": 1.0,
+          "number_exact": 20,
+          "number_requests": 20,
+          "p95_latency_ms": 5857,
+          "pair_accuracy": 1.0,
+          "pair_exact": 20,
+          "prompt_tokens": 5100,
+          "protocol_exact": 20,
+          "protocol_valid": 20,
+          "reasoning_tokens": 0,
+          "requests": 20,
+          "resource_accuracy": 1.0,
+          "resource_confusion": {
+            "SHEEP": {
+              "SHEEP": 20
+            }
+          },
+          "resource_exact": 20,
+          "wrapper_rescued": 0
+        },
+        "WHEAT": {
+          "completion_tokens": 126,
+          "cost": 0.0026982,
+          "median_latency_ms": 879.5,
+          "number_accuracy": 1.0,
+          "number_exact": 20,
+          "number_requests": 20,
+          "p95_latency_ms": 2847,
+          "pair_accuracy": 1.0,
+          "pair_exact": 20,
+          "prompt_tokens": 5100,
+          "protocol_exact": 20,
+          "protocol_valid": 20,
+          "reasoning_tokens": 0,
+          "requests": 20,
+          "resource_accuracy": 1.0,
+          "resource_confusion": {
+            "WHEAT": {
+              "WHEAT": 20
+            }
+          },
+          "resource_exact": 20,
+          "wrapper_rescued": 0
+        },
+        "WOOD": {
+          "completion_tokens": 86,
+          "cost": 0.0025702000000000003,
+          "median_latency_ms": 788.0,
+          "number_accuracy": 1.0,
+          "number_exact": 20,
+          "number_requests": 20,
+          "p95_latency_ms": 2486,
+          "pair_accuracy": 1.0,
+          "pair_exact": 20,
+          "prompt_tokens": 5100,
+          "protocol_exact": 20,
+          "protocol_valid": 20,
+          "reasoning_tokens": 0,
+          "requests": 20,
+          "resource_accuracy": 1.0,
+          "resource_confusion": {
+            "WOOD": {
+              "WOOD": 20
+            }
+          },
+          "resource_exact": 20,
+          "wrapper_rescued": 0
+        }
+      },
+      "prompt_tokens": 26010,
+      "protocol_exact": 100,
+      "protocol_valid": 102,
+      "reasoning_tokens": 0,
+      "requests": 102,
+      "resource_accuracy": 0.9803921568627451,
+      "resource_confusion": {
+        "BRICK": {
+          "BRICK": 18,
+          "WHEAT": 2
+        },
+        "DESERT": {
+          "DESERT": 2
+        },
+        "ORE": {
+          "ORE": 20
+        },
+        "SHEEP": {
+          "SHEEP": 20
+        },
+        "WHEAT": {
+          "WHEAT": 20
+        },
+        "WOOD": {
+          "WOOD": 20
+        }
+      },
+      "resource_exact": 100,
+      "wrapper_rescued": 0
+    }
+  },
+  "factorial_pair_effects": {
+    "angle_minus_plain_percentage_points": -0.9803921568627416,
+    "complete": true,
+    "condition_pair_accuracy": {
+      "angle_described": 0.9901960784313726,
+      "angle_labels": 0.9705882352941176,
+      "plain_described": 1.0,
+      "plain_labels": 0.9803921568627451
+    },
+    "described_minus_labels_percentage_points": 1.9607843137254943,
+    "interaction_percentage_points": 0.0
+  },
+  "generated_at": "2026-08-19T09:06:11.145164+00:00",
+  "overall": {
+    "completion_tokens": 2472,
+    "cost": 0.0623478,
+    "median_latency_ms": 795.5,
+    "number_accuracy": 0.9975,
+    "number_exact": 399,
+    "number_requests": 400,
+    "p95_latency_ms": 3693,
+    "pair_accuracy": 0.9852941176470589,
+    "pair_exact": 402,
+    "prompt_tokens": 120972,
+    "protocol_exact": 402,
+    "protocol_valid": 407,
+    "reasoning_tokens": 0,
+    "requests": 408,
+    "resource_accuracy": 0.9852941176470589,
+    "resource_confusion": {
+      "BRICK": {
+        "BRICK": 74,
+        "INVALID": 1,
+        "ORE": 1,
+        "WHEAT": 4
+      },
+      "DESERT": {
+        "DESERT": 8
+      },
+      "ORE": {
+        "ORE": 80
+      },
+      "SHEEP": {
+        "SHEEP": 80
+      },
+      "WHEAT": {
+        "WHEAT": 80
+      },
+      "WOOD": {
+        "WOOD": 80
+      }
+    },
+    "resource_exact": 402,
+    "wrapper_rescued": 0
+  },
+  "paired_comparisons": {
+    "number_correct:angle_described_vs_angle_labels": {
+      "effect_percentage_points": -1.0,
+      "first": "angle_described",
+      "first_exact": 99,
+      "first_only": 0,
+      "metric": "number_correct",
+      "pairs": 100,
+      "second": "angle_labels",
+      "second_exact": 100,
+      "second_only": 1
+    },
+    "number_correct:angle_described_vs_plain_described": {
+      "effect_percentage_points": -1.0,
+      "first": "angle_described",
+      "first_exact": 99,
+      "first_only": 0,
+      "metric": "number_correct",
+      "pairs": 100,
+      "second": "plain_described",
+      "second_exact": 100,
+      "second_only": 1
+    },
+    "number_correct:angle_labels_vs_plain_labels": {
+      "effect_percentage_points": 0.0,
+      "first": "angle_labels",
+      "first_exact": 100,
+      "first_only": 0,
+      "metric": "number_correct",
+      "pairs": 100,
+      "second": "plain_labels",
+      "second_exact": 100,
+      "second_only": 0
+    },
+    "number_correct:plain_described_vs_plain_labels": {
+      "effect_percentage_points": 0.0,
+      "first": "plain_described",
+      "first_exact": 100,
+      "first_only": 0,
+      "metric": "number_correct",
+      "pairs": 100,
+      "second": "plain_labels",
+      "second_exact": 100,
+      "second_only": 0
+    },
+    "pair_correct:angle_described_vs_angle_labels": {
+      "effect_percentage_points": 1.9607843137254901,
+      "first": "angle_described",
+      "first_exact": 101,
+      "first_only": 2,
+      "metric": "pair_correct",
+      "pairs": 102,
+      "second": "angle_labels",
+      "second_exact": 99,
+      "second_only": 0
+    },
+    "pair_correct:angle_described_vs_plain_described": {
+      "effect_percentage_points": -0.9803921568627451,
+      "first": "angle_described",
+      "first_exact": 101,
+      "first_only": 0,
+      "metric": "pair_correct",
+      "pairs": 102,
+      "second": "plain_described",
+      "second_exact": 102,
+      "second_only": 1
+    },
+    "pair_correct:angle_labels_vs_plain_labels": {
+      "effect_percentage_points": -0.9803921568627451,
+      "first": "angle_labels",
+      "first_exact": 99,
+      "first_only": 0,
+      "metric": "pair_correct",
+      "pairs": 102,
+      "second": "plain_labels",
+      "second_exact": 100,
+      "second_only": 1
+    },
+    "pair_correct:plain_described_vs_plain_labels": {
+      "effect_percentage_points": 1.9607843137254901,
+      "first": "plain_described",
+      "first_exact": 102,
+      "first_only": 2,
+      "metric": "pair_correct",
+      "pairs": 102,
+      "second": "plain_labels",
+      "second_exact": 100,
+      "second_only": 0
+    },
+    "resource_correct:angle_described_vs_angle_labels": {
+      "effect_percentage_points": 1.9607843137254901,
+      "first": "angle_described",
+      "first_exact": 101,
+      "first_only": 2,
+      "metric": "resource_correct",
+      "pairs": 102,
+      "second": "angle_labels",
+      "second_exact": 99,
+      "second_only": 0
+    },
+    "resource_correct:angle_described_vs_plain_described": {
+      "effect_percentage_points": -0.9803921568627451,
+      "first": "angle_described",
+      "first_exact": 101,
+      "first_only": 0,
+      "metric": "resource_correct",
+      "pairs": 102,
+      "second": "plain_described",
+      "second_exact": 102,
+      "second_only": 1
+    },
+    "resource_correct:angle_labels_vs_plain_labels": {
+      "effect_percentage_points": -0.9803921568627451,
+      "first": "angle_labels",
+      "first_exact": 99,
+      "first_only": 0,
+      "metric": "resource_correct",
+      "pairs": 102,
+      "second": "plain_labels",
+      "second_exact": 100,
+      "second_only": 1
+    },
+    "resource_correct:plain_described_vs_plain_labels": {
+      "effect_percentage_points": 1.9607843137254901,
+      "first": "plain_described",
+      "first_exact": 102,
+      "first_only": 2,
+      "metric": "resource_correct",
+      "pairs": 102,
+      "second": "plain_labels",
+      "second_exact": 100,
+      "second_only": 0
+    }
+  },
+  "plan": {
+    "condition_prompts": {
+      "angle_described": {
+        "sha256": "ad961ebbd7e7e9b936b050ffd5c50bf218101851622a4a139a3c492c9c067af9",
+        "text": "Task: identify the terrain resource and read the production number printed on the tile.\n\nResource classes: <WOOD>, <BRICK>, <SHEEP>, <WHEAT>, <ORE>, <DESERT>.\n\nVisual guide for these renderer assets:\n<WOOD>: green tile with an evergreen tree.\n<BRICK>: orange-red tile with stacked brick blocks.\n<SHEEP>: yellow-green tile with a white sheep.\n<WHEAT>: golden-yellow tile with wheat stalks.\n<ORE>: gray tile with rocks.\n<DESERT>: beige tile with a cactus.\n\nWrite the selected resource class exactly as listed above.\nFor a numbered resource tile, output the resource field, one ASCII space, and the number.\nFor a desert tile, output only the resource field.\nAllowed numbers: 2, 3, 4, 5, 6, 8, 9, 10, 11, 12.\n\nWhat resource and production number are shown?"
+      },
+      "angle_labels": {
+        "sha256": "2bdcccfbcea0c7044e3e936b2e6404972d1034a6bad61cb78c5db696e26fa93b",
+        "text": "Task: identify the terrain resource and read the production number printed on the tile.\n\nResource classes: <WOOD>, <BRICK>, <SHEEP>, <WHEAT>, <ORE>, <DESERT>.\n\nWrite the selected resource class exactly as listed above.\nFor a numbered resource tile, output the resource field, one ASCII space, and the number.\nFor a desert tile, output only the resource field.\nAllowed numbers: 2, 3, 4, 5, 6, 8, 9, 10, 11, 12.\n\nWhat resource and production number are shown?"
+      },
+      "plain_described": {
+        "sha256": "bcaa2e6cb7e1a4e8b1162f22f3469583631b4b7c8e9374e24f0d6e563c6cd479",
+        "text": "Task: identify the terrain resource and read the production number printed on the tile.\n\nResource classes: WOOD, BRICK, SHEEP, WHEAT, ORE, DESERT.\n\nVisual guide for these renderer assets:\nWOOD: green tile with an evergreen tree.\nBRICK: orange-red tile with stacked brick blocks.\nSHEEP: yellow-green tile with a white sheep.\nWHEAT: golden-yellow tile with wheat stalks.\nORE: gray tile with rocks.\nDESERT: beige tile with a cactus.\n\nWrite the selected resource class exactly as listed above.\nFor a numbered resource tile, output the resource field, one ASCII space, and the number.\nFor a desert tile, output only the resource field.\nAllowed numbers: 2, 3, 4, 5, 6, 8, 9, 10, 11, 12.\n\nWhat resource and production number are shown?"
+      },
+      "plain_labels": {
+        "sha256": "9c85d0d25d4dff9f89e7bd6bb1a48a449911d090f53c8217ec2b0deb603d0c19",
+        "text": "Task: identify the terrain resource and read the production number printed on the tile.\n\nResource classes: WOOD, BRICK, SHEEP, WHEAT, ORE, DESERT.\n\nWrite the selected resource class exactly as listed above.\nFor a numbered resource tile, output the resource field, one ASCII space, and the number.\nFor a desert tile, output only the resource field.\nAllowed numbers: 2, 3, 4, 5, 6, 8, 9, 10, 11, 12.\n\nWhat resource and production number are shown?"
+      }
+    },
+    "conditions": [
+      "angle_labels",
+      "plain_labels",
+      "angle_described",
+      "plain_described"
+    ],
+    "image_hashes": {
+      "isolated_tile_brick_10_v00": "255e20cd0bf7557a6a7016963594607df91ff19c839188bda6dd97157575ad3d",
+      "isolated_tile_brick_10_v01": "3915a0f09b07b75089a1314a34979db3c3df48225e18cc4013b0fad5cc6bb0fc",
+      "isolated_tile_brick_11_v00": "331b1847b33c41a18a875fb11d833646ce481ca9450082bee1a6e609d1e9e44c",
+      "isolated_tile_brick_11_v01": "fe24b3701d54d7ca14647e3885bf84d03b73e6713ccec0e20d5cb462db5b8305",
+      "isolated_tile_brick_12_v00": "b5623b37fe7c5337c1b8d802883863f51dd7fc16045ae2cf7ca16f20b35e8921",
+      "isolated_tile_brick_12_v01": "bedb9590a230112c40de49842695d06eeca89482b3aec012019e291d3470afc1",
+      "isolated_tile_brick_2_v00": "e996a7fab539ec8f76ac2fe3d15b985f9806c7a75dd525a657eadd2f414531f7",
+      "isolated_tile_brick_2_v01": "c5ab64bfdb2ab2ff613a0f56cd3f6e2d40ca392c9a459a869f826f83dde4ef6b",
+      "isolated_tile_brick_3_v00": "3b702f2554d658eabe2c6ad20b706d9076fe17ff3b8a149c192bf4118c7bee80",
+      "isolated_tile_brick_3_v01": "4e6b2f996990cd1c5645e1f0ab04e3b74eff86731dbe9afe234883ff8b6e23bc",
+      "isolated_tile_brick_4_v00": "d0fcf167896e21d9594ab0d57f42593feaaf74e67ea0f42615b1b90f6808e323",
+      "isolated_tile_brick_4_v01": "459561aa77dda20baaca693b77ca325735473254149919bc528b0bc1ad46daf2",
+      "isolated_tile_brick_5_v00": "1f3d3d99abbb6f005200eb230950936ae65845f42392a0a482c9d7b697282eb9",
+      "isolated_tile_brick_5_v01": "f172a3c820c4c67a013739d6158bbf4ef627ccd027937d94feea0d915035bb87",
+      "isolated_tile_brick_6_v00": "88ec0d98d958191cf0a2c7a026ffbd5e08b6fa6e05878a1fc9e378ce01af197b",
+      "isolated_tile_brick_6_v01": "3d899659575420704f75b4b79c4383bc3c68b822275904363a9bc4b41be7489c",
+      "isolated_tile_brick_8_v00": "bcd567e0319d92fd4e28295fe26ebea9bb36c0be53e522c1f09760f2d3491feb",
+      "isolated_tile_brick_8_v01": "202d78d1e01724c34ac3ea39d9b8d909d1a71673edd8736799217b65566c838d",
+      "isolated_tile_brick_9_v00": "7ac09baafe00c1f95dc891c4e8b6c637b947c60a9ced54d04ca957005ed7e384",
+      "isolated_tile_brick_9_v01": "0c82ed1e6ae1c6fadf1aada2efb9609f0fde82c08d87e94a9af7605bfcc8a8e3",
+      "isolated_tile_desert_v00": "73972236a0bf60438d12545078771cfb46d53ad8086b2cad4eeed53f0048e5ec",
+      "isolated_tile_desert_v01": "23f8eb8d657d2c661a44beab4031d2f968e5ebdd16d1bec40fc6e2f55fc8b38a",
+      "isolated_tile_ore_10_v00": "c3fe8336eb0c0372b757b04f74c3a68079bf4779fcfec61799fdb6bb3c54a184",
+      "isolated_tile_ore_10_v01": "daf89c825d32582e0e2b3be574bfa8998e683a5b5bcb71cec9113d52d2601c19",
+      "isolated_tile_ore_11_v00": "9a56eb3e3cbb9c34a56bc3b27650576b50fcc4959864a575bcccc6521aa24199",
+      "isolated_tile_ore_11_v01": "55d4746a6afb6eaa8df76bda4b7656514eb9f90c08ee7219e71d941551319f7f",
+      "isolated_tile_ore_12_v00": "ac13b1b1b2dbe23a3262565b93ac6b97ba83e190ae55c68e56376905d8aab5f3",
+      "isolated_tile_ore_12_v01": "5416d22f715170227c8ff5b3f63202c6ee35707779267c4a57892deb77a4392a",
+      "isolated_tile_ore_2_v00": "a79807f9f438b9d319f11344cf76f270780797a617313e79309e4c22118851c8",
+      "isolated_tile_ore_2_v01": "c64e1a70af3ff8985cc8ca8aa16466642a201ac2f2641d43276032e785043ffd",
+      "isolated_tile_ore_3_v00": "f3ddff901da39d88ecf1a966cff6cc94e85c00d2a0f5badaf79a6092665342d6",
+      "isolated_tile_ore_3_v01": "452e7062691e1cd68962bffc1ca4a9f3773385dc73d149128110cd83819e57f9",
+      "isolated_tile_ore_4_v00": "9a19937e8cea278d88f6ba45928c31fd0b6cea727850951d91f2864c2fd122e4",
+      "isolated_tile_ore_4_v01": "c27ad0e91e25c5bbe21382e14b536c66b523740038b976d9ceb454330e165440",
+      "isolated_tile_ore_5_v00": "01903b25da3c51b10922b0c7677802e3c522684d4f405910c38a09eb75373d86",
+      "isolated_tile_ore_5_v01": "345f089b69f8ff34d8e3a78613f8d7616ed4866797526b1c9e51ceddb2ba573e",
+      "isolated_tile_ore_6_v00": "dc7e68488e7012ba18108676c42a23e259706198a2602037041f36e534901cc2",
+      "isolated_tile_ore_6_v01": "f8f1038c21fc9d9ee65649455afb350f220bf3510baef63c2b6731d072c5834a",
+      "isolated_tile_ore_8_v00": "8599dd0a5e8c5358901a8afdce37e68f472ccf2a432ec612673ab80b8f06a8df",
+      "isolated_tile_ore_8_v01": "2f899a25a8c8dd3b68a7f2534e50a0c80ad6e07744c4e0836b6d8f2061fb3499",
+      "isolated_tile_ore_9_v00": "dd3c00b1b127b22c74a151e17cbf1ae8ffb0b35a44010cc461f19bf7c381622a",
+      "isolated_tile_ore_9_v01": "42e81d683e9b5d45cb8f664b4e65b155a834df610e5e3a5a7713e8e6af7c2282",
+      "isolated_tile_sheep_10_v00": "c4056e91a22e4f5fc278a44e7e0ac5b5ec63f2b16a590da73f04c08b27480b7f",
+      "isolated_tile_sheep_10_v01": "1bcee57b349b23d72259f3fadbcdfbc4b848ee66da2f492beed52d933990048c",
+      "isolated_tile_sheep_11_v00": "9b9f00d5e2eb9d457a614bbfe7a596118eca40328cbf5a8520177709821a3156",
+      "isolated_tile_sheep_11_v01": "83c61b0afcefbf9d92a0aebbe84b781b4ca391d95fbae1347a7dd679147e4c61",
+      "isolated_tile_sheep_12_v00": "519ae31e2229514e1d0b7f5d83636c4a4e47118491c6f2120d3eeb04944781d5",
+      "isolated_tile_sheep_12_v01": "1ab78559c1d530d24cf06c14dc5aa0b009ff3d8f281fd43dbdf0f6f2f506ad03",
+      "isolated_tile_sheep_2_v00": "0045305d4f995ad4cbd75574167cdfadbb49ac95db2baff7a348928873f473ac",
+      "isolated_tile_sheep_2_v01": "33d2bb9cfa54bab3f6cb15568a2ef1d3ed6dd149bb6a0eb34c48c77798edac16",
+      "isolated_tile_sheep_3_v00": "7ffe02c965a71976eb2ffe3b78035f92c9dff738b361c3415f74d5cd1aeee690",
+      "isolated_tile_sheep_3_v01": "1c4a924bbb1fc61fdc2ef7c6eb4df4ca414afd54e26993180475fd17804967df",
+      "isolated_tile_sheep_4_v00": "394ed42d8f06f3e518faf844223c8f1b51e8b111832ccc4794bccc534d5d83c4",
+      "isolated_tile_sheep_4_v01": "80b8c4de8e04a923fede3d7ee50bb604dc6d1f36671b3907878c4769b22d3395",
+      "isolated_tile_sheep_5_v00": "d316240242532b6f92687bb17fd02943476de3fb6f283408c8de5e7c876252dd",
+      "isolated_tile_sheep_5_v01": "bb9825978e7ff5ca5868e59a5f6ce83f6e1d41d5add79b7d8fa435a4b079d2a0",
+      "isolated_tile_sheep_6_v00": "2de021bda4b8ad1f9b6582ba526d72c7fd19f0d83a79cda06deee770ca411673",
+      "isolated_tile_sheep_6_v01": "accbc1982950b414c99443fdb308c391101ac2e24a8a3c46d15f5d4823d8937a",
+      "isolated_tile_sheep_8_v00": "e5081af365d84ff3403742eabfbfaa024f39de0a040c5a2ba3fb26a0dbd623c8",
+      "isolated_tile_sheep_8_v01": "b55b47a3d04cb0ece4b26e2e879f0a8ad61a4b2e7bf406afac756d4735830d78",
+      "isolated_tile_sheep_9_v00": "fc9ced524ecec646a58fee3da9dd858cce091a1603556f4504779ab1cf0fa02b",
+      "isolated_tile_sheep_9_v01": "a77a0b2c88dca0e7b9f0ba5543ff847d2c0922be9a5d85f4cc51d90cacc2c6f3",
+      "isolated_tile_wheat_10_v00": "6c7f38a39e7a8420ec70b4b5cf6df5ad41222a1d82bc14d554358b861a1f7e38",
+      "isolated_tile_wheat_10_v01": "01e2383fa109f35b13cb9adc209fbb551349391a9e15501aa958ad7d20d860e8",
+      "isolated_tile_wheat_11_v00": "29b8952d2e90a53cbf676de09f8b2c045316717ddefba1c764fd9b80cf045292",
+      "isolated_tile_wheat_11_v01": "b7e5c66326c46ff9f86c2f25a94f3d6fc69cc7fc78dc25e8d94276fbf241ff90",
+      "isolated_tile_wheat_12_v00": "e0c9a394fe888482baab0fccf95b6b98817ccb3f10c7f6feba79d174502c4066",
+      "isolated_tile_wheat_12_v01": "b951ea1b0e4f6e8aee5a059847a4050d83788b6bcb4b22e63b997d5bea5c50ab",
+      "isolated_tile_wheat_2_v00": "ea9ad3d2e3f76b03692695a9b08eaa96450dea67e7377cecb2e638d5e371f04c",
+      "isolated_tile_wheat_2_v01": "1513111a7d25c384a17159eeba90d1099e22aae69eb8eaedb97c35df0f363c41",
+      "isolated_tile_wheat_3_v00": "f71a09b20f1c3f7dc27a84f7f85a46bf483291e05494fd83d854c769d0732663",
+      "isolated_tile_wheat_3_v01": "6dd0bb55da8857a5e3371a29a6405ff642d4d2cfd41d4a016c68d85d9e2881b8",
+      "isolated_tile_wheat_4_v00": "6a21aa55c882f22df88c4c5f8dc9e080f639dc891ffc6c3fa980952bf0ad283c",
+      "isolated_tile_wheat_4_v01": "29e0bed985c497735fb88741520c8f84b106f4917774cb068928919fb0bc068b",
+      "isolated_tile_wheat_5_v00": "a2f97dde84b23d087f8fb9d981f97f5f828d37051d579ef5797b1a51c9fa181b",
+      "isolated_tile_wheat_5_v01": "347ae7edcb3113c4daa0338c982efd7368b6d4e24b2b1100183705029e8767ec",
+      "isolated_tile_wheat_6_v00": "03254ede2f586d79f932551bd35c9292336e7a99cf9e9ebbfbc1f2d1942bb015",
+      "isolated_tile_wheat_6_v01": "77704c6bd464e436b623d5193324eef2fa741186320440a6e37dd146d71f1b1f",
+      "isolated_tile_wheat_8_v00": "0fd10500039f3672ae96a0caad5bd9a25e484e2f84452290032750b6bbbe40a9",
+      "isolated_tile_wheat_8_v01": "9d4a42e0fa50f7bfa7bb7b7097a48113f807b12e6b1561c6f631711ce4bcb5b7",
+      "isolated_tile_wheat_9_v00": "fd47ff8cdef60bded158e7cfa9242384c83313735987810d22a8a3cd5c4d7d34",
+      "isolated_tile_wheat_9_v01": "d71928aae95ee3918a4938b74d0d5f0b892d642cd677a3f8bbfff068968a3b47",
+      "isolated_tile_wood_10_v00": "616b730b6bb3b245a0d12188413354a6b3e8a050ee6a4d4ed37707941f0e783f",
+      "isolated_tile_wood_10_v01": "e173116689f9d8c42b8d985f9c2038fe49168bbf87ce8240ec9bf43cdddbb4ea",
+      "isolated_tile_wood_11_v00": "40b70ddf0fcc883e6642e517eeb2c4a278a73191bd1b9a3803311d5e9e6b4b39",
+      "isolated_tile_wood_11_v01": "0ce5ad360dea3f618c69f2ec5b6c6b6881234a69fb3bd37b7da2fd0d4985b191",
+      "isolated_tile_wood_12_v00": "010cbf1371bb8266efe7147a93f9f67fc585ac9767c7817f69d6b53a04f6abd8",
+      "isolated_tile_wood_12_v01": "117d2502dd49a3152b55bddb1541a8b44a5d26849b3bc2fbd6de18dd2a874532",
+      "isolated_tile_wood_2_v00": "6aa1ec2b3041b9113d152accbde8ba467ab493320f8a6a6bd9c63e686cd25679",
+      "isolated_tile_wood_2_v01": "e238fd451fe1093fb8512bbc9b282c5f6fd8603887ee1d3f0870fb95af0b2b28",
+      "isolated_tile_wood_3_v00": "9d7acd376f6ad47e0ac73b43f720cd88c1d5f26514e0a3e9ad933e19afa040e4",
+      "isolated_tile_wood_3_v01": "03f5af22574ba785bd3ec80fdc05ee95db451dce05d9b38d53220a62e0a9cb95",
+      "isolated_tile_wood_4_v00": "27cdb981bdcbab1d4c76d1ed7a8c8358176bc8d0d653c87a7ee97ca8976c1735",
+      "isolated_tile_wood_4_v01": "90af0ed9af37ea03c764ec5d55334a024f57a8834862571e0eaab1dadcddbdf8",
+      "isolated_tile_wood_5_v00": "5d21d895fadf8855d8f6c9115c78c0b037428517d23cb810cc4bdd33c7d21310",
+      "isolated_tile_wood_5_v01": "56b75184e5b96805fc1a65d9767b16d525cb4fadd950c3c9451a63a6e9a903c2",
+      "isolated_tile_wood_6_v00": "a28eb74988724734aa7cdf6a23ec7eca975f41ac03d9c8827b0d983d645c14ad",
+      "isolated_tile_wood_6_v01": "4c2a797bca9166d9b0d66b21d7013619125263ad9078a37f1ba05846ffb63122",
+      "isolated_tile_wood_8_v00": "880aafd6e889c6a003c9424d701281713c76319ba69f03bb76afe1cf35a1fb63",
+      "isolated_tile_wood_8_v01": "d1aee0147531562e91fc09b4497ac1ca2771b641a08d059f96fe08e9ef054e02",
+      "isolated_tile_wood_9_v00": "655869230b9973002c403d20460e2a0fbe96d4dfe87ad510e5cb4c7263f60442",
+      "isolated_tile_wood_9_v01": "cc7d4b520c3c316f4838891bff9df46824d90b90b1e412707b6a861cf40067ef"
+    },
+    "image_root": "artifacts/generated/catan_board_bench/piece_recognition",
+    "job_lock_sha256": "3f8c645c5cffc5abdc94da6a8ffac5e4ac9192018deb9e1d499ac7dd05315563",
+    "model": "qwen/qwen3.8-27b",
+    "output_dir": "artifacts/runs/catan_board_bench/tile_prompt_ablation/openrouter/qwen3_8_27b_full_20260817",
+    "preflight": false,
+    "provider_order": [
+      "AkashML"
+    ],
+    "qa_file_sha256": "5a02311c02701969b989bda79497b98d7e632b699ff5b93034e126d1f56e5abe",
+    "qa_path": "artifacts/runs/catan_board_bench/piece_recognition/qwen3_8_27b_piece_full_20260816/qa_snapshot.jsonl",
+    "question_count": 102,
+    "question_lock_sha256": "75850744251e03cb60f76ea6f0b4b3ebe26a346b9947f5eb4eaeecc260e73f48",
+    "request_count": 408,
+    "request_settings": {
+      "allow_fallbacks": false,
+      "concurrency": 1,
+      "effective_max_tokens": 256,
+      "image_input": true,
+      "reasoning_disabled": true,
+      "requested_max_tokens": 32,
+      "response_format_api_constraint": false,
+      "temperature": 0.0,
+      "timeout_seconds": 180.0
+    },
+    "schema": "catan_tile_prompt_ablation/v1",
+    "scorer": {
+      "sha256": "b775d80e6faf008cf2521593bacb5793f2e00003779bd0489091a190726e3dbb",
+      "version": "strict_tile_label/v2"
+    },
+    "seed": 38271,
+    "system_prompt": "You are performing closed-set visual classification of one isolated Catan terrain tile.\n\nUse only the supplied image.\nReturn exactly one line that follows the output contract.\nDo not explain your answer or add any other text.",
+    "system_prompt_sha256": "52de3963ceb0e316db8fc2835f93a48e7baf02776c40af2b2e909df6771432ac"
+  },
+  "planned_requests": 408,
+  "records": 408
+}

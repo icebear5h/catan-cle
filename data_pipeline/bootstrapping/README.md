@@ -1,177 +1,118 @@
-# Phase 1: Bootstrapping
+# Colonist replay acquisition
 
-Learn from expert Colonist.io replays to achieve baseline Catan competency.
+This package indexes, captures, validates, and inspects Colonist replay payloads.
+It does not produce policy-training examples.
 
-## Goal
+The former observation/action generator was removed because it applied each
+target action before formatting the claimed pre-action observation. Decision
+datasets must be built from the authoritative verified replay executor.
 
-Generate training data from top-ranked players' games to bootstrap an LLM Catan agent via behavioral cloning.
+## Code layout
 
-## Directory Structure
+- `scrapers/colonist_api.py`: leaderboard, profile, and history API client.
+- `scrapers/scrape_top_players.py`: builds lightweight candidate indexes.
+- `scrapers/replay_playwright_scraper.py`: preferred authenticated replay capture.
+- `scrapers/replay_api_scraper.py`: direct API fallback and debugging path.
+- `scrapers/build_replay_splits.py`: deterministic leakage-safe split manifests.
+- `replay_decoder.py`: standalone raw replay inspection utility.
 
-```
-bootstrapping/
-├── __init__.py              # Module exports
-├── README.md                # This file
-├── db.py                    # Supabase storage client
-├── generate_training_data.py # Main training data generator
-├── scrapers/
-│   ├── replay_api_scraper.py  # Scrape replays via API
-│   ├── colonist_api.py        # Colonist API client
-│   ├── colonist_schema.py     # Data type definitions
-│   ├── scrape_top_players.py  # Build game index from leaderboards
-│   └── 4p_games_top100.json   # Index of 8,495 games
-├── tests/
-│   └── test_replay_auth.py    # Auth testing utilities
-├── deprecated/              # Old approaches (for reference)
-└── data/
-    └── raw_replays/         # Downloaded replay JSON files
-```
+## Artifact layout
 
-## Pipeline
+- `artifacts/raw/colonist/indexes/`: candidate game indexes.
+- `artifacts/staging/colonist/replays/`: new, unverified, or rejected captures.
+- `artifacts/raw/colonist/replays/`: validated canonical replay payloads.
+- `artifacts/manifests/colonist/splits/`: split and queue manifests.
+- `artifacts/fixtures/catan_board_bench/smoke5/`: frozen visual smoke fixture.
 
-### 1. Build Game Index (Done)
+Compatibility symlinks under `data_pipeline/bootstrapping/data/` preserve
+existing read-only callers. New code must use the canonical artifact paths.
 
-Scrape top 100 players from ranked leaderboards and their game histories.
+## Build an index
+
+Run from the repository root:
 
 ```bash
-cd scrapers
-python scrape_top_players.py --mode index --top 100 --games 100 --all-games --game-modes Classic4P,Tournament --index-output 4p_games_top100.json
-
-# Or index histories more likely to be replay-accessible for the current account
-COLONIST_JWT="<your-token>" python scrape_top_players.py --mode index --me --games 100 --all-games --game-modes all --index-output 4p_games_me_all.json
-python scrape_top_players.py --mode index --username Robijs --games 100 --all-games --index-output 4p_games_robijs.json
+python -m data_pipeline.bootstrapping.scrapers.scrape_top_players \
+  --mode index \
+  --top 100 \
+  --games 100 \
+  --all-games \
+  --game-modes Classic4P,Tournament
 ```
 
-**Output:** `4p_games_top100.json` with replay candidate IDs and lightweight player/game metadata. Use `--game-modes all` to include other Colonist variants.
+The default output is
+`artifacts/raw/colonist/indexes/4p_games_top100.json`. Use `--index-output` for
+a separately named index.
 
-### 2. Scrape Replays
-
-Capture replay data through a persistent Playwright browser session. This matches the
-working Colonist replay page flow: the first replay API request may be denied while the
-browser resolves session/Cloudflare state, then a later request to the same endpoint
-returns the replay JSON.
+Authenticated or explicit-user history can be indexed with:
 
 ```bash
-# First run opens a browser profile at .colonist-playwright-profile/.
-# Log in or complete any browser challenge there if prompted.
-python replay_playwright_scraper.py \
+COLONIST_JWT="<token>" \
+python -m data_pipeline.bootstrapping.scrapers.scrape_top_players \
+  --mode index --me --games 100 --all-games --game-modes all
+
+python -m data_pipeline.bootstrapping.scrapers.scrape_top_players \
+  --mode index --username Robijs --games 100 --all-games
+```
+
+## Capture replay payloads
+
+The Playwright path is preferred because Colonist may require browser and
+Cloudflare session state before the replay endpoint succeeds.
+
+```bash
+python -m data_pipeline.bootstrapping.scrapers.replay_playwright_scraper \
   --game-id 228953487 \
-  --player-color 1 \
-  --output-dir ../data/raw_replays
+  --player-color 1
+```
 
-# Batch into staging in small, paced chunks. Validate before promoting files.
-python replay_playwright_scraper.py \
-  --index-file 4p_games_top100.json \
+New captures default to `artifacts/staging/colonist/replays/`. A bounded batch:
+
+```bash
+python -m data_pipeline.bootstrapping.scrapers.replay_playwright_scraper \
   --max-games 10 \
   --max-attempts 15 \
   --expected-player-count 4 \
   --expected-mode-setting 0 \
-  --delay-seconds 40 \
-  --output-dir ../data/replay_staging/base4p
-
-# Stop after any HTTP 429 and cool down before a manually approved retry.
-# Do not run multiple scraper processes in parallel.
-
-# If Google/Colonist login refuses the Playwright profile, attach to real Chrome instead.
-# First quit Chrome, then relaunch it with local remote debugging enabled:
-open -na "Google Chrome" --args \
-  --remote-debugging-address=127.0.0.1 \
-  --remote-debugging-port=9222 \
-  --profile-directory=Default
-
-python replay_playwright_scraper.py \
-  --game-id 228953487 \
-  --player-color 1 \
-  --output-dir ../data/raw_replays \
-  --cdp-url http://127.0.0.1:9222
-
-# Direct API fallback/debug path. JWT alone may still 403 if browser session state is required.
-COLONIST_JWT="<your-token>" python replay_api_scraper.py --index-file 4p_games_top100.json --max-games 100 --raw --output-dir ../data/raw_replays
+  --delay-seconds 40
 ```
 
-### 3. Generate Training Data
+Stop immediately on HTTP 429 or `Retry-After`, cool down before a manually
+approved retry, and never run multiple replay scrapers in parallel.
 
-Convert replays to observation-action pairs.
+If OAuth refuses the Playwright profile, attach to a user-approved Chrome
+instance over CDP. Do not terminate or relaunch the user's browser without
+confirmation.
+
+The direct API fallback uses the same artifact defaults:
 
 ```bash
-# From local files
-python generate_training_data.py --input-dir data/raw_replays --output data/training/policy_data.jsonl
-
-# From Supabase
-python generate_training_data.py --from-db
-
-# To Supabase
-python generate_training_data.py --supabase --no-file
+COLONIST_JWT="<token>" \
+python -m data_pipeline.bootstrapping.scrapers.replay_api_scraper \
+  --max-games 10
 ```
 
-**Output format (JSONL):**
-```json
-{
-  "observation": "=== GAME STATE (Turn 5) ===\nPhase: main_game\nYou are: Player 2\n...",
-  "action": "BUILD_SETTLEMENT node=51",
-  "action_type": "BUILD_SETTLEMENT",
-  "action_value": 51,
-  "player": 2,
-  "turn": 5,
-  "phase": "main_game",
-  "is_winner": true,
-  "game_id": "192418134"
-}
-```
+JWT alone may still receive a 403 when browser session state is required.
 
-### 4. Train Model
+## Validate and promote
 
-Use TRL's SFTTrainer for behavioral cloning.
+Before copying a staged payload into `artifacts/raw/colonist/replays/`, verify:
 
-```python
-from trl import SFTTrainer
-from datasets import load_dataset
+- the payload has a non-empty event history;
+- the player count and mode match the supported base-game contract;
+- the game ID is not a duplicate of an existing canonical replay;
+- the replay passes the consolidated semantic/resource/trade audit;
+- the source hash and acquisition metadata are retained.
 
-# Load training data
-dataset = load_dataset("json", data_files="policy_data.jsonl")
+Unsupported and malformed payloads stay in staging with an explicit rejection
+reason. Never repair a raw payload in place.
 
-# Format for instruction tuning
-def format_example(example):
-    return f"""Given this Catan game state:
-{example['observation']}
-
-What action should you take?
-{example['action']}"""
-
-# Train with LoRA
-trainer = SFTTrainer(
-    model="meta-llama/Llama-3.1-8B",
-    train_dataset=dataset,
-    formatting_func=format_example,
-    peft_config=lora_config,
-)
-trainer.train()
-```
-
-## Supported Action Types
-
-- BUILD_SETTLEMENT, BUILD_CITY, BUILD_ROAD
-- ROLL (dice)
-- MOVE_ROBBER
-- BANK_TRADE, OFFER_TRADE
-- BUY_DEV_CARD, PLAY_DEV_CARD
-
-## Requirements
+## Build split manifests
 
 ```bash
-pip install httpx playwright supabase
-python -m playwright install chromium
+python -m data_pipeline.bootstrapping.scrapers.build_replay_splits \
+  --index-files artifacts/raw/colonist/indexes/4p_games_top100.json
 ```
 
-- **Colonist.io Membership** - Replay viewing requires paid membership
-- **Playwright browser profile** - Replay scraping uses `.colonist-playwright-profile/`
-- **Real Chrome attach** - Use `--cdp-url` when OAuth refuses the Playwright browser
-- **JWT Token** - Still useful for authenticated profile/history indexing and direct API debugging
-
-## Metrics
-
-**Target after bootstrapping:**
-- 1000+ games processed
-- 50k+ training examples
-- Win rate >60% vs random baseline
-- Reasonable action accuracy on held-out test set
+Outputs default to `artifacts/manifests/colonist/splits/`. CatanBoardBench holdout IDs
+are excluded before game-level splitting.

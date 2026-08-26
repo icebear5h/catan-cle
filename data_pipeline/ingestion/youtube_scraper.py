@@ -5,8 +5,8 @@ Extracts transcripts and metadata from Catan strategy videos.
 """
 
 import os
-import json
 import re
+import sys
 from typing import List, Dict, Optional
 from datetime import datetime
 from youtube_transcript_api import YouTubeTranscriptApi
@@ -157,7 +157,7 @@ class YouTubeScraper:
         # Get transcript
         transcript = self.get_transcript(video_id)
         if not transcript:
-            print(f"  No transcript available")
+            print("  No transcript available")
             return None
 
         # Get metadata
@@ -213,7 +213,7 @@ class YouTubeScraper:
             print(f"Error searching videos: {e}")
             return []
 
-    def save_transcript(self, result: Dict, output_dir: str = "data_pipeline/training/pretraining/output") -> str:
+    def save_transcript(self, result: Dict, output_dir: str = "artifacts/generated/pretraining/legacy_corpus") -> str:
         """
         Save scraped video to markdown file in the transcript folder.
 
@@ -239,7 +239,7 @@ class YouTubeScraper:
 
         lines = []
         lines.append(f"# {title}")
-        lines.append(f"")
+        lines.append("")
         lines.append(f"Source: {result['url']}")
         if result.get('metadata'):
             meta = result['metadata']
@@ -248,21 +248,21 @@ class YouTubeScraper:
             if meta.get('view_count'):
                 lines.append(f"Views: {meta['view_count']:,}")
         lines.append(f"Scraped: {result.get('scraped_at', 'unknown')}")
-        lines.append(f"")
-        lines.append(f"## Full Transcript")
-        lines.append(f"")
+        lines.append("")
+        lines.append("## Full Transcript")
+        lines.append("")
         lines.append(full_text)
-        lines.append(f"")
-        lines.append(f"## Chunked Transcript (30s windows)")
-        lines.append(f"")
+        lines.append("")
+        lines.append("## Chunked Transcript (30s windows)")
+        lines.append("")
 
         for i, chunk in enumerate(result['chunks'], 1):
             start_m, start_s = divmod(int(chunk['start']), 60)
             end_m, end_s = divmod(int(chunk['end']), 60)
             lines.append(f"### Chunk {i} [{start_m}:{start_s:02d} - {end_m}:{end_s:02d}]")
-            lines.append(f"")
+            lines.append("")
             lines.append(chunk['text'])
-            lines.append(f"")
+            lines.append("")
 
         with open(filepath, 'w') as f:
             f.write('\n'.join(lines))
@@ -284,11 +284,9 @@ CURATED_CHANNELS = [
 
 
 if __name__ == "__main__":
-    import sys
-
     if len(sys.argv) < 2:
         print("Usage: python -m data_pipeline.ingestion.youtube_scraper <youtube_url> [youtube_url2 ...]")
-        print("  Scrapes transcript and saves to data_pipeline/training/pretraining/output/transcript_{id}.md")
+        print("  Scrapes transcript and saves to artifacts/generated/pretraining/legacy_corpus/transcript_{id}.md")
         sys.exit(1)
 
     scraper = YouTubeScraper()

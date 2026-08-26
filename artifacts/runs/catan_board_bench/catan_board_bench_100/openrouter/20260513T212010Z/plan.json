@@ -1,0 +1,22 @@
+{
+  "atlas_prompt": true,
+  "bench_dir": "data_pipeline/benchmarks/catan_board_bench_100",
+  "categories": [
+    "robber_tile",
+    "robber_resource_number",
+    "tile_resource_number",
+    "tile_has_robber",
+    "node_occupancy",
+    "edge_road_owner",
+    "port_trade_type",
+    "color_building_counts",
+    "color_road_count"
+  ],
+  "limit_samples": 5,
+  "models": {
+    "qwen3-vl-8b": "qwen/qwen3-vl-8b-instruct"
+  },
+  "output_dir": "data_pipeline/benchmarks/catan_board_bench_100/openrouter_eval/20260513T212010Z",
+  "question_count": 40,
+  "questions_per_sample": 8
+}

@@ -1,0 +1,22 @@
+{
+  "atlas_prompt": true,
+  "bench_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100",
+  "categories": [
+    "tile_resource_number",
+    "robber_resource_number",
+    "color_road_count",
+    "color_building_counts",
+    "robber_tile",
+    "robber_adjacent_buildings"
+  ],
+  "limit_samples": 10,
+  "models": {
+    "gemini-3.1-pro-preview": "google/gemini-3.1-pro-preview",
+    "gemini-pro-latest": "~google/gemini-pro-latest"
+  },
+  "output_dir": "artifacts/runs/catan_board_bench/catan_board_bench_100/openrouter/20260514T234814Z_gemini3p_numbers",
+  "question_count": 60,
+  "question_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100/questions",
+  "questions_per_sample": 6,
+  "suite": "catan_board_bench"
+}

@@ -1,0 +1,17 @@
+{
+  "atlas_prompt": false,
+  "bench_dir": "data_pipeline/catan_board_bench/datasets/hex_direction_probe",
+  "categories": [
+    "isolated_hex_direction_to_label",
+    "isolated_hex_label_to_direction"
+  ],
+  "limit_samples": 6,
+  "models": {
+    "qwen_qwen3.8-27b": "qwen/qwen3.8-27b"
+  },
+  "output_dir": "artifacts/runs/catan_board_bench/hex_direction_probe/openrouter/qwen3_8_27b_hex_direction_smoke_20260816",
+  "question_count": 12,
+  "question_dir": "data_pipeline/catan_board_bench/datasets/hex_direction_probe/questions",
+  "questions_per_sample": 2,
+  "suite": "probe"
+}

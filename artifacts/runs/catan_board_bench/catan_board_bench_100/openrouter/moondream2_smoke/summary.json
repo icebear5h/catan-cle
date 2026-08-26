@@ -1,0 +1,83 @@
+{
+  "generated_at": "2026-05-16T06:33:56.339068+00:00",
+  "models": {
+    "openrouter_moondream2": {
+      "attempted": 0,
+      "avg_latency_ms": null,
+      "categories": {
+        "node_occupancy": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "robber_resource_number": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "robber_tile": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "tile_has_robber": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "tile_resource_number": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        }
+      },
+      "component_accuracy": 0.0,
+      "errors": 5,
+      "exact_accuracy": 0.0,
+      "requests": 5
+    }
+  },
+  "plan": {
+    "atlas_prompt": true,
+    "bench_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100",
+    "categories": [
+      "robber_tile",
+      "robber_resource_number",
+      "tile_resource_number",
+      "tile_has_robber",
+      "node_occupancy",
+      "edge_road_owner",
+      "color_road_locations",
+      "port_trade_type",
+      "port_occupancy",
+      "nodes_connected",
+      "edge_connects_nodes",
+      "color_building_counts",
+      "color_road_count"
+    ],
+    "limit_samples": 1,
+    "models": {
+      "openrouter_moondream2": "openrouter/moondream2"
+    },
+    "output_dir": "artifacts/runs/catan_board_bench/catan_board_bench_100/openrouter/moondream2_smoke",
+    "question_count": 5,
+    "question_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100/questions",
+    "questions_per_sample": 5,
+    "suite": "catan_board_bench"
+  }
+}

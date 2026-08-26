@@ -4,10 +4,10 @@ This directory holds model-training data builders and outputs.
 
 ## Layout
 
-- `pretraining/`: corpus-style Catan text data for continued pretraining/CPT.
-- `continual_learning/`: self-play, RL, and population-training planning notes.
-- `schema.py`: older scraped-strategy data structures for expert decisions and
-  strategy-corpus entries.
+- `pretraining/`: corpus-style Catan text builders for continued pretraining/CPT.
+- `reasoning/`: active reasoning-data workspaces that have not yet been moved
+  while a separate harness/UI change owns their paths.
 
-Scrapers and importers live in `data_pipeline/ingestion/`; benchmark data lives in
-`data_pipeline/catanbench/`.
+Scrapers and importers live in `data_pipeline/ingestion/`; benchmark code and
+frozen benchmark inputs live in `data_pipeline/catan_board_bench/`. Generated outputs
+belong under the repository-level `artifacts/` tree.

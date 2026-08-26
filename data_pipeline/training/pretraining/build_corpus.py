@@ -12,7 +12,6 @@ import argparse
 import hashlib
 import json
 import re
-import textwrap
 from pathlib import Path
 from typing import List, Dict
 
@@ -20,8 +19,9 @@ from data_pipeline.training.pretraining.sources.youtube import YouTubeCorpusBuil
 from data_pipeline.training.pretraining.sources.forums import ForumCorpusBuilder
 
 # Paths
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 SOURCES_DIR = Path(__file__).parent / "sources"
-OUTPUT_DIR = Path(__file__).parent / "output"
+OUTPUT_DIR = PROJECT_ROOT / "artifacts" / "generated" / "pretraining" / "legacy_corpus"
 DEFAULT_OUTPUT = OUTPUT_DIR / "catan_corpus.jsonl"
 
 # Chunking config
@@ -197,7 +197,7 @@ def build_corpus(
     # Stats
     total_chars = sum(len(doc["text"]) for doc in final_docs)
     estimated_tokens = total_chars // 4  # Rough estimate: ~4 chars per token
-    print(f"\n=== Corpus Stats ===")
+    print("\n=== Corpus Stats ===")
     print(f"Documents: {len(final_docs)}")
     print(f"Total characters: {total_chars:,}")
     print(f"Estimated tokens: {estimated_tokens:,}")

@@ -1,0 +1,523 @@
+{
+  "schema": "catan_public_board_facts/v1",
+  "defaults": {
+    "node": "EMPTY",
+    "edge": "EMPTY"
+  },
+  "tiles": [
+    {
+      "token": "<T00>",
+      "coord": [
+        0,
+        0,
+        0
+      ],
+      "resource": "WOOD",
+      "number": 11,
+      "has_robber": false
+    },
+    {
+      "token": "<T01>",
+      "coord": [
+        1,
+        -1,
+        0
+      ],
+      "resource": "SHEEP",
+      "number": 6,
+      "has_robber": false
+    },
+    {
+      "token": "<T02>",
+      "coord": [
+        0,
+        -1,
+        1
+      ],
+      "resource": "WHEAT",
+      "number": 3,
+      "has_robber": false
+    },
+    {
+      "token": "<T03>",
+      "coord": [
+        -1,
+        0,
+        1
+      ],
+      "resource": "WHEAT",
+      "number": 10,
+      "has_robber": false
+    },
+    {
+      "token": "<T04>",
+      "coord": [
+        -1,
+        1,
+        0
+      ],
+      "resource": "WHEAT",
+      "number": 9,
+      "has_robber": false
+    },
+    {
+      "token": "<T05>",
+      "coord": [
+        0,
+        1,
+        -1
+      ],
+      "resource": "WOOD",
+      "number": 4,
+      "has_robber": false
+    },
+    {
+      "token": "<T06>",
+      "coord": [
+        1,
+        0,
+        -1
+      ],
+      "resource": "WOOD",
+      "number": 5,
+      "has_robber": false
+    },
+    {
+      "token": "<T07>",
+      "coord": [
+        2,
+        -2,
+        0
+      ],
+      "resource": "SHEEP",
+      "number": 11,
+      "has_robber": false
+    },
+    {
+      "token": "<T08>",
+      "coord": [
+        1,
+        -2,
+        1
+      ],
+      "resource": "DESERT",
+      "number": null,
+      "has_robber": false
+    },
+    {
+      "token": "<T09>",
+      "coord": [
+        0,
+        -2,
+        2
+      ],
+      "resource": "ORE",
+      "number": 4,
+      "has_robber": false
+    },
+    {
+      "token": "<T10>",
+      "coord": [
+        -1,
+        -1,
+        2
+      ],
+      "resource": "ORE",
+      "number": 8,
+      "has_robber": false
+    },
+    {
+      "token": "<T11>",
+      "coord": [
+        -2,
+        0,
+        2
+      ],
+      "resource": "BRICK",
+      "number": 5,
+      "has_robber": false
+    },
+    {
+      "token": "<T12>",
+      "coord": [
+        -2,
+        1,
+        1
+      ],
+      "resource": "BRICK",
+      "number": 2,
+      "has_robber": false
+    },
+    {
+      "token": "<T13>",
+      "coord": [
+        -2,
+        2,
+        0
+      ],
+      "resource": "WHEAT",
+      "number": 6,
+      "has_robber": false
+    },
+    {
+      "token": "<T14>",
+      "coord": [
+        -1,
+        2,
+        -1
+      ],
+      "resource": "ORE",
+      "number": 3,
+      "has_robber": false
+    },
+    {
+      "token": "<T15>",
+      "coord": [
+        0,
+        2,
+        -2
+      ],
+      "resource": "SHEEP",
+      "number": 8,
+      "has_robber": false
+    },
+    {
+      "token": "<T16>",
+      "coord": [
+        1,
+        1,
+        -2
+      ],
+      "resource": "SHEEP",
+      "number": 10,
+      "has_robber": false
+    },
+    {
+      "token": "<T17>",
+      "coord": [
+        2,
+        0,
+        -2
+      ],
+      "resource": "BRICK",
+      "number": 9,
+      "has_robber": true
+    },
+    {
+      "token": "<T18>",
+      "coord": [
+        2,
+        -1,
+        -1
+      ],
+      "resource": "WOOD",
+      "number": 12,
+      "has_robber": false
+    }
+  ],
+  "nodes": [
+    {
+      "token": "<N01>",
+      "color": "BLACK",
+      "building": "SETTLEMENT"
+    },
+    {
+      "token": "<N04>",
+      "color": "WHITE",
+      "building": "SETTLEMENT"
+    },
+    {
+      "token": "<N07>",
+      "color": "RED",
+      "building": "SETTLEMENT"
+    },
+    {
+      "token": "<N11>",
+      "color": "BLACK",
+      "building": "SETTLEMENT"
+    },
+    {
+      "token": "<N13>",
+      "color": "RED",
+      "building": "SETTLEMENT"
+    },
+    {
+      "token": "<N18>",
+      "color": "BLUE",
+      "building": "SETTLEMENT"
+    },
+    {
+      "token": "<N19>",
+      "color": "BLUE",
+      "building": "SETTLEMENT"
+    },
+    {
+      "token": "<N22>",
+      "color": "WHITE",
+      "building": "CITY"
+    },
+    {
+      "token": "<N33>",
+      "color": "BLACK",
+      "building": "SETTLEMENT"
+    },
+    {
+      "token": "<N35>",
+      "color": "RED",
+      "building": "SETTLEMENT"
+    },
+    {
+      "token": "<N44>",
+      "color": "BLUE",
+      "building": "SETTLEMENT"
+    },
+    {
+      "token": "<N52>",
+      "color": "WHITE",
+      "building": "SETTLEMENT"
+    }
+  ],
+  "edges": [
+    {
+      "token": "<E01_02>",
+      "nodes": [
+        "<N01>",
+        "<N02>"
+      ],
+      "road_color": "BLACK"
+    },
+    {
+      "token": "<E04_15>",
+      "nodes": [
+        "<N04>",
+        "<N15>"
+      ],
+      "road_color": "WHITE"
+    },
+    {
+      "token": "<E07_24>",
+      "nodes": [
+        "<N07>",
+        "<N24>"
+      ],
+      "road_color": "RED"
+    },
+    {
+      "token": "<E11_32>",
+      "nodes": [
+        "<N11>",
+        "<N32>"
+      ],
+      "road_color": "BLACK"
+    },
+    {
+      "token": "<E13_34>",
+      "nodes": [
+        "<N13>",
+        "<N34>"
+      ],
+      "road_color": "RED"
+    },
+    {
+      "token": "<E18_40>",
+      "nodes": [
+        "<N18>",
+        "<N40>"
+      ],
+      "road_color": "BLUE"
+    },
+    {
+      "token": "<E19_46>",
+      "nodes": [
+        "<N19>",
+        "<N46>"
+      ],
+      "road_color": "BLUE"
+    },
+    {
+      "token": "<E22_23>",
+      "nodes": [
+        "<N22>",
+        "<N23>"
+      ],
+      "road_color": "WHITE"
+    },
+    {
+      "token": "<E23_52>",
+      "nodes": [
+        "<N23>",
+        "<N52>"
+      ],
+      "road_color": "WHITE"
+    },
+    {
+      "token": "<E32_33>",
+      "nodes": [
+        "<N32>",
+        "<N33>"
+      ],
+      "road_color": "BLACK"
+    },
+    {
+      "token": "<E34_35>",
+      "nodes": [
+        "<N34>",
+        "<N35>"
+      ],
+      "road_color": "RED"
+    },
+    {
+      "token": "<E40_44>",
+      "nodes": [
+        "<N40>",
+        "<N44>"
+      ],
+      "road_color": "BLUE"
+    },
+    {
+      "token": "<E45_46>",
+      "nodes": [
+        "<N45>",
+        "<N46>"
+      ],
+      "road_color": "BLUE"
+    }
+  ],
+  "ports": [
+    {
+      "token": "<P00>",
+      "coord": [
+        3,
+        -3,
+        0
+      ],
+      "direction": "WEST",
+      "resource": "BRICK",
+      "ratio": "2:1",
+      "nodes": [
+        "<N25>",
+        "<N26>"
+      ]
+    },
+    {
+      "token": "<P01>",
+      "coord": [
+        1,
+        -3,
+        2
+      ],
+      "direction": "NORTHWEST",
+      "resource": "WHEAT",
+      "ratio": "2:1",
+      "nodes": [
+        "<N28>",
+        "<N29>"
+      ]
+    },
+    {
+      "token": "<P02>",
+      "coord": [
+        -1,
+        -2,
+        3
+      ],
+      "direction": "NORTHWEST",
+      "resource": "WOOD",
+      "ratio": "2:1",
+      "nodes": [
+        "<N32>",
+        "<N33>"
+      ]
+    },
+    {
+      "token": "<P03>",
+      "coord": [
+        -3,
+        0,
+        3
+      ],
+      "direction": "NORTHEAST",
+      "resource": "GENERIC",
+      "ratio": "3:1",
+      "nodes": [
+        "<N35>",
+        "<N36>"
+      ]
+    },
+    {
+      "token": "<P04>",
+      "coord": [
+        -3,
+        2,
+        1
+      ],
+      "direction": "EAST",
+      "resource": "ORE",
+      "ratio": "2:1",
+      "nodes": [
+        "<N38>",
+        "<N39>"
+      ]
+    },
+    {
+      "token": "<P05>",
+      "coord": [
+        -2,
+        3,
+        -1
+      ],
+      "direction": "EAST",
+      "resource": "GENERIC",
+      "ratio": "3:1",
+      "nodes": [
+        "<N40>",
+        "<N44>"
+      ]
+    },
+    {
+      "token": "<P06>",
+      "coord": [
+        0,
+        3,
+        -3
+      ],
+      "direction": "SOUTHEAST",
+      "resource": "SHEEP",
+      "ratio": "2:1",
+      "nodes": [
+        "<N47>",
+        "<N45>"
+      ]
+    },
+    {
+      "token": "<P07>",
+      "coord": [
+        2,
+        1,
+        -3
+      ],
+      "direction": "SOUTHWEST",
+      "resource": "GENERIC",
+      "ratio": "3:1",
+      "nodes": [
+        "<N48>",
+        "<N49>"
+      ]
+    },
+    {
+      "token": "<P08>",
+      "coord": [
+        3,
+        -1,
+        -2
+      ],
+      "direction": "SOUTHWEST",
+      "resource": "GENERIC",
+      "ratio": "3:1",
+      "nodes": [
+        "<N52>",
+        "<N53>"
+      ]
+    }
+  ]
+}

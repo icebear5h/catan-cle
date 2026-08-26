@@ -6,7 +6,6 @@ to build pretraining corpus with community strategy discussion.
 """
 
 import json
-import os
 import re
 import time
 import xml.etree.ElementTree as ET
@@ -16,7 +15,8 @@ from typing import List, Dict, Optional
 import requests
 
 # Cache directory
-CACHE_DIR = Path(__file__).parent.parent / "cache" / "forums"
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
+CACHE_DIR = PROJECT_ROOT / "artifacts" / "cache" / "pretraining" / "forums"
 
 # Reddit config
 REDDIT_SUBREDDITS = ["catan", "Catan", "boardgames"]

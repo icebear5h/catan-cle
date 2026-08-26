@@ -27,7 +27,10 @@ from playwright.async_api import (
 
 BASE_URL = "https://colonist.io"
 REPLAY_DATA_PATH = "/api/replay/data-from-game-id"
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_PROFILE_DIR = ".colonist-playwright-profile"
+DEFAULT_INDEX_FILE = PROJECT_ROOT / "artifacts" / "raw" / "colonist" / "indexes" / "4p_games_top100.json"
+DEFAULT_STAGING_DIR = PROJECT_ROOT / "artifacts" / "staging" / "colonist" / "replays"
 DEFAULT_TIMEOUT_MS = 180_000
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -443,8 +446,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--game-id", help="Single game ID to scrape")
     parser.add_argument("--player-color", type=int, default=0, help="Player color perspective")
-    parser.add_argument("--index-file", type=Path, default=Path("4p_games_top100.json"))
-    parser.add_argument("--output-dir", type=Path, default=Path("./data/replays_api"))
+    parser.add_argument("--index-file", type=Path, default=DEFAULT_INDEX_FILE)
+    parser.add_argument("--output-dir", type=Path, default=DEFAULT_STAGING_DIR)
     parser.add_argument("--max-games", type=int, help="Maximum successful new games to scrape")
     parser.add_argument("--max-attempts", type=int, help="Maximum non-skipped games to try")
     parser.add_argument(

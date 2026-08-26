@@ -1,0 +1,131 @@
+{
+  "generated_at": "2026-08-16T22:53:30.631919+00:00",
+  "models": {
+    "qwen_qwen3.8-27b": {
+      "attempted": 199,
+      "avg_latency_ms": 2917.673366834171,
+      "categories": {
+        "isolated_node_occupancy": {
+          "attempted": 22,
+          "avg_latency_ms": 2371.0454545454545,
+          "component_accuracy": 0.23809523809523808,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 22
+        },
+        "isolated_port_trade_type": {
+          "attempted": 12,
+          "avg_latency_ms": 2034.5833333333333,
+          "component_accuracy": 0.75,
+          "errors": 0,
+          "exact_accuracy": 0.5,
+          "requests": 12
+        },
+        "isolated_road_owner": {
+          "attempted": 12,
+          "avg_latency_ms": 4933.583333333333,
+          "component_accuracy": 0.3333333333333333,
+          "errors": 0,
+          "exact_accuracy": 0.3333333333333333,
+          "requests": 12
+        },
+        "isolated_robber_presence": {
+          "attempted": 24,
+          "avg_latency_ms": 2208.4166666666665,
+          "component_accuracy": 0.9166666666666666,
+          "errors": 0,
+          "exact_accuracy": 0.9166666666666666,
+          "requests": 24
+        },
+        "isolated_tile_resource_number": {
+          "attempted": 102,
+          "avg_latency_ms": 2738.078431372549,
+          "component_accuracy": 0.6519607843137255,
+          "errors": 0,
+          "exact_accuracy": 0.3137254901960784,
+          "requests": 102
+        },
+        "local_patch_edge_road_owner": {
+          "attempted": 6,
+          "avg_latency_ms": 2839.8333333333335,
+          "component_accuracy": 0.5,
+          "errors": 0,
+          "exact_accuracy": 0.5,
+          "requests": 6
+        },
+        "local_patch_node_occupancy": {
+          "attempted": 9,
+          "avg_latency_ms": 3669.8888888888887,
+          "component_accuracy": 0.25,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 9
+        },
+        "local_patch_port_trade_type": {
+          "attempted": 5,
+          "avg_latency_ms": 8023.6,
+          "component_accuracy": 0.6,
+          "errors": 0,
+          "exact_accuracy": 0.4,
+          "requests": 5
+        },
+        "local_patch_robber_presence": {
+          "attempted": 2,
+          "avg_latency_ms": 3370.0,
+          "component_accuracy": 1.0,
+          "errors": 0,
+          "exact_accuracy": 1.0,
+          "requests": 2
+        },
+        "local_patch_tile_resource_number": {
+          "attempted": 5,
+          "avg_latency_ms": 3124.8,
+          "component_accuracy": 0.8,
+          "errors": 0,
+          "exact_accuracy": 0.6,
+          "requests": 5
+        }
+      },
+      "component_accuracy": 0.6,
+      "errors": 0,
+      "exact_accuracy": 0.37185929648241206,
+      "requests": 199
+    }
+  },
+  "plan": {
+    "atlas_prompt": false,
+    "bench_dir": "artifacts/generated/catan_board_bench/piece_recognition",
+    "categories": [
+      "isolated_tile_resource_number",
+      "isolated_road_owner",
+      "isolated_node_occupancy",
+      "isolated_port_trade_type",
+      "isolated_robber_presence",
+      "local_patch_tile_resource_number",
+      "local_patch_edge_road_owner",
+      "local_patch_node_occupancy",
+      "local_patch_port_trade_type",
+      "local_patch_robber_presence"
+    ],
+    "limit_samples": 0,
+    "models": {
+      "qwen_qwen3.8-27b": "qwen/qwen3.8-27b"
+    },
+    "output_dir": "artifacts/runs/catan_board_bench/piece_recognition/qwen3_8_27b_piece_full_20260816",
+    "question_count": 199,
+    "question_dir": "artifacts/generated/catan_board_bench/piece_recognition/questions",
+    "questions_per_sample": 10,
+    "request_settings": {
+      "concurrency": 2,
+      "provider": "openrouter",
+      "provider_routing": "openrouter_default_unpinned",
+      "reasoning_disabled_for_models": [
+        "qwen/qwen3.8-27b"
+      ],
+      "requested_max_tokens": 64,
+      "temperature": 0.0,
+      "timeout_seconds": 180.0
+    },
+    "suite": "probe"
+  }
+}

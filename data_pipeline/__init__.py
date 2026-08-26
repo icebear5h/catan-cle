@@ -1,12 +1,6 @@
-"""
-Data Pipeline - Training data generation and management for Catan LLM agents.
+"""Data acquisition and dataset-construction tools for Catan agents.
 
-Modules:
-- bootstrapping: Generate training data from expert Colonist.io replays
-- catanbench: Engine-backed board-recognition benchmark data and evals
-- training: Continued-pretraining and continual-learning datasets
-- ingestion: External source ingestion helpers
-
-Usage:
-    from data_pipeline.bootstrapping import process_replay, save_training_examples
+The installable package contains reusable code only. Repository-level raw data,
+generated runs, manifests, fixtures, and reports live under ``artifacts/`` and
+``reports/`` as documented in ``data_pipeline/README.md``.
 """

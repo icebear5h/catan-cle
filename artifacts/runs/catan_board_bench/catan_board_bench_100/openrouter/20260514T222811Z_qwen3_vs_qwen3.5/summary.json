@@ -1,0 +1,126 @@
+{
+  "generated_at": "2026-05-14T22:28:14.453347+00:00",
+  "models": {
+    "qwen3-vl-8b": {
+      "attempted": 0,
+      "avg_latency_ms": null,
+      "categories": {
+        "edge_road_owner": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 15,
+          "exact_accuracy": 0.0,
+          "requests": 15
+        },
+        "node_occupancy": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 20,
+          "exact_accuracy": 0.0,
+          "requests": 20
+        },
+        "port_type_nodes": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 10,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "robber_tile": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 5,
+          "exact_accuracy": 0.0,
+          "requests": 5
+        },
+        "tile_resource_number": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 15,
+          "exact_accuracy": 0.0,
+          "requests": 15
+        }
+      },
+      "component_accuracy": 0.0,
+      "errors": 65,
+      "exact_accuracy": 0.0,
+      "requests": 65
+    },
+    "qwen3.5-9b": {
+      "attempted": 0,
+      "avg_latency_ms": null,
+      "categories": {
+        "edge_road_owner": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 15,
+          "exact_accuracy": 0.0,
+          "requests": 15
+        },
+        "node_occupancy": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 20,
+          "exact_accuracy": 0.0,
+          "requests": 20
+        },
+        "port_type_nodes": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 10,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "robber_tile": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 5,
+          "exact_accuracy": 0.0,
+          "requests": 5
+        },
+        "tile_resource_number": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 15,
+          "exact_accuracy": 0.0,
+          "requests": 15
+        }
+      },
+      "component_accuracy": 0.0,
+      "errors": 65,
+      "exact_accuracy": 0.0,
+      "requests": 65
+    }
+  },
+  "plan": {
+    "atlas_prompt": true,
+    "bench_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100",
+    "categories": [
+      "robber_tile",
+      "tile_resource_number",
+      "node_occupancy",
+      "edge_road_owner",
+      "port_type_nodes",
+      "longest_road_holder"
+    ],
+    "limit_samples": 5,
+    "models": {
+      "qwen3-vl-8b": "qwen/qwen3-vl-8b-instruct",
+      "qwen3.5-9b": "qwen/qwen3.5-9b"
+    },
+    "output_dir": "artifacts/runs/catan_board_bench/catan_board_bench_100/openrouter/20260514T222811Z_qwen3_vs_qwen3.5",
+    "question_count": 65,
+    "question_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100/questions",
+    "questions_per_sample": 13
+  }
+}

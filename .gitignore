@@ -78,6 +78,7 @@ artifacts/generated/sft/legacy_pilots/*
 !artifacts/generated/sft/legacy_pilots/README.md
 artifacts/generated/catan_board_bench/piece_recognition/
 artifacts/generated/board_recognition/
+artifacts/staging/catan_board_bench/
 artifacts/diagnostics/sft/
 artifacts/runs/sft/*
 !artifacts/runs/sft/README.md

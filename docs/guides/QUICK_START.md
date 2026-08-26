@@ -5,7 +5,7 @@
 A real-time Catan game viewer that connects to the Flask server and displays:
 1. Hex board with tiles, roads, settlements, cities
 2. Player info (VP, resources, dev cards)
-3. Game controls (start, step, auto-play)
+3. Thin game controls (start and one complete sandbox step)
 4. LLM decision log
 
 ## Data Source
@@ -94,7 +94,7 @@ export default function CatanGame() {
     await fetch('http://localhost:5001/api/start-game', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ use_llm: false })
+      body: JSON.stringify({ mode: "random" })
     });
   };
 
@@ -247,7 +247,7 @@ const RESOURCE_EMOJIS = {
 - Full docs: [GAME_STATE_DOCS.md](../engine/GAME_STATE_DOCS.md)
 - Example JSON: [example_game_state.json](../../example_game_state.json)
 - Flask server: `cle/eval/game_viewer_server.py`
-- Game engine: `engine/`
+- Game engine: `game_engine/`
 
 ## Test the Server
 
@@ -258,7 +258,7 @@ curl http://localhost:5001/api/health
 # Start a game
 curl -X POST http://localhost:5001/api/start-game \
   -H "Content-Type: application/json" \
-  -d '{"use_llm": false}'
+  -d '{"mode": "random"}'
 
 # Get state
 curl http://localhost:5001/api/state

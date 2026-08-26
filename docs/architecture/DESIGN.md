@@ -1,5 +1,9 @@
 # Catan Learning - Training Pipeline Design
 
+> This document describes training experiments around the active runtime. The
+> runtime source of truth is `CatanSandbox` plus `GameEngine`; historical fixed
+> action spaces and free-form action parsers are not part of the architecture.
+
 ## Core Architecture
 
 ```
@@ -9,7 +13,7 @@
 |                                                                          |
 |  +-------------+     +------------------+     +-------------------+      |
 |  | Colonist    |---->| Reward Model     |---->| Self-Play Env     |      |
-|  | Replays     |     | (Multi-Signal)   |     | (PettingZoo)      |      |
+|  | Replays     |     | (Multi-Signal)   |     | (CatanSandbox)    |      |
 |  | ~8.5K games |     |                  |     |                   |      |
 |  +-------------+     +------------------+     +---------+---------+      |
 |                              |                          |                |
@@ -42,7 +46,7 @@
 
 ### What the Engine Provides
 
-The Catan engine (`engine/`) is a complete implementation of base game rules:
+The Catan engine (`game_engine/`) is a complete implementation of base game rules:
 
 | Feature | Status | Notes |
 |---------|--------|-------|
@@ -147,9 +151,9 @@ class RewardSample:
 ## Phase 2: Self-Learning Environment
 
 ### Environment Setup (Already Exists)
-- PettingZoo AEC wrapper in `cle/env/`
-- Text-based observations via `CatanObservationFormatter`
-- 4-player games with turn-based action cycle
+- Event-driven `CatanSandbox` composition root in `cle/sandbox/`
+- Complete privacy-projected context plus an exact ordered legal-action menu
+- Four-player standard games, deterministic barriers, and multi-game pooling
 
 ### Self-Play Configuration
 ```python
@@ -357,7 +361,10 @@ If Phase 3 regresses, you know it's not the imitation or reward - it's the self-
    ```
 
    **Steps:**
-   - [ ] Extend `generate_training_data.py` to output structured JSON actions
+   - [ ] Export versioned, perspective-safe pre-action decision packets from
+     the authoritative verified replay executor
+   - [ ] Prove each expert action belongs to the recorded legal-action menu and
+     that no hidden or future state enters the packet
    - [ ] Build reasoning generation pipeline:
      - Input: observation + expert action + game context (VP, turn, outcome)
      - Prompt strong LLM (Claude/GPT-4) to explain WHY this action is good
@@ -381,11 +388,11 @@ If Phase 3 regresses, you know it's not the imitation or reward - it's the self-
    opponent threats, trade leverage, victory path.
    ```
 
-2. **Action Parser** (~1 day)
-   - [ ] Implement JSON -> `Action` conversion in `cle/env/action_space.py`
-   - [ ] Handle all action types (build, trade, robber, dev cards)
-   - [ ] Parse `<reasoning>...</reasoning><action>...</action>` format
-   - [ ] Graceful fallback for malformed output (random legal action)
+2. **Decision Contract** (complete)
+   - [x] Present every action as an exact entry in an ordered legal menu
+   - [x] Parse a zero-based action index plus typed parameters where required
+   - [x] Retry malformed or stale decisions within a configured bound
+   - [x] Preserve accepted player context without committing rejected attempts
 
 3. **LoRA Training Script** (~1 day)
    - [ ] Modal function for SFT training
@@ -490,9 +497,9 @@ from action quality.
 
 | File | Purpose |
 |------|---------|
-| `data_pipeline/bootstrapping/generate_training_data.py` | Extend to output reasoning + JSON format |
-| `data_pipeline/reasoning_generator.py` | **NEW** - LLM-based reasoning generation |
-| `cle/env/action_space.py` | Implement action parser (JSON -> Action) |
+| Authoritative replay decision exporter | Build versioned pre-action packets with legal menus |
+| Versioned reasoning-data builder | Generate evidence-linked reasoning without future leakage |
+| `cle/sandbox/catan.py` | Validate and apply exact indexed decisions |
 | `modal_app/__init__.py` | **NEW** - Modal app setup |
 | `modal_app/training.py` | **NEW** - LoRA training on Modal |
 | `cle/training/self_play.py` | Self-play game runner |

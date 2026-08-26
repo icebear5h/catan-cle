@@ -4,11 +4,11 @@
 
 The engine is already suitable for generating board-QA labels.
 
-- `engine.game.Game` owns the game loop and validates actions through `is_valid_action`.
+- `game_engine.game.GameEngine` owns the game loop and validates actions through `is_valid_action`.
 - `engine.state.State` owns mutable game state and exposes `state.playable_actions`.
-- `engine.models.actions.generate_playable_actions` centralizes legal action generation.
-- `engine.models.map.CatanMap` builds fixed topology for land tiles, water, ports, nodes, and edges.
-- `engine.models.board.Board` owns public board occupancy: buildings, roads, robber coordinate, buildable nodes, buildable edges, port access, and longest-road cache.
+- `game_engine.models.actions.generate_playable_actions` centralizes legal action generation.
+- `game_engine.models.map.CatanMap` builds fixed topology for land tiles, water, ports, nodes, and edges.
+- `game_engine.models.board.Board` owns public board occupancy: buildings, roads, robber coordinate, buildable nodes, buildable edges, port access, and longest-road cache.
 - `engine.json.GameEncoder` already serializes a lot of the public board and legal-action state.
 - `playground.board_renderer.CatanBoardRenderer` can render engine states to images for VLM data.
 

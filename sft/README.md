@@ -1,214 +1,141 @@
-# Catan VLM SFT Workspace
+# Catan SFT Tooling
 
-This folder is the clean workspace for Catan-specific VLM supervised fine-tuning.
-It is intentionally separate from benchmark generation and OpenRouter eval code.
+`Sft` contains Catan-specific dataset builders, conversion utilities, and the
+current pinned Qwen-Series Modal launchers. Generated datasets, diagnostics,
+checkpoints, and reports live outside this installable package.
 
-## Goal
+The first training target is board grounding: stable atlas tokens identify board
+entities, while text or pixels supply their transient state. Strategy imitation
+comes only after grounding and leakage checks pass. See
+[`EXPERIMENT_DESIGN.md`](EXPERIMENT_DESIGN.md) for the curriculum and trainable
+scope ladder.
 
-Train an open-weight VLM to bind board pixels to Catan atlas tokens:
+## Safety contract
 
-```text
-<N11> -> stable board position
-pixels over <N11> -> current transient state
-answer -> <BLACK> <SETTLEMENT> / EMPTY / etc.
-```
-
-The first target is board-state extraction, not strategy imitation.
-
-## Leakage Rule
-
-CatanBench-100 is held out. Do not train on its game IDs, board images, contracts,
-QA rows, or derived captions.
-
-The canonical held-out list is:
+CatanBoardBench-100 is held out. Never train on its game IDs, images, contracts, QA,
+or derived text. The required fail-closed ledger is:
 
 ```text
-data_pipeline/catanbench/datasets/catanbench_100/leakage/benchmark_game_ids.json
+data_pipeline/catan_board_bench/datasets/catan_board_bench_100/leakage/benchmark_game_ids.json
 ```
 
-Training data should come from fresh replay pulls using:
+Fresh replay candidates come from:
 
 ```text
-data_pipeline/bootstrapping/scrapers/4p_games_training_candidates.json
+artifacts/raw/colonist/indexes/4p_games_training_candidates.json
 ```
+
+`build_vlm_sft_dataset` refuses excluded IDs and now errors if the held-out
+ledger is missing. Do not create a bypass for production training.
 
 ## Layout
 
-| Path | Purpose |
-| --- | --- |
-| `configs/qwen3_vl_8b_qlora.yaml` | First Qwen3-VL-8B QLoRA SFT config. |
-| `scripts/build_vlm_sft_dataset.py` | Converts Catan QA rows into TRL-style VLM JSONL while checking game-ID leakage. |
-| `scripts/train_qwen_vl_sft.py` | TRL/PEFT QLoRA training entrypoint. |
-| `data/` | Local generated training JSONL files. |
-| `outputs/` | Local checkpoints/logs. |
+- `sft/scripts/`: dataset, conversion, renderer, training-wrapper, and eval code.
+- `sft/modal_qwen_series_train.py`: preferred pinned upstream trainer launcher.
+- `sft/modal_qwen_series_eval.py`: adapter evaluation launcher.
+- `configs/sft/renderer_style.json`: accepted renderer calibration.
+- `artifacts/generated/sft/`: ignored, regenerable SFT datasets.
+- `artifacts/fixtures/sft/`: tracked smoke and renderer fixtures.
+- `artifacts/diagnostics/sft/`: ignored local diagnostic images.
+- `artifacts/runs/sft/`: ignored checkpoints/logs plus compact accepted evidence.
+- `reports/sft/`: tracked run reports.
 
-## Dataset Build
+Image paths in JSONL should be relative to the dataset file when possible. SFT
+upload/conversion tools resolve dataset-relative paths first and repository-
+relative paths second; do not embed a developer-specific checkout path.
 
-Build Phase 0 atlas/token topology data:
-
-```bash
-uv run python sft/scripts/build_atlas_topology_dataset.py \
-  --output sft/data/catan_atlas_topology.jsonl
-```
-
-Build the second dataset: Phase 1 post-atlas node visual grounding.
+## Build deterministic atlas data
 
 ```bash
-uv run python sft/scripts/build_node_factor_dataset.py \
-  --output-dir sft/data/synthetic_node_factors
+uv run python -m sft.scripts.build_atlas_topology_dataset \
+  --output artifacts/generated/sft/atlas_topology/catan_atlas_topology.jsonl
 ```
 
-This assumes the atlas already exists. It does not teach topology from scratch;
-it trains the model to use stable node tokens as visual handles, then read
-transient local facts around those handles. By default it creates one controlled
-contract per node/occupancy case:
+The canonical build contains 390 text-only rows spanning tile, node, edge, and
+port topology.
 
-```text
-54 nodes * (EMPTY + 5 colors * SETTLEMENT/CITY) = 594 board contracts
-594 contracts * 6 QA rows = 3,564 QA rows
-```
-
-Use `--variants-per-case N` to multiply board shuffles for the same stable node
-token and transient occupancy target. Use `--assume-rendered-images` only when a
-frontend render step will fill `images/<sample>.png`; otherwise the generated QA
-rows stay contract-only with `image_path: null`.
-
-Render contract datasets into image-backed QA:
+## Build and render node-factor data
 
 ```bash
-uv run python sft/scripts/render_contract_images.py \
-  --dataset-dir sft/data/synthetic_node_factors \
-  --style-config sft/configs/renderer_style_current.json
+uv run python -m sft.scripts.build_node_factor_dataset
+uv run python -m sft.scripts.render_contract_images
 ```
 
-This uses the Python HexBoard-compatible renderer: same frontend assets, same
-geometry constants, and no Playwright loop. The original contract-only rows are
-preserved; image-backed copies are written as `qa_with_images.jsonl` and
-`messages_with_images.jsonl`.
+Defaults write to `artifacts/generated/sft/node_factors/` and use
+`configs/sft/renderer_style.json`. The standard build creates 594 controlled
+board contracts and 3,564 visual QA rows. Rendered chat rows use relative image
+references; the renderer does not duplicate the answer key.
 
-Tune the Python renderer dimensions with a local slider UI:
+Tune renderer dimensions locally with:
 
 ```bash
-uv run python sft/scripts/renderer_tuning_app.py \
-  --dataset-dir sft/data/synthetic_node_factors \
-  --port 8765
+uv run python -m sft.scripts.renderer_tuning_app --port 8765
 ```
 
-Use this before bulk rerenders when roads, docks, or output image size need
-manual calibration against the frontend look. The tuner also loads persistent
-calibration fixtures from `sft/fixtures/render_contracts/`; regenerate the dense
-Colonist-like dummy board with:
+The tuner reads tracked calibration contracts from
+`artifacts/fixtures/sft/render_contracts/`. Regenerate the dense fixture with:
 
 ```bash
-uv run python sft/scripts/build_colonist_dummy_fixture.py
+uv run python -m sft.scripts.build_colonist_dummy_fixture
 ```
 
-Build Phase 1 visual QA data only once fresh non-benchmark QA rows exist:
+## Build leakage-checked replay QA
+
+Only use fresh non-benchmark QA and manifest rows:
 
 ```bash
-uv run python sft/scripts/build_vlm_sft_dataset.py \
-  --qa-jsonl data_pipeline/catanbench/datasets/my_fresh_train/questions/qa.jsonl \
-  --manifest-jsonl data_pipeline/catanbench/datasets/my_fresh_train/manifest.jsonl \
-  --image-root data_pipeline/catanbench/datasets/my_fresh_train \
-  --output sft/data/catan_vlm_sft_train.jsonl
+uv run python -m sft.scripts.build_vlm_sft_dataset \
+  --qa-jsonl data_pipeline/catan_board_bench/datasets/my_fresh_train/questions/qa.jsonl \
+  --manifest-jsonl data_pipeline/catan_board_bench/datasets/my_fresh_train/manifest.jsonl \
+  --image-root data_pipeline/catan_board_bench/datasets/my_fresh_train \
+  --output artifacts/generated/sft/replay_qa/train.jsonl
 ```
 
-The script exits if any source game ID appears in the held-out CatanBench ledger.
-
-Keep Phase 0 and Phase 1 as separate files/runs at first:
+Keep curriculum stages separate until each path trains and evaluates cleanly:
 
 ```text
 Phase 0: text-only atlas topology
 Phase 1: post-atlas node visual grounding
-Phase 2: replay-derived image + targeted visual QA
+Phase 2: replay-derived image and targeted visual QA
 ```
 
-Do not mix them until each path trains and evaluates cleanly.
+## Preferred Qwen-Series training path
 
-## First Training Run
+Install optional local dependencies with `uv sync --extra sft --extra modal`.
+The launcher pins `2U1/Qwen-VL-Series-Finetune` to a recorded commit, converts
+local message JSONL to its conversation format, adds Catan tokens before PEFT,
+and writes remote checkpoints to the `catan-sft-runs` Modal volume.
 
-Install training dependencies separately when running on a GPU machine:
-
-```bash
-uv sync --extra sft
-```
-
-Then:
+Run the self-contained infrastructure smoke first:
 
 ```bash
-uv run python sft/scripts/train_qwen_vl_sft.py \
-  --config sft/configs/qwen3_vl_8b_qlora.yaml \
-  --train-jsonl sft/data/catan_vlm_sft_train.jsonl
-```
-
-## Modal Smoke Run
-
-Use Modal first for capped smoke tests:
-
-```bash
-modal run sft/modal_train.py \
-  --train-jsonl sft/data/catan_vlm_sft_train.jsonl \
-  --max-steps 5
-```
-
-The Modal entrypoint uploads the JSONL and referenced images into the
-`catan-sft-data` volume, caches Hugging Face weights in `catan-hf-cache`, and
-writes checkpoints to `catan-sft-runs`.
-
-Keep `--max-steps` set until the data path, tokenizer resize, QLoRA setup, and
-checkpoint save path are all proven.
-
-## Preferred Qwen-VL-Series-Finetune Path
-
-The TRL runner above is a local smoke scaffold. The preferred training backend is
-the pinned upstream Qwen-VL-Series-Finetune stack because it owns the
-Qwen-specific dataset, collator, model-loader, LoRA/QLoRA, vision-tower, and
-merger training behavior.
-
-Convert local JSONL into the upstream conversation JSON format:
-
-```bash
-python sft/scripts/convert_to_qwen_series_sft.py \
-  --input sft/data/catan_vlm_sft_train.jsonl \
-  --output sft/data/catan_vlm_qwen_series_train.json \
-  --copy-images-to sft/data/catan_vlm_qwen_series_images
-```
-
-Run the upstream-based Modal smoke:
-
-```bash
-.venv/bin/modal run sft/modal_qwen_series_train.py \
-  --train-jsonl sft/data/modal_vlm_smoke.jsonl \
+uv run python -m modal run sft/modal_qwen_series_train.py \
+  --train-jsonl artifacts/fixtures/sft/modal_vlm_smoke/train.jsonl \
   --max-steps 1
 ```
 
-This Modal launcher converts the JSONL during upload, clones
-`2U1/Qwen-VL-Series-Finetune` at the pinned commit, adds Catan atlas tokens before
-PEFT wraps the model, and runs the upstream `train_sft.py` entrypoint through a
-small wrapper.
+Keep a hard step cap until upload, tokenizer resize, adapter initialization,
+checkpoint saving, and adapter reload all pass. The superseded custom TRL
+launcher was removed; historical smoke results remain in
+`reports/sft/2026-05-14-modal-sft-smoke-runs.md`.
 
-## Qwen-Specific Tooling
+For standalone conversion:
 
-| Tool | Why we use it |
-| --- | --- |
-| `transformers>=4.57.1` | Native Qwen3-VL processor/model support. |
-| `qwen-vl-utils` | Official Qwen image/video utility package; useful for Qwen message/image preprocessing and future multi-image work. |
-| `trl>=0.21.0` | VLM-compatible `SFTTrainer` scaffold. |
-| `peft>=0.17.0` | LoRA/QLoRA adapters and saved embedding/head modules for added Catan tokens. |
-| `bitsandbytes` | 4-bit QLoRA loading. |
-| `accelerate` | Device mapping and trainer launch glue. |
-| `tensorboard`/`wandb` | Training telemetry. |
+```bash
+python -m sft.scripts.convert_to_qwen_series_sft \
+  --input artifacts/fixtures/sft/modal_vlm_smoke/train.jsonl \
+  --output /tmp/catan_qwen_series_train.json \
+  --copy-images-to /tmp/catan_qwen_series_images
+```
 
-Qwen's official finetuning framework also exposes `tune_mm_llm`,
-`tune_mm_vision`, and `tune_mm_mlp`. Our first TRL/PEFT ablation approximates
-that by using LoRA while freezing vision-like modules. If roads, dice numbers,
-and ports still fail, the next run should deliberately unfreeze or LoRA the
-vision/projector path.
+Evaluate a base model or saved adapter through the current Modal eval launcher:
 
-## Intended Ablations
+```bash
+uv run python -m modal run sft/modal_qwen_series_eval.py \
+  --eval-jsonl artifacts/fixtures/sft/modal_vlm_smoke/train.jsonl \
+  --limit 4
+```
 
-1. Atlas topology SFT with Catan tokens.
-2. Visual QA QLoRA SFT with vision frozen and Catan tokens added.
-3. Same visual QA data without Catan tokens, to measure token-anchor value.
-4. Vision/projector LoRA if roads, ports, and dice numbers still fail.
-5. Spatial-ID auxiliary loss only after basic SFT has a clean baseline.
+The smoke fixture validates infrastructure only; it is not a model-quality
+benchmark. The quarantined historical short train/held-out files share source
+images and must not be reported as an independent visual split.

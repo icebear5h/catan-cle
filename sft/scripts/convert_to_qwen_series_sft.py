@@ -13,6 +13,8 @@ import shutil
 from pathlib import Path
 from typing import Any
 
+from sft.paths import repository_relative_path, resolve_dataset_asset
+
 
 def iter_jsonl(path: Path):
     with path.open() as handle:
@@ -44,9 +46,7 @@ def _assistant_text(message: dict[str, Any]) -> str:
     content = message.get("content", "")
     if isinstance(content, list):
         return "\n".join(
-            str(item.get("text", ""))
-            for item in content
-            if item.get("type") == "text"
+            str(item.get("text", "")) for item in content if item.get("type") == "text"
         ).strip()
     return str(content).strip()
 
@@ -101,7 +101,7 @@ def convert_file(
     for _, row in iter_jsonl(input_path):
         image_name = None
         if row.get("image"):
-            image_path = Path(row["image"]).expanduser().resolve()
+            image_path = resolve_dataset_asset(input_path, row["image"])
             if copy_images_to is not None:
                 if not image_path.exists():
                     raise FileNotFoundError(image_path)
@@ -113,7 +113,7 @@ def convert_file(
                     image_map[str(image_path)] = image_name
                     image_count += 1
             else:
-                image_name = str(image_path)
+                image_name = repository_relative_path(image_path)
 
         rows.append(convert_row(row, image_name=image_name))
 
@@ -143,4 +143,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

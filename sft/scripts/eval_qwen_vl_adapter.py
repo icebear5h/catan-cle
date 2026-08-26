@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import re
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+from data_pipeline.catan_board_bench.tokens import add_tokens_to_tokenizer
+from sft.paths import resolve_dataset_asset
 
 
 def iter_jsonl(path: Path):
@@ -24,9 +28,7 @@ def user_text(row: dict[str, Any]) -> str:
     if isinstance(content, str):
         return content
     return "\n".join(
-        str(item.get("text", ""))
-        for item in content
-        if item.get("type") == "text"
+        str(item.get("text", "")) for item in content if item.get("type") == "text"
     ).strip()
 
 
@@ -35,9 +37,7 @@ def expected_text(row: dict[str, Any]) -> str:
     if isinstance(content, str):
         return content.strip()
     return "\n".join(
-        str(item.get("text", ""))
-        for item in content
-        if item.get("type") == "text"
+        str(item.get("text", "")) for item in content if item.get("type") == "text"
     ).strip()
 
 
@@ -95,8 +95,6 @@ def score_response(expected: str, response: str) -> dict[str, Any]:
 
 
 def add_catan_tokens(processor: Any, model: Any) -> int:
-    from data_pipeline.catanbench.tokens import add_tokens_to_tokenizer
-
     added = add_tokens_to_tokenizer(processor.tokenizer)
     if added:
         tokenizer_rows = len(processor.tokenizer)
@@ -135,8 +133,8 @@ def generate_response(
     row: dict[str, Any],
     max_new_tokens: int,
 ) -> str:
-    import torch
-    from qwen_vl_utils import process_vision_info
+    torch = importlib.import_module("torch")
+    process_vision_info = importlib.import_module("qwen_vl_utils").process_vision_info
 
     messages = build_qwen_messages(row)
     prompt = processor.apply_chat_template(
@@ -209,28 +207,28 @@ def load_model(
     bits: int,
     disable_flash_attn2: bool,
 ) -> tuple[Any, Any]:
-    import torch
-    from peft import PeftModel
-    from transformers import AutoModelForImageTextToText, AutoProcessor, BitsAndBytesConfig
+    torch = importlib.import_module("torch")
+    peft = importlib.import_module("peft")
+    transformers = importlib.import_module("transformers")
 
-    processor = AutoProcessor.from_pretrained(model_id)
+    processor = transformers.AutoProcessor.from_pretrained(model_id)
     if hasattr(processor, "tokenizer"):
         processor.tokenizer.padding_side = "right"
 
     quantization_config = None
     if bits == 4:
-        quantization_config = BitsAndBytesConfig(
+        quantization_config = transformers.BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_compute_dtype=torch.bfloat16,
             bnb_4bit_use_double_quant=True,
             bnb_4bit_quant_type="nf4",
         )
     elif bits == 8:
-        quantization_config = BitsAndBytesConfig(load_in_8bit=True)
+        quantization_config = transformers.BitsAndBytesConfig(load_in_8bit=True)
     elif bits != 16:
         raise ValueError(f"Unsupported bits: {bits}")
 
-    model = AutoModelForImageTextToText.from_pretrained(
+    model = transformers.AutoModelForImageTextToText.from_pretrained(
         model_id,
         device_map="auto",
         torch_dtype=torch.bfloat16,
@@ -241,7 +239,7 @@ def load_model(
     print(f"added_catan_tokens={added}")
 
     if adapter_dir:
-        model = PeftModel.from_pretrained(model, adapter_dir)
+        model = peft.PeftModel.from_pretrained(model, adapter_dir)
         print(f"loaded_adapter={adapter_dir}")
 
     model.eval()
@@ -249,7 +247,11 @@ def load_model(
 
 
 def run_eval(args: argparse.Namespace) -> dict[str, Any]:
-    rows = [row for _, row in iter_jsonl(Path(args.eval_jsonl))]
+    eval_jsonl = Path(args.eval_jsonl)
+    rows = [row for _, row in iter_jsonl(eval_jsonl)]
+    for row in rows:
+        if row.get("image"):
+            row["image"] = str(resolve_dataset_asset(eval_jsonl, row["image"]))
     if args.limit is not None:
         rows = rows[: args.limit]
 

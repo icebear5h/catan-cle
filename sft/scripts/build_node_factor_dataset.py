@@ -23,8 +23,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from catanbench.annotations import annotation_payload_for_contract
-from catanbench.tokens import (
+from catan_board_bench.annotations import annotation_payload_for_contract
+from catan_board_bench.tokens import (
     atlas_metadata,
     building_token,
     canonical_edge,
@@ -36,8 +36,9 @@ from catanbench.tokens import (
     resource_token,
     tile_token,
 )
-from engine.models.enums import CITY, SETTLEMENT
-from engine.models.player import Color
+from game_engine.models.enums import CITY, SETTLEMENT
+from game_engine.models.player import Color
+from sft.paths import GENERATED_SFT_ROOT
 
 
 DEFAULT_COLORS = ("RED", "BLUE", "ORANGE", "WHITE", "BLACK")
@@ -207,7 +208,7 @@ def build_contract(
         "generator": "sft/scripts/build_node_factor_dataset.py",
         "seed": seed,
         "render_status": "pending_frontend_render" if image_rel else "contract_only",
-        "leakage_note": "Synthetic atlas coverage; not sampled from CatanBench-100 game IDs.",
+        "leakage_note": "Synthetic atlas coverage; not sampled from CatanBoardBench-100 game IDs.",
         "curriculum_stage": CURRICULUM_STAGE,
         "requires_stage": REQUIRES_STAGE,
         "dataset_role": DATASET_ROLE,
@@ -740,7 +741,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("sft/data/synthetic_node_factors"),
+        default=GENERATED_SFT_ROOT / "node_factors",
         help="Directory for generated contracts, annotations, and QA rows.",
     )
     parser.add_argument(

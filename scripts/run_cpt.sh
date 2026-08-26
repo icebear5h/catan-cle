@@ -16,7 +16,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-CORPUS_OUTPUT="$PROJECT_ROOT/data_pipeline/training/pretraining/output/catan_corpus.jsonl"
+CORPUS_OUTPUT="$PROJECT_ROOT/artifacts/generated/pretraining/legacy_corpus/catan_corpus.jsonl"
 TRAINING_CONFIG="$PROJECT_ROOT/configs/training_configs/catan_cpt.yaml"
 CHECKPOINT_DIR="$PROJECT_ROOT/checkpoints/catan-cpt-lora"
 

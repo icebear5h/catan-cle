@@ -10,16 +10,11 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 from pathlib import Path
 from typing import Any
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
-from catanbench.tokens import (  # noqa: E402
+from catan_board_bench.tokens import (
     atlas_metadata,
     canonical_edge,
     color_token,
@@ -29,9 +24,10 @@ from catanbench.tokens import (  # noqa: E402
     resource_token,
     tile_token,
 )
+from sft.paths import RENDER_CONTRACT_FIXTURE_DIR
 
 
-DEFAULT_OUTPUT = PROJECT_ROOT / "sft/fixtures/render_contracts/colonist_dummy_setup.json"
+DEFAULT_OUTPUT = RENDER_CONTRACT_FIXTURE_DIR / "colonist_dummy_setup.json"
 
 
 TILE_LAYOUT = {
@@ -135,10 +131,17 @@ def build_fixture() -> dict[str, Any]:
             "coord": tile_ref["coord"],
             "nodes": list(sorted(tile_ref["nodes"].values())),
             "node_tokens": [node_token(node_id) for node_id in sorted(tile_ref["nodes"].values())],
-            "edges": [list(edge) for edge in sorted(canonical_edge(tuple(edge)) for edge in tile_ref["edges"].values())],
+            "edges": [
+                list(edge)
+                for edge in sorted(
+                    canonical_edge(tuple(edge)) for edge in tile_ref["edges"].values()
+                )
+            ],
             "edge_tokens": [
                 edge_token(tuple(edge))
-                for edge in sorted(canonical_edge(tuple(edge)) for edge in tile_ref["edges"].values())
+                for edge in sorted(
+                    canonical_edge(tuple(edge)) for edge in tile_ref["edges"].values()
+                )
             ],
             "resource": resource,
             "resource_token": resource_token(resource),
@@ -160,7 +163,9 @@ def build_fixture() -> dict[str, Any]:
                 "resource": resource,
                 "resource_token": resource_token(resource) if resource else None,
                 "attached_nodes": port_ref["attached_nodes"],
-                "attached_node_tokens": [node_token(node_id) for node_id in port_ref["attached_nodes"]],
+                "attached_node_tokens": [
+                    node_token(node_id) for node_id in port_ref["attached_nodes"]
+                ],
             }
         )
 
@@ -206,7 +211,10 @@ def build_fixture() -> dict[str, Any]:
             "split": "fixture",
             "category": "renderer_calibration",
         },
-        "players": [{"color": color, "color_token": color_token(color)} for color in ["RED", "BLUE", "GREEN"]],
+        "players": [
+            {"color": color, "color_token": color_token(color)}
+            for color in ["RED", "BLUE", "GREEN"]
+        ],
         "current": {
             "current_color": "GREEN",
             "current_color_token": "<GREEN>",

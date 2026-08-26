@@ -7,6 +7,8 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
+from sft.paths import SFT_DIAGNOSTICS_ROOT
+
 
 def load_font(size: int = 14):
     for path in [
@@ -70,7 +72,11 @@ def render_overlay(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--image", required=True, type=Path)
-    parser.add_argument("--output-dir", default=Path("sft/diagnostics/qwen_grid"), type=Path)
+    parser.add_argument(
+        "--output-dir",
+        default=SFT_DIAGNOSTICS_ROOT / "qwen_token_grid",
+        type=Path,
+    )
     parser.add_argument("--sizes", nargs="+", type=int, default=[512, 768, 1024])
     parser.add_argument("--token-px", type=int, default=32)
     parser.add_argument("--label", action="store_true")

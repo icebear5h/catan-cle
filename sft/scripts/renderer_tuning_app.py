@@ -2,8 +2,8 @@
 
 Run:
 
-    uv run python sft/scripts/renderer_tuning_app.py \
-      --dataset-dir sft/data/synthetic_node_factors \
+    uv run python -m sft.scripts.renderer_tuning_app \
+      --dataset-dir artifacts/generated/sft/node_factors \
       --port 8765
 """
 
@@ -12,22 +12,23 @@ from __future__ import annotations
 import argparse
 import io
 import json
-import sys
 from dataclasses import asdict
 from functools import lru_cache
 from pathlib import Path
 
+from catan_board_bench.render import DEFAULT_RENDER_STYLE, RenderStyle, render_contract_image
 from flask import Flask, Response, abort, request, send_file
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+from sft.paths import (
+    GENERATED_SFT_ROOT,
+    PROJECT_ROOT,
+    RENDER_CONTRACT_FIXTURE_DIR,
+    RENDERER_STYLE_CONFIG,
+)
 
-from catanbench.render import DEFAULT_RENDER_STYLE, RenderStyle, render_contract_image
 
-
-STYLE_CONFIG_PATH = PROJECT_ROOT / "sft/configs/renderer_style_current.json"
-FIXTURE_CONTRACT_DIR = PROJECT_ROOT / "sft/fixtures/render_contracts"
+STYLE_CONFIG_PATH = RENDERER_STYLE_CONFIG
+FIXTURE_CONTRACT_DIR = RENDER_CONTRACT_FIXTURE_DIR
 
 
 SLIDERS = [
@@ -500,7 +501,10 @@ HTML = """<!doctype html>
 
 def create_app(dataset_dir: Path) -> Flask:
     contracts_dir = dataset_dir / "contracts"
-    contract_paths = [*sorted(FIXTURE_CONTRACT_DIR.glob("*.json")), *sorted(contracts_dir.glob("*.json"))]
+    contract_paths = [
+        *sorted(FIXTURE_CONTRACT_DIR.glob("*.json")),
+        *sorted(contracts_dir.glob("*.json")),
+    ]
     if not contract_paths:
         raise FileNotFoundError(
             f"no contract JSON files found under {FIXTURE_CONTRACT_DIR} or {contracts_dir}"
@@ -554,17 +558,27 @@ def create_app(dataset_dir: Path) -> Flask:
         }
         STYLE_CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
         STYLE_CONFIG_PATH.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
-        return {"ok": True, "path": str(STYLE_CONFIG_PATH.relative_to(PROJECT_ROOT)), "style": payload["style"]}
+        return {
+            "ok": True,
+            "path": str(STYLE_CONFIG_PATH.relative_to(PROJECT_ROOT)),
+            "style": payload["style"],
+        }
 
     return app
 
 
 def _style_from_request() -> RenderStyle:
     return RenderStyle(
-        road_width_factor=_get_float("road_width_factor", DEFAULT_RENDER_STYLE.road_width_factor, 0.35, 1.40),
-        road_length_factor=_get_float("road_length_factor", DEFAULT_RENDER_STYLE.road_length_factor, 0.60, 1.50),
+        road_width_factor=_get_float(
+            "road_width_factor", DEFAULT_RENDER_STYLE.road_width_factor, 0.35, 1.40
+        ),
+        road_length_factor=_get_float(
+            "road_length_factor", DEFAULT_RENDER_STYLE.road_length_factor, 0.60, 1.50
+        ),
         dock_width=_get_float("dock_width", DEFAULT_RENDER_STYLE.dock_width, 1.0, 20.0),
-        dock_extend_factor=_get_float("dock_extend_factor", DEFAULT_RENDER_STYLE.dock_extend_factor, -0.45, 0.75),
+        dock_extend_factor=_get_float(
+            "dock_extend_factor", DEFAULT_RENDER_STYLE.dock_extend_factor, -0.45, 0.75
+        ),
         dock_ship_clearance_factor=_get_float(
             "dock_ship_clearance_factor",
             DEFAULT_RENDER_STYLE.dock_ship_clearance_factor,
@@ -679,7 +693,7 @@ def main() -> None:
     parser.add_argument(
         "--dataset-dir",
         type=Path,
-        default=PROJECT_ROOT / "sft/data/synthetic_node_factors",
+        default=GENERATED_SFT_ROOT / "node_factors",
         help="Dataset folder containing contracts/*.json.",
     )
     parser.add_argument("--host", default="127.0.0.1")

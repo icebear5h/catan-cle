@@ -7,12 +7,16 @@ runs the pinned upstream trainer through a small Catan-token wrapper.
 
 from __future__ import annotations
 
+import importlib
+import importlib.util
 import json
+import subprocess
 import tempfile
 from pathlib import Path
 
 import modal
 
+from sft.paths import resolve_dataset_asset
 from sft.scripts.convert_to_qwen_series_sft import convert_row, iter_jsonl
 
 
@@ -87,7 +91,7 @@ def upload_qwen_series_json(train_jsonl: Path, remote_dir: str) -> tuple[str, st
         for _, row in iter_jsonl(train_jsonl):
             image_name = None
             if row.get("image"):
-                local_image = Path(row["image"]).expanduser().resolve()
+                local_image = resolve_dataset_asset(train_jsonl, row["image"])
                 if not local_image.exists():
                     raise FileNotFoundError(local_image)
                 image_name = image_map.get(str(local_image))
@@ -128,8 +132,6 @@ def train_remote(
     model_id: str = "Qwen/Qwen3-VL-4B-Instruct",
     max_steps: int | None = 1,
 ) -> dict[str, str | int | None]:
-    import subprocess
-
     command = [
         "python",
         "-m",
@@ -227,10 +229,7 @@ def train_remote(
     timeout=60 * 30,
 )
 def check_fast_kernel_deps_remote() -> dict[str, object]:
-    import importlib
-    import importlib.util
-
-    import torch
+    torch = importlib.import_module("torch")
 
     modules = [
         "fla",
@@ -263,9 +262,7 @@ def check_fast_kernel_deps_remote() -> dict[str, object]:
         result["qwen3_5_fast_path_available"] = bool(
             getattr(qwen35, "is_fast_path_available", False)
         )
-        result["causal_conv1d_fn_available"] = (
-            getattr(qwen35, "causal_conv1d_fn", None) is not None
-        )
+        result["causal_conv1d_fn_available"] = getattr(qwen35, "causal_conv1d_fn", None) is not None
         result["chunk_gated_delta_rule_available"] = (
             getattr(qwen35, "chunk_gated_delta_rule", None) is not None
         )

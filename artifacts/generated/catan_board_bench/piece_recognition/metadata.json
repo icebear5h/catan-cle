@@ -1,0 +1,40 @@
+{
+  "asset_root": "playground/frontend/public/assets",
+  "category_counts": {
+    "isolated_node_occupancy": 22,
+    "isolated_port_trade_type": 12,
+    "isolated_road_owner": 12,
+    "isolated_robber_presence": 24,
+    "isolated_tile_resource_number": 102,
+    "local_patch_edge_road_owner": 6,
+    "local_patch_node_occupancy": 9,
+    "local_patch_port_trade_type": 5,
+    "local_patch_robber_presence": 2,
+    "local_patch_tile_resource_number": 5
+  },
+  "colors": [
+    "RED",
+    "BLUE",
+    "ORANGE",
+    "WHITE",
+    "BLACK"
+  ],
+  "files": {
+    "answer_key": "questions/answer_key.jsonl",
+    "images_dir": "images",
+    "manifest": "manifest.jsonl",
+    "messages": "messages.jsonl",
+    "qa": "questions/qa.jsonl",
+    "questions": "questions/questions.jsonl"
+  },
+  "generated_at": "2026-05-14T22:08:21.688997+00:00",
+  "image_size": [
+    256,
+    256
+  ],
+  "name": "isolated_visuals",
+  "qa_count": 199,
+  "sample_count": 199,
+  "schema": "catan_isolated_visual_grounding/v1",
+  "variants": 2
+}

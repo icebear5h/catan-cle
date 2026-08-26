@@ -1,0 +1,64 @@
+{
+  "category_counts": {
+    "board_atlas_bboxes": 594,
+    "node_adjacent_tile_resource_numbers": 594,
+    "node_bbox": 594,
+    "node_incident_road_owners": 594,
+    "node_local_state_json": 594,
+    "node_occupancy": 594
+  },
+  "category_groups": {
+    "board_atlas_bboxes": "full_board_atlas_bbox_map",
+    "node_adjacent_tile_resource_numbers": "local_tile_readout",
+    "node_bbox": "atlas_coordinate_grounding",
+    "node_incident_road_owners": "local_edge_readout",
+    "node_local_state_json": "local_state_composition",
+    "node_occupancy": "transient_node_state_readout"
+  },
+  "colors": [
+    "RED",
+    "BLUE",
+    "ORANGE",
+    "WHITE",
+    "BLACK"
+  ],
+  "curriculum_stage": "phase_1_post_atlas_visual_grounding",
+  "dataset_role": "bind_stable_node_tokens_to_transient_visual_facts",
+  "distractor_buildings": 2,
+  "distractor_roads": 4,
+  "files": {
+    "annotations": "annotations.jsonl",
+    "answer_key": "questions/answer_key.jsonl",
+    "contracts_dir": "contracts",
+    "images_dir": null,
+    "manifest": "manifest.jsonl",
+    "messages": "messages.jsonl",
+    "qa": "questions/qa.jsonl",
+    "questions": "questions/questions.jsonl",
+    "questions_dir": "questions"
+  },
+  "generated_at": "2026-05-15T04:38:58.780360+00:00",
+  "image_size": [
+    512,
+    512
+  ],
+  "name": "post_atlas_node_visual_grounding",
+  "occupancy_cases": [
+    "empty",
+    "red_settlement",
+    "red_city",
+    "blue_settlement",
+    "blue_city",
+    "orange_settlement",
+    "orange_city",
+    "white_settlement",
+    "white_city",
+    "black_settlement",
+    "black_city"
+  ],
+  "qa_count": 3564,
+  "requires_stage": "phase_0_text_atlas_topology",
+  "sample_count": 594,
+  "schema": "catan_post_atlas_node_visual_grounding/v1",
+  "variants_per_case": 1
+}

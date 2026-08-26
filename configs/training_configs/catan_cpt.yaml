@@ -15,7 +15,7 @@ lora_dropout: 0.05
 
 ### Dataset
 dataset: catan_knowledge
-dataset_dir: data_pipeline/training/pretraining/output
+dataset_dir: artifacts/generated/pretraining/legacy_corpus
 cutoff_len: 4096
 preprocessing_num_workers: 4
 

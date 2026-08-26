@@ -1,7 +1,7 @@
 """Render Catan contract datasets with the Python HexBoard-compatible renderer.
 
 This is the fast path after contracts exist. It does not use Playwright; it
-uses ``data_pipeline.catanbench.render`` to mirror frontend geometry/assets.
+uses ``data_pipeline.catan_board_bench.render`` to mirror frontend geometry/assets.
 
 For safety, it writes image-backed copies of QA/message files instead of
 mutating the original contract-only rows.
@@ -14,7 +14,8 @@ import json
 from pathlib import Path
 from typing import Any
 
-from catanbench.render import RenderStyle, render_contract_image
+from catan_board_bench.render import RenderStyle, render_contract_image
+from sft.paths import GENERATED_SFT_ROOT, RENDERER_STYLE_CONFIG, repository_relative_path
 
 CURRICULUM_STAGE = "phase_1_post_atlas_visual_grounding"
 REQUIRES_STAGE = "phase_0_text_atlas_topology"
@@ -63,25 +64,10 @@ def question_view(qa: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def answer_view(qa: dict[str, Any]) -> dict[str, Any]:
+def message_view(qa: dict[str, Any], *, prompt_prefix: str) -> dict[str, Any]:
     return {
         "id": qa["id"],
-        "sample_id": qa["sample_id"],
-        "category": qa["category"],
-        "category_group": qa.get("category_group", category_group(qa["category"])),
-        "curriculum_stage": qa.get("curriculum_stage", CURRICULUM_STAGE),
-        "requires_stage": qa.get("requires_stage", REQUIRES_STAGE),
-        "answer": qa["answer"],
-        "target": qa["target"],
-        "scoring": qa["scoring"],
-    }
-
-
-def message_view(qa: dict[str, Any], *, dataset_dir: Path, prompt_prefix: str) -> dict[str, Any]:
-    image_path = (dataset_dir / qa["image_path"]).resolve()
-    return {
-        "id": qa["id"],
-        "image": str(image_path),
+        "image": qa["image_path"],
         "messages": [
             {
                 "role": "user",
@@ -126,13 +112,17 @@ def load_render_style(path: Path | None) -> RenderStyle | None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--dataset-dir", type=Path, default=Path("sft/data/synthetic_node_factors"))
+    parser.add_argument(
+        "--dataset-dir",
+        type=Path,
+        default=GENERATED_SFT_ROOT / "node_factors",
+    )
     parser.add_argument("--image-size", type=int, default=512)
     parser.add_argument("--limit-samples", type=int)
     parser.add_argument(
         "--style-config",
         type=Path,
-        default=Path("sft/configs/renderer_style_current.json"),
+        default=RENDERER_STYLE_CONFIG,
         help="Renderer style JSON saved by the tuning UI. If missing, built-in defaults are used.",
     )
     parser.add_argument(
@@ -174,19 +164,17 @@ def main() -> int:
             row_with_image["render"] = {
                 "kind": "python_catan_hexboard_renderer",
                 "image_size": [args.image_size, args.image_size],
-                "style_config": str(args.style_config) if style else None,
+                "style_config": (repository_relative_path(args.style_config) if style else None),
             }
             write_jsonl(manifest_out, row_with_image)
 
     qa_out_path = dataset_dir / "questions/qa_with_images.jsonl"
     questions_out_path = dataset_dir / "questions/questions_with_images.jsonl"
-    answer_key_out_path = dataset_dir / "questions/answer_key_with_images.jsonl"
     messages_out_path = dataset_dir / "messages_with_images.jsonl"
     qa_rows = 0
     with (
         qa_out_path.open("w") as qa_out,
         questions_out_path.open("w") as questions_out,
-        answer_key_out_path.open("w") as answer_key_out,
         messages_out_path.open("w") as messages_out,
     ):
         for _, qa in iter_jsonl(qa_path):
@@ -197,11 +185,7 @@ def main() -> int:
             qa["image_path"] = image_path
             write_jsonl(qa_out, qa)
             write_jsonl(questions_out, question_view(qa))
-            write_jsonl(answer_key_out, answer_view(qa))
-            write_jsonl(
-                messages_out,
-                message_view(qa, dataset_dir=dataset_dir, prompt_prefix=args.prompt_prefix),
-            )
+            write_jsonl(messages_out, message_view(qa, prompt_prefix=args.prompt_prefix))
             qa_rows += 1
 
     metadata = {
@@ -210,16 +194,15 @@ def main() -> int:
         "requires_stage": REQUIRES_STAGE,
         "dataset_role": DATASET_ROLE,
         "category_groups": CATEGORY_GROUPS,
-        "dataset_dir": str(dataset_dir),
+        "dataset_dir": repository_relative_path(dataset_dir),
         "image_size": [args.image_size, args.image_size],
-        "style_config": str(args.style_config) if style else None,
+        "style_config": (repository_relative_path(args.style_config) if style else None),
         "rendered_samples": len(rendered),
         "qa_rows": qa_rows,
         "files": {
             "manifest": image_manifest_path.name,
             "qa": "questions/qa_with_images.jsonl",
             "questions": "questions/questions_with_images.jsonl",
-            "answer_key": "questions/answer_key_with_images.jsonl",
             "messages": messages_out_path.name,
             "images_dir": "images",
         },

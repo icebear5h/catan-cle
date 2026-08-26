@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import tempfile
 from pathlib import Path
 
 import modal
+
+from sft.paths import resolve_dataset_asset
 
 
 APP_NAME = "catan-qwen-series-eval"
@@ -49,10 +52,7 @@ eval_image = (
     )
     .add_local_python_source("data_pipeline")
     .add_local_python_source("engine")
-    .add_local_file(
-        "sft/scripts/eval_qwen_vl_adapter.py",
-        remote_path=f"{REMOTE_WORKDIR}/sft/scripts/eval_qwen_vl_adapter.py",
-    )
+    .add_local_python_source("sft")
 )
 
 
@@ -77,7 +77,7 @@ def upload_eval_jsonl(eval_jsonl: Path, remote_dir: str) -> str:
 
     with sft_data.batch_upload(force=True) as batch:
         for row in _iter_jsonl(eval_jsonl):
-            local_image = Path(row["image"]).expanduser().resolve()
+            local_image = resolve_dataset_asset(eval_jsonl, row["image"])
             if not local_image.exists():
                 raise FileNotFoundError(local_image)
             remote_image = image_map.get(str(local_image))
@@ -121,11 +121,10 @@ def eval_remote(
     limit: int | None = None,
     max_new_tokens: int = 256,
 ) -> dict:
-    import subprocess
-
     command = [
         "python",
-        f"{REMOTE_WORKDIR}/sft/scripts/eval_qwen_vl_adapter.py",
+        "-m",
+        "sft.scripts.eval_qwen_vl_adapter",
         "--eval-jsonl",
         eval_jsonl,
         "--output-dir",

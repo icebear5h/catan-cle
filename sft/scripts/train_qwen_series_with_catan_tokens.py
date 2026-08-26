@@ -8,8 +8,11 @@ before PEFT wraps the model.
 
 from __future__ import annotations
 
+import importlib
 import sys
 from typing import Any
+
+from data_pipeline.catan_board_bench.tokens import add_tokens_to_tokenizer, added_tokens
 
 
 def _arg_value(name: str, default: str | None = None) -> str | None:
@@ -35,11 +38,7 @@ def _patch_non_deepspeed_savers(upstream: Any) -> None:
         if bias == "none":
             selected = {k: t for k, t in named_params if is_peft_adapter_param(k)}
         elif bias == "all":
-            selected = {
-                k: t
-                for k, t in named_params
-                if is_peft_adapter_param(k) or "bias" in k
-            }
+            selected = {k: t for k, t in named_params if is_peft_adapter_param(k) or "bias" in k}
         else:
             selected = {k: t for k, t in named_params if is_peft_adapter_param(k)}
         return {k: maybe_clone(v) for k, v in selected.items()}
@@ -63,17 +62,13 @@ def _resize_token_embeddings_without_shrinking(model: Any, tokenizer: Any) -> No
 
     if target_rows <= current_rows:
         print(
-            "token_embeddings_already_cover_tokenizer="
-            f"{current_rows}; tokenizer_len={target_rows}"
+            f"token_embeddings_already_cover_tokenizer={current_rows}; tokenizer_len={target_rows}"
         )
         return
 
     model.resize_token_embeddings(target_rows, pad_to_multiple_of=64)
     resized_rows = model.get_input_embeddings().num_embeddings
-    print(
-        "resized_token_embeddings="
-        f"{current_rows}->{resized_rows}; tokenizer_len={target_rows}"
-    )
+    print(f"resized_token_embeddings={current_rows}->{resized_rows}; tokenizer_len={target_rows}")
 
 
 def _find_language_embed_tokens_name(model: Any) -> str:
@@ -111,10 +106,7 @@ def _patch_peft_for_catan_tokens(upstream: Any, tokenizer: Any, catan_tokens: li
         if hasattr(peft_config, "trainable_token_indices"):
             embed_name = _find_language_embed_tokens_name(model)
             peft_config.trainable_token_indices = {embed_name: token_ids}
-            print(
-                "catan_trainable_token_indices="
-                f"{len(token_ids)} on {embed_name}"
-            )
+            print(f"catan_trainable_token_indices={len(token_ids)} on {embed_name}")
         else:
             print("warning=trainable_token_indices_not_supported_by_peft")
         return original_get_peft_model(model, peft_config, *args, **kwargs)
@@ -127,12 +119,10 @@ def main() -> int:
     if not model_id:
         raise SystemExit("Missing required upstream argument: --model_id")
 
-    from transformers import AutoProcessor
+    transformers = importlib.import_module("transformers")
+    upstream = importlib.import_module("train.train_sft")
 
-    from data_pipeline.catanbench.tokens import add_tokens_to_tokenizer, added_tokens
-    import train.train_sft as upstream
-
-    processor = AutoProcessor.from_pretrained(model_id)
+    processor = transformers.AutoProcessor.from_pretrained(model_id)
     if hasattr(processor, "tokenizer"):
         processor.tokenizer.padding_side = "right"
     added = add_tokens_to_tokenizer(processor.tokenizer)

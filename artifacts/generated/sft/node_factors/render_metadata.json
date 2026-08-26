@@ -1,0 +1,29 @@
+{
+  "category_groups": {
+    "board_atlas_bboxes": "full_board_atlas_bbox_map",
+    "node_adjacent_tile_resource_numbers": "local_tile_readout",
+    "node_bbox": "atlas_coordinate_grounding",
+    "node_incident_road_owners": "local_edge_readout",
+    "node_local_state_json": "local_state_composition",
+    "node_occupancy": "transient_node_state_readout"
+  },
+  "curriculum_stage": "phase_1_post_atlas_visual_grounding",
+  "dataset_dir": "artifacts/generated/sft/node_factors",
+  "dataset_role": "bind_stable_node_tokens_to_transient_visual_facts",
+  "files": {
+    "images_dir": "images",
+    "manifest": "manifest_with_images.jsonl",
+    "messages": "messages_with_images.jsonl",
+    "qa": "questions/qa_with_images.jsonl",
+    "questions": "questions/questions_with_images.jsonl"
+  },
+  "image_size": [
+    512,
+    512
+  ],
+  "qa_rows": 3564,
+  "rendered_samples": 594,
+  "requires_stage": "phase_0_text_atlas_topology",
+  "schema": "catan_rendered_contract_dataset/v0",
+  "style_config": "configs/sft/renderer_style.json"
+}

@@ -1,0 +1,131 @@
+{
+  "generated_at": "2026-08-16T22:48:20.747926+00:00",
+  "models": {
+    "qwen_qwen3.8-27b": {
+      "attempted": 10,
+      "avg_latency_ms": 2980.9,
+      "categories": {
+        "isolated_node_occupancy": {
+          "attempted": 1,
+          "avg_latency_ms": 2036.0,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "isolated_port_trade_type": {
+          "attempted": 1,
+          "avg_latency_ms": 787.0,
+          "component_accuracy": 1.0,
+          "errors": 0,
+          "exact_accuracy": 1.0,
+          "requests": 1
+        },
+        "isolated_road_owner": {
+          "attempted": 1,
+          "avg_latency_ms": 1873.0,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "isolated_robber_presence": {
+          "attempted": 1,
+          "avg_latency_ms": 10488.0,
+          "component_accuracy": 1.0,
+          "errors": 0,
+          "exact_accuracy": 1.0,
+          "requests": 1
+        },
+        "isolated_tile_resource_number": {
+          "attempted": 1,
+          "avg_latency_ms": 973.0,
+          "component_accuracy": 0.5,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "local_patch_edge_road_owner": {
+          "attempted": 1,
+          "avg_latency_ms": 4077.0,
+          "component_accuracy": 1.0,
+          "errors": 0,
+          "exact_accuracy": 1.0,
+          "requests": 1
+        },
+        "local_patch_node_occupancy": {
+          "attempted": 1,
+          "avg_latency_ms": 951.0,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "local_patch_port_trade_type": {
+          "attempted": 1,
+          "avg_latency_ms": 1710.0,
+          "component_accuracy": 0.5,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "local_patch_robber_presence": {
+          "attempted": 1,
+          "avg_latency_ms": 5351.0,
+          "component_accuracy": 1.0,
+          "errors": 0,
+          "exact_accuracy": 1.0,
+          "requests": 1
+        },
+        "local_patch_tile_resource_number": {
+          "attempted": 1,
+          "avg_latency_ms": 1563.0,
+          "component_accuracy": 1.0,
+          "errors": 0,
+          "exact_accuracy": 1.0,
+          "requests": 1
+        }
+      },
+      "component_accuracy": 0.6,
+      "errors": 0,
+      "exact_accuracy": 0.5,
+      "requests": 10
+    }
+  },
+  "plan": {
+    "atlas_prompt": false,
+    "bench_dir": "artifacts/generated/catan_board_bench/piece_recognition",
+    "categories": [
+      "isolated_tile_resource_number",
+      "isolated_road_owner",
+      "isolated_node_occupancy",
+      "isolated_port_trade_type",
+      "isolated_robber_presence",
+      "local_patch_tile_resource_number",
+      "local_patch_edge_road_owner",
+      "local_patch_node_occupancy",
+      "local_patch_port_trade_type",
+      "local_patch_robber_presence"
+    ],
+    "limit_samples": 1,
+    "models": {
+      "qwen_qwen3.8-27b": "qwen/qwen3.8-27b"
+    },
+    "output_dir": "artifacts/runs/catan_board_bench/piece_recognition/qwen3_8_27b_piece_smoke_20260816",
+    "question_count": 10,
+    "question_dir": "artifacts/generated/catan_board_bench/piece_recognition/questions",
+    "questions_per_sample": 10,
+    "request_settings": {
+      "concurrency": 2,
+      "provider": "openrouter",
+      "provider_routing": "openrouter_default_unpinned",
+      "reasoning_disabled_for_models": [
+        "qwen/qwen3.8-27b"
+      ],
+      "requested_max_tokens": 64,
+      "temperature": 0.0,
+      "timeout_seconds": 180.0
+    },
+    "suite": "probe"
+  }
+}

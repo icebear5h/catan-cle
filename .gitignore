@@ -60,3 +60,24 @@ uv.lock
 
 # Generated images
 example_game_state.json
+
+# Local artifact caches and incomplete writes
+artifacts/cache/
+artifacts/**/*.partial
+artifacts/**/*.tmp
+artifacts/**/*.lock
+artifacts/**/*.mp4
+artifacts/**/*.webm
+artifacts/**/*.wav
+
+# Regenerable SFT datasets, local diagnostics, and heavyweight run state
+artifacts/generated/sft/*
+!artifacts/generated/sft/README.md
+!artifacts/generated/sft/legacy_pilots/
+artifacts/generated/sft/legacy_pilots/*
+!artifacts/generated/sft/legacy_pilots/README.md
+artifacts/generated/catan_board_bench/piece_recognition/
+artifacts/generated/board_recognition/
+artifacts/diagnostics/sft/
+artifacts/runs/sft/*
+!artifacts/runs/sft/README.md

@@ -1,0 +1,36 @@
+{
+  "atlas_prompt": false,
+  "bench_dir": "artifacts/generated/catan_board_bench/piece_recognition",
+  "categories": [
+    "isolated_tile_resource_number",
+    "isolated_road_owner",
+    "isolated_node_occupancy",
+    "isolated_port_trade_type",
+    "isolated_robber_presence",
+    "local_patch_tile_resource_number",
+    "local_patch_edge_road_owner",
+    "local_patch_node_occupancy",
+    "local_patch_port_trade_type",
+    "local_patch_robber_presence"
+  ],
+  "limit_samples": 1,
+  "models": {
+    "qwen_qwen3.8-27b": "qwen/qwen3.8-27b"
+  },
+  "output_dir": "artifacts/runs/catan_board_bench/piece_recognition/qwen3_8_27b_piece_smoke_20260816",
+  "question_count": 10,
+  "question_dir": "artifacts/generated/catan_board_bench/piece_recognition/questions",
+  "questions_per_sample": 10,
+  "request_settings": {
+    "concurrency": 2,
+    "provider": "openrouter",
+    "provider_routing": "openrouter_default_unpinned",
+    "reasoning_disabled_for_models": [
+      "qwen/qwen3.8-27b"
+    ],
+    "requested_max_tokens": 64,
+    "temperature": 0.0,
+    "timeout_seconds": 180.0
+  },
+  "suite": "probe"
+}

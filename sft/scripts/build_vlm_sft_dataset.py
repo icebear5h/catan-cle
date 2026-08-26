@@ -22,9 +22,13 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from sft.paths import repository_relative_path
+
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_EXCLUDE = ROOT / "data_pipeline/catanbench/datasets/catanbench_100/leakage/benchmark_game_ids.json"
+DEFAULT_EXCLUDE = (
+    ROOT / "data_pipeline/catan_board_bench/datasets/catan_board_bench_100/leakage/benchmark_game_ids.json"
+)
 DEFAULT_PROMPT_PREFIX = "Answer exactly using the Catan tokens requested. Do not explain."
 
 
@@ -53,10 +57,17 @@ def norm_game_id(value: Any) -> str | None:
 
 
 def load_excluded_game_ids(path: Path | None) -> set[str]:
-    if path is None or not path.exists():
-        return set()
+    if path is None:
+        raise ValueError("A held-out game-ID ledger is required")
+    if not path.is_file():
+        raise FileNotFoundError(f"Held-out game-ID ledger not found: {path}")
     payload = read_json(path)
-    ids = payload.get("benchmark_game_ids", payload if isinstance(payload, list) else [])
+    if isinstance(payload, list):
+        ids = payload
+    elif isinstance(payload, dict) and isinstance(payload.get("benchmark_game_ids"), list):
+        ids = payload["benchmark_game_ids"]
+    else:
+        raise ValueError(f"Held-out game-ID ledger has an invalid schema: {path}")
     return {game_id for game_id in (norm_game_id(value) for value in ids) if game_id}
 
 
@@ -79,9 +90,8 @@ def load_manifest_game_ids(path: Path | None) -> dict[str, dict[str, Any]]:
 
 def resolve_image_path(image_root: Path, image_path: str) -> str:
     path = Path(image_path)
-    if path.is_absolute():
-        return str(path)
-    return str((image_root / path).resolve())
+    resolved = path.resolve() if path.is_absolute() else (image_root / path).resolve()
+    return repository_relative_path(resolved)
 
 
 def build_user_text(question: str, prompt_prefix: str) -> str:
@@ -142,11 +152,6 @@ def main() -> int:
     parser.add_argument("--exclude-game-ids", default=DEFAULT_EXCLUDE, type=Path)
     parser.add_argument("--prompt-prefix", default=DEFAULT_PROMPT_PREFIX)
     parser.add_argument("--limit", type=int)
-    parser.add_argument(
-        "--allow-excluded-game-ids",
-        action="store_true",
-        help="Debug only. Allows benchmark game IDs through the leakage check.",
-    )
     args = parser.parse_args()
 
     excluded_ids = load_excluded_game_ids(args.exclude_game_ids)
@@ -169,7 +174,7 @@ def main() -> int:
         if args.limit and len(rows) >= args.limit:
             break
 
-    if blocked and not args.allow_excluded_game_ids:
+    if blocked:
         preview = ", ".join(f"{qid}:{gid}" for qid, gid in blocked[:10])
         print(
             f"Refusing to write SFT data: {len(blocked)} rows use excluded held-out game IDs. "
@@ -178,32 +183,15 @@ def main() -> int:
         )
         return 2
 
-    if args.allow_excluded_game_ids and blocked:
-        rows.extend(
-            convert_row(
-                row,
-                image_root=args.image_root,
-                manifest_by_sample=manifest_by_sample,
-                prompt_prefix=args.prompt_prefix,
-            )
-            for _, row in iter_jsonl(args.qa_jsonl)
-            if norm_game_id(
-                row.get("game_id")
-                or (row.get("source") or {}).get("game_id")
-                or manifest_by_sample.get(row.get("sample_id"), {}).get("game_id")
-            )
-            in excluded_ids
-        )
-        if args.limit:
-            rows = rows[: args.limit]
-
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w") as handle:
         for row in rows:
             handle.write(json.dumps(row, sort_keys=True) + "\n")
 
     categories = sorted({row["metadata"].get("category") for row in rows})
-    game_ids = sorted({row["metadata"].get("game_id") for row in rows if row["metadata"].get("game_id")})
+    game_ids = sorted(
+        {row["metadata"].get("game_id") for row in rows if row["metadata"].get("game_id")}
+    )
     print(f"wrote_rows={len(rows)}")
     print(f"unique_games={len(game_ids)}")
     print(f"categories={','.join(str(category) for category in categories)}")

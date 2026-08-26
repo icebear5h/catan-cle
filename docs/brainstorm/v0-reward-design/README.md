@@ -99,15 +99,19 @@ We're not locked in. We're just getting started.
 ### SFT Data Generation
 
 ```python
-# In generate_training_data.py
+# Sketch only: the authoritative exporter must supply a pre-action packet.
 
-def generate_sft_example(game: dict, turn: int) -> dict:
-    observation = format_observation(game, turn)
-    action = game["turns"][turn]["action"]
-    reasoning = generate_reasoning(game, turn)  # LLM call
+def generate_sft_example(decision_packet: dict) -> dict:
+    observation = decision_packet["observation"]
+    action = decision_packet["expert_action"]
+    reasoning = generate_reasoning(decision_packet)  # LLM call
 
-    outcome = "win" if game["winner"] == game["turns"][turn]["player"] else "loss"
-    weight = compute_sft_weight(outcome, turn, len(game["turns"]))
+    outcome = decision_packet["trajectory_outcome"]
+    weight = compute_sft_weight(
+        outcome,
+        decision_packet["decision_index"],
+        decision_packet["decision_count"],
+    )
 
     return {
         "input": observation,

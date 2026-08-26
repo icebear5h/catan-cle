@@ -55,19 +55,25 @@ def delete_corner_mapping(colonist_corner):
 def get_engine_nodes():
     """Get all engine node IDs from the current game."""
     state = _get_state()
-    if not state.current_game:
-        return jsonify({"error": "No game loaded"}), 400
+    with state.replay_mutation_lock:
+        if not state.current_sandbox:
+            return jsonify({"error": "No game loaded"}), 400
 
-    node_ids = sorted(list(state.current_game.state.board.map.land_nodes))
+        engine = state.current_sandbox.game_engine
+        node_ids = sorted(list(engine.state.board.map.land_nodes))
 
-    nodes = {}
-    for node_id in node_ids:
-        building = state.current_game.state.board.get_node_building(node_id) if hasattr(state.current_game.state.board, 'get_node_building') else None
-        nodes[node_id] = {
-            "id": node_id,
-            "building": building.building_type.value if building else None,
-            "color": building.color.value if building else None,
-        }
+        nodes = {}
+        for node_id in node_ids:
+            building = (
+                engine.state.board.get_node_building(node_id)
+                if hasattr(engine.state.board, "get_node_building")
+                else None
+            )
+            nodes[node_id] = {
+                "id": node_id,
+                "building": building.building_type.value if building else None,
+                "color": building.color.value if building else None,
+            }
 
     return jsonify({
         "nodes": nodes,

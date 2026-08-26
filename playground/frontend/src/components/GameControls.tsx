@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { NativeReasoningEffort } from '../types';
 import './GameControls.css';
 
 const REPLAY_MODEL_PRESETS: Array<{ id: string; label: string }> = [
@@ -12,6 +13,7 @@ const REPLAY_MODEL_PRESETS: Array<{ id: string; label: string }> = [
   { id: 'moonshotai/kimi-k3', label: 'Kimi K3 · 2.8T/104B · frontier' },
   { id: 'thinkingmachines/inkling', label: 'Inkling · 975B/41B' },
   { id: 'qwen/qwen3.8-max', label: 'Qwen3.8-Max · 2.4T/95B' },
+  { id: 'qwen/qwen3.8-27b', label: 'Qwen3.8-27B · eval baseline' },
   { id: 'qwen/qwen3.7-flash', label: 'Qwen3.7 Flash · VL · cheap' },
   { id: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash · default' },
   // Student tier (small)
@@ -27,8 +29,6 @@ const REPLAY_MODEL_PRESETS: Array<{ id: string; label: string }> = [
 interface GameControlsProps {
   onStartGame: (mode: string) => void;
   onStep: () => void;
-  onAutoPlay: (delay: number) => void;
-  onStopAutoPlay: () => void;
   onReset: () => void;
   onLoadReplay: (gameId: string) => void;
   onReplayStep: () => void;
@@ -38,12 +38,17 @@ interface GameControlsProps {
   onGenerateReplayResponse: () => void;
   replayModel: string;
   onReplayModelChange: (model: string) => void;
+  nativeReasoningEffort: NativeReasoningEffort;
+  onNativeReasoningEffortChange: (effort: NativeReasoningEffort) => void;
   isReplayLlmProcessing?: boolean;
   replayLlmError?: string | null;
   isRunning: boolean;
   hasGame: boolean;
   isLlmProcessing?: boolean;
-  isCurrentPlayerLlm?: boolean;
+  liveError?: string | null;
+  liveTraceGameId?: string | null;
+  liveTraceDatabase?: string | null;
+  isTraceBrowsing?: boolean;
   replayMode?: boolean;
   replayProgress?: string;
 }
@@ -51,8 +56,6 @@ interface GameControlsProps {
 export default function GameControls({
   onStartGame,
   onStep,
-  onAutoPlay,
-  onStopAutoPlay,
   onReset,
   onLoadReplay,
   onReplayStep,
@@ -62,21 +65,31 @@ export default function GameControls({
   onGenerateReplayResponse,
   replayModel,
   onReplayModelChange,
+  nativeReasoningEffort,
+  onNativeReasoningEffortChange,
   isReplayLlmProcessing = false,
   replayLlmError = null,
   isRunning,
   hasGame,
   isLlmProcessing = false,
-  isCurrentPlayerLlm = false,
+  liveError = null,
+  liveTraceGameId = null,
+  liveTraceDatabase = null,
+  isTraceBrowsing = false,
   replayMode = false,
   replayProgress = '',
 }: GameControlsProps) {
-  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
-  const [replayGameId, setReplayGameId] = useState('194335024');
+  const [replayGameId, setReplayGameId] = useState('242781000');
   const [gotoStep, setGotoStep] = useState('');
   return (
     <div className="game-controls">
       <h3>Controls</h3>
+
+      {liveError && (
+        <div className="replay-llm-error" role="alert">
+          {liveError}
+        </div>
+      )}
 
       <div className="control-section">
         <button
@@ -102,12 +115,40 @@ export default function GameControls({
       </div>
 
       <div className="control-section">
+        <h4>Native reasoning</h4>
+        <label className="field-label" htmlFor="native-reasoning-effort">
+          OpenRouter effort
+        </label>
+        <select
+          id="native-reasoning-effort"
+          className="replay-model-select"
+          value={nativeReasoningEffort}
+          onChange={(event) => onNativeReasoningEffortChange(
+            event.target.value as NativeReasoningEffort,
+          )}
+          disabled={isReplayLlmProcessing || isLlmProcessing}
+        >
+          <option value="off">Off — explicit no reasoning</option>
+          <option value="minimal">Minimal</option>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+          <option value="xhigh">XHigh — exploratory default</option>
+          <option value="max">Max</option>
+        </select>
+        <p className="replay-context-hint">
+          Sent explicitly to supported providers. Provider-native reasoning is
+          kept separate from the model-authored &lt;rationale&gt; response.
+        </p>
+      </div>
+
+      <div className="control-section">
         <h4>Load Colonist Replay</h4>
         <input
           type="text"
           value={replayGameId}
           onChange={(e) => setReplayGameId(e.target.value)}
-          placeholder="Game ID (e.g. 194335024)"
+          placeholder="Game ID (e.g. 242781000)"
           style={{
             width: '100%',
             padding: '8px',
@@ -118,6 +159,9 @@ export default function GameControls({
             color: '#fff',
           }}
         />
+        <p className="replay-context-hint">
+          Default: paired transcript demo. Any local replay ID still works.
+        </p>
         <button
           className="btn btn-action"
           onClick={() => onLoadReplay(replayGameId)}
@@ -243,7 +287,7 @@ export default function GameControls({
               disabled={isReplayLlmProcessing}
             />
             <p className="replay-context-hint">
-              Context: safe goals + prior turn + current observation.
+              Context: shared game plan + complete visible events + current observation.
             </p>
             <button
               className="btn btn-primary"
@@ -274,32 +318,26 @@ export default function GameControls({
             <button
               className="btn btn-action"
               onClick={onStep}
-              disabled={!isRunning || (isCurrentPlayerLlm && isLlmProcessing)}
+              disabled={!isRunning || isLlmProcessing || isTraceBrowsing}
             >
-              {(isCurrentPlayerLlm && isLlmProcessing) ? 'LLM Thinking...' : 'Step'}
+              {isLlmProcessing
+                ? 'Stepping sandbox...'
+                : isTraceBrowsing
+                  ? 'Browsing saved step'
+                  : 'Step'}
             </button>
-
-            {!isAutoPlaying ? (
-              <button
-                className="btn btn-action"
-                onClick={() => {
-                  setIsAutoPlaying(true);
-                  onAutoPlay(0.5);
-                }}
-                disabled={!isRunning}
-              >
-                Auto Play
-              </button>
-            ) : (
-              <button
-                className="btn btn-danger"
-                onClick={() => {
-                  setIsAutoPlaying(false);
-                  onStopAutoPlay();
-                }}
-              >
-                Stop Auto Play
-              </button>
+            <p className="replay-context-hint">
+              {isTraceBrowsing
+                ? 'Browse-only checkpoint: load the latest checkpoint to resume gameplay.'
+                : (
+                  'Advances one complete CatanSandbox step, including any required '
+                  + 'deterministic response barrier.'
+                )}
+            </p>
+            {liveTraceGameId && (
+              <p className="replay-context-hint" title={liveTraceDatabase || undefined}>
+                Local trace: {liveTraceGameId}
+              </p>
             )}
           </div>
 

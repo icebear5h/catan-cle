@@ -8,22 +8,25 @@ from pathlib import Path
 from flask import Blueprint, jsonify, request, current_app
 from httpx import HTTPError
 
-from engine.game import Game
-from engine.models.player import SimplePlayer, Color
-
-from ..colonist.coordinates import create_map_from_colonist
-from ..colonist.event_parser import parse_colonist_events_to_actions
-from ..replay.step_executor import replay_step_logic
-from ..replay.navigation import (
-    replay_undo_logic, replay_goto_fast_logic,
-    replay_goto_sequential_logic, replay_goto_divergence_logic,
-)
-from ..replay.llm_response import (
-    ReplayLLMValidationError,
-    generate_replay_llm_response,
-    validate_goals,
+from cle.harness.reasoning import validate_native_reasoning_request
+from cle.harness.validation import (
+    HarnessValidationError,
+    validate_game_plan,
     validate_model_id,
 )
+from cle.players.baseline import ScriptedPlayer
+from cle.replay.colonist.coordinates import create_map_from_colonist
+from cle.replay.colonist.event_parser import parse_colonist_events_to_actions
+from cle.replay.runtime.revision import bump_replay_revision
+from cle.sandbox.replay import ReplaySandbox
+from game_engine.game import GameEngine
+from game_engine.models.player import Color
+
+from ..async_runtime import sandbox_async_runtime
+from ..replay.decision_preview import generate_decision_preview
+from ..replay.model_traces import load_paired_model_traces
+from ..replay.narrator_reasoning import load_paired_narrator_reasoning
+from ..replay.transcript import get_curated_replay_path, load_paired_transcript
 from .websocket import broadcast_game_state
 
 replay_bp = Blueprint('replay', __name__)
@@ -39,11 +42,7 @@ def _broadcast():
     broadcast_game_state(socketio, state)
 
 
-@replay_bp.route('/api/load-replay', methods=['POST'])
-def load_replay():
-    """Load a Colonist replay for playback - runs through our engine."""
-    state = _get_state()
-
+def _load_replay_transaction(state):
     data = request.json or {}
     game_id = data.get('game_id', '').strip()
 
@@ -51,13 +50,15 @@ def load_replay():
         return jsonify({"error": "game_id required"}), 400
 
     replay_dir = Path(__file__).parent.parent.parent.parent / "data_pipeline" / "bootstrapping" / "data" / "raw_replays"
-    replay_file = None
+    curated_replay = get_curated_replay_path(game_id)
+    replay_file = curated_replay if curated_replay and curated_replay.exists() else None
 
-    for pattern in [f"{game_id}.json", f"{game_id}_*.json", f"*{game_id}*.json"]:
-        matches = list(replay_dir.glob(pattern))
-        if matches:
-            replay_file = matches[0]
-            break
+    if replay_file is None:
+        for pattern in [f"{game_id}.json", f"{game_id}_*.json", f"*{game_id}*.json"]:
+            matches = list(replay_dir.glob(pattern))
+            if matches:
+                replay_file = matches[0]
+                break
 
     if not replay_file:
         return jsonify({"error": f"Replay {game_id} not found in {replay_dir}"}), 404
@@ -99,6 +100,21 @@ def load_replay():
             events,
             tile_hex_states,
             player_ids=replay_player_ids,
+        )
+        paired_transcript = load_paired_transcript(game_id, events, parsed_actions)
+        archived_player_perspective = (
+            raw_data.get("data", {}).get("playerPerspective")
+            if "data" in raw_data
+            else raw_data.get("playerPerspective")
+        )
+        paired_model_traces = load_paired_model_traces(
+            game_id,
+            narrator=(paired_transcript or {}).get("narrator"),
+            archived_player_perspective=archived_player_perspective,
+        )
+        paired_narrator_reasoning = load_paired_narrator_reasoning(
+            game_id,
+            paired_transcript,
         )
 
         COLONIST_COLOR_NAMES = {
@@ -145,7 +161,7 @@ def load_replay():
             catan_map = create_map_from_colonist(initial_state)
 
         if play_order_colors:
-            players = []
+            colors = []
             fallback_idx = 0
             for color_id in play_order_colors:
                 if color_id in COLONIST_TO_ENGINE_COLOR:
@@ -154,16 +170,17 @@ def load_replay():
                     engine_color = FALLBACK_ENGINE_COLORS[fallback_idx % len(FALLBACK_ENGINE_COLORS)]
                     fallback_idx += 1
                     print(f"Warning: Unknown Colonist color ID {color_id}, using fallback {engine_color}")
-                players.append(SimplePlayer(engine_color))
-            print(f"Created players with colors: {[p.color for p in players]}")
+                colors.append(engine_color)
+            print(f"Created players with colors: {colors}")
         else:
-            players = [
-                SimplePlayer(Color.RED), SimplePlayer(Color.BLUE),
-                SimplePlayer(Color.WHITE), SimplePlayer(Color.ORANGE),
-            ]
+            colors = [Color.RED, Color.BLUE, Color.WHITE, Color.ORANGE]
 
-        state.current_game = Game(players, catan_map=catan_map, shuffle_players=False)
-        state.current_players = players
+        engine = GameEngine(
+            colors,
+            catan_map=catan_map,
+            shuffle_players=False,
+            capture_history=True,
+        )
 
         state.replay_data = {
             "game_id": game_id,
@@ -182,6 +199,10 @@ def load_replay():
             "play_order": play_order_indices,
             "colonist_color_to_engine_idx": {str(color_id): idx for idx, color_id in enumerate(play_order_colors)},
             "tile_hex_states": tile_hex_states,
+            "player_perspective": archived_player_perspective,
+            "paired_transcript": paired_transcript,
+            "paired_model_traces": paired_model_traces,
+            "paired_narrator_reasoning": paired_narrator_reasoning,
         }
         state.replay_index = 0
         state.replay_actions_per_step = []
@@ -191,6 +212,12 @@ def load_replay():
         state.replay_pending_dev_card = None
         state.replay_step_checkpoints = []
         state.replay_trade_ledger = {}
+        state.current_sandbox = ReplaySandbox(
+            state,
+            engine,
+            players={color: ScriptedPlayer(color) for color in engine.state.colors},
+        )
+        bump_replay_revision(state)
         state.replay_mode = True
         state.game_running = True
         state.game_log = [{
@@ -206,6 +233,9 @@ def load_replay():
             "game_id": game_id,
             "total_events": len(parsed_actions),
             "file": str(replay_file),
+            "has_paired_transcript": paired_transcript is not None,
+            "has_paired_model_traces": paired_model_traces is not None,
+            "has_paired_narrator_reasoning": paired_narrator_reasoning is not None,
         })
 
     except json.JSONDecodeError as e:
@@ -215,11 +245,22 @@ def load_replay():
         return jsonify({"error": str(e)}), 500
 
 
+@replay_bp.route('/api/load-replay', methods=['POST'])
+def load_replay():
+    """Load a Colonist replay for playback - runs through our engine."""
+    state = _get_state()
+    with state.replay_mutation_lock:
+        return _load_replay_transaction(state)
+
+
 @replay_bp.route('/api/replay-step', methods=['POST'])
 def replay_step():
     """Step through the loaded replay."""
     state = _get_state()
-    result = replay_step_logic(state, _broadcast)
+    sandbox = getattr(state, "current_sandbox", None)
+    if sandbox is None:
+        return jsonify({"error": "No replay sandbox loaded"}), 400
+    result = sandbox.step(_broadcast)
     if isinstance(result, tuple):
         return jsonify(result[0]), result[1]
     return jsonify(result)
@@ -229,7 +270,10 @@ def replay_step():
 def replay_undo():
     """Undo the last replay step."""
     state = _get_state()
-    result = replay_undo_logic(state, _broadcast)
+    sandbox = getattr(state, "current_sandbox", None)
+    if sandbox is None:
+        return jsonify({"error": "No replay sandbox loaded"}), 400
+    result = sandbox.undo(_broadcast)
     if isinstance(result, tuple):
         return jsonify(result[0]), result[1]
     return jsonify(result)
@@ -241,12 +285,10 @@ def replay_goto_fast():
     state = _get_state()
     data = request.get_json() or {}
     target_step = data.get("step", 0)
-    result = replay_goto_fast_logic(
-        state,
-        target_step,
-        replay_step,
-        _broadcast,
-    )
+    sandbox = getattr(state, "current_sandbox", None)
+    if sandbox is None:
+        return jsonify({"error": "No replay sandbox loaded"}), 400
+    result = sandbox.goto_fast(target_step, _broadcast)
     if isinstance(result, tuple):
         return jsonify(result[0]), result[1]
     return jsonify(result)
@@ -258,7 +300,10 @@ def replay_goto_sequential():
     state = _get_state()
     data = request.get_json() or {}
     target_step = data.get("step", 0)
-    result = replay_goto_sequential_logic(state, target_step, replay_step, _broadcast)
+    sandbox = getattr(state, "current_sandbox", None)
+    if sandbox is None:
+        return jsonify({"error": "No replay sandbox loaded"}), 400
+    result = sandbox.goto_sequential(target_step, _broadcast)
     if isinstance(result, tuple):
         return jsonify(result[0]), result[1]
     return jsonify(result)
@@ -270,7 +315,10 @@ def replay_goto_divergence():
     state = _get_state()
     data = request.get_json() or {}
     max_steps = data.get("max_steps", 500)
-    result = replay_goto_divergence_logic(state, max_steps, replay_step, _broadcast)
+    sandbox = getattr(state, "current_sandbox", None)
+    if sandbox is None:
+        return jsonify({"error": "No replay sandbox loaded"}), 400
+    result = sandbox.goto_divergence(max_steps, _broadcast)
     if isinstance(result, tuple):
         return jsonify(result[0]), result[1]
     return jsonify(result)
@@ -280,37 +328,43 @@ def replay_goto_divergence():
 def replay_llm_response():
     """Generate a non-mutating LLM decision for the current replay position."""
     state = _get_state()
-    if not state.replay_mode or not state.replay_data or not state.current_game:
+    if not state.replay_mode or not state.replay_data or not state.current_sandbox:
         return jsonify({"error": "No replay loaded"}), 400
+    sandbox = state.current_sandbox
 
     data = request.get_json(silent=True) or {}
     try:
         model = validate_model_id(data.get("model"))
-        goals = validate_goals(data.get("goals"))
-    except ReplayLLMValidationError as exc:
+        game_plan = validate_game_plan(data.get("game_plan"))
+        reasoning_request = validate_native_reasoning_request(data.get("reasoning"))
+        temperature = float(data.get("temperature", 0.2))
+        max_tokens = int(data.get("max_tokens", 8_192))
+        if not 0 <= temperature <= 2:
+            raise ValueError("temperature must be between 0 and 2")
+        if max_tokens < 1:
+            raise ValueError("max_tokens must be positive")
+    except (HarnessValidationError, TypeError, ValueError) as exc:
         return jsonify({"error": str(exc)}), 400
 
     if not state.replay_llm_lock.acquire(blocking=False):
         return jsonify({"error": "A replay LLM response is already being generated"}), 429
 
-    game = state.current_game
-    replay_data = state.replay_data
-    replay_index = state.replay_index
-    game_id = replay_data.get("game_id")
-
     try:
-        result = generate_replay_llm_response(
-            game=game,
-            replay_data=replay_data,
-            replay_index=replay_index,
-            model=model,
-            prior_goals=goals,
-            query_fn=current_app.config.get("REPLAY_LLM_QUERY_FN"),
+        result = sandbox_async_runtime.run(
+            generate_decision_preview(
+                sandbox,
+                model=model,
+                game_plan=game_plan,
+                reasoning_request=reasoning_request,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                transport_factory=current_app.config.get(
+                    "REPLAY_COMPLETION_TRANSPORT_FACTORY"
+                ),
+            )
         )
-    except ReplayLLMValidationError as exc:
-        return jsonify({"error": str(exc)}), 409
     except ValueError as exc:
-        status = 503 if "API_KEY" in str(exc) else 502
+        status = 503 if "API_KEY" in str(exc) else 409
         return jsonify({"error": str(exc)}), status
     except HTTPError as exc:
         return jsonify({"error": f"OpenRouter request failed: {exc}"}), 502
@@ -320,13 +374,4 @@ def replay_llm_response():
     finally:
         state.replay_llm_lock.release()
 
-    current_game_id = (
-        state.replay_data.get("game_id") if state.replay_data is not None else None
-    )
-    result["game_id"] = game_id
-    result["stale"] = (
-        state.current_game is not game
-        or state.replay_index != replay_index
-        or current_game_id != game_id
-    )
     return jsonify(result)

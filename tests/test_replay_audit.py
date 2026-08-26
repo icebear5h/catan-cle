@@ -1,8 +1,8 @@
 from types import SimpleNamespace
 
-from engine.game import Game
-from engine.models.player import Color, SimplePlayer
-from playground.game_viewer.replay.audit import (
+from game_engine.game import GameEngine
+from game_engine.models.player import Color
+from cle.replay.runtime.audit import (
     colonist_victory_points,
     expected_final_state_by_engine_index,
     record_replay_issue,
@@ -45,12 +45,12 @@ def test_replay_issue_filtering_by_severity():
 
 
 def test_final_state_sync_forces_colonist_scoreboard_fields():
-    game = Game(
+    game = GameEngine(
         [
-            SimplePlayer(Color.RED),
-            SimplePlayer(Color.BLUE),
-            SimplePlayer(Color.WHITE),
-            SimplePlayer(Color.ORANGE),
+            Color.RED,
+            Color.BLUE,
+            Color.WHITE,
+            Color.ORANGE,
         ],
         shuffle_players=False,
     )

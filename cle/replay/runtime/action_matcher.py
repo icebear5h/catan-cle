@@ -1,10 +1,58 @@
 """Find matching engine action from playable actions based on Colonist action hint."""
 
-from engine.models.actions import Action
-from engine.models.enums import ActionType
+from cle.replay.runtime.access import get_game_engine
+from game_engine.models.actions import Action
+from game_engine.models.enums import ActionType
+from game_engine.trading import TradeOffer
 
-from ..colonist.constants import COLONIST_RESOURCE, ENGINE_RESOURCES
-from ..colonist.coordinates import reflect_x, rotate_60_cw
+from cle.replay.colonist.constants import COLONIST_RESOURCE, ENGINE_RESOURCES
+from cle.replay.colonist.coordinates import reflect_x, rotate_60_cw
+
+
+def _offer_from_source(
+    values,
+    offered_by,
+    audience,
+    *,
+    parent_offer_id=None,
+    offer_id=None,
+):
+    if not isinstance(values, (list, tuple)) or len(values) < 10:
+        raise ValueError("Replay trade tuple must contain at least 10 counts")
+    return TradeOffer(
+        id=offer_id,
+        offered_by=offered_by,
+        audience=frozenset(audience),
+        give=tuple(values[:5]),
+        receive=tuple(values[5:10]),
+        give_any=values[10] if len(values) > 10 else 0,
+        receive_any=values[11] if len(values) > 11 else 0,
+        parent_offer_id=parent_offer_id,
+    )
+
+
+def _counter_root_id(game, action_hint, counter_color):
+    window = game.state.trade_window
+    if window is None:
+        raise ValueError("Replay counteroffer has no trade window")
+    replay_offer = window.offers.get(action_hint.get("trade_id"))
+    if replay_offer is not None and replay_offer.parent_offer_id:
+        return replay_offer.parent_offer_id
+    source_parent = window.offers.get(action_hint.get("counter_offer_to"))
+    if source_parent is not None:
+        return source_parent.parent_offer_id or source_parent.id
+    root = next(
+        (
+            offer
+            for offer in reversed(window.active_offers)
+            if offer.parent_offer_id is None
+            and offer.offered_by != counter_color
+        ),
+        None,
+    )
+    if root is None:
+        raise ValueError("Replay counteroffer has no active root offer")
+    return root.id
 
 
 def _colonist_xy_to_engine_coord(x, y):
@@ -44,7 +92,7 @@ def find_matching_action(playable_actions, action_hint, state=None):
                 target_edge = tuple(edge_tuple)
                 print(f"[Mapping] Colonist edge {colonist_edge} -> Engine edge {target_edge}")
 
-    game = state.current_game if state else None
+    game = get_game_engine(state) if state else None
     replay_data = state.replay_data if state else None
 
     # Find matching action by type and coordinates
@@ -89,7 +137,20 @@ def find_matching_action(playable_actions, action_hint, state=None):
                     print(f"[Trade] Creating flexible OFFER_TRADE (has 'any' resources) with tuple: {trade_tuple}")
                 else:
                     print(f"[Trade] Creating OFFER_TRADE with tuple: {trade_tuple}")
-                return Action(action.color, ActionType.OFFER_TRADE, trade_tuple)
+                return Action(
+                    action.color,
+                    ActionType.OFFER_TRADE,
+                    _offer_from_source(
+                        trade_tuple,
+                        action.color,
+                        (
+                            color
+                            for color in game.state.colors
+                            if color != action.color
+                        ),
+                        offer_id=action_hint.get("trade_id"),
+                    ),
+                )
             return action
 
         elif action_type == "COUNTER_OFFER" and "COUNTER_OFFER" in action_str:
@@ -101,10 +162,38 @@ def find_matching_action(playable_actions, action_hint, state=None):
                 if creator_idx is not None and game:
                     counter_color = game.state.colors[creator_idx]
                     print(f"[Trade] Creating COUNTER_OFFER from {counter_color} with tuple: {trade_tuple}")
-                    return Action(counter_color, ActionType.COUNTER_OFFER, trade_tuple)
+                    return Action(
+                        counter_color,
+                        ActionType.COUNTER_OFFER,
+                        _offer_from_source(
+                            trade_tuple,
+                            counter_color,
+                            (game.state.trade_window.turn_player,),
+                            parent_offer_id=_counter_root_id(
+                                game,
+                                action_hint,
+                                counter_color,
+                            ),
+                            offer_id=action_hint.get("trade_id"),
+                        ),
+                    )
                 else:
                     print(f"[Trade] Creating COUNTER_OFFER with tuple: {trade_tuple} (fallback color)")
-                    return Action(action.color, ActionType.COUNTER_OFFER, trade_tuple)
+                    return Action(
+                        action.color,
+                        ActionType.COUNTER_OFFER,
+                        _offer_from_source(
+                            trade_tuple,
+                            action.color,
+                            (game.state.trade_window.turn_player,),
+                            parent_offer_id=_counter_root_id(
+                                game,
+                                action_hint,
+                                action.color,
+                            ),
+                            offer_id=action_hint.get("trade_id"),
+                        ),
+                    )
             return action
 
         elif action_type == "ACCEPT_TRADE" and "ACCEPT_TRADE" in action_str:
@@ -236,7 +325,7 @@ def find_matching_action(playable_actions, action_hint, state=None):
                                 if stolen_resource:
                                     return Action(action.color, action.action_type, (action_victim, stolen_resource))
                                 return action
-                    except:
+                    except (IndexError, TypeError):
                         pass
 
         # Maritime/bank trade

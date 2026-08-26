@@ -24,11 +24,9 @@ def inject_state():
     state_data = {
         "game": data["game"],
         "running": False,
-        "llm_thinking": [],
         "game_log": [],
         "all_player_resources": data.get("all_player_resources", {}),
         "all_player_dev_cards": data.get("all_player_dev_cards", {}),
-        "is_current_player_llm": False,
         "player_types": data.get("player_types", {}),
         "trade_state": None,
         "replay_mode": False,

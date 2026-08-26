@@ -113,7 +113,7 @@ def parse_colonist_events_to_actions(
 
     # Track active trades to detect new offers and responses
     # Structure: {trade_id: {full trade data with merged deltas}}
-    active_trades = {}
+    active_offers = {}
     # Track which players have responded to each trade (to avoid duplicates)
     trade_responses = {}  # {trade_id: {color_id: response_value}}
     # Sequential trade numbering for UI display
@@ -220,7 +220,7 @@ def parse_colonist_events_to_actions(
 
         # Trade events
         trade_state = state_change.get("tradeState", {})
-        active_offers = trade_state.get("activeOffers", {})
+        offer_updates = trade_state.get("activeOffers", {})
         game_log_state = state_change.get("gameLogState", {})
         game_log_types = {
             log_entry.get("text", {}).get("type")
@@ -232,9 +232,9 @@ def parse_colonist_events_to_actions(
             closure_reason = "cancelled"
         closed_trades = []
 
-        for trade_id, offer_data in active_offers.items():
+        for trade_id, offer_data in offer_updates.items():
             if offer_data is None:
-                trade_data = active_trades.pop(trade_id, {})
+                trade_data = active_offers.pop(trade_id, {})
                 trade_responses.pop(trade_id, None)
                 closed_trades.append({
                     "trade_id": trade_id,
@@ -253,7 +253,7 @@ def parse_colonist_events_to_actions(
             # Check if this is a new trade offer (has full data)
             if "creator" in offer_data and "offeredResources" in offer_data and "wantedResources" in offer_data:
                 # New trade offer
-                active_trades[trade_id] = deepcopy(offer_data)
+                active_offers[trade_id] = deepcopy(offer_data)
                 initial_responses = {
                     int(color_id): response
                     for color_id, response in offer_data.get(
@@ -300,10 +300,10 @@ def parse_colonist_events_to_actions(
             # Check for response updates (delta)
             elif "playerResponses" in offer_data:
                 # Merge into tracked trade
-                if trade_id in active_trades:
-                    if "playerResponses" not in active_trades[trade_id]:
-                        active_trades[trade_id]["playerResponses"] = {}
-                    active_trades[trade_id]["playerResponses"].update(offer_data["playerResponses"])
+                if trade_id in active_offers:
+                    if "playerResponses" not in active_offers[trade_id]:
+                        active_offers[trade_id]["playerResponses"] = {}
+                    active_offers[trade_id]["playerResponses"].update(offer_data["playerResponses"])
 
                 if trade_id not in trade_responses:
                     trade_responses[trade_id] = {}
@@ -316,8 +316,8 @@ def parse_colonist_events_to_actions(
                         trade_responses[trade_id][color_id] = response
 
                         trade_num = trade_id_to_number.get(trade_id, 0)
-                        # Get trade creator from active_trades
-                        trade_data = active_trades.get(trade_id, {})
+                        # Get the offer creator from active source state.
+                        trade_data = active_offers.get(trade_id, {})
                         creator = trade_data.get("creator")
                         offered, offered_any = colonist_resources_to_tuple(
                             trade_data.get("offeredResources", [])

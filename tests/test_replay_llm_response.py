@@ -1,34 +1,27 @@
-from copy import deepcopy
 from threading import Lock
 from types import SimpleNamespace
 
 from flask import Flask
 
-from engine.game import Game
-from engine.models.player import Color, SimplePlayer
-from playground.game_viewer.colonist.event_parser import (
-    parse_colonist_events_to_actions,
-)
-from playground.game_viewer.replay.llm_response import (
-    CONTEXT_VERSION,
-    _build_prompts,
-    build_replay_decision_context,
+from cle.harness.models import ModelResponse
+from cle.replay.activity import (
     format_visible_replay_activity,
-    generate_replay_llm_response,
-    parse_replay_llm_output,
     select_recent_activity_rows,
-    validate_model_id,
 )
+from cle.replay.colonist.event_parser import parse_colonist_events_to_actions
+from cle.sandbox.replay import ReplaySandbox
+from game_engine.game import GameEngine
+from game_engine.models.player import Color
 from playground.game_viewer.routes.replay import replay_bp
 
 
 def _make_game():
-    return Game(
+    return GameEngine(
         [
-            SimplePlayer(Color.RED),
-            SimplePlayer(Color.BLUE),
-            SimplePlayer(Color.WHITE),
-            SimplePlayer(Color.ORANGE),
+            Color.RED,
+            Color.BLUE,
+            Color.WHITE,
+            Color.ORANGE,
         ],
         shuffle_players=False,
     )
@@ -42,25 +35,67 @@ def _replay_data(parsed_actions=None):
     }
 
 
-def _fake_provider_response(**kwargs):
+def _fake_general_provider_response(**kwargs):
     return {
         "content": (
-            "<goals>Prioritize production and expansion.</goals>"
-            "<reasoning>This legal placement has the strongest long-term value.</reasoning>"
+            "<game_plan>Prioritize production and expansion.</game_plan>"
+            "<rationale>This legal placement has the strongest long-term value.</rationale>"
             "<action>0</action>"
-            "<message>BLUE, leave my ore alone and I will not robber your wheat.</message>"
         ),
         "model": kwargs["model"],
-        "usage": {"prompt_tokens": 100, "completion_tokens": 30},
+        "usage": {
+            "prompt_tokens": 100,
+            "completion_tokens": 30,
+            "completion_tokens_details": {"reasoning_tokens": 18},
+        },
         "latency_ms": 25,
+        "native_reasoning": "private native analysis",
+        "native_reasoning_details": [{"type": "reasoning.text"}],
+        "provider_response_id": "gen-replay-test",
+        "provider_request_id": "req-replay-test",
+        "provider_native_finish_reason": "stop",
     }
 
 
-def _make_route_app(state, query_fn=_fake_provider_response):
+class _QueryTransport:
+    def __init__(self, query_fn, config):
+        self.query_fn = query_fn
+        self.config = config
+
+    async def complete(self, request):
+        result = self.query_fn(
+            **self.config,
+            system_prompt=request.messages[0].content,
+            prompt=request.messages[-1].content,
+        )
+        return ModelResponse(
+            content=result.get("content") or "",
+            model=result.get("model"),
+            usage=tuple((result.get("usage") or {}).items()),
+            latency_ms=result.get("latency_ms"),
+            finish_reason=result.get("finish_reason"),
+            native_reasoning=result.get("native_reasoning") or "",
+            native_reasoning_details=tuple(
+                result.get("native_reasoning_details") or ()
+            ),
+            reasoning_request=tuple(self.config["reasoning"].items()),
+            provider_response_id=result.get("provider_response_id"),
+            provider_request_id=result.get("provider_request_id"),
+            provider_native_finish_reason=result.get(
+                "provider_native_finish_reason"
+            ),
+        )
+
+
+def _make_route_app(state, query_fn=_fake_general_provider_response):
+    if not hasattr(state, "current_sandbox"):
+        state.current_sandbox = ReplaySandbox(state, state.current_game)
     app = Flask(__name__)
     app.config["TESTING"] = True
     app.config["SERVER_STATE"] = state
-    app.config["REPLAY_LLM_QUERY_FN"] = query_fn
+    app.config["REPLAY_COMPLETION_TRANSPORT_FACTORY"] = (
+        lambda **config: _QueryTransport(query_fn, config)
+    )
     app.register_blueprint(replay_bp)
     return app
 
@@ -352,181 +387,6 @@ def test_activity_formatter_redacts_hidden_cards_and_steals():
     assert visible_steal == "BLUE: stole WHEAT from RED"
 
 
-def test_setup_phase_rules_only_appear_during_initial_placement():
-    game = _make_game()
-    replay_data = _replay_data([{"type": "END_TURN", "player": 2}])
-
-    setup_context = build_replay_decision_context(
-        game.state.copy(), replay_data, 1, ""
-    )
-    assert setup_context["phase"] == "initial_placement"
-    system_prompt, _ = _build_prompts(setup_context)
-    assert "Setup phase rules" in system_prompt
-    assert "collect one resource" in system_prompt
-
-    main_state = game.state.copy()
-    main_state.is_initial_build_phase = False
-    main_context = build_replay_decision_context(main_state, replay_data, 1, "")
-    assert main_context["phase"] == "main"
-    main_system_prompt, _ = _build_prompts(main_context)
-    assert "Setup phase rules" not in main_system_prompt
-
-
-def test_observation_excludes_embedded_action_menu():
-    game = _make_game()
-    context = build_replay_decision_context(game.state.copy(), _replay_data(), 0, "")
-
-    assert "<valid_actions>" not in context["observation"]
-    assert "</valid_actions>" not in context["observation"]
-    # The board state itself must survive the strip.
-    assert "<board_state>" in context["observation"]
-    assert "</game_state>" in context["observation"]
-
-    _, user_prompt = _build_prompts(context)
-    # The indexed legal_actions list is the single action menu in the prompt.
-    assert user_prompt.count("<legal_actions>") == 1
-    assert "<valid_actions>" not in user_prompt
-    assert context["available_actions"][0]["description"] in user_prompt
-
-
-def test_parse_replay_llm_output_extracts_optional_table_talk_message():
-    parsed = parse_replay_llm_output(
-        "<goals>Win.</goals><reasoning>Best value.</reasoning><action>0</action>"
-        "<message>WHITE, want to trade sheep for brick?</message>",
-        action_count=2,
-    )
-    assert parsed["message"] == "WHITE, want to trade sheep for brick?"
-    assert parsed["parse_error"] is None
-
-    no_message = parse_replay_llm_output(
-        "<goals>Win.</goals><reasoning>Best value.</reasoning><action>0</action>",
-        action_count=2,
-    )
-    assert no_message["message"] == ""
-    assert no_message["parse_error"] is None
-
-
-def test_parse_replay_llm_output_never_substitutes_an_invalid_action():
-    parsed = parse_replay_llm_output(
-        "<goals>Build cities.</goals><reasoning>Strong production.</reasoning><action>99</action>",
-        action_count=3,
-    )
-
-    assert parsed["goals"] == "Build cities."
-    assert parsed["reasoning"] == "Strong production."
-    assert parsed["action_index"] is None
-    assert "outside the valid range" in parsed["parse_error"]
-
-
-def test_generate_replay_response_uses_custom_model_and_does_not_mutate_game():
-    game = _make_game()
-    replay_data = _replay_data(
-        [
-            {
-                "type": "ROLL",
-                "player": 2,
-                "dice": [3, 4],
-                "resource_payouts": {2: (0, 0, 0, 1, 0)},
-                "resource_payouts_complete": True,
-            },
-            {"type": "END_TURN", "player": 2},
-        ]
-    )
-    provider_call = {}
-
-    def capture_provider_call(**kwargs):
-        provider_call.update(kwargs)
-        return _fake_provider_response(**kwargs)
-
-    before = {
-        "actions": list(game.state.actions),
-        "resources": list(game.state.resource_freqdeck),
-        "player_state": deepcopy(game.state.player_state),
-        "history_length": len(game.history),
-        "replay_data": deepcopy(replay_data),
-    }
-
-    result = generate_replay_llm_response(
-        game=game,
-        replay_data=replay_data,
-        replay_index=2,
-        model="google/gemini-2.5-flash",
-        prior_goals="Expand toward ore.",
-        query_fn=capture_provider_call,
-    )
-
-    assert result["context_version"] == CONTEXT_VERSION
-    assert result["player_color"] == "RED"
-    assert result["requested_model"] == "google/gemini-2.5-flash"
-    assert result["action_index"] == 0
-    assert result["action"] == result["available_actions"][0]["action"]
-    assert provider_call["provider"] == "openrouter"
-    assert provider_call["model"] == "google/gemini-2.5-flash"
-    assert "Expand toward ore." in provider_call["prompt"]
-    assert "prior_completed_turn_plus_current_partial_turn" in provider_call["prompt"]
-    assert "\n  - BLUE: +1 WHEAT" in provider_call["prompt"]
-
-    assert game.state.actions == before["actions"]
-    assert game.state.resource_freqdeck == before["resources"]
-    assert game.state.player_state == before["player_state"]
-    assert len(game.history) == before["history_length"]
-    assert replay_data == before["replay_data"]
-
-
-def test_generate_replay_response_surfaces_provider_truncation():
-    game = _make_game()
-    replay_data = _replay_data([{"type": "END_TURN", "player": 2}])
-
-    def truncated_provider(**kwargs):
-        return {
-            "content": (
-                "<goals>Secure five more victory points.</goals>"
-                "<reasoning>I possess only 1 WOOD and 2 SHEEP, which falls short of"
-            ),
-            "model": kwargs["model"],
-            "usage": {"prompt_tokens": 900, "completion_tokens": 8192},
-            "latency_ms": 90,
-            "finish_reason": "length",
-        }
-
-    result = generate_replay_llm_response(
-        game=game,
-        replay_data=replay_data,
-        replay_index=1,
-        model="qwen/qwen3.7-flash",
-        prior_goals="",
-        query_fn=truncated_provider,
-    )
-
-    assert result["finish_reason"] == "length"
-    assert result["response_truncated"] is True
-    assert result["action_index"] is None
-    assert result["parse_error"]
-
-
-def test_generate_replay_response_requests_expanded_completion_budget():
-    game = _make_game()
-    replay_data = _replay_data([{"type": "END_TURN", "player": 2}])
-    provider_call = {}
-
-    def capture_provider_call(**kwargs):
-        provider_call.update(kwargs)
-        return _fake_provider_response(**kwargs)
-
-    result = generate_replay_llm_response(
-        game=game,
-        replay_data=replay_data,
-        replay_index=1,
-        model="google/gemini-2.5-flash",
-        prior_goals="",
-        query_fn=capture_provider_call,
-    )
-
-    assert provider_call["max_tokens"] == 8_192
-    assert result["response_truncated"] is False
-    assert result["finish_reason"] is None
-
-
 def test_replay_llm_route_returns_response_without_advancing_cursor():
     game = _make_game()
     state = SimpleNamespace(
@@ -542,14 +402,36 @@ def test_replay_llm_route_returns_response_without_advancing_cursor():
 
     response = app.test_client().post(
         "/api/replay-llm-response",
-        json={"model": "anthropic/claude-sonnet-4", "goals": "Build efficiently."},
+        json={
+            "model": "anthropic/claude-sonnet-4",
+            "game_plan": "Build efficiently.",
+            "reasoning": {"effort": "xhigh", "exclude": False},
+        },
     )
 
     assert response.status_code == 200
     payload = response.get_json()
+    assert payload["schema"] == "agent-decision-preview-v1"
     assert payload["game_id"] == "test-game"
     assert payload["replay_index"] == 0
     assert payload["stale"] is False
+    assert payload["game_plan"] == "Prioritize production and expansion."
+    assert payload["rationale"] == (
+        "This legal placement has the strongest long-term value."
+    )
+    assert payload["native_reasoning"] == "private native analysis"
+    assert payload["native_reasoning_returned"] is True
+    assert payload["native_reasoning_missing"] is False
+    assert payload["reasoning_tokens"] == 18
+    assert payload["reasoning_request"] == {
+        "effort": "xhigh",
+        "exclude": False,
+    }
+    assert payload["provider_response_id"] == "gen-replay-test"
+    assert payload["provider_request_id"] == "req-replay-test"
+    assert payload["provider_native_finish_reason"] == "stop"
+    assert "YOUR CURRENT GAME PLAN" in payload["model_messages"][1]["content"]
+    assert "Build efficiently." in payload["model_messages"][1]["content"]
     assert state.replay_index == 0
     assert game.state.actions == before_actions
     assert len(game.history) == before_history_length
@@ -567,7 +449,7 @@ def test_replay_llm_route_marks_response_stale_if_cursor_moves_during_query():
 
     def move_cursor_during_query(**kwargs):
         state.replay_index = 1
-        return _fake_provider_response(**kwargs)
+        return _fake_general_provider_response(**kwargs)
 
     app = _make_route_app(state, query_fn=move_cursor_during_query)
     response = app.test_client().post(
@@ -577,6 +459,33 @@ def test_replay_llm_route_marks_response_stale_if_cursor_moves_during_query():
 
     assert response.status_code == 200
     assert response.get_json()["stale"] is True
+    assert response.get_json()["reasoning_request"] == {
+        "effort": "xhigh",
+        "exclude": False,
+    }
+
+
+def test_replay_llm_route_preserves_explicit_reasoning_off():
+    game = _make_game()
+    state = SimpleNamespace(
+        replay_mode=True,
+        replay_data=_replay_data(),
+        current_game=game,
+        replay_index=0,
+        replay_llm_lock=Lock(),
+    )
+    app = _make_route_app(state)
+
+    response = app.test_client().post(
+        "/api/replay-llm-response",
+        json={
+            "model": "openrouter/auto",
+            "reasoning": {"enabled": False},
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.get_json()["reasoning_request"] == {"enabled": False}
 
 
 def test_replay_llm_route_rejects_invalid_model_and_concurrent_request():
@@ -598,11 +507,21 @@ def test_replay_llm_route_rejects_invalid_model_and_concurrent_request():
     assert invalid.status_code == 400
     assert "unsupported characters" in invalid.get_json()["error"]
 
+    hidden_reasoning = client.post(
+        "/api/replay-llm-response",
+        json={
+            "model": "openrouter/auto",
+            "reasoning": {"effort": "high", "exclude": True},
+        },
+    )
+    assert hidden_reasoning.status_code == 400
+    assert "exclude must be false" in hidden_reasoning.get_json()["error"]
+
     state.replay_llm_lock.acquire()
     try:
         concurrent = client.post(
             "/api/replay-llm-response",
-            json={"model": validate_model_id("openrouter/auto")},
+            json={"model": "openrouter/auto"},
         )
     finally:
         state.replay_llm_lock.release()

@@ -2,8 +2,7 @@
 
 import time
 
-from ..colonist.constants import RESOURCE_EMOJIS
-from cle.agents.llm_player import LLMPlayer
+from cle.replay.colonist.constants import RESOURCE_EMOJIS
 
 
 def log_game_event(state, event_type, message, color=None, details=None):
@@ -92,7 +91,7 @@ def compare_and_log_resources(state, before, after, roll_value):
             resource_str = ", ".join(resources_list)
             log_game_event(state, "resource", f"Gained {resource_str}", color, {"roll": roll_value})
     else:
-        log_game_event(state, "resource", f"No resources distributed", None, {"roll": roll_value})
+        log_game_event(state, "resource", "No resources distributed", None, {"roll": roll_value})
 
 
 def analyze_action(state, action, game_state):
@@ -105,11 +104,11 @@ def analyze_action(state, action, game_state):
 
     elif "BUILD" in action_type:
         if "SETTLEMENT" in action_str:
-            log_game_event(state, "building", f"Built a settlement", action.color.value if hasattr(action, 'color') else None)
+            log_game_event(state, "building", "Built a settlement", action.color.value if hasattr(action, 'color') else None)
         elif "CITY" in action_str:
-            log_game_event(state, "building", f"Upgraded to a city", action.color.value if hasattr(action, 'color') else None)
+            log_game_event(state, "building", "Upgraded to a city", action.color.value if hasattr(action, 'color') else None)
         elif "ROAD" in action_str:
-            log_game_event(state, "building", f"Built a road", action.color.value if hasattr(action, 'color') else None)
+            log_game_event(state, "building", "Built a road", action.color.value if hasattr(action, 'color') else None)
 
     elif "TRADE" in action_type or "MARITIME" in action_type:
         log_game_event(state, "trade", action_str, action.color.value if hasattr(action, 'color') else None)
@@ -136,12 +135,6 @@ def post_analyze_action(state, pre_state, game_state):
             roll_sum = dice_values[0] + dice_values[1]
 
             log_game_event(state, "dice", f"Rolled {dice_values[0]} + {dice_values[1]} = {roll_sum}", pre_state["color"], {"dice": dice_values, "sum": roll_sum})
-
-            rolling_color = pre_state.get("color", "Unknown")
-            event_str = f"{rolling_color} rolled {dice_values[0]} + {dice_values[1]} = {roll_sum}"
-            for player in state.current_players:
-                if isinstance(player, LLMPlayer):
-                    player.log_event(event_str)
 
             resources_after = get_player_resources(game_state)
             compare_and_log_resources(state, pre_state["resources_before"], resources_after, roll_sum)

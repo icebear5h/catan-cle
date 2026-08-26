@@ -17,7 +17,7 @@ from pathlib import Path
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from playground.game_viewer.colonist.event_parser import parse_colonist_events_to_actions
+from cle.replay.colonist.event_parser import parse_colonist_events_to_actions
 
 def extract_test_cases(replay_file):
     """Extract all actions with before/after states."""
@@ -80,7 +80,7 @@ def main():
     # Group by action type to see coverage
     grouped = group_by_action_type(test_cases)
 
-    print(f"\n=== Action Type Coverage ===")
+    print("\n=== Action Type Coverage ===")
     for action_type, cases in sorted(grouped.items(), key=lambda x: len(x[1]), reverse=True):
         print(f"{action_type:30s}: {len(cases):3d} test cases")
 

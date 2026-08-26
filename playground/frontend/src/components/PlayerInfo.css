@@ -168,45 +168,6 @@
   flex-wrap: wrap;
 }
 
-.player-observation-section {
-  margin-top: 0.75rem;
-}
-
-.observation-button {
-  background: rgba(105, 167, 255, 0.12);
-  border: 1px solid rgba(105, 167, 255, 0.38);
-  border-radius: 0;
-  color: var(--blue);
-  cursor: pointer;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.35rem 0.65rem;
-}
-
-.observation-button:hover:not(:disabled) {
-  border-color: var(--blue);
-}
-
-.observation-button:disabled {
-  cursor: wait;
-  opacity: 0.7;
-}
-
-.player-observation-text {
-  background: #05070a;
-  border: 1px solid var(--line);
-  border-radius: 0;
-  color: #d7e2ee;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 0.7rem;
-  line-height: 1.45;
-  margin: 0.5rem 0 0;
-  max-height: 18rem;
-  overflow: auto;
-  padding: 0.75rem;
-  white-space: pre-wrap;
-}
-
 .flag {
   padding: 0.15rem 0.4rem;
   border-radius: 0;

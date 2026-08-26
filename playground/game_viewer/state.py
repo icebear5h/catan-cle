@@ -3,7 +3,9 @@
 import json
 import time
 from pathlib import Path
-from threading import Lock
+from threading import Lock, RLock
+
+from cle.replay.runtime.revision import bump_replay_revision as bump_replay_revision
 
 
 class ServerState:
@@ -11,13 +13,12 @@ class ServerState:
 
     def __init__(self):
         # Game state
-        self.current_game = None
-        self.current_players = []
+        self.current_sandbox = None
         self.game_running = False
-        self.auto_play_running = False
-        self.llm_thinking = []
         self.game_log = []
-        self.llm_processing = False
+        self.step_processing = False
+        self.live_trace_store = None
+        self.live_trace_game_id = None
 
         # Replay mode state
         self.replay_data = None
@@ -30,6 +31,8 @@ class ServerState:
         self.replay_pending_dev_card = None
         self.replay_step_checkpoints = []
         self.replay_trade_ledger = {}
+        self.replay_revision = 0
+        self.replay_mutation_lock = RLock()
         self.replay_llm_lock = Lock()
 
         # Mapping files
@@ -61,13 +64,12 @@ class ServerState:
 
     def reset(self):
         """Reset all game and replay state."""
-        self.current_game = None
-        self.current_players = []
+        self.replay_revision += 1
+        self.current_sandbox = None
         self.game_running = False
-        self.auto_play_running = False
-        self.llm_thinking = []
         self.game_log = []
-        self.llm_processing = False
+        self.step_processing = False
+        self.live_trace_game_id = None
         self.replay_data = None
         self.replay_index = 0
         self.replay_mode = False

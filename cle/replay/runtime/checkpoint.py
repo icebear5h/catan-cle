@@ -1,5 +1,6 @@
 """Transactional checkpoints for authoritative replay steps."""
 
+from cle.replay.runtime.access import get_game_engine, set_game_engine
 from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any
@@ -24,7 +25,7 @@ class ReplayStepCheckpoint:
 
     @classmethod
     def capture(cls, state) -> "ReplayStepCheckpoint":
-        game = state.current_game
+        game = get_game_engine(state)
         return cls(
             game=game,
             game_state=game.state.copy(),
@@ -44,7 +45,7 @@ class ReplayStepCheckpoint:
 
     def restore(self, state) -> None:
         """Restore both engine state and replay-owned metadata."""
-        state.current_game = self.game
+        set_game_engine(state, self.game)
         self.game.state = self.game_state
         if hasattr(self.game, "history"):
             del self.game.history[self.game_history_length :]

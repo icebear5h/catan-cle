@@ -44,6 +44,13 @@ export default function ReplayResponseCard({ response }: ReplayResponseCardProps
         </div>
       )}
 
+      {response.native_reasoning_missing && (
+        <div className="replay-response-warning" role="status">
+          Native reasoning was explicitly requested, but the provider returned no
+          reasoning text, details, or positive reasoning-token count.
+        </div>
+      )}
+
       <div className="replay-response-section">
         <h4>Selected move</h4>
         <div className="replay-selected-action">
@@ -52,48 +59,51 @@ export default function ReplayResponseCard({ response }: ReplayResponseCardProps
         {response.action && <pre>{response.action}</pre>}
       </div>
 
-      {response.message && (
-        <div className="replay-response-section">
-          <h4>Table talk</h4>
-          <blockquote className="replay-table-talk">
-            <span className="replay-table-talk-speaker">{response.player_color}:</span>{' '}
-            {response.message}
-          </blockquote>
-        </div>
-      )}
-
       <div className="replay-response-section">
-        <h4>Goals</h4>
-        <p>{response.goals || 'No goals returned.'}</p>
+        <h4>Game plan</h4>
+        <p>{response.game_plan || 'No updated game plan returned.'}</p>
       </div>
 
       <div className="replay-response-section">
-        <h4>Reasoning</h4>
-        <p>{response.reasoning || 'No reasoning returned.'}</p>
+        <h4>Rationale</h4>
+        <p>{response.rationale || 'No concise rationale returned.'}</p>
       </div>
 
-      <details className="replay-response-details">
+      <details className="replay-response-details" open>
         <summary>
-          Prior-turn activity ({response.activity_window.row_count})
+          Native model reasoning
+          {response.reasoning_tokens === null
+            ? ''
+            : ` (${response.reasoning_tokens} tokens)`}
         </summary>
-        {response.activity_window.truncated && (
-          <p className="replay-detail-note">Earlier unbounded activity was truncated.</p>
-        )}
-        {response.recent_activity.length > 0 ? (
-          <ol>
-            {response.recent_activity.map((activity, index) => (
-              <li
-                key={`${response.replay_index}-${index}`}
-                className="replay-activity-row"
-              >
-                {activity}
-              </li>
-            ))}
-          </ol>
+        {response.native_reasoning ? (
+          <pre>{response.native_reasoning}</pre>
         ) : (
-          <p className="replay-detail-note">No prior-turn activity was available.</p>
+          <p className="replay-detail-note">No raw native reasoning text returned.</p>
+        )}
+        {response.native_reasoning_details.length > 0 && (
+          <pre>{JSON.stringify(response.native_reasoning_details, null, 2)}</pre>
         )}
       </details>
+
+      <details className="replay-response-details">
+        <summary>Native reasoning request</summary>
+        <pre>{JSON.stringify(response.reasoning_request, null, 2)}</pre>
+      </details>
+
+      {(response.provider_response_id
+        || response.provider_request_id
+        || response.provider_native_finish_reason) && (
+        <details className="replay-response-details">
+          <summary>Provider trace</summary>
+          <pre>{JSON.stringify({
+            generation_id: response.provider_response_id,
+            request_id: response.provider_request_id,
+            finish_reason: response.finish_reason,
+            native_finish_reason: response.provider_native_finish_reason,
+          }, null, 2)}</pre>
+        </details>
+      )}
 
       <details className="replay-response-details">
         <summary>Observation</summary>
@@ -120,8 +130,8 @@ export default function ReplayResponseCard({ response }: ReplayResponseCardProps
       </details>
 
       <details className="replay-response-details">
-        <summary>Exact decision packet</summary>
-        <pre>{response.context_prompt}</pre>
+        <summary>Exact model messages</summary>
+        <pre>{JSON.stringify(response.model_messages, null, 2)}</pre>
       </details>
 
       {Object.keys(response.usage).length > 0 && (

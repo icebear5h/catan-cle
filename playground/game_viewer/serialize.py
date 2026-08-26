@@ -2,13 +2,13 @@
 
 import json
 
-from engine.json import GameEncoder
-from engine.game import Game
+from game_engine.json import GameEncoder
+from game_engine.game import GameEngine
 from .live.game_logging import get_player_resources, get_player_dev_cards
 
 
-def serialize_game_for_inject(game: Game) -> dict:
-    """Serialize a Game object into the payload expected by /api/inject-state.
+def serialize_game_for_inject(game: GameEngine) -> dict:
+    """Serialize a GameEngine object into the payload expected by /api/inject-state.
 
     Returns a dict with 'game', 'all_player_resources', etc. ready to POST.
     """
@@ -17,10 +17,10 @@ def serialize_game_for_inject(game: Game) -> dict:
     all_resources = get_player_resources(game.state)
     all_dev_cards = get_player_dev_cards(game.state)
 
-    player_types = {}
-    for player in game.state.players:
-        color_str = player.color.name if hasattr(player.color, 'name') else str(player.color)
-        player_types[color_str] = "Benchmark"
+    player_types = {
+        color.name: "Benchmark"
+        for color in game.state.colors
+    }
 
     return {
         "game": game_json,

@@ -1,8 +1,9 @@
 """Replay audit helpers for semantic alignment beyond resource ledgers."""
 
+from cle.replay.runtime.access import get_game_engine
 from copy import deepcopy
 
-from engine.models.actions import generate_playable_actions
+from game_engine.models.actions import generate_playable_actions
 
 
 SEVERITY_RANK = {"info": 0, "warning": 1, "error": 2}
@@ -143,7 +144,7 @@ def validate_final_replay_state(state):
     """Return final-state mismatches after replay completion."""
     ensure_replay_audit_state(state)
     replay_data = state.replay_data or {}
-    game = state.current_game
+    game = get_game_engine(state)
     if not game:
         return []
 
@@ -203,7 +204,7 @@ def sync_final_replay_state(state):
         return []
 
     replay_data = state.replay_data or {}
-    game = state.current_game
+    game = get_game_engine(state)
     if not game or not replay_data.get("end_game_state"):
         state.replay_final_state_synced = True
         return []

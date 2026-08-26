@@ -1,6 +1,6 @@
 """Hex math, port parsing, and map creation from Colonist data."""
 
-from engine.models.map import CatanMap, BASE_MAP_TEMPLATE, LandTile, initialize_tiles, WOOD, BRICK, SHEEP, WHEAT, ORE
+from game_engine.models.map import CatanMap, BASE_MAP_TEMPLATE, LandTile, initialize_tiles, WOOD, BRICK, SHEEP, WHEAT, ORE
 
 from .constants import (
     COLONIST_RESOURCE, COLONIST_PORT_RESOURCE, ENGINE_PORT_MAP, HEX_DIRECTIONS,

@@ -6,7 +6,7 @@ interface LogEntry {
   timestamp: number;
   message: string;
   color?: string;
-  details?: any;
+  details?: unknown;
 }
 
 interface GameLogProps {
@@ -14,10 +14,13 @@ interface GameLogProps {
 }
 
 export default function GameLog({ entries }: GameLogProps) {
-  const logEndRef = useRef<HTMLDivElement>(null);
+  const logEntriesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const logEntries = logEntriesRef.current;
+    if (logEntries) {
+      logEntries.scrollTop = logEntries.scrollHeight;
+    }
   }, [entries]);
 
   const getIcon = (type: string) => {
@@ -50,7 +53,7 @@ export default function GameLog({ entries }: GameLogProps) {
   return (
     <div className="game-log">
       <h3>Game Log</h3>
-      <div className="log-entries">
+      <div ref={logEntriesRef} className="log-entries">
         {entries.map((entry, idx) => (
           <div key={idx} className={`log-entry ${entry.type}`}>
             <span className="log-icon">{getIcon(entry.type)}</span>
@@ -61,7 +64,6 @@ export default function GameLog({ entries }: GameLogProps) {
             <span className="log-message">{entry.message}</span>
           </div>
         ))}
-        <div ref={logEndRef} />
       </div>
     </div>
   );

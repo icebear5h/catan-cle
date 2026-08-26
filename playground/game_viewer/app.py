@@ -1,19 +1,22 @@
 """Flask app + SocketIO creation, __main__ entry point."""
 
+import os
 import sys
-sys.path.insert(0, '/Users/henry/CascadeProjects/windsurf-project-4')
-sys.stdout.reconfigure(line_buffering=True)
-sys.stderr.reconfigure(line_buffering=True)
 
 from dotenv import load_dotenv
-load_dotenv()
-
 from flask import Flask
 from flask_cors import CORS
 from flask_socketio import SocketIO
 
+from cle.traces import SQLiteLiveTraceStore
+
 from .state import server_state
 from .routes import register_routes
+
+
+load_dotenv()
+sys.stdout.reconfigure(line_buffering=True)
+sys.stderr.reconfigure(line_buffering=True)
 
 
 def create_app():
@@ -21,6 +24,13 @@ def create_app():
     app = Flask(__name__)
     CORS(app)
     socketio = SocketIO(app, cors_allowed_origins="*")
+
+    if server_state.live_trace_store is None:
+        trace_path = os.getenv(
+            "CATAN_LIVE_TRACE_DB",
+            ".cle/live_traces.sqlite3",
+        )
+        server_state.live_trace_store = SQLiteLiveTraceStore(trace_path)
 
     register_routes(app, socketio, server_state)
 
@@ -39,10 +49,9 @@ if __name__ == '__main__':
     print("UI should connect from http://localhost:3000")
     print()
     print("Endpoints:")
-    print("  POST /api/start-game - Start new game")
-    print("  POST /api/step - Execute one step")
-    print("  POST /api/auto-play - Auto-play to completion")
-    print("  GET  /api/state - Get current state")
+    print("  POST /api/start-game - Start one sandbox")
+    print("  POST /api/step - Execute one complete sandbox step")
+    print("  GET  /api/state - Get current projected state")
     print()
 
     socketio.run(app, debug=True, port=5001, use_reloader=True, allow_unsafe_werkzeug=True)

@@ -7,19 +7,21 @@ from pathlib import Path
 
 import pytest
 
-from engine.game import Game
-from engine.models.actions import generate_playable_actions
-from engine.models.enums import Action, ActionPrompt, ActionType
-from engine.models.player import Color, SimplePlayer
+from game_engine.game import GameEngine
+from game_engine.models.actions import generate_playable_actions
+from game_engine.models.enums import Action, ActionPrompt, ActionType
+from game_engine.models.player import Color
+from game_engine.trading import TradeOffer, TradeWindow
 from playground.game_viewer.app import app
-from playground.game_viewer.colonist.event_parser import parse_colonist_events_to_actions
-from playground.game_viewer.colonist.helpers import validate_resources_match
-from playground.game_viewer.replay.navigation import (
+from cle.replay.colonist.event_parser import parse_colonist_events_to_actions
+from cle.replay.colonist.helpers import validate_resources_match
+from cle.replay.runtime.navigation import (
     replay_goto_fast_logic,
     replay_goto_sequential_logic,
     replay_undo_logic,
 )
-from playground.game_viewer.replay.step_executor import replay_step_logic
+from cle.replay.runtime.step_executor import replay_step_logic
+from cle.sandbox.replay import ReplaySandbox
 from playground.game_viewer.routes.websocket import broadcast_game_state
 from playground.game_viewer.state import ServerState, server_state
 
@@ -30,12 +32,12 @@ RESOURCES = ("WOOD", "BRICK", "SHEEP", "WHEAT", "ORE")
 def make_confirmation_state():
     state = ServerState()
     players = [
-        SimplePlayer(Color.RED),
-        SimplePlayer(Color.BLUE),
-        SimplePlayer(Color.WHITE),
-        SimplePlayer(Color.ORANGE),
+        Color.RED,
+        Color.BLUE,
+        Color.WHITE,
+        Color.ORANGE,
     ]
-    game = Game(players, shuffle_players=False)
+    game = GameEngine(players, shuffle_players=False)
     state.current_game = game
     state.current_players = players
     state.replay_mode = True
@@ -46,35 +48,43 @@ def make_confirmation_state():
     game.state.current_player_index = 2
     game.state.current_turn_index = 2
     game.state.current_prompt = ActionPrompt.BUILD_INITIAL_SETTLEMENT
-    game.state.active_trades = {
-        Color.RED: {
-            "offered": (1, 0, 0, 0, 0),
-            "wanted": (0, 1, 0, 0, 0),
-            "offered_any": 0,
-            "wanted_any": 0,
-            "acceptees": {Color.BLUE},
-            "rejecters": set(),
-        },
-        Color.ORANGE: {
-            "offered": (0, 0, 1, 0, 0),
-            "wanted": (0, 0, 0, 1, 0),
-            "offered_any": 0,
-            "wanted_any": 0,
-            "acceptees": set(),
-            "rejecters": {Color.WHITE},
-        },
-    }
-    game.state.counter_offers = {
-        Color.RED: {
-            "offered": (0, 0, 0, 1, 0),
-            "wanted": (0, 0, 0, 0, 1),
-            "offered_any": 0,
-            "wanted_any": 0,
-            "acceptees": set(),
-        }
-    }
-    game.state.is_resolving_trade = True
-    game.state.current_trade = (1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0)
+    window = TradeWindow(
+        id="test-window",
+        turn_player=Color.RED,
+        participants=tuple(players),
+    )
+    red_offer = window.create_offer(
+        TradeOffer(
+            id="trade-red",
+            offered_by=Color.RED,
+            audience=frozenset(players[1:]),
+            give=(1, 0, 0, 0, 0),
+            receive=(0, 1, 0, 0, 0),
+        )
+    )
+    red_offer.willing_by.add(Color.BLUE)
+    orange_offer = window.create_offer(
+        TradeOffer(
+            id="trade-orange",
+            offered_by=Color.ORANGE,
+            audience=frozenset({Color.RED, Color.BLUE, Color.WHITE}),
+            give=(0, 0, 1, 0, 0),
+            receive=(0, 0, 0, 1, 0),
+        )
+    )
+    orange_offer.declined_by.add(Color.WHITE)
+    window.create_offer(
+        TradeOffer(
+            id="counter-white",
+            offered_by=Color.WHITE,
+            audience=frozenset({Color.RED}),
+            give=(0, 0, 0, 1, 0),
+            receive=(0, 0, 0, 0, 1),
+            parent_offer_id=red_offer.id,
+        ),
+        allow_duplicate=True,
+    )
+    game.state.trade_window = window
     game.state.playable_actions = generate_playable_actions(game.state)
 
     confirmation = {
@@ -110,12 +120,7 @@ def engine_snapshot(state):
             )
             for player_idx in range(len(game_state.colors))
         ),
-        "active_trades": deepcopy(game_state.active_trades),
-        "counter_offers": deepcopy(game_state.counter_offers),
-        "is_resolving_trade": game_state.is_resolving_trade,
-        "current_trade": game_state.current_trade,
-        "acceptees": game_state.acceptees,
-        "rejecters": game_state.rejecters,
+        "trade_window": deepcopy(game_state.trade_window),
         "current_player_index": game_state.current_player_index,
         "current_turn_index": game_state.current_turn_index,
         "current_prompt": game_state.current_prompt,
@@ -204,12 +209,12 @@ def test_standalone_trade_closure_is_parsed_executed_and_undoable():
 
     state = ServerState()
     players = [
-        SimplePlayer(Color.RED),
-        SimplePlayer(Color.BLUE),
-        SimplePlayer(Color.WHITE),
-        SimplePlayer(Color.ORANGE),
+        Color.RED,
+        Color.BLUE,
+        Color.WHITE,
+        Color.ORANGE,
     ]
-    state.current_game = Game(players, shuffle_players=False)
+    state.current_game = GameEngine(players, shuffle_players=False)
     state.current_players = players
     state.replay_mode = True
     state.game_running = True
@@ -224,13 +229,12 @@ def test_standalone_trade_closure_is_parsed_executed_and_undoable():
     offer_result = replay_step_logic(state, lambda: None)
 
     assert offer_result["status"] in {"ok", "overlay_applied"}
-    assert Color.RED in state.current_game.state.active_trades
+    assert state.current_game.state.trade_window.offers["trade-1"].active
 
     close_result = replay_step_logic(state, lambda: None)
 
     assert close_result["status"] == "closed"
-    assert Color.RED not in state.current_game.state.active_trades
-    assert state.current_game.state.is_resolving_trade is False
+    assert not state.current_game.state.trade_window.offers["trade-1"].active
     assert engine_snapshot(state)["hands"] == resources_before
     assert any(
         issue["kind"] == "replayed_trade_closure"
@@ -240,7 +244,7 @@ def test_standalone_trade_closure_is_parsed_executed_and_undoable():
     replay_undo_logic(state, lambda: None)
 
     assert state.replay_index == 1
-    assert Color.RED in state.current_game.state.active_trades
+    assert state.current_game.state.trade_window.offers["trade-1"].active
     assert not any(
         issue["kind"] == "replayed_trade_closure"
         for issue in state.replay_semantic_issues
@@ -389,12 +393,12 @@ def test_trade_id_ledger_preserves_same_creator_offers_and_counter_links():
 
     state = ServerState()
     players = [
-        SimplePlayer(Color.RED),
-        SimplePlayer(Color.BLUE),
-        SimplePlayer(Color.WHITE),
-        SimplePlayer(Color.ORANGE),
+        Color.RED,
+        Color.BLUE,
+        Color.WHITE,
+        Color.ORANGE,
     ]
-    state.current_game = Game(players, shuffle_players=False)
+    state.current_game = GameEngine(players, shuffle_players=False)
     state.current_players = players
     state.replay_mode = True
     state.game_running = True
@@ -417,24 +421,23 @@ def test_trade_id_ledger_preserves_same_creator_offers_and_counter_links():
     assert state.replay_trade_ledger["trade-1"]["creator"] == 1
     assert state.replay_trade_ledger["trade-2"]["creator"] == 1
     assert state.replay_trade_ledger["counter-1"]["counter_offer_to"] == "trade-1"
-    assert state.current_game.state.active_trades[Color.RED]["trade_id"] == "trade-2"
-    assert state.current_game.state.counter_offers[Color.BLUE]["trade_id"] == "counter-1"
+    window = state.current_game.state.trade_window
+    assert set(window.offers) == {"trade-1", "trade-2", "counter-1"}
+    assert window.offers["counter-1"].parent_offer_id == "trade-1"
 
     replay_step_logic(state, lambda: None)
 
     assert state.replay_trade_ledger["trade-1"]["responses"] == {
         "2": "accepted"
     }
-    assert state.current_game.state.active_trades[Color.RED]["trade_id"] == "trade-1"
-    assert state.current_game.state.active_trades[Color.RED]["acceptees"] == {
-        Color.BLUE
-    }
+    assert window.offers["trade-1"].willing_by == {Color.BLUE}
 
     replay_step_logic(state, lambda: None)
 
     assert list(state.replay_trade_ledger) == ["trade-2", "counter-1"]
-    assert state.current_game.state.active_trades[Color.RED]["trade_id"] == "trade-2"
-    assert state.current_game.state.counter_offers[Color.BLUE]["trade_id"] == "counter-1"
+    assert not window.offers["trade-1"].active
+    assert window.offers["trade-2"].active
+    assert window.offers["counter-1"].active
 
     replay_undo_logic(state, lambda: None)
 
@@ -443,10 +446,9 @@ def test_trade_id_ledger_preserves_same_creator_offers_and_counter_links():
         "trade-2",
         "counter-1",
     ]
-    assert state.current_game.state.active_trades[Color.RED]["trade_id"] == "trade-1"
-    assert state.current_game.state.active_trades[Color.RED]["acceptees"] == {
-        Color.BLUE
-    }
+    restored = state.current_game.state.trade_window
+    assert restored.offers["trade-1"].active
+    assert restored.offers["trade-1"].willing_by == {Color.BLUE}
 
 
 def test_fast_navigation_uses_the_authoritative_replay_executor():
@@ -463,12 +465,12 @@ def test_fast_navigation_uses_the_authoritative_replay_executor():
     def make_state():
         state = ServerState()
         players = [
-            SimplePlayer(Color.RED),
-            SimplePlayer(Color.BLUE),
-            SimplePlayer(Color.WHITE),
-            SimplePlayer(Color.ORANGE),
+            Color.RED,
+            Color.BLUE,
+            Color.WHITE,
+            Color.ORANGE,
         ]
-        state.current_game = Game(players, shuffle_players=False)
+        state.current_game = GameEngine(players, shuffle_players=False)
         state.current_players = players
         state.replay_mode = True
         state.game_running = True
@@ -500,24 +502,13 @@ def test_fast_navigation_uses_the_authoritative_replay_executor():
     assert fast_state.replay_semantic_issues == sequential_state.replay_semantic_issues
 
 
-def engine_trade_info(offered, wanted, acceptees=None, rejecters=None):
-    return {
-        "offered": offered,
-        "wanted": wanted,
-        "offered_any": 0,
-        "wanted_any": 0,
-        "acceptees": set(acceptees or ()),
-        "rejecters": set(rejecters or ()),
-    }
-
-
 def make_multi_offer_engine_game():
-    game = Game(
+    game = GameEngine(
         [
-            SimplePlayer(Color.RED),
-            SimplePlayer(Color.BLUE),
-            SimplePlayer(Color.WHITE),
-            SimplePlayer(Color.ORANGE),
+            Color.RED,
+            Color.BLUE,
+            Color.WHITE,
+            Color.ORANGE,
         ],
         shuffle_players=False,
     )
@@ -529,67 +520,80 @@ def make_multi_offer_engine_game():
     state.player_state["P0_HAS_ROLLED"] = True
     state.player_state["P0_WOOD_IN_HAND"] = 1
     state.player_state["P1_BRICK_IN_HAND"] = 1
-    state.active_trades = {
-        Color.RED: engine_trade_info(
-            (1, 0, 0, 0, 0),
-            (0, 1, 0, 0, 0),
-            acceptees={Color.BLUE},
-        ),
-        Color.ORANGE: engine_trade_info(
-            (0, 0, 1, 0, 0),
-            (0, 0, 0, 1, 0),
-            acceptees={Color.WHITE},
-        ),
-    }
-    state.counter_offers = {
-        Color.WHITE: {
-            "offered": (0, 0, 0, 0, 1),
-            "wanted": (1, 0, 0, 0, 0),
-            "offered_any": 0,
-            "wanted_any": 0,
-            "acceptees": set(),
-        }
-    }
-    state.is_resolving_trade = True
-    state.current_trade = (1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0)
-    state.acceptees = (False, True, False, False)
-    state.rejecters = (False, False, False, False)
+    window = TradeWindow(
+        id="multi-offer-window",
+        turn_player=Color.RED,
+        participants=state.colors,
+    )
+    red_offer = window.create_offer(
+        TradeOffer(
+            id="red-offer",
+            offered_by=Color.RED,
+            audience=frozenset({Color.BLUE, Color.WHITE, Color.ORANGE}),
+            give=(1, 0, 0, 0, 0),
+            receive=(0, 1, 0, 0, 0),
+        )
+    )
+    red_offer.willing_by.add(Color.BLUE)
+    orange_offer = window.create_offer(
+        TradeOffer(
+            id="orange-offer",
+            offered_by=Color.ORANGE,
+            audience=frozenset({Color.RED, Color.BLUE, Color.WHITE}),
+            give=(0, 0, 1, 0, 0),
+            receive=(0, 0, 0, 1, 0),
+        )
+    )
+    orange_offer.willing_by.add(Color.WHITE)
+    window.create_offer(
+        TradeOffer(
+            id="white-counter",
+            offered_by=Color.WHITE,
+            audience=frozenset({Color.RED}),
+            give=(0, 0, 0, 0, 1),
+            receive=(1, 0, 0, 0, 0),
+            parent_offer_id=red_offer.id,
+        )
+    )
+    state.trade_window = window
     state.playable_actions = generate_playable_actions(state)
     return game
 
 
-def test_confirm_trade_preserves_unrelated_engine_offers_and_counters():
+def test_confirm_trade_executes_one_candidate_and_closes_its_window():
     game = make_multi_offer_engine_game()
+    window = game.state.trade_window
+    candidate = next(
+        item
+        for item in window.executable_candidates()
+        if item.counterparty == Color.BLUE
+    )
 
-    game.execute(
-        Action(Color.RED, ActionType.CONFIRM_TRADE, Color.BLUE),
+    game.step(
+        Action(Color.RED, ActionType.CONFIRM_TRADE, candidate),
         force=True,
     )
 
-    assert set(game.state.active_trades) == {Color.ORANGE}
-    assert set(game.state.counter_offers) == {Color.WHITE}
-    assert game.state.is_resolving_trade is True
-    assert game.state.current_trade[10] == game.state.colors.index(Color.ORANGE)
-    assert game.state.acceptees == (False, False, True, False)
+    assert not window.active_offers
+    assert window.selected_candidate == candidate
     assert game.state.player_state["P0_WOOD_IN_HAND"] == 0
     assert game.state.player_state["P0_BRICK_IN_HAND"] == 1
     assert game.state.player_state["P1_WOOD_IN_HAND"] == 1
     assert game.state.player_state["P1_BRICK_IN_HAND"] == 0
 
 
-def test_cancel_trade_preserves_unrelated_engine_offers_and_counters():
+def test_cancel_trade_preserves_unrelated_offers():
     game = make_multi_offer_engine_game()
 
-    game.execute(
+    game.step(
         Action(Color.RED, ActionType.CANCEL_TRADE, None),
         force=True,
     )
 
-    assert set(game.state.active_trades) == {Color.ORANGE}
-    assert set(game.state.counter_offers) == {Color.WHITE}
-    assert game.state.is_resolving_trade is True
-    assert game.state.current_trade[10] == game.state.colors.index(Color.ORANGE)
-    assert game.state.acceptees == (False, False, True, False)
+    assert {offer.id for offer in game.state.trade_window.active_offers} == {
+        "orange-offer",
+        "white-counter",
+    }
 
 
 def test_trade_response_transitions_replace_and_clear_previous_state():
@@ -643,12 +647,12 @@ def test_trade_response_transitions_replace_and_clear_previous_state():
 
     state = ServerState()
     players = [
-        SimplePlayer(Color.RED),
-        SimplePlayer(Color.BLUE),
-        SimplePlayer(Color.WHITE),
-        SimplePlayer(Color.ORANGE),
+        Color.RED,
+        Color.BLUE,
+        Color.WHITE,
+        Color.ORANGE,
     ]
-    state.current_game = Game(players, shuffle_players=False)
+    state.current_game = GameEngine(players, shuffle_players=False)
     state.current_players = players
     state.replay_mode = True
     state.game_running = True
@@ -668,31 +672,31 @@ def test_trade_response_transitions_replace_and_clear_previous_state():
 
     replay_step_logic(state, lambda: None)
     replay_step_logic(state, lambda: None)
-    trade = game_state.active_trades[Color.RED]
-    assert trade["acceptees"] == {Color.BLUE}
-    assert trade["rejecters"] == set()
+    offer = game_state.trade_window.offers["trade-1"]
+    assert offer.willing_by == {Color.BLUE}
+    assert offer.declined_by == set()
     assert state.replay_trade_ledger["trade-1"]["responses"] == {
         "2": "accepted"
     }
 
     replay_step_logic(state, lambda: None)
-    trade = game_state.active_trades[Color.RED]
-    assert trade["acceptees"] == set()
-    assert trade["rejecters"] == {Color.BLUE}
+    offer = game_state.trade_window.offers["trade-1"]
+    assert offer.willing_by == set()
+    assert offer.declined_by == {Color.BLUE}
     assert not any(
         action.action_type == ActionType.CONFIRM_TRADE
         for action in game_state.playable_actions
     )
 
     replay_step_logic(state, lambda: None)
-    trade = game_state.active_trades[Color.RED]
-    assert trade["acceptees"] == {Color.BLUE}
-    assert trade["rejecters"] == set()
+    offer = game_state.trade_window.offers["trade-1"]
+    assert offer.willing_by == {Color.BLUE}
+    assert offer.declined_by == set()
 
     replay_step_logic(state, lambda: None)
-    trade = game_state.active_trades[Color.RED]
-    assert trade["acceptees"] == set()
-    assert trade["rejecters"] == set()
+    offer = game_state.trade_window.offers["trade-1"]
+    assert offer.willing_by == set()
+    assert offer.declined_by == set()
     assert state.replay_trade_ledger["trade-1"]["responses"] == {}
 
 
@@ -736,12 +740,12 @@ def test_full_offer_zero_responses_then_independent_rejections_are_preserved():
 
     state = ServerState()
     players = [
-        SimplePlayer(Color.ORANGE),
-        SimplePlayer(Color.BLACK),
-        SimplePlayer(Color.RED),
-        SimplePlayer(Color.BLUE),
+        Color.ORANGE,
+        Color.BLACK,
+        Color.RED,
+        Color.BLUE,
     ]
-    state.current_game = Game(players, shuffle_players=False)
+    state.current_game = GameEngine(players, shuffle_players=False)
     state.current_players = players
     state.replay_mode = True
     state.game_running = True
@@ -780,7 +784,15 @@ def test_confirm_trade_revalidates_both_hands_before_transfer(
     game = make_multi_offer_engine_game()
     game.state.player_state[resource_key] = 0
     game.state.playable_actions = generate_playable_actions(game.state)
-    confirmation = Action(Color.RED, ActionType.CONFIRM_TRADE, Color.BLUE)
+    confirmation = Action(
+        Color.RED,
+        ActionType.CONFIRM_TRADE,
+        next(
+            candidate
+            for candidate in game.state.trade_window.executable_candidates()
+            if candidate.counterparty == Color.BLUE
+        ),
+    )
     hands_before = {
         key: value
         for key, value in game.state.player_state.items()
@@ -789,7 +801,7 @@ def test_confirm_trade_revalidates_both_hands_before_transfer(
 
     assert confirmation not in game.state.playable_actions
     with pytest.raises(ValueError, match=error_text):
-        game.execute(confirmation, force=True)
+        game.step(confirmation, force=True)
 
     assert {
         key: value
@@ -810,12 +822,12 @@ def test_backward_navigation_restarts_replay_running_state():
     actions = parse_colonist_events_to_actions(events)
     state = ServerState()
     players = [
-        SimplePlayer(Color.RED),
-        SimplePlayer(Color.BLUE),
-        SimplePlayer(Color.WHITE),
-        SimplePlayer(Color.ORANGE),
+        Color.RED,
+        Color.BLUE,
+        Color.WHITE,
+        Color.ORANGE,
     ]
-    state.current_game = Game(players, shuffle_players=False)
+    state.current_game = GameEngine(players, shuffle_players=False)
     state.current_players = players
     state.replay_mode = True
     state.game_running = True
@@ -868,12 +880,12 @@ def test_counter_only_replay_state_does_not_broadcast_fake_legacy_offer():
     actions = parse_colonist_events_to_actions(events)
     state = ServerState()
     players = [
-        SimplePlayer(Color.RED),
-        SimplePlayer(Color.BLUE),
-        SimplePlayer(Color.WHITE),
-        SimplePlayer(Color.ORANGE),
+        Color.RED,
+        Color.BLUE,
+        Color.WHITE,
+        Color.ORANGE,
     ]
-    state.current_game = Game(players, shuffle_players=False)
+    state.current_game = GameEngine(players, shuffle_players=False)
     state.current_players = players
     state.replay_mode = True
     state.game_running = True
@@ -886,6 +898,7 @@ def test_counter_only_replay_state_does_not_broadcast_fake_legacy_offer():
         "end_game_state": {},
     }
     replay_step_logic(state, lambda: None)
+    state.current_sandbox = ReplaySandbox(state, state.current_game)
 
     class SocketRecorder:
         def __init__(self):
@@ -898,15 +911,19 @@ def test_counter_only_replay_state_does_not_broadcast_fake_legacy_offer():
     socket = SocketRecorder()
     broadcast_game_state(socket, state)
 
-    assert state.current_game.state.active_trades == {}
-    assert state.current_game.state.counter_offers
-    assert state.current_game.state.is_resolving_trade is True
+    window = state.current_game.state.trade_window
+    assert window is not None
+    assert window.active_offers == ()
     assert socket.payload["trade_state"] is None
-    assert socket.payload["replay"]["active_trades"][0]["trade_id"] == "counter-1"
+    source_offer = socket.payload["replay"]["trade_ledger"][0]
+    assert source_offer["trade_id"] == "counter-1"
+    assert source_offer["creator"] == 2
+    assert source_offer["offered"] == [0, 1, 0, 0, 0]
+    assert source_offer["wanted"] == [1, 0, 0, 0, 0]
 
 
-def raw_active_trades_by_event(events):
-    active_trades = {}
+def raw_active_offers_by_event(events):
+    active_offers = {}
     snapshots = []
     for event in events:
         offer_updates = (
@@ -916,16 +933,16 @@ def raw_active_trades_by_event(events):
         )
         for trade_id, update in offer_updates.items():
             if update is None:
-                active_trades.pop(trade_id, None)
+                active_offers.pop(trade_id, None)
                 continue
 
-            trade = active_trades.setdefault(trade_id, {})
+            trade = active_offers.setdefault(trade_id, {})
             for key, value in update.items():
                 if key == "playerResponses":
                     trade.setdefault(key, {}).update(value)
                 else:
                     trade[key] = value
-        snapshots.append(deepcopy(active_trades))
+        snapshots.append(deepcopy(active_offers))
     return snapshots
 
 
@@ -955,7 +972,7 @@ def assert_replay_ledger_matches_raw(state, expected_raw_trades, context):
     reason="set RUN_LOCAL_REPLAY_CORPUS=1 for the local replay audit",
 )
 def test_all_local_replays_have_exact_resources_and_trade_lifecycle():
-    replay_dir = Path("data_pipeline/bootstrapping/data/raw_replays")
+    replay_dir = Path("artifacts/raw/colonist/replays")
     replay_files = sorted(replay_dir.glob("*.json"))
     requested_game_ids = {
         game_id
@@ -1002,7 +1019,7 @@ def test_all_local_replays_have_exact_resources_and_trade_lifecycle():
 
             parsed_actions = server_state.replay_data["parsed_actions"]
             raw_events = server_state.replay_data["events"]
-            raw_trade_snapshots = raw_active_trades_by_event(raw_events)
+            raw_trade_snapshots = raw_active_offers_by_event(raw_events)
             total_actions += len(parsed_actions)
             trade_counts.update(
                 action["type"]
@@ -1025,7 +1042,7 @@ def test_all_local_replays_have_exact_resources_and_trade_lifecycle():
                 expected_resources = action_hint.get("expected_resources", {})
                 if expected_resources:
                     mismatches = validate_resources_match(
-                        server_state.current_game,
+                        server_state.current_sandbox.game_engine,
                         expected_resources,
                         server_state.replay_data[
                             "colonist_color_to_engine_idx"
@@ -1038,7 +1055,7 @@ def test_all_local_replays_have_exact_resources_and_trade_lifecycle():
                         mismatches,
                     )
 
-                game_state = server_state.current_game.state
+                game_state = server_state.current_sandbox.game_engine.state
                 for player_idx in range(len(game_state.colors)):
                     hand = [
                         game_state.player_state[

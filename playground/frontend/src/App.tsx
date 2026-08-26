@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import type {
   GameState,
@@ -7,21 +7,53 @@ import type {
   ReplayInfo,
   ReplayLLMResponse,
   TableTalkEntry,
-  LLMDecision,
+  NativeReasoningEffort,
+  LiveReasoningTrace as LiveReasoningTraceRecord,
 } from './types';
 import HexBoard from './components/HexBoard';
 import GameControls from './components/GameControls';
 import PlayerInfo from './components/PlayerInfo';
-import DecisionLog from './components/DecisionLog';
 import GameLog from './components/GameLog';
 import ReplayResponseCard from './components/ReplayResponseCard';
+import LiveReasoningTrace from './components/LiveReasoningTrace';
 import TableTalkLog from './components/TableTalkLog';
+import ReplayTranscriptPanel from './components/ReplayTranscriptPanel';
+import SavedLiveGamesBar, {
+  type SavedLiveGameSummary,
+} from './components/SavedLiveGamesBar';
+import TraceStepNavigator, {
+  type TraceStepDetail,
+} from './components/TraceStepNavigator';
 import './App.css';
 
 // Toggle between servers: 5001 (mixed) or 5002 (4-LLM)
 const SERVER_URL = 'http://127.0.0.1:5001';  // Main server
 const REPLAY_MODEL_STORAGE_KEY = 'catan-lab.replay-model';
-const DEFAULT_REPLAY_MODEL = 'google/gemini-2.5-flash';
+const NATIVE_REASONING_STORAGE_KEY = 'catan-lab.native-reasoning-effort';
+const DEFAULT_REPLAY_MODEL = 'qwen/qwen3.8-27b';
+const DEFAULT_NATIVE_REASONING_EFFORT: NativeReasoningEffort = 'xhigh';
+const NATIVE_REASONING_EFFORTS = new Set<NativeReasoningEffort>([
+  'off',
+  'minimal',
+  'low',
+  'medium',
+  'high',
+  'xhigh',
+  'max',
+]);
+
+function storedNativeReasoningEffort(): NativeReasoningEffort {
+  const stored = window.localStorage.getItem(NATIVE_REASONING_STORAGE_KEY);
+  return stored && NATIVE_REASONING_EFFORTS.has(stored as NativeReasoningEffort)
+    ? stored as NativeReasoningEffort
+    : DEFAULT_NATIVE_REASONING_EFFORT;
+}
+
+function nativeReasoningRequest(effort: NativeReasoningEffort): Record<string, unknown> {
+  return effort === 'off'
+    ? { enabled: false }
+    : { effort, exclude: false };
+}
 
 interface ReplayCursor {
   gameId: string;
@@ -48,45 +80,225 @@ interface ReplayStepResult {
   colonist_event?: unknown;
 }
 
+interface StateSnapshot {
+  game: GameState | null;
+  running: boolean;
+  game_log?: GameLogEntry[];
+  all_player_resources?: Record<Color, Record<Resource, number>> | null;
+  all_player_dev_cards?: Record<string, DevCardCounts> | null;
+  player_types?: Record<string, string> | null;
+  replay_mode?: boolean;
+  replay?: ReplayInfo | null;
+  last_dice_roll?: [number, number] | null;
+}
+
 function getApiError(payload: unknown, fallback: string): string {
-  if (
-    typeof payload === 'object'
-    && payload !== null
-    && 'error' in payload
-    && typeof payload.error === 'string'
-  ) {
-    return payload.error;
+  if (typeof payload !== 'object' || payload === null) {
+    return fallback;
+  }
+  const record = payload as Record<string, unknown>;
+  for (const key of ['details', 'message', 'error'] as const) {
+    const value = record[key];
+    if (typeof value === 'string') {
+      return value;
+    }
   }
   return fallback;
+}
+
+async function readApiObject(response: Response): Promise<Record<string, unknown>> {
+  const text = await response.text();
+  try {
+    const payload: unknown = JSON.parse(text);
+    if (typeof payload === 'object' && payload !== null && !Array.isArray(payload)) {
+      return payload as Record<string, unknown>;
+    }
+  } catch {
+    // The error below includes the HTTP status and a bounded response preview.
+  }
+  const contentType = response.headers.get('content-type') || 'unknown content type';
+  const preview = text.trim().replace(/\s+/g, ' ').slice(0, 160);
+  throw new Error(
+    `API ${response.status} returned non-JSON (${contentType}): ${preview || 'empty body'}`,
+  );
 }
 
 function App() {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [isRunning, setIsRunning] = useState(false);
-  const [llmThinking, setLlmThinking] = useState<LLMDecision[]>([]);
+  const [liveError, setLiveError] = useState<string | null>(null);
+  const [liveTraceGameId, setLiveTraceGameId] = useState<string | null>(null);
+  const [liveTraceDatabase, setLiveTraceDatabase] = useState<string | null>(null);
+  const [savedLiveGames, setSavedLiveGames] = useState<SavedLiveGameSummary[]>([]);
+  const [selectedSavedGameId, setSelectedSavedGameId] = useState('');
+  const [savedGamesBusy, setSavedGamesBusy] = useState(false);
+  const [savedGamesError, setSavedGamesError] = useState<string | null>(null);
+  const [browsedTraceStep, setBrowsedTraceStep] = useState<TraceStepDetail | null>(null);
+  const [traceBrowseBusy, setTraceBrowseBusy] = useState(false);
+  const [traceBrowseError, setTraceBrowseError] = useState<string | null>(null);
+  const [liveReasoningTraces, setLiveReasoningTraces] = useState<LiveReasoningTraceRecord[]>([]);
   const [gameLog, setGameLog] = useState<GameLogEntry[]>([]);
   const [allPlayerResources, setAllPlayerResources] = useState<Record<Color, Record<Resource, number>> | null>(null);
   const [allPlayerDevCards, setAllPlayerDevCards] = useState<Record<string, DevCardCounts> | null>(null);
   const [isLlmProcessing, setIsLlmProcessing] = useState(false);
-  const [isCurrentPlayerLlm, setIsCurrentPlayerLlm] = useState(false);
   const [playerTypes, setPlayerTypes] = useState<Record<string, string> | null>(null);
   const [replayMode, setReplayMode] = useState(false);
   const [replayProgress, setReplayProgress] = useState('');
   const [replayInfo, setReplayInfo] = useState<ReplayInfo | null>(null);
   const [lastReplayStep, setLastReplayStep] = useState<ReplayStepResult | null>(null);
   const [lastDiceRoll, setLastDiceRoll] = useState<[number, number] | null>(null);
-  const [currentPlayerObservation, setCurrentPlayerObservation] = useState<string | null>(null);
-  const [isLoadingObservation, setIsLoadingObservation] = useState(false);
   const [replayModel, setReplayModel] = useState(
     () => window.localStorage.getItem(REPLAY_MODEL_STORAGE_KEY) || DEFAULT_REPLAY_MODEL,
   );
-  const [replayGoals, setReplayGoals] = useState('');
+  const [nativeReasoningEffort, setNativeReasoningEffort] = useState(
+    storedNativeReasoningEffort,
+  );
+  const [replayGamePlan, setReplayGamePlan] = useState('');
   const [replayLlmResponse, setReplayLlmResponse] = useState<ReplayLLMResponse | null>(null);
   const [tableTalkLog, setTableTalkLog] = useState<TableTalkEntry[]>([]);
   const [replayLlmError, setReplayLlmError] = useState<string | null>(null);
   const [isReplayLlmProcessing, setIsReplayLlmProcessing] = useState(false);
   const replayCursorRef = useRef<ReplayCursor | null>(null);
   const replayModelRef = useRef(replayModel);
+  const savedGamesRequestRef = useRef(0);
+  const traceBrowseRequestRef = useRef(0);
+
+  const applyStateSnapshot = useCallback((data: StateSnapshot) => {
+    setGameState(data.game);
+    setIsRunning(data.running);
+    setGameLog(data.game_log || []);
+    setAllPlayerResources(data.all_player_resources || null);
+    setAllPlayerDevCards(data.all_player_dev_cards || null);
+    if (data.player_types !== undefined) {
+      setPlayerTypes(data.player_types);
+    }
+
+    const nextReplayMode = Boolean(data.replay_mode);
+    const nextReplay = data.replay || null;
+    const previousCursor = replayCursorRef.current;
+    if (!nextReplayMode || !nextReplay) {
+      replayCursorRef.current = null;
+      setReplayGamePlan('');
+      setReplayLlmResponse(null);
+      setReplayLlmError(null);
+      setTableTalkLog([]);
+    } else {
+      const changedGame = previousCursor?.gameId !== nextReplay.game_id;
+      const changedCursor = previousCursor?.eventIndex !== nextReplay.event_index;
+      const movedBackward = (
+        previousCursor?.gameId === nextReplay.game_id
+        && nextReplay.event_index < previousCursor.eventIndex
+      );
+
+      if (changedGame) {
+        setTableTalkLog([]);
+      } else if (movedBackward) {
+        setTableTalkLog((prev) => prev.filter(
+          (entry) => entry.replayIndex <= nextReplay.event_index,
+        ));
+      }
+      if (changedGame || movedBackward) {
+        setReplayGamePlan('');
+      }
+      if (changedGame || changedCursor) {
+        setReplayLlmResponse(null);
+        setReplayLlmError(null);
+      }
+      replayCursorRef.current = {
+        gameId: nextReplay.game_id,
+        eventIndex: nextReplay.event_index,
+      };
+    }
+
+    setReplayMode(nextReplayMode);
+    setReplayProgress(nextReplay?.progress || '');
+    setReplayInfo(nextReplay);
+    if (data.last_dice_roll !== undefined) {
+      setLastDiceRoll(data.last_dice_roll);
+    }
+  }, []);
+
+  const refreshSavedGames = useCallback(async () => {
+    const requestId = ++savedGamesRequestRef.current;
+    try {
+      setSavedGamesBusy(true);
+      setSavedGamesError(null);
+      const response = await fetch(`${SERVER_URL}/api/live-traces?limit=100`);
+      const data = await readApiObject(response);
+      if (!response.ok) {
+        throw new Error(getApiError(data, 'Failed to list saved live games'));
+      }
+      const games = Array.isArray(data.games)
+        ? data.games as SavedLiveGameSummary[]
+        : [];
+      if (requestId !== savedGamesRequestRef.current) {
+        return;
+      }
+      setSavedLiveGames(games);
+      setSelectedSavedGameId((previous) => (
+        games.some((game) => game.game_id === previous)
+          ? previous
+          : games[0]?.game_id || ''
+      ));
+    } catch (error) {
+      if (requestId === savedGamesRequestRef.current) {
+        const message = error instanceof Error ? error.message : String(error);
+        setSavedGamesError(message);
+      }
+    } finally {
+      if (requestId === savedGamesRequestRef.current) {
+        setSavedGamesBusy(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshSavedGames();
+  }, [refreshSavedGames]);
+
+  const browseSavedStep = async (gameId: string, stepIndex: number) => {
+    const requestId = ++traceBrowseRequestRef.current;
+    try {
+      setTraceBrowseBusy(true);
+      setTraceBrowseError(null);
+      const response = await fetch(
+        `${SERVER_URL}/api/live-traces/${gameId}/steps/${stepIndex}`,
+      );
+      const data = await readApiObject(response);
+      if (!response.ok) {
+        throw new Error(getApiError(data, 'Failed to load saved checkpoint'));
+      }
+      const detail = data as unknown as TraceStepDetail;
+      if (requestId !== traceBrowseRequestRef.current) {
+        return;
+      }
+      setBrowsedTraceStep(detail);
+      setSelectedSavedGameId(gameId);
+      setLiveReasoningTraces([]);
+      applyStateSnapshot(detail.step.public_state as StateSnapshot);
+    } catch (error) {
+      if (requestId === traceBrowseRequestRef.current) {
+        const message = error instanceof Error ? error.message : String(error);
+        setTraceBrowseError(message);
+      }
+    } finally {
+      if (requestId === traceBrowseRequestRef.current) {
+        setTraceBrowseBusy(false);
+      }
+    }
+  };
+
+  const selectSavedGame = (gameId: string) => {
+    traceBrowseRequestRef.current += 1;
+    setTraceBrowseBusy(false);
+    setSelectedSavedGameId(gameId);
+    setBrowsedTraceStep(null);
+    setTraceBrowseError(null);
+    const selected = savedLiveGames.find((game) => game.game_id === gameId);
+    if (selected && selected.step_count > 0) {
+      void browseSavedStep(gameId, selected.step_count - 1);
+    }
+  };
 
   useEffect(() => {
     const newSocket = io(SERVER_URL);
@@ -102,63 +314,11 @@ function App() {
       console.log('Game:', data.game);
       console.log('Running:', data.running);
       console.log('Current player:', data.game?.current_color);
-      console.log('Is current player LLM:', data.is_current_player_llm);
-      console.log('LLM thinking entries:', data.llm_thinking?.length || 0);
       console.log('Game log entries:', data.game_log?.length || 0);
       console.log('Player types:', data.player_types);
       console.log('='.repeat(80));
 
-      setGameState(data.game);
-      setIsRunning(data.running);
-      setLlmThinking(data.llm_thinking || []);
-      setGameLog(data.game_log || []);
-      setAllPlayerResources(data.all_player_resources || null);
-      setAllPlayerDevCards(data.all_player_dev_cards || null);
-      setIsCurrentPlayerLlm(data.is_current_player_llm || false);
-      setPlayerTypes(data.player_types || null);
-
-      const nextReplayMode = Boolean(data.replay_mode);
-      const nextReplay = (data.replay || null) as ReplayInfo | null;
-      const previousCursor = replayCursorRef.current;
-      if (!nextReplayMode || !nextReplay) {
-        replayCursorRef.current = null;
-        setReplayGoals('');
-        setReplayLlmResponse(null);
-        setReplayLlmError(null);
-        setTableTalkLog([]);
-      } else {
-        const changedGame = previousCursor?.gameId !== nextReplay.game_id;
-        const changedCursor = previousCursor?.eventIndex !== nextReplay.event_index;
-        const movedBackward = (
-          previousCursor?.gameId === nextReplay.game_id
-          && nextReplay.event_index < previousCursor.eventIndex
-        );
-
-        if (changedGame) {
-          setTableTalkLog([]);
-        } else if (movedBackward) {
-          setTableTalkLog((prev) => prev.filter(
-            (entry) => entry.replayIndex <= nextReplay.event_index,
-          ));
-        }
-        if (changedGame || movedBackward) {
-          setReplayGoals('');
-        }
-        if (changedGame || changedCursor) {
-          setReplayLlmResponse(null);
-          setReplayLlmError(null);
-        }
-        replayCursorRef.current = {
-          gameId: nextReplay.game_id,
-          eventIndex: nextReplay.event_index,
-        };
-      }
-
-      setReplayMode(nextReplayMode);
-      setReplayProgress(nextReplay?.progress || '');
-      setReplayInfo(nextReplay);
-      setLastDiceRoll(data.last_dice_roll || null);
-      setCurrentPlayerObservation(null);
+      applyStateSnapshot(data as StateSnapshot);
     });
 
     newSocket.on('disconnect', () => {
@@ -168,11 +328,19 @@ function App() {
     return () => {
       newSocket.close();
     };
-  }, []);
+  }, [applyStateSnapshot]);
 
   const startGame = async (mode: string = 'random') => {
+    traceBrowseRequestRef.current += 1;
+    setTraceBrowseBusy(false);
+    setLiveError(null);
+    setBrowsedTraceStep(null);
+    setTraceBrowseError(null);
+    setLiveReasoningTraces([]);
+    setLiveTraceGameId(null);
+    setLiveTraceDatabase(null);
     replayCursorRef.current = null;
-    setReplayGoals('');
+    setReplayGamePlan('');
     setReplayLlmResponse(null);
     setReplayLlmError(null);
     setTableTalkLog([]);
@@ -180,17 +348,40 @@ function App() {
       const response = await fetch(`${SERVER_URL}/api/start-game`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode }),
+        body: JSON.stringify({
+          mode,
+          reasoning: nativeReasoningRequest(nativeReasoningEffort),
+        }),
       });
-      const data = await response.json();
+      const data = await readApiObject(response);
+      if (!response.ok) {
+        throw new Error(getApiError(data, 'Failed to start sandbox'));
+      }
+      if (data.state) {
+        applyStateSnapshot(data.state as StateSnapshot);
+      }
+      const traceGameId = (
+        typeof data.trace_game_id === 'string' ? data.trace_game_id : null
+      );
+      setLiveTraceGameId(traceGameId);
+      setLiveTraceDatabase(
+        typeof data.trace_database === 'string' ? data.trace_database : null,
+      );
+      if (traceGameId) {
+        setSelectedSavedGameId(traceGameId);
+      }
+      void refreshSavedGames();
       console.log('Game started:', data);
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setLiveError(message);
       console.error('Error starting game:', error);
     }
   };
 
   const stepGame = async () => {
     try {
+      setLiveError(null);
       const startTime = performance.now();
       console.log('[FRONTEND] Step game - sending request...');
       setIsLlmProcessing(true);
@@ -198,50 +389,48 @@ function App() {
       const response = await fetch(`${SERVER_URL}/api/step`, {
         method: 'POST',
       });
-      const data = await response.json();
+      const data = await readApiObject(response);
 
       const duration = performance.now() - startTime;
       console.log(`[FRONTEND] Step game - response received (${(duration / 1000).toFixed(3)}s):`, data);
 
-      if (response.status === 429) {
-        console.log('[FRONTEND] LLM is still processing, please wait');
+      if (!response.ok) {
+        throw new Error(getApiError(data, 'Sandbox step failed'));
       }
+      if (data.state) {
+        applyStateSnapshot(data.state as StateSnapshot);
+      }
+      traceBrowseRequestRef.current += 1;
+      setTraceBrowseBusy(false);
+      setBrowsedTraceStep(null);
+      setTraceBrowseError(null);
+      if (Array.isArray(data.reasoning_traces)) {
+        setLiveReasoningTraces((previous) => [
+          ...previous,
+          ...(data.reasoning_traces as LiveReasoningTraceRecord[]),
+        ].slice(-12));
+      }
+      void refreshSavedGames();
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setLiveError(message);
       console.error('[FRONTEND] Error stepping game:', error);
     } finally {
       setIsLlmProcessing(false);
     }
   };
 
-  const autoPlay = async (delay: number = 0.5) => {
-    try {
-      const response = await fetch(`${SERVER_URL}/api/auto-play`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ delay }),
-      });
-      const data = await response.json();
-      console.log('Auto-play started:', data);
-    } catch (error) {
-      console.error('Error auto-playing:', error);
-    }
-  };
-
-  const stopAutoPlay = async () => {
-    try {
-      const response = await fetch(`${SERVER_URL}/api/stop-auto-play`, {
-        method: 'POST',
-      });
-      const data = await response.json();
-      console.log('Auto-play stopped:', data);
-    } catch (error) {
-      console.error('Error stopping auto-play:', error);
-    }
-  };
-
   const resetGame = async () => {
+    traceBrowseRequestRef.current += 1;
+    setTraceBrowseBusy(false);
+    setLiveError(null);
+    setBrowsedTraceStep(null);
+    setTraceBrowseError(null);
+    setLiveReasoningTraces([]);
+    setLiveTraceGameId(null);
+    setLiveTraceDatabase(null);
     replayCursorRef.current = null;
-    setReplayGoals('');
+    setReplayGamePlan('');
     setReplayLlmResponse(null);
     setReplayLlmError(null);
     try {
@@ -249,14 +438,78 @@ function App() {
         method: 'POST',
       });
       const data = await response.json();
+      void refreshSavedGames();
       console.log('Game reset:', data);
     } catch (error) {
       console.error('Error resetting game:', error);
     }
   };
 
+  const renameSavedGame = async (gameId: string, name: string) => {
+    try {
+      setSavedGamesBusy(true);
+      setSavedGamesError(null);
+      const response = await fetch(`${SERVER_URL}/api/live-traces/${gameId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      const data = await readApiObject(response);
+      if (!response.ok) {
+        throw new Error(getApiError(data, 'Failed to name saved live game'));
+      }
+      setSelectedSavedGameId(gameId);
+      await refreshSavedGames();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setSavedGamesError(message);
+    } finally {
+      setSavedGamesBusy(false);
+    }
+  };
+
+  const loadSavedGame = async (gameId: string) => {
+    traceBrowseRequestRef.current += 1;
+    setTraceBrowseBusy(false);
+    try {
+      setSavedGamesBusy(true);
+      setBrowsedTraceStep(null);
+      setTraceBrowseError(null);
+      setSavedGamesError(null);
+      setLiveError(null);
+      setLiveReasoningTraces([]);
+      const response = await fetch(
+        `${SERVER_URL}/api/live-traces/${gameId}/load`,
+        { method: 'POST' },
+      );
+      const data = await readApiObject(response);
+      if (!response.ok) {
+        throw new Error(getApiError(data, 'Failed to load saved live game'));
+      }
+      if (data.state) {
+        applyStateSnapshot(data.state as StateSnapshot);
+      }
+      setLiveTraceGameId(gameId);
+      setLiveTraceDatabase(
+        typeof data.trace_database === 'string' ? data.trace_database : null,
+      );
+      setSelectedSavedGameId(gameId);
+      await refreshSavedGames();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setSavedGamesError(message);
+      setLiveError(message);
+    } finally {
+      setSavedGamesBusy(false);
+    }
+  };
+
   const loadReplay = async (gameId: string) => {
-    setReplayGoals('');
+    traceBrowseRequestRef.current += 1;
+    setTraceBrowseBusy(false);
+    setBrowsedTraceStep(null);
+    setTraceBrowseError(null);
+    setReplayGamePlan('');
     setReplayLlmResponse(null);
     setReplayLlmError(null);
     try {
@@ -340,7 +593,14 @@ function App() {
     replayModelRef.current = model;
     setReplayModel(model);
     window.localStorage.setItem(REPLAY_MODEL_STORAGE_KEY, model);
-    setReplayGoals('');
+    setReplayGamePlan('');
+    setReplayLlmResponse(null);
+    setReplayLlmError(null);
+  };
+
+  const updateNativeReasoningEffort = (effort: NativeReasoningEffort) => {
+    setNativeReasoningEffort(effort);
+    window.localStorage.setItem(NATIVE_REASONING_STORAGE_KEY, effort);
     setReplayLlmResponse(null);
     setReplayLlmError(null);
   };
@@ -360,7 +620,11 @@ function App() {
       const response = await fetch(`${SERVER_URL}/api/replay-llm-response`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: requestModel, goals: replayGoals }),
+        body: JSON.stringify({
+          model: requestModel,
+          game_plan: replayGamePlan,
+          reasoning: nativeReasoningRequest(nativeReasoningEffort),
+        }),
       });
       const payload: unknown = await response.json();
       if (!response.ok) {
@@ -381,19 +645,8 @@ function App() {
       };
 
       setReplayLlmResponse(result);
-      if (!result.stale && result.goals) {
-        setReplayGoals(result.goals);
-      }
-      if (!result.stale && result.message) {
-        setTableTalkLog((prev) => [
-          ...prev,
-          {
-            replayIndex: result.replay_index,
-            player: result.player_color,
-            message: result.message,
-            model: result.model,
-          },
-        ]);
+      if (!result.stale && result.game_plan) {
+        setReplayGamePlan(result.game_plan);
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -404,42 +657,10 @@ function App() {
     }
   };
 
-  const fetchState = async () => {
-    try {
-      const response = await fetch(`${SERVER_URL}/api/state`);
-      const data = await response.json();
-      console.log('Fetched state:', data);
-      setGameState(data.game);
-      setIsRunning(data.running);
-      setLlmThinking(data.llm_thinking || []);
-      setGameLog(data.game_log || []);
-      setAllPlayerResources(data.all_player_resources || null);
-      setAllPlayerDevCards(data.all_player_dev_cards || null);
-      setPlayerTypes(data.player_types || null);
-      setCurrentPlayerObservation(null);
-    } catch (error) {
-      console.error('Error fetching state:', error);
-    }
-  };
-
-  const loadCurrentPlayerObservation = async () => {
-    try {
-      setIsLoadingObservation(true);
-      const response = await fetch(`${SERVER_URL}/api/current-player-observation`);
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to load observation');
-      }
-
-      setCurrentPlayerObservation(data.observation || '');
-    } catch (error) {
-      console.error('Error fetching current player observation:', error);
-      alert(`Error fetching observation: ${error}`);
-    } finally {
-      setIsLoadingObservation(false);
-    }
-  };
+  const selectedSavedGame = savedLiveGames.find(
+    (game) => game.game_id === selectedSavedGameId,
+  ) || null;
+  const isTraceBrowsing = browsedTraceStep !== null;
 
   return (
     <div className="app">
@@ -453,13 +674,33 @@ function App() {
         </div>
       </header>
 
+      <SavedLiveGamesBar
+        games={savedLiveGames}
+        selectedGameId={selectedSavedGameId}
+        activeGameId={liveTraceGameId}
+        busy={savedGamesBusy || isLlmProcessing}
+        error={savedGamesError}
+        onSelect={selectSavedGame}
+        onLoad={loadSavedGame}
+        onRename={renameSavedGame}
+        onRefresh={() => { void refreshSavedGames(); }}
+      />
+
+      <TraceStepNavigator
+        game={selectedSavedGame}
+        detail={browsedTraceStep}
+        activeGameId={liveTraceGameId}
+        busy={traceBrowseBusy || savedGamesBusy || isLlmProcessing}
+        error={traceBrowseError}
+        onNavigate={browseSavedStep}
+        onLoadLatest={loadSavedGame}
+      />
+
       <div className="main-container">
         <div className="left-panel">
           <GameControls
             onStartGame={startGame}
             onStep={stepGame}
-            onAutoPlay={autoPlay}
-            onStopAutoPlay={stopAutoPlay}
             onReset={resetGame}
             onLoadReplay={loadReplay}
             onReplayStep={replayStep}
@@ -468,22 +709,21 @@ function App() {
             isRunning={isRunning}
             hasGame={gameState !== null}
             isLlmProcessing={isLlmProcessing}
-            isCurrentPlayerLlm={isCurrentPlayerLlm}
+            liveError={liveError}
+            liveTraceGameId={liveTraceGameId}
+            liveTraceDatabase={liveTraceDatabase}
+            isTraceBrowsing={isTraceBrowsing}
             replayMode={replayMode}
             replayProgress={replayProgress}
             onRunUntilDrift={runUntilDrift}
             onGenerateReplayResponse={generateReplayResponse}
             replayModel={replayModel}
             onReplayModelChange={updateReplayModel}
+            nativeReasoningEffort={nativeReasoningEffort}
+            onNativeReasoningEffortChange={updateNativeReasoningEffort}
             isReplayLlmProcessing={isReplayLlmProcessing}
             replayLlmError={replayLlmError}
           />
-
-          <div style={{ marginTop: '10px' }}>
-            <button onClick={fetchState} className="btn btn-secondary">
-              Refresh State (Debug)
-            </button>
-          </div>
 
           {gameState && (
             <PlayerInfo
@@ -492,9 +732,6 @@ function App() {
               allPlayerDevCards={allPlayerDevCards}
               playerTypes={playerTypes}
               replayInfo={replayInfo}
-              currentPlayerObservation={currentPlayerObservation}
-              isLoadingObservation={isLoadingObservation}
-              onLoadCurrentPlayerObservation={loadCurrentPlayerObservation}
             />
           )}
 
@@ -578,10 +815,28 @@ function App() {
           )}
         </div>
 
-        {gameState && (gameLog.length > 0 || llmThinking.length > 0 || replayLlmResponse || tableTalkLog.length > 0) && (
+        {gameState && (
+          gameLog.length > 0
+          || liveReasoningTraces.length > 0
+          || replayLlmResponse
+          || tableTalkLog.length > 0
+          || replayInfo?.paired_transcript
+        ) && (
           <div className="right-panel">
+            {replayInfo?.paired_transcript && (
+              <ReplayTranscriptPanel
+                transcript={replayInfo.paired_transcript}
+                narratorReasoning={replayInfo.paired_narrator_reasoning}
+                modelTrace={replayInfo.paired_model_trace}
+              />
+            )}
+
             {replayLlmResponse && (
               <ReplayResponseCard response={replayLlmResponse} />
+            )}
+
+            {!replayMode && liveReasoningTraces.length > 0 && (
+              <LiveReasoningTrace traces={liveReasoningTraces} />
             )}
 
             {tableTalkLog.length > 0 && (
@@ -590,13 +845,6 @@ function App() {
 
             {gameLog.length > 0 && (
               <GameLog entries={gameLog} />
-            )}
-
-            {llmThinking.length > 0 && (
-              <DecisionLog
-                decisions={llmThinking}
-                currentColor={gameState.current_color}
-              />
             )}
           </div>
         )}

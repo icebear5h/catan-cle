@@ -4,11 +4,9 @@ Usage:
     python -m playground.game_viewer_server
 """
 
-from playground.game_viewer.colonist.event_parser import parse_colonist_events_to_actions
 from playground.game_viewer.app import app, socketio
 
 if __name__ == '__main__':
-    from playground.game_viewer.app import socketio, app
     print("=" * 60)
     print("Catan Game Viewer Server")
     print("=" * 60)

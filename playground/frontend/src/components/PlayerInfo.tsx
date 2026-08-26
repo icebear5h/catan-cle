@@ -13,9 +13,6 @@ interface PlayerInfoProps {
   allPlayerDevCards: Record<string, DevCardCounts> | null;
   playerTypes: Record<string, string> | null;
   replayInfo: ReplayInfo | null;
-  currentPlayerObservation: string | null;
-  isLoadingObservation: boolean;
-  onLoadCurrentPlayerObservation: () => void;
 }
 
 const RESOURCES = ['WOOD', 'BRICK', 'SHEEP', 'WHEAT', 'ORE'];
@@ -58,9 +55,6 @@ export default function PlayerInfo({
   allPlayerDevCards,
   playerTypes,
   replayInfo,
-  currentPlayerObservation,
-  isLoadingObservation,
-  onLoadCurrentPlayerObservation,
 }: PlayerInfoProps) {
   const getPlayerValue = (prefix: string, key: string): number => {
     if (!prefix) return 0;
@@ -168,23 +162,6 @@ export default function PlayerInfo({
                   <span className="flag road">Longest Road</span>
                 )}
               </div>
-
-              {isCurrent && (
-                <div className="player-observation-section">
-                  <button
-                    type="button"
-                    className="observation-button"
-                    onClick={onLoadCurrentPlayerObservation}
-                    disabled={isLoadingObservation}
-                  >
-                    {isLoadingObservation ? 'Loading...' : 'Observation'}
-                  </button>
-
-                  {currentPlayerObservation && (
-                    <pre className="player-observation-text">{currentPlayerObservation}</pre>
-                  )}
-                </div>
-              )}
             </div>
           );
         })}

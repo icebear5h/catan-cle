@@ -1,11 +1,12 @@
 """Replay navigation: undo, goto_fast, goto_sequential, goto_divergence."""
 
+from cle.replay.runtime.access import get_game_engine, set_game_engine
 import time
 
-from engine.game import Game
-from engine.models.player import SimplePlayer
+from game_engine.game import GameEngine
 
-from ..colonist.helpers import validate_resources_match
+from cle.replay.colonist.helpers import validate_resources_match
+from cle.replay.runtime.revision import bump_replay_revision
 from .checkpoint import ensure_replay_checkpoint_state
 from .audit import (
     ensure_replay_audit_state,
@@ -16,9 +17,8 @@ from .audit import (
 )
 
 
-def replay_undo_logic(state, broadcast_fn):
-    """Undo the last replay step. Returns dict to jsonify."""
-    game = state.current_game
+def _replay_undo_transaction(state, broadcast_fn):
+    game = get_game_engine(state)
 
     if not state.replay_mode or not game:
         return {"error": "No replay loaded"}, 400
@@ -41,6 +41,7 @@ def replay_undo_logic(state, broadcast_fn):
 
         state.replay_step_checkpoints.pop()
         checkpoint.restore(state)
+        bump_replay_revision(state)
         broadcast_fn()
 
         return {
@@ -66,6 +67,7 @@ def replay_undo_logic(state, broadcast_fn):
 
     state.replay_index = max(0, state.replay_index - 1)
     state.game_running = True
+    bump_replay_revision(state)
 
     for _ in range(len(undone_actions)):
         if state.game_log:
@@ -79,6 +81,15 @@ def replay_undo_logic(state, broadcast_fn):
         "actions_undone": len(undone_actions),
         "undone_actions": undone_actions,
     }
+
+
+def replay_undo_logic(state, broadcast_fn):
+    """Undo the last replay step. Returns dict to jsonify."""
+    mutation_lock = getattr(state, "replay_mutation_lock", None)
+    if mutation_lock is None:
+        return _replay_undo_transaction(state, broadcast_fn)
+    with mutation_lock:
+        return _replay_undo_transaction(state, broadcast_fn)
 
 
 def replay_goto_fast_logic(
@@ -96,13 +107,10 @@ def replay_goto_fast_logic(
     )
 
 
-def replay_goto_sequential_logic(state, target_step, replay_step_fn, broadcast_fn):
-    """Jump to a specific step using sequential stepping (slow but accurate).
-
-    Args:
-        replay_step_fn: callable that executes one replay step (the route handler function)
-    """
-    game = state.current_game
+def _replay_goto_sequential_transaction(
+    state, target_step, replay_step_fn, broadcast_fn
+):
+    game = get_game_engine(state)
     replay_data = state.replay_data
 
     if not state.replay_mode or not replay_data:
@@ -120,9 +128,16 @@ def replay_goto_sequential_logic(state, target_step, replay_step_fn, broadcast_f
     if target_step < state.replay_index:
         print(f"[Replay] Target {target_step} < current {state.replay_index}, resetting game...")
         catan_map = game.state.board.map
-        players = [SimplePlayer(p.color) for p in state.current_players]
-        state.current_game = Game(players, catan_map=catan_map, shuffle_players=False)
-        state.current_players = players
+        colors = list(game.state.colors)
+        set_game_engine(
+            state,
+            GameEngine(
+                colors,
+                catan_map=catan_map,
+                shuffle_players=False,
+                capture_history=True,
+            ),
+        )
         state.replay_index = 0
         state.replay_actions_per_step = []
         state.first_divergence_step = {}
@@ -131,6 +146,7 @@ def replay_goto_sequential_logic(state, target_step, replay_step_fn, broadcast_f
         state.replay_pending_dev_card = None
         state.replay_step_checkpoints = []
         state.replay_trade_ledger = {}
+        bump_replay_revision(state)
         state.game_log = [{
             "type": "general",
             "timestamp": time.time(),
@@ -164,9 +180,23 @@ def replay_goto_sequential_logic(state, target_step, replay_step_fn, broadcast_f
     }
 
 
-def replay_goto_divergence_logic(state, max_steps, replay_step_fn, broadcast_fn):
-    """Step sequentially until divergence is detected."""
-    game = state.current_game
+def replay_goto_sequential_logic(state, target_step, replay_step_fn, broadcast_fn):
+    """Jump to a replay step under the shared replay mutation lock."""
+    mutation_lock = getattr(state, "replay_mutation_lock", None)
+    if mutation_lock is None:
+        return _replay_goto_sequential_transaction(
+            state, target_step, replay_step_fn, broadcast_fn
+        )
+    with mutation_lock:
+        return _replay_goto_sequential_transaction(
+            state, target_step, replay_step_fn, broadcast_fn
+        )
+
+
+def _replay_goto_divergence_transaction(
+    state, max_steps, replay_step_fn, broadcast_fn
+):
+    game = get_game_engine(state)
     replay_data = state.replay_data
 
     if not state.replay_mode or not replay_data or not game:
@@ -210,7 +240,7 @@ def replay_goto_divergence_logic(state, max_steps, replay_step_fn, broadcast_fn)
         if expected_resources:
             colonist_to_engine = replay_data.get("colonist_color_to_engine_idx", {})
             mismatches = validate_resources_match(
-                state.current_game, expected_resources, colonist_to_engine,
+                get_game_engine(state), expected_resources, colonist_to_engine,
                 step_info=f"Step {state.replay_index}"
             )
             if mismatches:
@@ -285,3 +315,16 @@ def replay_goto_divergence_logic(state, max_steps, replay_step_fn, broadcast_fn)
             "semantic_warning_count": warning_count,
             "message": f"No divergence found in {steps_taken} steps",
         }
+
+
+def replay_goto_divergence_logic(state, max_steps, replay_step_fn, broadcast_fn):
+    """Step until divergence under the shared replay mutation lock."""
+    mutation_lock = getattr(state, "replay_mutation_lock", None)
+    if mutation_lock is None:
+        return _replay_goto_divergence_transaction(
+            state, max_steps, replay_step_fn, broadcast_fn
+        )
+    with mutation_lock:
+        return _replay_goto_divergence_transaction(
+            state, max_steps, replay_step_fn, broadcast_fn
+        )

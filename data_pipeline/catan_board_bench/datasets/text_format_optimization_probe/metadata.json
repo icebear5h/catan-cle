@@ -1,0 +1,167 @@
+{
+  "board_count": 12,
+  "categories": {
+    "building_counts": 6,
+    "direction_to_tile": 6,
+    "edge_state": 6,
+    "node_adjacent_tiles": 6,
+    "node_state": 6,
+    "nodes_connected": 6,
+    "port_occupancy": 6,
+    "road_inventory": 6,
+    "roll_production": 6,
+    "tile_to_direction": 6
+  },
+  "entity_ids": "deterministically permuted and board-local",
+  "fact_schema": "catan_full_public_graph/v1",
+  "format_extensions": {
+    "indexed_json": ".json",
+    "indexed_records": ".txt",
+    "indexed_tile_rows": ".txt",
+    "tile_rows": ".txt"
+  },
+  "formats": [
+    "tile_rows",
+    "indexed_records",
+    "indexed_tile_rows",
+    "indexed_json"
+  ],
+  "images": false,
+  "incident_list_format": false,
+  "precomputed_player_counts_in_facts": false,
+  "precomputed_roll_payouts_in_facts": false,
+  "query_indexes": [
+    "tile_neighbors",
+    "tile_corners",
+    "port_nodes",
+    "players_without_counts",
+    "roll_tiles_without_payouts",
+    "roll_sources_without_aggregation"
+  ],
+  "question_count": 60,
+  "questions_per_format": 60,
+  "representation_hashes": {
+    "ascii_board_00": {
+      "indexed_json": "0f4c077a69021cfd79a822be1b5d2a82e3abfaaf9ed4989a5215f91b93bcafa9",
+      "indexed_records": "a63e801615a90234e5e55a4f4356d94faed060ce3f907c208a62831a75a49855",
+      "indexed_tile_rows": "3b1e3972b8462e82b255477774732791a7aa3e7f401219fe2f835a3af7ca2fef",
+      "tile_rows": "cdec3d5a8f345cca65c6c18917ed8d06a280b2d5a786987a5b731ca765860910"
+    },
+    "ascii_board_01": {
+      "indexed_json": "e3cbd21887e113f26e85e6d716b3fd589aca5677c473b122aae572348a9199a0",
+      "indexed_records": "d29d05be593a62be6d5eff4b94313c914d9b844e78710bc5b1cc66c326a008c0",
+      "indexed_tile_rows": "e19d2b9698f44123a5b02138b04d013fc45fceeeef1472981ea4abbc6e860de2",
+      "tile_rows": "4d29f7def2e390d9b5a9cf0ac91164910371610a7e80c5db14669020a0a8bda4"
+    },
+    "ascii_board_02": {
+      "indexed_json": "d1fc57537ab7c1680cee46fe828428a9fa71aecf429be062a015793c40f1fbbe",
+      "indexed_records": "51b94304a3b1340b6c066b4918fe1010d51bcc6b6247bc330776709b3c29d8ca",
+      "indexed_tile_rows": "7a80970952028229686554866a8cb32201dd0739dcc8c9a9efa43334f7a19434",
+      "tile_rows": "63e3de5fe2b19af486949824e1a8dda7f492ec915bd8587bcc3cf4764cedf0ef"
+    },
+    "ascii_board_03": {
+      "indexed_json": "370f344f8e2465ed4f4b08cc93ff66f953f936d24d1174dcf832af9d1d17f57b",
+      "indexed_records": "d65570b201ac4bc3a114648584f36280b440d6f75b3ae5f80c5d9691ebf2f759",
+      "indexed_tile_rows": "2152f444f11a5bc868ec8bac0eab9e145d8c9fdf7b4050739eeaec66823c424c",
+      "tile_rows": "8bb95c7125727c391f05d429649801a2f3155077cb5aa314edca819f2229799f"
+    },
+    "ascii_board_04": {
+      "indexed_json": "45d63b0b26f02f05f8026a5b48d5418a7ccf1aba35907e2138e5beb4f6794e5a",
+      "indexed_records": "8fc6cb9cc892c0bb5864d589fd8e62d4b75de194fdad541b43f2a710aa8286cd",
+      "indexed_tile_rows": "e3d90d1866a1f8e54476e09d0a1b62a1045e5a3888353e76d799a244b2763ef7",
+      "tile_rows": "488ded298320c6037c853da2da14521605778b6f4206b2e717de87436659b437"
+    },
+    "ascii_board_05": {
+      "indexed_json": "b2665ebc169d08e4f017e3c55e0f435dbedb5ce3a82e1d326857971e179f0c7f",
+      "indexed_records": "e8562cf0bba9605336b41a6a6b41dc3f4d0e2d5221e68b61206178ca0509e1d9",
+      "indexed_tile_rows": "a05ff16665d1739c926080b79c5af6725dc2652e8c98109c20740f2e48a7891d",
+      "tile_rows": "96fa29cef317708983c80a0412b088967f343c45bb8efbe694ef6bbca27e9621"
+    },
+    "ascii_board_06": {
+      "indexed_json": "116dff8564a025d915d4fd577faa605202d052efbd943a70db54b4952e421baa",
+      "indexed_records": "6539f1980b3c460e7b4fe3494df4c64bb546d228513e912b83a689c9e02d843e",
+      "indexed_tile_rows": "799e93d8b3c059fdac755ac552da50589f15c06962be77fec37e1dc7a9ddd924",
+      "tile_rows": "6c7b55d3bdd3f5779c3c73693d25a479bcf5cbdb6213d5b96e51d36717b0db67"
+    },
+    "ascii_board_07": {
+      "indexed_json": "7329d9dbc21f978770bfe86c577d41556315b516cbcbca42a414cf1005c1ac90",
+      "indexed_records": "e2d916784052d5343d23d753b2f3241bf2b236e99121a359a18067774ae206ab",
+      "indexed_tile_rows": "d913c656364fa18941b25ed6e5bde6c6d5563487ed71885786a0e70a5b234dc6",
+      "tile_rows": "1c363af24eecdb397fe3ab3df31bf475e67362d6eff87f32037a1d49a5f9c074"
+    },
+    "ascii_board_08": {
+      "indexed_json": "fd3af2546cc01b2f1349c40d24f1f5e39af6cf077abeb8b775d410804cd8dc4e",
+      "indexed_records": "a1547fe68ad1353d467bcbcbc44c717899827a72431ea918e8cb0e1944979759",
+      "indexed_tile_rows": "96f9d51698aff20ac1ae254a46813a5533903766746c9a7097ad867ae1760efa",
+      "tile_rows": "718b8e43e50484d4e9bfd74f02321213d930abde5ec40eb6a4b598b9f385d5ec"
+    },
+    "ascii_board_09": {
+      "indexed_json": "3b57302c379b6bb49aa97ce81405a7145a00617d6645bbbd1dba559167bfb3ef",
+      "indexed_records": "ec72c619a263562d483abfc6d499b73bcf9ce1c7e80ecce3b7ea97272487192f",
+      "indexed_tile_rows": "93d9a8cf12aeafef3af74a318e301183005a6c3946d1163e623b596ac70ee421",
+      "tile_rows": "bacd460b4c60d903a44a230912076dc17ed2dd904e5613aa8cac3a7d4e928483"
+    },
+    "ascii_board_10": {
+      "indexed_json": "67843b18cd09425f22c39b9c8eccfe7507d3c48cbd7a8f042ef70cac10ac4e34",
+      "indexed_records": "2b819b457c607858c4cc432c8410949035ba539b399b3a42093f4b805be8790b",
+      "indexed_tile_rows": "1c8b08ed97685b82a1cad9f510b1eedc9343e827dfd294a9050981b07298a233",
+      "tile_rows": "d955ee4ded3e86dc1f3802662a945a6991c10ba18e78f1945811a59190afa5b2"
+    },
+    "ascii_board_11": {
+      "indexed_json": "ee1332840caa0900873f8791bfce3617dc5eaf776f89b8dd252655c3e774fc62",
+      "indexed_records": "5268f96cae29026a4d796b028fbf1eb8733ff47238e1f897c5de78007c2fb4d5",
+      "indexed_tile_rows": "adbc7a82801340a9d812c758e7ccdcdf202b1ba295f131d072adafbdfe2b45b0",
+      "tile_rows": "0153580b79e89f0a5c6506aab909212ca39f830aa24b97a26710d6ba03be6850"
+    }
+  },
+  "request_count": 240,
+  "schema": "catan_text_format_optimization_probe/v1",
+  "source_dataset": "data_pipeline/catan_board_bench/datasets/ascii_variation_probe",
+  "source_dataset_schema": "catan_ascii_variation_probe/v1",
+  "source_game_count": 12,
+  "source_lock": {
+    "aliases/ascii_board_00.json": "9baa30d023dcab163a8259cbc0cd1f45c897f1158c78534813190c78d133be33",
+    "aliases/ascii_board_01.json": "e7e13d1cdcbf360aff28ce07ef482a7fbc119f0946c14fe44dc830347adbd7ce",
+    "aliases/ascii_board_02.json": "4b97807491938ec2b2957c5ed3f7064f134c496a386833e0661fb84e0641a787",
+    "aliases/ascii_board_03.json": "f71cabb9586edb7c8dd5b9b16af9522113924a32e191525471474b601f558ad9",
+    "aliases/ascii_board_04.json": "20606bfba4f0ff10cd680236a94cb20f930a3fa152b8449fe5e07d6e9e13d866",
+    "aliases/ascii_board_05.json": "0e82ed834bbdf22c7e57be68aba3232a978c2f3a4a227f0eb0cbf3537ab4dc53",
+    "aliases/ascii_board_06.json": "5e67cc5b76119f0519aaebb74bd186a726767d8b44626bb64fcfdb85bcfb4e29",
+    "aliases/ascii_board_07.json": "decfcdf5bf0e53352d1d904e0810d395c783b7af885a5fb0cbe25242bba94c79",
+    "aliases/ascii_board_08.json": "a8ad8032076ebb5fc68e71793fb451d4462298218b181c5e5f330567014209a1",
+    "aliases/ascii_board_09.json": "00aa30fc360f19d28e02a4d8af18b7155da6578e90bc31c474fd41abd8655d05",
+    "aliases/ascii_board_10.json": "733d5297d68fbffb440f0b80f6389da53994ff830f9d16356780f36441b5104b",
+    "aliases/ascii_board_11.json": "98b1dd8e5e70c28b5c3e2272f46facae863794aeb86b40b21fe50f5a18bb6485",
+    "facts/ascii_board_00.json": "2eb47d453e11ea8c0e259386efadb335e0180879770c17ebd9d36b77711f565a",
+    "facts/ascii_board_01.json": "ed266a10cf3c7cc4d94b23a1d38432027cc106e2a801f1770583479fbac02498",
+    "facts/ascii_board_02.json": "541c5d92a2f18d6a9f4d1dbf5f63455b8c8461e372cce38a2e349e76a6986c6f",
+    "facts/ascii_board_03.json": "8a16a8835beb403301a63675f228b32efc2d81e507a8d26026a9c9bcd936148a",
+    "facts/ascii_board_04.json": "68da45d356ff54cfd71f70e6662203aaa56c8de272b93502be0b140fc36dd4d4",
+    "facts/ascii_board_05.json": "0182c822066cca367fa7ad8d9f25619059a0fb6770ac018b99ce2259bdc46743",
+    "facts/ascii_board_06.json": "1004971853ff5fcd6ed171e91745315f1065601a22ed84392f5b3b3a89237112",
+    "facts/ascii_board_07.json": "1677adc25c5301cbe39b04aac4df179ef24d042642e2a7dc28a004be1eea7378",
+    "facts/ascii_board_08.json": "840cbb0863e9e9b6d237246e686d81ec41285a5f8c3d0053fa1f67d4cb70933c",
+    "facts/ascii_board_09.json": "a1ef3fe24bf07a591a46bf14a98561b2d2a2b4f5d878b7ca8cdad6ec90f24e29",
+    "facts/ascii_board_10.json": "af5e3d905f5d40ac63042af4c4130f158c19bc96f5c32b2d8852b51433a0c456",
+    "facts/ascii_board_11.json": "02494a6e85831f186c46d290d0ce9d344ec3525bd175a972696f47e5a6401e63",
+    "manifest.jsonl": "7ac8fd1355296bbd7876cf761fb8ef7fb28afb9b9fbb9c3e542378ed82342a96",
+    "metadata.json": "90ed8fe6bbc62891bc57f3a42183fbb0b67c139a70d773ee1a433edd594d9d14",
+    "qa.jsonl": "316fa1433f752540cab950b679b290b7974178d2a20fcff3be05cbf76ec161dd",
+    "representations/ascii_board_00/tile_rows.txt": "cdec3d5a8f345cca65c6c18917ed8d06a280b2d5a786987a5b731ca765860910",
+    "representations/ascii_board_01/tile_rows.txt": "4d29f7def2e390d9b5a9cf0ac91164910371610a7e80c5db14669020a0a8bda4",
+    "representations/ascii_board_02/tile_rows.txt": "63e3de5fe2b19af486949824e1a8dda7f492ec915bd8587bcc3cf4764cedf0ef",
+    "representations/ascii_board_03/tile_rows.txt": "8bb95c7125727c391f05d429649801a2f3155077cb5aa314edca819f2229799f",
+    "representations/ascii_board_04/tile_rows.txt": "488ded298320c6037c853da2da14521605778b6f4206b2e717de87436659b437",
+    "representations/ascii_board_05/tile_rows.txt": "96fa29cef317708983c80a0412b088967f343c45bb8efbe694ef6bbca27e9621",
+    "representations/ascii_board_06/tile_rows.txt": "6c7b55d3bdd3f5779c3c73693d25a479bcf5cbdb6213d5b96e51d36717b0db67",
+    "representations/ascii_board_07/tile_rows.txt": "1c363af24eecdb397fe3ab3df31bf475e67362d6eff87f32037a1d49a5f9c074",
+    "representations/ascii_board_08/tile_rows.txt": "718b8e43e50484d4e9bfd74f02321213d930abde5ec40eb6a4b598b9f385d5ec",
+    "representations/ascii_board_09/tile_rows.txt": "bacd460b4c60d903a44a230912076dc17ed2dd904e5613aa8cac3a7d4e928483",
+    "representations/ascii_board_10/tile_rows.txt": "d955ee4ded3e86dc1f3802662a945a6991c10ba18e78f1945811a59190afa5b2",
+    "representations/ascii_board_11/tile_rows.txt": "0153580b79e89f0a5c6506aab909212ca39f830aa24b97a26710d6ba03be6850"
+  },
+  "source_lock_sha256": "16a423d8c7fa894d99efb44c344388b4ce0e90c9e727d40045d5a5e0ef29936b",
+  "strict_json_answers": true,
+  "strict_scorer_sha256": "b80971f02ef525a56f5e84bd97801276f953620d82211cabc4a716baf9b9ed3e",
+  "strict_scorer_version": "strict_typed_json/v2"
+}

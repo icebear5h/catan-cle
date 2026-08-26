@@ -1,0 +1,142 @@
+{
+  "generated_at": "2026-08-25T21:01:23.369898+00:00",
+  "models": {
+    "qwen_qwen3.8-max": {
+      "attempted": 110,
+      "avg_latency_ms": 3206.8636363636365,
+      "categories": {
+        "color_building_counts": {
+          "attempted": 10,
+          "avg_latency_ms": 2957.8,
+          "component_accuracy": 0.35,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "color_road_count": {
+          "attempted": 10,
+          "avg_latency_ms": 2913.1,
+          "component_accuracy": 0.3,
+          "errors": 0,
+          "exact_accuracy": 0.3,
+          "requests": 10
+        },
+        "color_road_locations": {
+          "attempted": 10,
+          "avg_latency_ms": 3262.8,
+          "component_accuracy": 0.041666666666666664,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "edge_road_owner": {
+          "attempted": 10,
+          "avg_latency_ms": 3119.3,
+          "component_accuracy": 0.5,
+          "errors": 0,
+          "exact_accuracy": 0.5,
+          "requests": 10
+        },
+        "node_occupancy": {
+          "attempted": 10,
+          "avg_latency_ms": 3306.8,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "port_occupancy": {
+          "attempted": 10,
+          "avg_latency_ms": 3118.7,
+          "component_accuracy": 0.25,
+          "errors": 0,
+          "exact_accuracy": 0.5,
+          "requests": 10
+        },
+        "port_trade_type": {
+          "attempted": 10,
+          "avg_latency_ms": 2923.1,
+          "component_accuracy": 0.4,
+          "errors": 0,
+          "exact_accuracy": 0.4,
+          "requests": 10
+        },
+        "robber_resource_number": {
+          "attempted": 10,
+          "avg_latency_ms": 3139.3,
+          "component_accuracy": 0.2,
+          "errors": 0,
+          "exact_accuracy": 0.2,
+          "requests": 10
+        },
+        "robber_tile": {
+          "attempted": 10,
+          "avg_latency_ms": 3285.0,
+          "component_accuracy": 0.3,
+          "errors": 0,
+          "exact_accuracy": 0.3,
+          "requests": 10
+        },
+        "tile_has_robber": {
+          "attempted": 10,
+          "avg_latency_ms": 3818.1,
+          "component_accuracy": 0.1,
+          "errors": 0,
+          "exact_accuracy": 0.1,
+          "requests": 10
+        },
+        "tile_resource_number": {
+          "attempted": 10,
+          "avg_latency_ms": 3431.5,
+          "component_accuracy": 0.75,
+          "errors": 0,
+          "exact_accuracy": 0.7,
+          "requests": 10
+        }
+      },
+      "component_accuracy": 0.25229357798165136,
+      "errors": 0,
+      "exact_accuracy": 0.2727272727272727,
+      "requests": 110
+    }
+  },
+  "plan": {
+    "atlas_prompt": true,
+    "bench_dir": "artifacts/generated/catan_board_bench/catan_board_bench_100_512_board90",
+    "categories": [
+      "robber_tile",
+      "robber_resource_number",
+      "tile_resource_number",
+      "tile_has_robber",
+      "node_occupancy",
+      "edge_road_owner",
+      "color_road_locations",
+      "port_trade_type",
+      "port_occupancy",
+      "color_building_counts",
+      "color_road_count"
+    ],
+    "limit_samples": 10,
+    "models": {
+      "qwen_qwen3.8-max": "qwen/qwen3.8-max"
+    },
+    "output_dir": "artifacts/runs/catan_board_bench/catan_board_bench_100_512_board90/novita/hosted_architecture_sweep_20260825/qwen3_8_max",
+    "question_count": 110,
+    "question_dir": "artifacts/generated/catan_board_bench/catan_board_bench_100_512_board90/questions",
+    "questions_per_sample": 11,
+    "request_settings": {
+      "concurrency": 1,
+      "provider": "novita",
+      "provider_routing": "novita_direct",
+      "reasoning_disabled_for_models": [
+        "qwen/qwen3.8-max"
+      ],
+      "reasoning_mode": "disabled_for_all",
+      "request_interval_seconds": 0.1,
+      "requested_max_tokens": 96,
+      "temperature": 0.0,
+      "timeout_seconds": 240.0
+    },
+    "suite": "catan_board_bench"
+  }
+}

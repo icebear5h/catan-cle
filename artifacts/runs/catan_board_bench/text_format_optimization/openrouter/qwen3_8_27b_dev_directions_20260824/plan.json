@@ -1,0 +1,55 @@
+{
+  "categories": [
+    "direction_to_tile",
+    "tile_to_direction"
+  ],
+  "dataset_dir": "/tmp/catan-format-dev-optimization.oeR1ZS",
+  "formats": [
+    "tile_rows",
+    "indexed_records",
+    "indexed_tile_rows",
+    "indexed_json"
+  ],
+  "manifest_sha256": "2538e5a99e446152ed29428000f8f82c755789b2449e22638c30f73fce253ff2",
+  "model": "qwen/qwen3.8-27b",
+  "output_dir": "artifacts/runs/catan_board_bench/text_format_optimization/openrouter/qwen3_8_27b_dev_directions_20260824",
+  "question_count": 12,
+  "question_ids": [
+    "ascii_q000_direction_to_tile",
+    "ascii_q001_direction_to_tile",
+    "ascii_q002_direction_to_tile",
+    "ascii_q003_direction_to_tile",
+    "ascii_q004_direction_to_tile",
+    "ascii_q005_direction_to_tile",
+    "ascii_q006_tile_to_direction",
+    "ascii_q007_tile_to_direction",
+    "ascii_q008_tile_to_direction",
+    "ascii_q009_tile_to_direction",
+    "ascii_q010_tile_to_direction",
+    "ascii_q011_tile_to_direction"
+  ],
+  "request_count": 48,
+  "request_settings": {
+    "allow_fallbacks": false,
+    "concurrency": 2,
+    "effective_max_tokens": 256,
+    "image_input": false,
+    "provider": "openrouter",
+    "provider_order": [
+      "AkashML"
+    ],
+    "reasoning_disabled": true,
+    "requested_max_tokens": 256,
+    "response_format_api_constraint": false,
+    "strict_local_json_scoring": true,
+    "temperature": 0.0,
+    "timeout_seconds": 180.0
+  },
+  "schema": "catan_text_format_optimization_eval/v1",
+  "scorer": {
+    "sha256": "b80971f02ef525a56f5e84bd97801276f953620d82211cabc4a716baf9b9ed3e",
+    "version": "strict_typed_json/v2"
+  },
+  "suite": "text_format_optimization_probe",
+  "system_prompt": "You are answering strict engine-scored questions about an authoritative public Catan board graph serialized as text.\n\nRules:\n- Use only the supplied board graph. Entity IDs are opaque and board-local.\n- Every one of the 19 tiles, 54 nodes, 72 edges, and 9 ports is represented. Native null, NULL, none, or dash values mean absent/empty.\n- Pointy-top cube direction deltas are:\n  LEFT=(-1,+1,0), RIGHT=(+1,-1,0),\n  UP-LEFT=(0,+1,-1), UP-RIGHT=(+1,0,-1),\n  DOWN-LEFT=(-1,0,+1), DOWN-RIGHT=(0,-1,+1).\n- For nominal roll production: a settlement produces 1, a city produces 2, and a robber blocks its tile. Aggregate by color and resource.\n- Return exactly one JSON object matching the requested shape. No markdown, prose, or extra keys.\n- Use null for absent scalar values and [] for empty lists.\n- Sort entity-ID lists lexicographically. Preserve tuple associations in lists of objects.\n- Wrap color, resource, and building values in angle brackets, for example <BLUE>, <WOOD>, and <CITY>. Board-local entity IDs such as T03, N14, and E27 do not use angle brackets.\n"
+}

@@ -1,0 +1,156 @@
+{
+  "generated_at": "2026-08-25T06:53:36.397490+00:00",
+  "models": {
+    "zai-org_glm-4.6v": {
+      "attempted": 27,
+      "avg_latency_ms": 2330.4444444444443,
+      "categories": {
+        "color_building_counts": {
+          "attempted": 2,
+          "avg_latency_ms": 1913.5,
+          "component_accuracy": 0.5,
+          "errors": 8,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "color_road_count": {
+          "attempted": 2,
+          "avg_latency_ms": 1902.5,
+          "component_accuracy": 0.0,
+          "errors": 8,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "color_road_locations": {
+          "attempted": 2,
+          "avg_latency_ms": 2525.5,
+          "component_accuracy": 0.3333333333333333,
+          "errors": 8,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "edge_connects_nodes": {
+          "attempted": 2,
+          "avg_latency_ms": 2090.5,
+          "component_accuracy": 0.5,
+          "errors": 8,
+          "exact_accuracy": 0.5,
+          "requests": 10
+        },
+        "edge_road_owner": {
+          "attempted": 2,
+          "avg_latency_ms": 1864.5,
+          "component_accuracy": 0.0,
+          "errors": 8,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "node_occupancy": {
+          "attempted": 2,
+          "avg_latency_ms": 3400.0,
+          "component_accuracy": 0.0,
+          "errors": 8,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "nodes_connected": {
+          "attempted": 2,
+          "avg_latency_ms": 2320.5,
+          "component_accuracy": 0.5,
+          "errors": 8,
+          "exact_accuracy": 0.5,
+          "requests": 10
+        },
+        "port_occupancy": {
+          "attempted": 2,
+          "avg_latency_ms": 3138.5,
+          "component_accuracy": 0.25,
+          "errors": 8,
+          "exact_accuracy": 0.5,
+          "requests": 10
+        },
+        "port_trade_type": {
+          "attempted": 2,
+          "avg_latency_ms": 2703.0,
+          "component_accuracy": 0.5,
+          "errors": 8,
+          "exact_accuracy": 0.5,
+          "requests": 10
+        },
+        "robber_resource_number": {
+          "attempted": 2,
+          "avg_latency_ms": 2068.0,
+          "component_accuracy": 0.6666666666666666,
+          "errors": 8,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "robber_tile": {
+          "attempted": 3,
+          "avg_latency_ms": 1947.3333333333333,
+          "component_accuracy": 0.0,
+          "errors": 7,
+          "exact_accuracy": 0.0,
+          "requests": 10
+        },
+        "tile_has_robber": {
+          "attempted": 2,
+          "avg_latency_ms": 2563.0,
+          "component_accuracy": 1.0,
+          "errors": 8,
+          "exact_accuracy": 1.0,
+          "requests": 10
+        },
+        "tile_resource_number": {
+          "attempted": 2,
+          "avg_latency_ms": 2050.5,
+          "component_accuracy": 0.75,
+          "errors": 8,
+          "exact_accuracy": 0.5,
+          "requests": 10
+        }
+      },
+      "component_accuracy": 0.4,
+      "errors": 103,
+      "exact_accuracy": 0.25925925925925924,
+      "requests": 130
+    }
+  },
+  "plan": {
+    "atlas_prompt": true,
+    "bench_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100",
+    "categories": [
+      "robber_tile",
+      "robber_resource_number",
+      "tile_resource_number",
+      "tile_has_robber",
+      "node_occupancy",
+      "edge_road_owner",
+      "color_road_locations",
+      "port_trade_type",
+      "port_occupancy",
+      "nodes_connected",
+      "edge_connects_nodes",
+      "color_building_counts",
+      "color_road_count"
+    ],
+    "limit_samples": 10,
+    "models": {
+      "zai-org_glm-4.6v": "zai-org/glm-4.6v"
+    },
+    "output_dir": "artifacts/runs/catan_board_bench/catan_board_bench_100/novita/glm_4_6v_reference_10boards_20260824",
+    "question_count": 130,
+    "question_dir": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100/questions",
+    "questions_per_sample": 13,
+    "request_settings": {
+      "concurrency": 4,
+      "provider": "novita",
+      "provider_routing": "novita_direct",
+      "reasoning_disabled_for_models": [],
+      "requested_max_tokens": 96,
+      "temperature": 0.0,
+      "timeout_seconds": 180.0
+    },
+    "suite": "catan_board_bench"
+  }
+}

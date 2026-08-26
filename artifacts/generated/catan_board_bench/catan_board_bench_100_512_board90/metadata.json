@@ -1,0 +1,69 @@
+{
+  "counts": {
+    "replay:191035308.json": 8,
+    "replay:191046136.json": 8,
+    "replay:191057036.json": 8,
+    "replay:191196714.json": 8,
+    "replay:191208779.json": 8,
+    "replay:192244603.json": 8,
+    "replay:192261074.json": 8,
+    "replay:192281207.json": 8,
+    "replay:192284486.json": 8,
+    "replay:192289925.json": 8,
+    "replay:192294329.json": 8,
+    "replay:192418134_sample.json": 8,
+    "replay:194335024.json": 4
+  },
+  "files": {
+    "answer_key": "answer_key.jsonl",
+    "contracts_dir": "contracts",
+    "images_dir": "images",
+    "manifest": "manifest.jsonl",
+    "qa": "qa.jsonl",
+    "question_dir": "questions",
+    "questions": "questions.jsonl"
+  },
+  "generated_at": "2026-08-25T20:54:58.794075+00:00",
+  "image_size": [
+    512,
+    512
+  ],
+  "name": "CatanBoardBench-100",
+  "qa_count": 3032,
+  "render_images": true,
+  "render_variant": {
+    "derived_from": "artifacts/generated/catan_board_bench/catan_board_bench_100_1024_board90",
+    "renderer": "data_pipeline.catan_board_bench.render",
+    "style": {
+      "city_size_factor": 0.69,
+      "city_width_factor": 1.12,
+      "city_x_offset": 0.0,
+      "city_y_factor": 0.65,
+      "coast_size_factor": 1.04,
+      "dock_extend_factor": 0.12,
+      "dock_port_gap": 12.5,
+      "dock_sand_gap": 7.0,
+      "dock_ship_clearance_factor": 0.12,
+      "dock_width": 8.5,
+      "road_length_factor": 1.02,
+      "road_width_factor": 0.81,
+      "robber_size_factor": 0.71,
+      "settlement_size_factor": 0.63,
+      "settlement_x_offset": 0.0,
+      "settlement_y_factor": 0.7,
+      "view_padding_factor": 0.933134
+    },
+    "target_board_canvas_fraction": 0.9,
+    "view_padding_factor": 0.933134
+  },
+  "rendered_images": 100,
+  "replay_dir": "data_pipeline/bootstrapping/data/raw_replays",
+  "sample_count": 100,
+  "sampling": {
+    "min_step": 8,
+    "per_replay_limit": 8,
+    "target_samples": 100
+  },
+  "schema": "catan_board_bench/v1",
+  "source_replay_count": 13
+}

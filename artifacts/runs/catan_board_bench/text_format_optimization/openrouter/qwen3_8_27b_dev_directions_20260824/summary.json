@@ -1,0 +1,330 @@
+{
+  "complete": true,
+  "formats": {
+    "indexed_json": {
+      "categories": {
+        "direction_to_tile": {
+          "completion_tokens": 48,
+          "cost": 0.0224624,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1518.0,
+          "p95_latency_ms": 1908,
+          "prompt_tokens": 55796,
+          "protocol_exact": 6,
+          "protocol_exact_accuracy": 1.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "tile_to_direction": {
+          "completion_tokens": 44,
+          "cost": 0.022532,
+          "errors": 0,
+          "exact": 5,
+          "exact_accuracy": 0.8333333333333334,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1483.5,
+          "p95_latency_ms": 2238,
+          "prompt_tokens": 56000,
+          "protocol_exact": 5,
+          "protocol_exact_accuracy": 0.8333333333333334,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        }
+      },
+      "completion_tokens": 92,
+      "cost": 0.044994400000000004,
+      "errors": 0,
+      "exact": 11,
+      "exact_accuracy": 0.9166666666666666,
+      "json_valid": 12,
+      "json_valid_accuracy": 1.0,
+      "median_latency_ms": 1494.0,
+      "p95_latency_ms": 2238,
+      "prompt_tokens": 111796,
+      "protocol_exact": 11,
+      "protocol_exact_accuracy": 0.9166666666666666,
+      "providers": {
+        "AkashML": 12
+      },
+      "reasoning_tokens": 0,
+      "requests": 12,
+      "successful": 12
+    },
+    "indexed_records": {
+      "categories": {
+        "direction_to_tile": {
+          "completion_tokens": 48,
+          "cost": 0.0229972,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1778.5,
+          "p95_latency_ms": 19337,
+          "prompt_tokens": 57133,
+          "protocol_exact": 6,
+          "protocol_exact_accuracy": 1.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "tile_to_direction": {
+          "completion_tokens": 44,
+          "cost": 0.0230764,
+          "errors": 0,
+          "exact": 4,
+          "exact_accuracy": 0.6666666666666666,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1430.5,
+          "p95_latency_ms": 2313,
+          "prompt_tokens": 57361,
+          "protocol_exact": 4,
+          "protocol_exact_accuracy": 0.6666666666666666,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        }
+      },
+      "completion_tokens": 92,
+      "cost": 0.0460736,
+      "errors": 0,
+      "exact": 10,
+      "exact_accuracy": 0.8333333333333334,
+      "json_valid": 12,
+      "json_valid_accuracy": 1.0,
+      "median_latency_ms": 1646.0,
+      "p95_latency_ms": 19337,
+      "prompt_tokens": 114494,
+      "protocol_exact": 10,
+      "protocol_exact_accuracy": 0.8333333333333334,
+      "providers": {
+        "AkashML": 12
+      },
+      "reasoning_tokens": 0,
+      "requests": 12,
+      "successful": 12
+    },
+    "indexed_tile_rows": {
+      "categories": {
+        "direction_to_tile": {
+          "completion_tokens": 48,
+          "cost": 0.023782,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1924.0,
+          "p95_latency_ms": 5534,
+          "prompt_tokens": 59095,
+          "protocol_exact": 6,
+          "protocol_exact_accuracy": 1.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "tile_to_direction": {
+          "completion_tokens": 44,
+          "cost": 0.0238612,
+          "errors": 0,
+          "exact": 6,
+          "exact_accuracy": 1.0,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1517.5,
+          "p95_latency_ms": 2263,
+          "prompt_tokens": 59323,
+          "protocol_exact": 6,
+          "protocol_exact_accuracy": 1.0,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        }
+      },
+      "completion_tokens": 92,
+      "cost": 0.0476432,
+      "errors": 0,
+      "exact": 12,
+      "exact_accuracy": 1.0,
+      "json_valid": 12,
+      "json_valid_accuracy": 1.0,
+      "median_latency_ms": 1721.0,
+      "p95_latency_ms": 5534,
+      "prompt_tokens": 118418,
+      "protocol_exact": 12,
+      "protocol_exact_accuracy": 1.0,
+      "providers": {
+        "AkashML": 12
+      },
+      "reasoning_tokens": 0,
+      "requests": 12,
+      "successful": 12
+    },
+    "tile_rows": {
+      "categories": {
+        "direction_to_tile": {
+          "completion_tokens": 48,
+          "cost": 0.01649,
+          "errors": 0,
+          "exact": 3,
+          "exact_accuracy": 0.5,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1544.5,
+          "p95_latency_ms": 7859,
+          "prompt_tokens": 40865,
+          "protocol_exact": 3,
+          "protocol_exact_accuracy": 0.5,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        },
+        "tile_to_direction": {
+          "completion_tokens": 44,
+          "cost": 0.0165332,
+          "errors": 0,
+          "exact": 3,
+          "exact_accuracy": 0.5,
+          "json_valid": 6,
+          "json_valid_accuracy": 1.0,
+          "median_latency_ms": 1531.0,
+          "p95_latency_ms": 22289,
+          "prompt_tokens": 41003,
+          "protocol_exact": 3,
+          "protocol_exact_accuracy": 0.5,
+          "providers": {
+            "AkashML": 6
+          },
+          "reasoning_tokens": 0,
+          "requests": 6,
+          "successful": 6
+        }
+      },
+      "completion_tokens": 92,
+      "cost": 0.0330232,
+      "errors": 0,
+      "exact": 6,
+      "exact_accuracy": 0.5,
+      "json_valid": 12,
+      "json_valid_accuracy": 1.0,
+      "median_latency_ms": 1544.0,
+      "p95_latency_ms": 22289,
+      "prompt_tokens": 81868,
+      "protocol_exact": 6,
+      "protocol_exact_accuracy": 0.5,
+      "providers": {
+        "AkashML": 12
+      },
+      "reasoning_tokens": 0,
+      "requests": 12,
+      "successful": 12
+    }
+  },
+  "generated_at": "2026-08-25T05:17:46.091670+00:00",
+  "overall": {
+    "completion_tokens": 368,
+    "cost": 0.1717344,
+    "errors": 0,
+    "exact": 39,
+    "exact_accuracy": 0.8125,
+    "json_valid": 48,
+    "json_valid_accuracy": 1.0,
+    "median_latency_ms": 1572.0,
+    "p95_latency_ms": 7859,
+    "prompt_tokens": 426576,
+    "protocol_exact": 39,
+    "protocol_exact_accuracy": 0.8125,
+    "providers": {
+      "AkashML": 48
+    },
+    "reasoning_tokens": 0,
+    "requests": 48,
+    "successful": 48
+  },
+  "plan": {
+    "categories": [
+      "direction_to_tile",
+      "tile_to_direction"
+    ],
+    "dataset_dir": "/tmp/catan-format-dev-optimization.oeR1ZS",
+    "formats": [
+      "tile_rows",
+      "indexed_records",
+      "indexed_tile_rows",
+      "indexed_json"
+    ],
+    "manifest_sha256": "2538e5a99e446152ed29428000f8f82c755789b2449e22638c30f73fce253ff2",
+    "model": "qwen/qwen3.8-27b",
+    "output_dir": "artifacts/runs/catan_board_bench/text_format_optimization/openrouter/qwen3_8_27b_dev_directions_20260824",
+    "question_count": 12,
+    "question_ids": [
+      "ascii_q000_direction_to_tile",
+      "ascii_q001_direction_to_tile",
+      "ascii_q002_direction_to_tile",
+      "ascii_q003_direction_to_tile",
+      "ascii_q004_direction_to_tile",
+      "ascii_q005_direction_to_tile",
+      "ascii_q006_tile_to_direction",
+      "ascii_q007_tile_to_direction",
+      "ascii_q008_tile_to_direction",
+      "ascii_q009_tile_to_direction",
+      "ascii_q010_tile_to_direction",
+      "ascii_q011_tile_to_direction"
+    ],
+    "request_count": 48,
+    "request_settings": {
+      "allow_fallbacks": false,
+      "concurrency": 2,
+      "effective_max_tokens": 256,
+      "image_input": false,
+      "provider": "openrouter",
+      "provider_order": [
+        "AkashML"
+      ],
+      "reasoning_disabled": true,
+      "requested_max_tokens": 256,
+      "response_format_api_constraint": false,
+      "strict_local_json_scoring": true,
+      "temperature": 0.0,
+      "timeout_seconds": 180.0
+    },
+    "schema": "catan_text_format_optimization_eval/v1",
+    "scorer": {
+      "sha256": "b80971f02ef525a56f5e84bd97801276f953620d82211cabc4a716baf9b9ed3e",
+      "version": "strict_typed_json/v2"
+    },
+    "suite": "text_format_optimization_probe",
+    "system_prompt": "You are answering strict engine-scored questions about an authoritative public Catan board graph serialized as text.\n\nRules:\n- Use only the supplied board graph. Entity IDs are opaque and board-local.\n- Every one of the 19 tiles, 54 nodes, 72 edges, and 9 ports is represented. Native null, NULL, none, or dash values mean absent/empty.\n- Pointy-top cube direction deltas are:\n  LEFT=(-1,+1,0), RIGHT=(+1,-1,0),\n  UP-LEFT=(0,+1,-1), UP-RIGHT=(+1,0,-1),\n  DOWN-LEFT=(-1,0,+1), DOWN-RIGHT=(0,-1,+1).\n- For nominal roll production: a settlement produces 1, a city produces 2, and a robber blocks its tile. Aggregate by color and resource.\n- Return exactly one JSON object matching the requested shape. No markdown, prose, or extra keys.\n- Use null for absent scalar values and [] for empty lists.\n- Sort entity-ID lists lexicographically. Preserve tuple associations in lists of objects.\n- Wrap color, resource, and building values in angle brackets, for example <BLUE>, <WOOD>, and <CITY>. Board-local entity IDs such as T03, N14, and E27 do not use angle brackets.\n"
+  },
+  "records": 48
+}

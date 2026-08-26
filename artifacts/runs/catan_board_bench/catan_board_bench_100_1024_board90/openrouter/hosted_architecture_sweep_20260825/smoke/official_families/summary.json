@@ -1,0 +1,542 @@
+{
+  "generated_at": "2026-08-25T20:12:53.102014+00:00",
+  "models": {
+    "anthropic_claude-sonnet-5": {
+      "attempted": 4,
+      "avg_latency_ms": 3258.0,
+      "categories": {
+        "color_building_counts": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "color_road_count": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "color_road_locations": {
+          "attempted": 1,
+          "avg_latency_ms": 3134.0,
+          "component_accuracy": 0.5,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "edge_road_owner": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "node_occupancy": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "port_occupancy": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "port_trade_type": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "robber_resource_number": {
+          "attempted": 1,
+          "avg_latency_ms": 3298.0,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "robber_tile": {
+          "attempted": 1,
+          "avg_latency_ms": 3287.0,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "tile_has_robber": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "tile_resource_number": {
+          "attempted": 1,
+          "avg_latency_ms": 3313.0,
+          "component_accuracy": 1.0,
+          "errors": 0,
+          "exact_accuracy": 1.0,
+          "requests": 1
+        }
+      },
+      "component_accuracy": 0.375,
+      "errors": 7,
+      "exact_accuracy": 0.25,
+      "requests": 11
+    },
+    "deepseek_deepseek-v4-flash-vision-exp": {
+      "attempted": 0,
+      "avg_latency_ms": null,
+      "categories": {
+        "color_building_counts": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "color_road_count": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "color_road_locations": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "edge_road_owner": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "node_occupancy": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "port_occupancy": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "port_trade_type": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "robber_resource_number": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "robber_tile": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "tile_has_robber": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "tile_resource_number": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        }
+      },
+      "component_accuracy": 0.0,
+      "errors": 11,
+      "exact_accuracy": 0.0,
+      "requests": 11
+    },
+    "google_gemini-3.7-flash": {
+      "attempted": 0,
+      "avg_latency_ms": null,
+      "categories": {
+        "color_building_counts": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "color_road_count": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "color_road_locations": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "edge_road_owner": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "node_occupancy": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "port_occupancy": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "port_trade_type": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "robber_resource_number": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "robber_tile": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "tile_has_robber": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "tile_resource_number": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        }
+      },
+      "component_accuracy": 0.0,
+      "errors": 11,
+      "exact_accuracy": 0.0,
+      "requests": 11
+    },
+    "mistralai_mistral-small-2603": {
+      "attempted": 11,
+      "avg_latency_ms": 1952.7272727272727,
+      "categories": {
+        "color_building_counts": {
+          "attempted": 1,
+          "avg_latency_ms": 2087.0,
+          "component_accuracy": 0.5,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "color_road_count": {
+          "attempted": 1,
+          "avg_latency_ms": 2363.0,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "color_road_locations": {
+          "attempted": 1,
+          "avg_latency_ms": 1757.0,
+          "component_accuracy": 0.5,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "edge_road_owner": {
+          "attempted": 1,
+          "avg_latency_ms": 1957.0,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "node_occupancy": {
+          "attempted": 1,
+          "avg_latency_ms": 1641.0,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "port_occupancy": {
+          "attempted": 1,
+          "avg_latency_ms": 1537.0,
+          "component_accuracy": 1.0,
+          "errors": 0,
+          "exact_accuracy": 1.0,
+          "requests": 1
+        },
+        "port_trade_type": {
+          "attempted": 1,
+          "avg_latency_ms": 1812.0,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "robber_resource_number": {
+          "attempted": 1,
+          "avg_latency_ms": 2153.0,
+          "component_accuracy": 0.6666666666666666,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "robber_tile": {
+          "attempted": 1,
+          "avg_latency_ms": 1943.0,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "tile_has_robber": {
+          "attempted": 1,
+          "avg_latency_ms": 2221.0,
+          "component_accuracy": 1.0,
+          "errors": 0,
+          "exact_accuracy": 1.0,
+          "requests": 1
+        },
+        "tile_resource_number": {
+          "attempted": 1,
+          "avg_latency_ms": 2009.0,
+          "component_accuracy": 0.5,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        }
+      },
+      "component_accuracy": 0.3888888888888889,
+      "errors": 0,
+      "exact_accuracy": 0.18181818181818182,
+      "requests": 11
+    },
+    "x-ai_grok-4.20": {
+      "attempted": 1,
+      "avg_latency_ms": 1060.0,
+      "categories": {
+        "color_building_counts": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "color_road_count": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "color_road_locations": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "edge_road_owner": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "node_occupancy": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "port_occupancy": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "port_trade_type": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "robber_resource_number": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "robber_tile": {
+          "attempted": 1,
+          "avg_latency_ms": 1060.0,
+          "component_accuracy": 0.0,
+          "errors": 0,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "tile_has_robber": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        },
+        "tile_resource_number": {
+          "attempted": 0,
+          "avg_latency_ms": null,
+          "component_accuracy": 0.0,
+          "errors": 1,
+          "exact_accuracy": 0.0,
+          "requests": 1
+        }
+      },
+      "component_accuracy": 0.0,
+      "errors": 10,
+      "exact_accuracy": 0.0,
+      "requests": 11
+    }
+  },
+  "plan": {
+    "atlas_prompt": true,
+    "bench_dir": "artifacts/generated/catan_board_bench/catan_board_bench_100_1024_board90",
+    "categories": [
+      "robber_tile",
+      "robber_resource_number",
+      "tile_resource_number",
+      "tile_has_robber",
+      "node_occupancy",
+      "edge_road_owner",
+      "color_road_locations",
+      "port_trade_type",
+      "port_occupancy",
+      "color_building_counts",
+      "color_road_count"
+    ],
+    "limit_samples": 1,
+    "models": {
+      "anthropic_claude-sonnet-5": "anthropic/claude-sonnet-5",
+      "deepseek_deepseek-v4-flash-vision-exp": "deepseek/deepseek-v4-flash-vision-exp",
+      "google_gemini-3.7-flash": "google/gemini-3.7-flash",
+      "mistralai_mistral-small-2603": "mistralai/mistral-small-2603",
+      "x-ai_grok-4.20": "x-ai/grok-4.20"
+    },
+    "output_dir": "artifacts/runs/catan_board_bench/catan_board_bench_100_1024_board90/openrouter/hosted_architecture_sweep_20260825/smoke/official_families",
+    "question_count": 11,
+    "question_dir": "artifacts/generated/catan_board_bench/catan_board_bench_100_1024_board90/questions",
+    "questions_per_sample": 11,
+    "request_settings": {
+      "concurrency": 2,
+      "provider": "openrouter",
+      "provider_routing": "openrouter_default_unpinned",
+      "reasoning_disabled_for_models": [
+        "deepseek/deepseek-v4-flash-vision-exp",
+        "google/gemini-3.7-flash",
+        "mistralai/mistral-small-2603",
+        "anthropic/claude-sonnet-5",
+        "x-ai/grok-4.20"
+      ],
+      "reasoning_mode": "disabled_for_all",
+      "request_interval_seconds": 0.0,
+      "requested_max_tokens": 96,
+      "temperature": 0.0,
+      "timeout_seconds": 180.0
+    },
+    "suite": "catan_board_bench"
+  }
+}

@@ -1,0 +1,322 @@
+{
+  "benchmark": "CatanBoardBench-100",
+  "benchmark_game_ids": [
+    "191035308",
+    "191046136",
+    "191057036",
+    "191196714",
+    "191208779",
+    "192244603",
+    "192261074",
+    "192281207",
+    "192284486",
+    "192289925",
+    "192294329",
+    "192418134",
+    "194335024"
+  ],
+  "benchmark_generated_at": "2026-05-13T21:22:39.101560+00:00",
+  "games": [
+    {
+      "game_id": "191035308",
+      "replay_files": [
+        "191035308.json",
+        "data_pipeline/bootstrapping/data/raw_replays/191035308.json"
+      ],
+      "replay_steps": [
+        8,
+        78,
+        149,
+        219,
+        290,
+        360,
+        431,
+        501
+      ],
+      "sample_count": 8
+    },
+    {
+      "game_id": "191046136",
+      "replay_files": [
+        "191046136.json",
+        "data_pipeline/bootstrapping/data/raw_replays/191046136.json"
+      ],
+      "replay_steps": [
+        8,
+        79,
+        149,
+        220,
+        291,
+        362,
+        432,
+        503
+      ],
+      "sample_count": 8
+    },
+    {
+      "game_id": "191057036",
+      "replay_files": [
+        "191057036.json",
+        "data_pipeline/bootstrapping/data/raw_replays/191057036.json"
+      ],
+      "replay_steps": [
+        8,
+        78,
+        149,
+        219,
+        290,
+        360,
+        431,
+        501
+      ],
+      "sample_count": 8
+    },
+    {
+      "game_id": "191196714",
+      "replay_files": [
+        "191196714.json",
+        "data_pipeline/bootstrapping/data/raw_replays/191196714.json"
+      ],
+      "replay_steps": [
+        8,
+        89,
+        169,
+        250,
+        330,
+        411,
+        491,
+        572
+      ],
+      "sample_count": 8
+    },
+    {
+      "game_id": "191208779",
+      "replay_files": [
+        "191208779.json",
+        "data_pipeline/bootstrapping/data/raw_replays/191208779.json"
+      ],
+      "replay_steps": [
+        8,
+        82,
+        156,
+        230,
+        305,
+        379,
+        453,
+        527
+      ],
+      "sample_count": 8
+    },
+    {
+      "game_id": "192244603",
+      "replay_files": [
+        "192244603.json",
+        "data_pipeline/bootstrapping/data/raw_replays/192244603.json"
+      ],
+      "replay_steps": [
+        8,
+        61,
+        114,
+        167,
+        219,
+        272,
+        325,
+        378
+      ],
+      "sample_count": 8
+    },
+    {
+      "game_id": "192261074",
+      "replay_files": [
+        "192261074.json",
+        "data_pipeline/bootstrapping/data/raw_replays/192261074.json"
+      ],
+      "replay_steps": [
+        8,
+        68,
+        128,
+        188,
+        247,
+        307,
+        367,
+        427
+      ],
+      "sample_count": 8
+    },
+    {
+      "game_id": "192281207",
+      "replay_files": [
+        "192281207.json",
+        "data_pipeline/bootstrapping/data/raw_replays/192281207.json"
+      ],
+      "replay_steps": [
+        8,
+        68,
+        127,
+        187,
+        246,
+        306,
+        365,
+        425
+      ],
+      "sample_count": 8
+    },
+    {
+      "game_id": "192284486",
+      "replay_files": [
+        "192284486.json",
+        "data_pipeline/bootstrapping/data/raw_replays/192284486.json"
+      ],
+      "replay_steps": [
+        8,
+        85,
+        161,
+        238,
+        314,
+        391,
+        467,
+        544
+      ],
+      "sample_count": 8
+    },
+    {
+      "game_id": "192289925",
+      "replay_files": [
+        "192289925.json",
+        "data_pipeline/bootstrapping/data/raw_replays/192289925.json"
+      ],
+      "replay_steps": [
+        8,
+        61,
+        114,
+        167,
+        219,
+        272,
+        325,
+        378
+      ],
+      "sample_count": 8
+    },
+    {
+      "game_id": "192294329",
+      "replay_files": [
+        "192294329.json",
+        "data_pipeline/bootstrapping/data/raw_replays/192294329.json"
+      ],
+      "replay_steps": [
+        8,
+        78,
+        148,
+        218,
+        287,
+        357,
+        427,
+        497
+      ],
+      "sample_count": 8
+    },
+    {
+      "game_id": "192418134",
+      "replay_files": [
+        "192418134_sample.json",
+        "data_pipeline/bootstrapping/data/raw_replays/192418134_sample.json"
+      ],
+      "replay_steps": [
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16
+      ],
+      "sample_count": 8
+    },
+    {
+      "game_id": "194335024",
+      "replay_files": [
+        "194335024.json",
+        "data_pipeline/bootstrapping/data/raw_replays/194335024.json"
+      ],
+      "replay_steps": [
+        8,
+        60,
+        112,
+        164
+      ],
+      "sample_count": 4
+    }
+  ],
+  "generated_at": "2026-08-22T00:52:23+00:00",
+  "raw_replay_ids": [
+    "157348754",
+    "178964322",
+    "186086820",
+    "186549889",
+    "187315228",
+    "187949640",
+    "189131938",
+    "189649315",
+    "189933021",
+    "190066582",
+    "191006009",
+    "191010650",
+    "191035308",
+    "191046136",
+    "191057036",
+    "191170335",
+    "191196714",
+    "191208779",
+    "191397826",
+    "191409287",
+    "191493206",
+    "191622286",
+    "191831087",
+    "191834170",
+    "191981351",
+    "192058835",
+    "192193520",
+    "192244603",
+    "192261074",
+    "192281207",
+    "192284486",
+    "192289925",
+    "192294329",
+    "192302493",
+    "192385820",
+    "192418134",
+    "192514349",
+    "192669054",
+    "192754858",
+    "192900367",
+    "192998713",
+    "193008240",
+    "193062324",
+    "193299252",
+    "193379094",
+    "193426507",
+    "193497471",
+    "193538901",
+    "193899417",
+    "193905959",
+    "193960562",
+    "193963991",
+    "194050989",
+    "194134632",
+    "194158047",
+    "194198328",
+    "194209320",
+    "194335024",
+    "194372526",
+    "194507661",
+    "194560883",
+    "194864812",
+    "195196260",
+    "195220811",
+    "195231359",
+    "195313419"
+  ],
+  "schema": "catan_board_bench/leakage/v0",
+  "training_candidate_file": "artifacts/raw/colonist/indexes/4p_games_training_candidates.json"
+}

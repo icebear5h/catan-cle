@@ -1,0 +1,44 @@
+{
+  "atlas_prompt": true,
+  "bench_dir": "artifacts/generated/catan_board_bench/catan_board_bench_100_1024_board90",
+  "categories": [
+    "robber_tile",
+    "robber_resource_number",
+    "tile_resource_number",
+    "tile_has_robber",
+    "node_occupancy",
+    "edge_road_owner",
+    "color_road_locations",
+    "port_trade_type",
+    "port_occupancy",
+    "color_building_counts",
+    "color_road_count"
+  ],
+  "limit_samples": 1,
+  "models": {
+    "qwen_qwen3.8-27b": "qwen/qwen3.8-27b"
+  },
+  "output_dir": "artifacts/runs/catan_board_bench/catan_board_bench_100_1024_board90/openrouter/hosted_architecture_sweep_20260825/smoke/qwen3_8_27b_akashml_bf16",
+  "question_count": 11,
+  "question_dir": "artifacts/generated/catan_board_bench/catan_board_bench_100_1024_board90/questions",
+  "questions_per_sample": 11,
+  "request_settings": {
+    "concurrency": 1,
+    "provider": "openrouter",
+    "provider_routing": {
+      "allow_fallbacks": false,
+      "order": [
+        "akashml/bf16"
+      ]
+    },
+    "reasoning_disabled_for_models": [
+      "qwen/qwen3.8-27b"
+    ],
+    "reasoning_mode": "disabled_for_all",
+    "request_interval_seconds": 0.25,
+    "requested_max_tokens": 96,
+    "temperature": 0.0,
+    "timeout_seconds": 180.0
+  },
+  "suite": "catan_board_bench"
+}

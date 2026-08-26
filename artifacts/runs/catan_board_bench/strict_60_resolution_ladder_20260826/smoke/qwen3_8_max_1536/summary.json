@@ -1,0 +1,85 @@
+{
+  "categories": {
+    "direction_to_tile": {
+      "completion_tokens": 154,
+      "errors": 0,
+      "exact": 0,
+      "exact_accuracy": 0.0,
+      "json_valid": 0,
+      "json_valid_accuracy": 0.0,
+      "median_latency_ms": 12817,
+      "p95_latency_ms": 12817,
+      "prompt_tokens": 2720,
+      "protocol_exact": 0,
+      "protocol_exact_accuracy": 0.0,
+      "providers": {
+        "novita": 1
+      },
+      "reasoning_tokens": 0,
+      "requests": 1,
+      "successful": 1
+    }
+  },
+  "complete": true,
+  "generated_at": "2026-08-26T08:02:35.733134+00:00",
+  "overall": {
+    "completion_tokens": 154,
+    "errors": 0,
+    "exact": 0,
+    "exact_accuracy": 0.0,
+    "json_valid": 0,
+    "json_valid_accuracy": 0.0,
+    "median_latency_ms": 12817,
+    "p95_latency_ms": 12817,
+    "prompt_tokens": 2720,
+    "protocol_exact": 0,
+    "protocol_exact_accuracy": 0.0,
+    "providers": {
+      "novita": 1
+    },
+    "reasoning_tokens": 0,
+    "requests": 1,
+    "successful": 1
+  },
+  "plan": {
+    "categories": [
+      "direction_to_tile"
+    ],
+    "dataset_dir": "artifacts/generated/catan_board_bench/strict_vision_probe_60_1536_board90",
+    "manifest_sha256": "8f4b33c5efbe92ea05d33817c556768ad21152da579a432d5f513c7789e906a2",
+    "model": "qwen/qwen3.8-max",
+    "output_dir": "artifacts/runs/catan_board_bench/strict_60_resolution_ladder_20260826/smoke/qwen3_8_max_1536",
+    "question_count": 1,
+    "question_ids": [
+      "ascii_q000_direction_to_tile"
+    ],
+    "request_count": 1,
+    "request_settings": {
+      "concurrency": 1,
+      "identity_projection": "canonical_engine_ids",
+      "image_annotation": null,
+      "image_input": true,
+      "image_size": [
+        1536,
+        1536
+      ],
+      "provider": "novita",
+      "provider_routing": "novita_direct",
+      "reasoning_mode": "disabled_for_all",
+      "request_interval_seconds": 0.1,
+      "requested_max_tokens": 256,
+      "response_format_api_constraint": false,
+      "strict_local_json_scoring": true,
+      "temperature": 0.0,
+      "timeout_seconds": 240.0
+    },
+    "schema": "catan_strict_vision_eval/v2",
+    "scorer": {
+      "sha256": "b80971f02ef525a56f5e84bd97801276f953620d82211cabc4a716baf9b9ed3e",
+      "version": "strict_typed_json/v2"
+    },
+    "suite": "strict_vision_probe_60",
+    "system_prompt": "You are answering strict engine-scored questions about an ordinary public Catan board screenshot.\n\nRules:\n- Use only the raw screenshot and supplied fixed engine-atlas context.\n- The screenshot is not annotated. JSON engine state is used only by the scorer and is not supplied to you.\n- Txx, Nxx, Exx_yy, and Pxx are canonical engine identifiers with fixed board geometry.\n- Read resources, dice numbers, robber state, road colors, buildings, and colors from the screenshot.\n- Pointy-top directions are LEFT, RIGHT, UP-LEFT, UP-RIGHT, DOWN-LEFT, and DOWN-RIGHT.\n- For nominal roll production: a settlement produces 1, a city produces 2, and a robber blocks its tile. Aggregate by color and resource.\n- Return exactly one JSON object matching the requested shape. No markdown, prose, or extra keys.\n- Use null for absent scalar values and [] for empty lists.\n- Sort entity-ID lists lexicographically. Preserve tuple associations in lists of objects.\n- Wrap color, resource, and building values in angle brackets, for example <BLUE>, <WOOD>, and <CITY>. Canonical entity IDs do not use angle brackets in JSON.\n"
+  },
+  "records": 1
+}

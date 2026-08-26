@@ -1,0 +1,35 @@
+{
+  "categories": [
+    "direction_to_tile"
+  ],
+  "dataset_dir": "data_pipeline/catan_board_bench/datasets/text_format_optimization_probe",
+  "format": "indexed_tile_rows",
+  "manifest_sha256": "82db539f0dc2194c1efa3aced8be1e28ab74489a4237e58676cac70a7c95d0b7",
+  "model": "qwen/qwen3.8-max",
+  "output_dir": "artifacts/runs/catan_board_bench/strict_60_unified_20260825/smoke/qwen3_8_max_text",
+  "question_count": 1,
+  "question_ids": [
+    "ascii_q000_direction_to_tile"
+  ],
+  "request_count": 1,
+  "request_settings": {
+    "concurrency": 1,
+    "image_input": false,
+    "provider": "novita",
+    "provider_routing": "novita_direct",
+    "reasoning_mode": "disabled_for_all",
+    "request_interval_seconds": 0.1,
+    "requested_max_tokens": 256,
+    "response_format_api_constraint": false,
+    "strict_local_json_scoring": true,
+    "temperature": 0.0,
+    "timeout_seconds": 240.0
+  },
+  "schema": "catan_strict_text_novita_eval/v1",
+  "scorer": {
+    "sha256": "b80971f02ef525a56f5e84bd97801276f953620d82211cabc4a716baf9b9ed3e",
+    "version": "strict_typed_json/v2"
+  },
+  "suite": "strict_text_probe_60",
+  "system_prompt": "You are answering strict engine-scored questions about an authoritative public Catan board graph serialized as text.\n\nRules:\n- Use only the supplied board graph. Entity IDs are opaque and board-local.\n- Every one of the 19 tiles, 54 nodes, 72 edges, and 9 ports is represented. Native null, NULL, none, or dash values mean absent/empty.\n- Pointy-top cube direction deltas are:\n  LEFT=(-1,+1,0), RIGHT=(+1,-1,0),\n  UP-LEFT=(0,+1,-1), UP-RIGHT=(+1,0,-1),\n  DOWN-LEFT=(-1,0,+1), DOWN-RIGHT=(0,-1,+1).\n- For nominal roll production: a settlement produces 1, a city produces 2, and a robber blocks its tile. Aggregate by color and resource.\n- Return exactly one JSON object matching the requested shape. No markdown, prose, or extra keys.\n- Use null for absent scalar values and [] for empty lists.\n- Sort entity-ID lists lexicographically. Preserve tuple associations in lists of objects.\n- Wrap color, resource, and building values in angle brackets, for example <BLUE>, <WOOD>, and <CITY>. Board-local entity IDs such as T03, N14, and E27 do not use angle brackets.\n"
+}

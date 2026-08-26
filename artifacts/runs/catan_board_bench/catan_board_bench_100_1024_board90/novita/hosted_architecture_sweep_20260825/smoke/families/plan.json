@@ -1,0 +1,51 @@
+{
+  "atlas_prompt": true,
+  "bench_dir": "artifacts/generated/catan_board_bench/catan_board_bench_100_1024_board90",
+  "categories": [
+    "robber_tile",
+    "robber_resource_number",
+    "tile_resource_number",
+    "tile_has_robber",
+    "node_occupancy",
+    "edge_road_owner",
+    "color_road_locations",
+    "port_trade_type",
+    "port_occupancy",
+    "color_building_counts",
+    "color_road_count"
+  ],
+  "limit_samples": 1,
+  "models": {
+    "deepseek_deepseek-v4-flash-vision-exp": "deepseek/deepseek-v4-flash-vision-exp",
+    "google_gemma-4-31b-it": "google/gemma-4-31b-it",
+    "moonshotai_kimi-k3": "moonshotai/kimi-k3",
+    "paddlepaddle_paddleocr-vl": "paddlepaddle/paddleocr-vl",
+    "qwen_qwen3-vl-8b-instruct": "qwen/qwen3-vl-8b-instruct",
+    "qwen_qwen3.8-max": "qwen/qwen3.8-max",
+    "zai-org_glm-4.6v": "zai-org/glm-4.6v"
+  },
+  "output_dir": "artifacts/runs/catan_board_bench/catan_board_bench_100_1024_board90/novita/hosted_architecture_sweep_20260825/smoke/families",
+  "question_count": 11,
+  "question_dir": "artifacts/generated/catan_board_bench/catan_board_bench_100_1024_board90/questions",
+  "questions_per_sample": 11,
+  "request_settings": {
+    "concurrency": 2,
+    "provider": "novita",
+    "provider_routing": "novita_direct",
+    "reasoning_disabled_for_models": [
+      "qwen/qwen3.8-max",
+      "deepseek/deepseek-v4-flash-vision-exp",
+      "moonshotai/kimi-k3",
+      "zai-org/glm-4.6v",
+      "google/gemma-4-31b-it",
+      "paddlepaddle/paddleocr-vl",
+      "qwen/qwen3-vl-8b-instruct"
+    ],
+    "reasoning_mode": "disabled_for_all",
+    "request_interval_seconds": 0.1,
+    "requested_max_tokens": 96,
+    "temperature": 0.0,
+    "timeout_seconds": 240.0
+  },
+  "suite": "catan_board_bench"
+}

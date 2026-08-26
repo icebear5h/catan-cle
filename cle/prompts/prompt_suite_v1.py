@@ -10,9 +10,8 @@ This version focuses on:
 """
 
 import re
-from typing import Dict
 from .base import PromptSuite, PromptContext
-from engine.models.enums import ActionType
+from game_engine.models.enums import ActionType
 
 
 class PromptSuiteV1(PromptSuite):

@@ -1,18 +1,18 @@
 import pytest
 
-from engine.game import Game
-from engine.models.enums import WOOD, Action, ActionType
-from engine.models.player import Color, SimplePlayer
-from engine.state import apply_action
+from game_engine.game import GameEngine
+from game_engine.models.enums import WOOD, Action, ActionType
+from game_engine.models.player import Color
+from game_engine.state import apply_action
 
 
 def make_game():
-    return Game(
+    return GameEngine(
         [
-            SimplePlayer(Color.RED),
-            SimplePlayer(Color.BLUE),
-            SimplePlayer(Color.WHITE),
-            SimplePlayer(Color.ORANGE),
+            Color.RED,
+            Color.BLUE,
+            Color.WHITE,
+            Color.ORANGE,
         ],
         shuffle_players=False,
     )
@@ -32,7 +32,7 @@ def make_game():
 )
 def test_forced_actions_reject_random_or_missing_values(action):
     with pytest.raises(ValueError, match="Forced"):
-        make_game().execute(action, force=True)
+        make_game().step(action, force=True)
 
 
 def test_apply_action_force_rejects_random_placeholders_directly():
@@ -45,10 +45,11 @@ def test_apply_action_force_rejects_random_placeholders_directly():
 def test_unforced_random_roll_returns_and_logs_resolved_action():
     game = make_game()
 
-    action = game.execute(
+    transition = game.step(
         Action(Color.RED, ActionType.ROLL, None),
         validate_action=False,
     )
+    action = transition.resolved_action
 
     assert action.action_type == ActionType.ROLL
     assert isinstance(action.value, tuple)
@@ -59,10 +60,10 @@ def test_unforced_random_roll_returns_and_logs_resolved_action():
 def test_forced_explicit_roll_is_accepted_without_randomizing():
     game = make_game()
 
-    action = game.execute(
+    transition = game.step(
         Action(Color.RED, ActionType.ROLL, (1, 2)),
         force=True,
     )
 
-    assert action == Action(Color.RED, ActionType.ROLL, (1, 2))
+    assert transition.resolved_action == Action(Color.RED, ActionType.ROLL, (1, 2))
     assert game.state.last_dice_roll == (1, 2)

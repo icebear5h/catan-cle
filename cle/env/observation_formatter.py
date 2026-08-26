@@ -7,7 +7,7 @@ following the FLE (Factorio Learning Environment) pattern.
 
 from dataclasses import dataclass
 from typing import List, Dict, Any, Optional
-from engine.state_functions import (
+from game_engine.state_functions import (
     get_player_freqdeck,
     get_player_buildings,
     get_visible_victory_points,
@@ -15,14 +15,16 @@ from engine.state_functions import (
     player_key,
     get_longest_road_length,
 )
-from engine.models.enums import (
+from game_engine.models.enums import (
     RESOURCES,
     SETTLEMENT,
     CITY,
     ROAD,
     Action,
+    ActionType,
 )
-from engine.models.player import Color
+from game_engine.models.player import Color
+from game_engine.trading import TradeCandidate, TradeOffer
 
 
 @dataclass
@@ -74,8 +76,7 @@ class CatanObservation:
     buildings_dict: Dict[int, tuple]  # node_id -> (color, building_type)
 
     # Trading state
-    active_trades: Dict  # color -> {offered, wanted, acceptees, rejecters, ...}
-    counter_offers: Dict  # color -> {offered, wanted, acceptees, ...}
+    trade_window: Any
     is_my_turn: bool  # Whether this player is the turn player
     turn_player_color: Color  # Who's turn it is
 
@@ -112,7 +113,12 @@ class CatanObservationFormatter:
     LLMs reason strategically.
     """
 
-    def format(self, obs: CatanObservation) -> FormattedObservation:
+    def format(
+        self,
+        obs: CatanObservation,
+        *,
+        include_legal_actions: bool = True,
+    ) -> FormattedObservation:
         """
         Convert structured observation to semantic text.
 
@@ -128,7 +134,9 @@ class CatanObservationFormatter:
         board_state = self._format_board_state(obs)
         resources = self._format_resources(obs)
         opponents = self._format_opponents(obs)
-        valid_actions = self._format_valid_actions(obs)
+        valid_actions = (
+            self._format_valid_actions(obs) if include_legal_actions else ""
+        )
         strategic_context = self._format_strategic_context(obs)
         trade_context = self._format_trade_context(obs)
         events_section = self._format_events(obs)
@@ -136,8 +144,13 @@ class CatanObservationFormatter:
         # Only include trade section if there's active trading
         trade_section = f"\n<trading>\n{trade_context}\n</trading>" if trade_context else ""
 
-        # Only include events section if there are recent events
+        # Only include events and legal actions when requested by the caller.
         events_block = f"\n<recent_events>\n{events_section}\n</recent_events>" if events_section else ""
+        actions_block = (
+            f"\n<valid_actions>\n{valid_actions}\n</valid_actions>"
+            if include_legal_actions
+            else ""
+        )
 
         color_name = obs.my_color.value if hasattr(obs.my_color, 'value') else str(obs.my_color)
         raw_str = f"""<game_state turn="{obs.current_turn}" player="{color_name}">{events_block}
@@ -152,10 +165,7 @@ class CatanObservationFormatter:
 </resources>
 <opponents>
 {opponents}
-</opponents>{trade_section}
-<valid_actions>
-{valid_actions}
-</valid_actions>
+</opponents>{trade_section}{actions_block}
 </game_state>""".strip()
 
         return FormattedObservation(
@@ -356,7 +366,7 @@ class CatanObservationFormatter:
                     placement_details.append(f"{self._format_node(node_id, self._node_coords)} (city): {context}")
 
                 if placement_details:
-                    lines.append(f"    Placements:")
+                    lines.append("    Placements:")
                     for detail in placement_details:
                         lines.append(f"      - {detail}")
 
@@ -372,48 +382,19 @@ class CatanObservationFormatter:
         return "\n".join(lines)
 
     def _format_valid_actions(self, obs: CatanObservation) -> str:
-        """Format valid actions with strategic implications."""
-        from engine.models.enums import ActionType
-
-        lines = ["VALID ACTIONS (all listed actions are legal and affordable — do not re-check costs):"]
-
+        """Format the complete legal menu without changing engine ordering."""
+        lines = [
+            "EXACT LEGAL ACTION MENU "
+            "(all entries are legal and affordable; choose its zero-based index):"
+        ]
         if not obs.valid_actions:
             lines.append("  No actions available (waiting for turn)")
             return "\n".join(lines)
 
-        # Group actions by type, filtering out meta-actions (string-valued descriptions)
-        action_groups = {}
-        for action in obs.valid_actions:
-            if isinstance(action.value, str):
-                continue
-            action_type = action.action_type if hasattr(action, 'action_type') else str(type(action))
-            if action_type not in action_groups:
-                action_groups[action_type] = []
-            action_groups[action_type].append(action)
-
-        # Format each group
-        for action_type, actions in action_groups.items():
-            type_name = action_type.name if hasattr(action_type, 'name') else str(action_type)
-            lines.append(f"  {type_name}: {len(actions)} options")
-
-            # For settlement placement (especially initial placement), show ALL options with context
-            # For other actions, show first few examples
-            is_settlement_action = action_type == ActionType.BUILD_SETTLEMENT if hasattr(action_type, 'name') else False
-
-            if is_settlement_action and obs.current_phase == "initial_placement":
-                # Show ALL settlement options during initial placement with full context
-                for i, action in enumerate(actions):
-                    action_desc = self._format_single_action(action, obs)
-                    lines.append(f"    {i}. {action_desc}")
-            else:
-                # Show first few examples for other actions
-                for i, action in enumerate(actions[:5]):
-                    action_desc = self._format_single_action(action, obs)
-                    lines.append(f"    {i}. {action_desc}")
-
-                if len(actions) > 5:
-                    lines.append(f"    ... and {len(actions) - 5} more")
-
+        lines.extend(
+            f"  {index}. {self._format_single_action(action, obs)}"
+            for index, action in enumerate(obs.valid_actions)
+        )
         return "\n".join(lines)
 
     def _describe_node(self, node_id: int, obs: CatanObservation) -> str:
@@ -444,8 +425,6 @@ class CatanObservationFormatter:
 
     def _format_single_action(self, action: Action, obs: CatanObservation) -> str:
         """Format a single action in Catan lingo."""
-        from engine.models.enums import ActionType
-
         at = action.action_type
 
         if at == ActionType.END_TURN:
@@ -484,6 +463,75 @@ class CatanObservationFormatter:
                     get_name = received.name if hasattr(received, 'name') else str(received)
                     return f"Trade {len(offered)} {give_name} for 1 {get_name}"
 
+        if at == ActionType.OFFER_TRADE:
+            if isinstance(action.value, TradeOffer):
+                return (
+                    f"Offer: give {self._format_resource_tuple_with_any(action.value.give, action.value.give_any)}, "
+                    f"receive {self._format_resource_tuple_with_any(action.value.receive, action.value.receive_any)}"
+                )
+            return str(action.value)
+
+        if at in {ActionType.ACCEPT_TRADE, ActionType.REJECT_TRADE}:
+            offer = (
+                obs.trade_window.offers.get(action.value)
+                if obs.trade_window is not None
+                else None
+            )
+            verb = "Signal willingness for" if at == ActionType.ACCEPT_TRADE else "Decline"
+            if offer is None:
+                return f"{verb} offer {action.value}"
+            give = self._format_resource_tuple_with_any(
+                offer.receive,
+                offer.receive_any,
+            )
+            receive = self._format_resource_tuple_with_any(
+                offer.give,
+                offer.give_any,
+            )
+            offered_by = self._color_name(offer.offered_by)
+            return (
+                f"{verb} {offer.id} from {offered_by}: "
+                f"give {give}, receive {receive}"
+            )
+
+        if at == ActionType.COUNTER_OFFER:
+            if isinstance(action.value, TradeOffer):
+                return (
+                    f"Counter {action.value.parent_offer_id}: give "
+                    f"{self._format_resource_tuple_with_any(action.value.give, action.value.give_any)}, "
+                    f"receive {self._format_resource_tuple_with_any(action.value.receive, action.value.receive_any)}"
+                )
+            return str(action.value)
+
+        if at == ActionType.CONFIRM_TRADE and isinstance(
+            action.value,
+            TradeCandidate,
+        ):
+            candidate = action.value
+            offer = (
+                obs.trade_window.offers.get(candidate.offer_id)
+                if obs.trade_window is not None
+                else None
+            )
+            partner = self._color_name(candidate.counterparty)
+            if offer is None:
+                return f"Confirm {candidate.offer_id} with {partner}"
+            if offer.offered_by == candidate.turn_player:
+                give, give_any = offer.give, offer.give_any
+                receive, receive_any = offer.receive, offer.receive_any
+            else:
+                give, give_any = offer.receive, offer.receive_any
+                receive, receive_any = offer.give, offer.give_any
+            return (
+                f"Confirm {candidate.offer_id} with {partner}: give "
+                f"{self._format_resource_tuple_with_any(give, give_any)}, "
+                f"receive "
+                f"{self._format_resource_tuple_with_any(receive, receive_any)}"
+            )
+
+        if at == ActionType.CANCEL_TRADE:
+            return f"Withdraw offer {action.value}"
+
         if at == ActionType.PLAY_KNIGHT_CARD:
             return "Play knight card"
 
@@ -518,102 +566,44 @@ class CatanObservationFormatter:
         return f"{type_name}: {action.value}"
 
     def _format_trade_context(self, obs: CatanObservation) -> str:
-        """Format active trades and counter-offers for LLM decision-making."""
-        if not obs.active_trades and not obs.counter_offers:
+        """Format the bounded offer board."""
+        window = getattr(obs, "trade_window", None)
+        if window is None or not window.active_offers:
             return ""
-
-        lines = ["TRADING:"]
-
-        # Format active trades (offers on the table)
-        if obs.active_trades:
-            lines.append("  Active Trade Offers:")
-            for creator_color, trade_info in obs.active_trades.items():
-                offered = trade_info.get('offered', (0,0,0,0,0))
-                wanted = trade_info.get('wanted', (0,0,0,0,0))
-                offered_any = trade_info.get('offered_any', 0)
-                wanted_any = trade_info.get('wanted_any', 0)
-                acceptees = trade_info.get('acceptees', set())
-                rejecters = trade_info.get('rejecters', set())
-
-                offered_str = self._format_resource_tuple_with_any(offered, offered_any)
-                wanted_str = self._format_resource_tuple_with_any(wanted, wanted_any)
-
-                has_wildcards = offered_any > 0 or wanted_any > 0
-
-                creator_name = self._color_name(creator_color)
-                is_mine = creator_color == obs.my_color
-
-                if is_mine:
-                    line = f"    YOUR OFFER: Giving {offered_str} for {wanted_str}"
-                else:
-                    line = f"    {creator_name}'s offer: Giving {offered_str} for {wanted_str}"
-
-                # Show responses
-                responses = []
-                if acceptees:
-                    accepted_names = [self._color_name(c) for c in acceptees]
-                    responses.append(f"accepted by {', '.join(accepted_names)}")
-                if rejecters:
-                    rejected_names = [self._color_name(c) for c in rejecters]
-                    responses.append(f"rejected by {', '.join(rejected_names)}")
-
-                if responses:
-                    line += f" [{'; '.join(responses)}]"
-                elif has_wildcards:
-                    line += " [has wildcards - must counter-offer to specify resources]"
-                else:
-                    line += " [awaiting responses]"
-
-                lines.append(line)
-
-                # If it's my offer and there are acceptees, explain I can confirm
-                if is_mine and acceptees:
-                    lines.append(f"      -> You can CONFIRM_TRADE to complete with one of: {', '.join(self._color_name(c) for c in acceptees)}")
-
-        # Format counter-offers (offers directed at the turn player)
-        if obs.counter_offers:
-            lines.append("  Counter-Offers (to turn player):")
-            for creator_color, counter_info in obs.counter_offers.items():
-                offered = counter_info.get('offered', (0,0,0,0,0))
-                wanted = counter_info.get('wanted', (0,0,0,0,0))
-                acceptees = counter_info.get('acceptees', set())
-
-                offered_str = self._format_resource_tuple(offered)
-                wanted_str = self._format_resource_tuple(wanted)
-
-                creator_name = self._color_name(creator_color)
-                is_mine = creator_color == obs.my_color
-
-                if is_mine:
-                    line = f"    YOUR COUNTER: Offering {offered_str} for {wanted_str}"
-                else:
-                    line = f"    {creator_name}'s counter: Offering {offered_str} for {wanted_str}"
-
-                # Show who else has joined this counter
-                if acceptees:
-                    joined_names = [self._color_name(c) for c in acceptees]
-                    line += f" [also offered by: {', '.join(joined_names)}]"
-
-                lines.append(line)
-
-                # If I'm the turn player, explain I can accept this
-                if obs.is_my_turn and not is_mine:
-                    available_partners = [creator_name] + [self._color_name(c) for c in acceptees]
-                    lines.append(f"      -> You can ACCEPT_COUNTER_OFFER to trade with: {', '.join(available_partners)}")
-
-        # Add guidance based on role
-        if obs.is_my_turn:
-            if obs.active_trades and any(t.get('acceptees') for t in obs.active_trades.values()):
-                pass  # Already explained CONFIRM_TRADE above
-            if not obs.active_trades:
-                lines.append("  (You can OFFER_TRADE to propose a trade)")
-        else:
-            # Not my turn - I can respond to trades or make counters
-            if obs.active_trades:
-                lines.append("  (You can ACCEPT_TRADE, REJECT_TRADE, or COUNTER_OFFER)")
-            if obs.counter_offers:
-                lines.append("  (You can JOIN_COUNTER_OFFER to match an existing counter)")
-
+        lines = [
+            f"TRADING WINDOW {window.id} (round {window.round}):",
+            f"  Remaining root slots: {window.remaining_root_slots}",
+            f"  Remaining counter slots: {window.remaining_counter_slots}",
+        ]
+        for offer in window.active_offers:
+            give = self._format_resource_tuple_with_any(
+                offer.give,
+                offer.give_any,
+            )
+            receive = self._format_resource_tuple_with_any(
+                offer.receive,
+                offer.receive_any,
+            )
+            parent = (
+                f" counter to {offer.parent_offer_id}"
+                if offer.parent_offer_id
+                else ""
+            )
+            line = (
+                f"  {offer.id}: {self._color_name(offer.offered_by)} "
+                f"gives {give} for {receive}{parent}"
+            )
+            if offer.willing_by:
+                line += " [willing: " + ", ".join(
+                    self._color_name(color)
+                    for color in offer.willing_by
+                ) + "]"
+            if offer.declined_by:
+                line += " [declined: " + ", ".join(
+                    self._color_name(color)
+                    for color in offer.declined_by
+                ) + "]"
+            lines.append(line)
         return "\n".join(lines)
 
     def _format_resource_tuple(self, resources: tuple) -> str:
@@ -749,43 +739,44 @@ class CatanObservationFormatter:
                 else:
                     lines.append(f"  {color_str}: MARITIME_TRADE {val}")
 
-            elif at.name == "OFFER_TRADE":
-                if isinstance(val, tuple) and len(val) >= 10:
-                    offered = self._format_resource_tuple(val[:5])
-                    wanted = self._format_resource_tuple(val[5:10])
-                    lines.append(f"  {color_str}: OFFER_TRADE offering {offered} for {wanted}")
+            elif at.name in {"OFFER_TRADE", "COUNTER_OFFER"}:
+                if isinstance(val, TradeOffer):
+                    give = self._format_resource_tuple_with_any(
+                        val.give,
+                        val.give_any,
+                    )
+                    receive = self._format_resource_tuple_with_any(
+                        val.receive,
+                        val.receive_any,
+                    )
+                    parent = (
+                        f" countering {val.parent_offer_id}"
+                        if val.parent_offer_id
+                        else ""
+                    )
+                    lines.append(
+                        f"  {color_str}: {at.name}{parent}, "
+                        f"giving {give} for {receive}"
+                    )
                 else:
-                    lines.append(f"  {color_str}: OFFER_TRADE {val}")
+                    lines.append(f"  {color_str}: {at.name} {val}")
 
             elif at.name == "ACCEPT_TRADE":
-                lines.append(f"  {color_str}: ACCEPT_TRADE")
+                lines.append(f"  {color_str}: WILLING_TO_TRADE on offer {val}")
 
             elif at.name == "REJECT_TRADE":
-                lines.append(f"  {color_str}: REJECT_TRADE")
-
-            elif at.name == "COUNTER_OFFER":
-                if isinstance(val, tuple) and len(val) >= 10:
-                    offered = self._format_resource_tuple(val[:5])
-                    wanted = self._format_resource_tuple(val[5:10])
-                    lines.append(f"  {color_str}: COUNTER_OFFER offering {offered} for {wanted}")
-                else:
-                    lines.append(f"  {color_str}: COUNTER_OFFER {val}")
-
-            elif at.name == "JOIN_COUNTER_OFFER":
-                target = val.name if hasattr(val, 'name') else str(val)
-                lines.append(f"  {color_str}: JOIN_COUNTER_OFFER with {target}")
+                lines.append(f"  {color_str}: DECLINED offer {val}")
 
             elif at.name == "CONFIRM_TRADE":
-                partner = val.name if hasattr(val, 'name') else str(val)
-                lines.append(f"  {color_str}: CONFIRM_TRADE with {partner}")
-
-            elif at.name == "ACCEPT_COUNTER_OFFER":
-                if isinstance(val, tuple):
-                    target = val[0].name if hasattr(val[0], 'name') else str(val[0])
-                    lines.append(f"  {color_str}: ACCEPT_COUNTER_OFFER from {target}")
+                if isinstance(val, TradeCandidate):
+                    partner = self._color_name(val.counterparty)
+                    lines.append(
+                        f"  {color_str}: CONFIRM_TRADE offer "
+                        f"{val.offer_id} with {partner}"
+                    )
                 else:
-                    target = val.name if hasattr(val, 'name') else str(val)
-                    lines.append(f"  {color_str}: ACCEPT_COUNTER_OFFER from {target}")
+                    partner = val.name if hasattr(val, 'name') else str(val)
+                    lines.append(f"  {color_str}: CONFIRM_TRADE with {partner}")
 
             elif at.name == "CANCEL_TRADE":
                 lines.append(f"  {color_str}: CANCEL_TRADE")
@@ -914,9 +905,6 @@ def create_observation_from_state(
             largest_army_holder = color
             break
 
-    # Get trading state
-    active_trades = getattr(game_state, 'active_trades', {})
-    counter_offers = getattr(game_state, 'counter_offers', {})
     turn_player_color = game_state.colors[game_state.current_turn_index]
     is_my_turn = player_color == turn_player_color
 
@@ -944,8 +932,7 @@ def create_observation_from_state(
         valid_actions=game_state.playable_actions,
         board_map=game_state.board.map,
         buildings_dict=game_state.board.buildings,
-        active_trades=active_trades,
-        counter_offers=counter_offers,
+        trade_window=getattr(game_state, "trade_window", None),
         is_my_turn=is_my_turn,
         turn_player_color=turn_player_color,
         recent_events=recent_events if recent_events is not None else [],

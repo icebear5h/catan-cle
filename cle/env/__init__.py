@@ -1,1 +1,1 @@
-from cle.env import catan_env
+"""Shared observation-formatting compatibility module."""

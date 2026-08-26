@@ -432,9 +432,8 @@ import { io } from 'socket.io-client';
 const socket = io('http://localhost:5001');
 
 socket.on('game_state', (data) => {
-  // data.game = full GameState
+  // data.game = public game projection
   // data.running = boolean
-  // data.llm_thinking = recent LLM decisions
   setGameState(data.game);
 });
 ```
@@ -483,7 +482,7 @@ POST /api/start-game
 Content-Type: application/json
 
 {
-  "use_llm": false
+  "mode": "random"
 }
 
 Response: { "status": "started", "players": ["RED", "BLUE", "WHITE", "ORANGE"] }
@@ -500,7 +499,7 @@ Response: { "status": "ok", "action": "...", "game_over": false }
 ```http
 GET /api/state
 
-Response: { "game": GameState, "running": true, "llm_thinking": [...] }
+Response: { "game": GameState, "running": true }
 ```
 
 ---

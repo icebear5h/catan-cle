@@ -1,0 +1,73 @@
+id: catan-agent
+version: 5.0.0
+
+system:
+  template: |-
+    Select the next action for {{ color }}. The objective is to win the current game.
+
+    {{ response_instruction }}
+
+context:
+  order:
+    - trajectory
+    - strategic_memory
+    - game_events
+    - observation
+    - phase_guidance
+    - legal_actions
+  trajectory:
+    mode: full
+    max_messages: null
+
+sections:
+  strategic_memory:
+    heading: YOUR CURRENT GAME PLAN
+    empty: include
+    empty_text: No plan has been recorded yet.
+  game_events:
+    heading: COMPLETE VISIBLE GAME EVENT HISTORY
+    empty: omit
+    empty_text: ""
+  observation:
+    heading: CURRENT GAME STATE
+    empty: include
+    empty_text: No observation is available.
+  phase_guidance:
+    heading: DECISION FACTS
+    empty: omit
+    empty_text: ""
+  legal_actions:
+    heading: VALID ACTIONS
+    empty: include
+    empty_text: No legal actions are available.
+
+phase_guidance:
+  initial_settlement_1: |-
+    This is the first initial settlement. It grants no starting resources.
+  initial_settlement_2: |-
+    This is the second initial settlement. It grants one resource from each adjacent non-desert tile.
+  initial_road: |-
+    This is the road placement paired with the initial settlement just placed.
+  initial_placement: |-
+    This is an initial-placement decision. Only the second initial settlement grants starting resources.
+  discarding: |-
+    This decision resolves the required discard.
+  robber: |-
+    Robber movement and any subsequent steal can appear as separate decisions.
+  main_game: |-
+    A turn can contain multiple actions and ends when END_TURN is selected.
+
+response:
+  format: xml
+  tags:
+    - game_plan
+    - rationale
+    - action
+    - trade_offer
+  fallback: first_legal
+  instruction: |-
+    Return only these XML elements:
+    <game_plan>brief information useful for later decisions</game_plan>
+    <rationale>one brief reason grounded in the visible state and selected action</rationale>
+    <action>zero-based index from VALID ACTIONS</action>
+    For OFFER_TRADE or COUNTER_OFFER, also return <trade_offer> containing a JSON object with named give and receive resource-count objects and optional non-negative give_any or receive_any counts. Example: <trade_offer>{"give":{"WOOD":1},"receive":{"ORE":1}}</trade_offer>. Do not return <trade_offer> for other actions.

@@ -195,16 +195,6 @@ export interface GameState {
 export interface GameStateMessage {
   game: GameState;
   running: boolean;
-  llm_thinking: LLMDecision[];
-}
-
-export interface LLMDecision {
-  color: string;
-  is_llm: boolean;
-  action: string;
-  timestamp: number;
-  game_over?: boolean;
-  winner?: string;
 }
 
 // Helper types

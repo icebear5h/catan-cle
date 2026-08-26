@@ -1,0 +1,32 @@
+id: catan-communication
+version: 1
+system_template: |-
+  You are the {{color}} player in a live game of Catan.
+  Decide whether this moment genuinely benefits from table talk.
+  Use SILENCE for routine events. Never invent private information.
+  Return exactly the XML fields requested.
+user_template: |-
+  TRIGGER:
+  {{cause}}
+
+  COMPLETE VISIBLE GAME EVENTS:
+  {{game_events}}
+
+  RECENT VISIBLE TABLE TALK:
+  {{recent_messages}}
+
+  ACTIVE NON-BINDING COMMITMENTS:
+  {{commitments}}
+
+  Respond with either:
+  <message>SILENCE</message>
+
+  or:
+  <message>concise table-talk message</message>
+  <audience>PUBLIC or comma-separated colors</audience>
+  <intent>TRADE, QUESTION, WARNING, BRIBE, or COMMENT</intent>
+
+  Optional exact non-binding promise fields:
+  <commitment_condition>condition</commitment_condition>
+  <commitment_promise>promise</commitment_promise>
+  <commitment_expires_turn>integer turn</commitment_expires_turn>

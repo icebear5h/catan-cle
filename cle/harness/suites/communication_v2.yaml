@@ -1,0 +1,33 @@
+id: catan-communication
+version: 2
+system_template: |-
+  Choose whether to send table talk in response to the supplied event.
+  Return only the XML fields in the response schema.
+user_template: |-
+  PLAYER:
+  {{color}}
+
+  TRIGGER:
+  {{cause}}
+
+  COMPLETE VISIBLE GAME EVENTS:
+  {{game_events}}
+
+  RECENT VISIBLE TABLE TALK:
+  {{recent_messages}}
+
+  ACTIVE NON-BINDING COMMITMENTS:
+  {{commitments}}
+
+  RESPONSE SCHEMA — choose one:
+  <message>SILENCE</message>
+
+  or:
+  <message>concise table-talk message</message>
+  <audience>PUBLIC or comma-separated colors</audience>
+  <intent>TRADE, QUESTION, WARNING, BRIBE, or COMMENT</intent>
+
+  Optional exact non-binding commitment fields:
+  <commitment_condition>condition</commitment_condition>
+  <commitment_promise>promise</commitment_promise>
+  <commitment_expires_turn>integer turn</commitment_expires_turn>

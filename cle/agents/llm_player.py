@@ -22,8 +22,9 @@ from PIL import Image
 from groq import Groq
 from playwright.sync_api import sync_playwright
 
-from engine.models.player import Player, Color
-from engine.models.enums import Action, ActionType
+from game_engine.models.player import Color
+from cle.players.legacy import Player
+from game_engine.models.enums import Action, ActionType
 from cle.env.observation_formatter import (
     CatanObservationFormatter,
     create_observation_from_state,
@@ -414,11 +415,11 @@ Pick the next action to execute."""
 
         # Debug output
         print(f"\n{'#'*80}")
-        print(f"SYSTEM PROMPT")
+        print("SYSTEM PROMPT")
         print(f"{'#'*80}")
         print(system_prompt)
         print(f"\n{'#'*80}")
-        print(f"USER PROMPT (truncated)")
+        print("USER PROMPT (truncated)")
         print(f"{'#'*80}")
         print(formatted_obs.raw_str[:500])
         print(f"...\n{actions_text}")
@@ -453,7 +454,7 @@ Pick the next action to execute."""
             if choice_idx < 0 or choice_idx >= len(playable_actions):
                 print(f"\n[{self.color}] INVALID INDEX {choice_idx} (range 0-{len(playable_actions)-1})")
                 print(f"Full response:\n{choice_text}")
-                print(f"Falling back to first valid action")
+                print("Falling back to first valid action")
                 choice_idx = 0
 
             selected_action = playable_actions[choice_idx]
@@ -475,18 +476,18 @@ Pick the next action to execute."""
             # Console output
             print(f"\n--- FULL LLM RESPONSE ({len(choice_text)} chars) ---")
             print(choice_text)
-            print(f"--- END RESPONSE ---\n")
+            print("--- END RESPONSE ---\n")
 
             print(f"\n{'='*80}")
             print(f"[{self.color}] LLM DECISION COMPLETE")
             print(f"{'='*80}")
             if self.strategic_notes:
-                print(f"\nGAME PLAN (persistent):")
+                print("\nGAME PLAN (persistent):")
                 print(self.strategic_notes)
-            print(f"\nTURN PLAN:")
+            print("\nTURN PLAN:")
             print(self.last_reasoning)
             print(f"\nCHOSEN ACTION: {choice_idx} - {action_desc}")
-            print(f"\nPERFORMANCE:")
+            print("\nPERFORMANCE:")
             print(f"  Observation: {obs_time:.3f}s")
             print(f"  API Call: {api_time:.3f}s")
             print(f"  Total: {total_time:.3f}s")
@@ -497,7 +498,7 @@ Pick the next action to execute."""
         except (ValueError, IndexError) as e:
             print(f"\n[{self.color}] LLM response parsing failed: {choice_text}")
             print(f"Error: {e}")
-            print(f"Falling back to first valid action")
+            print("Falling back to first valid action")
             self.last_game_plan = "Parsing failed"
             self.last_reasoning = choice_text[:200]
             return playable_actions[0]

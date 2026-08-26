@@ -1,5 +1,5 @@
 """
-Frontend board screenshotter: Game -> Playwright -> PNG bytes.
+Frontend board screenshotter: GameEngine -> Playwright -> PNG bytes.
 
 Captures the React+Colonist-asset board by:
 1. Starting Flask backend + Vite dev server (if not already running)
@@ -33,8 +33,8 @@ import httpx
 from PIL import Image
 from playwright.async_api import async_playwright
 
-from engine.game import Game
-from engine.json import GameEncoder
+from game_engine.game import GameEngine
+from game_engine.json import GameEncoder
 from playground.game_viewer.serialize import serialize_game_for_inject
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -121,13 +121,13 @@ class FrontendScreenshotter:
 
     async def screenshot(
         self,
-        game: Game,
+        game: GameEngine,
         settle_ms: int = 600,
     ) -> bytes:
-        """Render a Game state in the frontend and return PNG bytes.
+        """Render a GameEngine state in the frontend and return PNG bytes.
 
         Args:
-            game: Engine Game object at any point in play.
+            game: Engine GameEngine object at any point in play.
             settle_ms: Milliseconds to wait after state injection for render.
 
         Returns:
@@ -169,7 +169,7 @@ class FrontendScreenshotter:
         img.save(buf, format="PNG")
         return buf.getvalue()
 
-    async def screenshot_to_file(self, game: Game, path: str, **kwargs) -> str:
+    async def screenshot_to_file(self, game: GameEngine, path: str, **kwargs) -> str:
         """Screenshot and save to file. Returns path."""
         png = await self.screenshot(game, **kwargs)
         Path(path).write_bytes(png)
@@ -217,7 +217,7 @@ class FrontendScreenshotter:
 
         # Wait for the app to mount and socket to connect
         await self._page.wait_for_selector(".app", timeout=10000)
-        game_viewer_button = self._page.get_by_role("button", name="Game Viewer")
+        game_viewer_button = self._page.get_by_role("button", name="GameEngine Viewer")
         if await game_viewer_button.count():
             await game_viewer_button.first.click()
             await self._page.wait_for_selector(".board-container", timeout=10000)

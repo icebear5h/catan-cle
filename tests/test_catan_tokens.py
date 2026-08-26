@@ -1,4 +1,4 @@
-from catanbench.tokens import (
+from catan_board_bench.tokens import (
     added_tokens,
     base_edges,
     color_token,
@@ -9,8 +9,8 @@ from catanbench.tokens import (
     tile_token,
     token_manifest,
 )
-from engine.models.map import NUM_EDGES, NUM_NODES, NUM_TILES
-from engine.models.player import Color
+from game_engine.models.map import NUM_EDGES, NUM_NODES, NUM_TILES
+from game_engine.models.player import Color
 
 
 def test_atlas_token_counts_are_stable():

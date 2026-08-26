@@ -7,13 +7,13 @@ the Catan visual-grounding and multi-agent learning project.
 
 This note is meant to be read tomorrow. It is not a final methodology claim. It
 is a map of what to read, why it matters, and how it translates into concrete
-CatanBench/SFT work.
+CatanBoardBench/SFT work.
 
 ## Start Here
 
 Read in this order:
 
-1. **CatanBench eval design**
+1. **CatanBoardBench eval design**
    - MME: https://arxiv.org/abs/2306.13394
    - SEED-Bench: https://arxiv.org/abs/2307.16125
    - MMBench: https://arxiv.org/abs/2307.06281
@@ -111,7 +111,7 @@ Relevant pattern:
 
 Catan translation:
 
-- CatanBench should have a formal spec:
+- CatanBoardBench should have a formal spec:
   - sample schema
   - answer schema
   - grader semantics
@@ -162,7 +162,7 @@ Relevant pattern:
 
 Catan translation:
 
-- CatanBench exact token answers are good for final parser behavior.
+- CatanBoardBench exact token answers are good for final parser behavior.
 - Add a multiple-choice diagnostic mode for "can it see the object?" separate
   from "can it emit our exact token format?"
 - Keep human-verifier frontend for samples where we do not trust the engine/render
@@ -181,7 +181,7 @@ Relevant pattern:
 
 Catan translation:
 
-- If we add multiple-choice CatanBench rows, rotate choices.
+- If we add multiple-choice CatanBoardBench rows, rotate choices.
 - Track invalid format separately from visually wrong answers.
 - Use the exact/component split, but also add:
   - format-valid rate
@@ -232,7 +232,7 @@ Catan translation:
 - Add paired counterfactual boards where exactly one road/settlement/robber/port
   changes.
 
-## CatanBench Controls To Add
+## CatanBoardBench Controls To Add
 
 Highest priority controls:
 
@@ -334,7 +334,7 @@ For Catan:
 - Keep answer formatting stable.
 - Use fresh non-benchmark game IDs.
 - Store game IDs and split assignment next to the dataset.
-- Preserve leakage ledger checks against CatanBench-100.
+- Preserve leakage ledger checks against CatanBoardBench-100.
 
 Recommended Catan SFT phases:
 
@@ -690,7 +690,7 @@ clean label.
 
 ## Recommended Experiment Roadmap
 
-### Phase A: Harden CatanBench
+### Phase A: Harden CatanBoardBench
 
 Deliverables:
 
@@ -748,7 +748,7 @@ Trainable scopes:
 
 Success:
 
-- CatanBench-100 improves on hard local categories:
+- CatanBoardBench-100 improves on hard local categories:
   - `tile_resource_number`
   - `robber_tile`
   - `edge_road_owner`
@@ -759,7 +759,7 @@ Not success:
 
 - only `NONE`/`EMPTY` improves
 - only format-valid rate improves
-- train examples improve but held-out CatanBench does not
+- train examples improve but held-out CatanBoardBench does not
 
 ### Phase D: Full Board Contract Extraction
 
@@ -810,7 +810,7 @@ Evaluation:
 
 ## Traps To Avoid
 
-- Benchmark leakage from CatanBench game IDs.
+- Benchmark leakage from CatanBoardBench game IDs.
 - Tuning on the exact screenshots/contracts used for eval.
 - Measuring mostly `EMPTY`/`NONE`.
 - Letting answer format dominate the score.
@@ -912,9 +912,9 @@ Evaluation:
 
 ## Tomorrow's Concrete Checklist
 
-1. Read the five VLM eval papers and update CatanBench categories into a formal
+1. Read the five VLM eval papers and update CatanBoardBench categories into a formal
    capability taxonomy.
-2. Add no-image and atlas-only controls to `data_pipeline/catanbench/eval`.
+2. Add no-image and atlas-only controls to `data_pipeline/catan_board_bench/eval`.
 3. Generate a fresh non-benchmark game split for SFT and save game IDs.
 4. Build Phase 0 topology data at 2k and 10k rows.
 5. Run embeddings+lm_head vs LoRA smoke on Phase 0.
@@ -923,7 +923,7 @@ Evaluation:
    - token embeddings + lm_head, or
    - QLoRA all-linear with added-token modules saved.
 8. After first checkpoint, run:
-   - CatanBench-100 hard categories
+   - CatanBoardBench-100 hard categories
    - no-image control
    - positive/occupied/non-generic subset reports
    - atlas linear probe

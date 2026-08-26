@@ -1,0 +1,26 @@
+{
+  "atlas_prompt": false,
+  "categories": {
+    "isolated_hex_direction_to_label": 36,
+    "isolated_hex_label_to_direction": 36
+  },
+  "chance_accuracy": 0.16666666666666666,
+  "directions": [
+    "LEFT",
+    "RIGHT",
+    "UP-LEFT",
+    "UP-RIGHT",
+    "DOWN-LEFT",
+    "DOWN-RIGHT"
+  ],
+  "generated_at": "2026-08-16T22:29:00.501910+00:00",
+  "image_count": 6,
+  "image_size": [
+    512,
+    512
+  ],
+  "layout_count": 6,
+  "name": "hex_direction_probe",
+  "qa_count": 72,
+  "schema": "catan_hex_direction_probe/v1"
+}

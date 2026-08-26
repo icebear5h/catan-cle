@@ -252,7 +252,7 @@ def main():
                         help="Prompt key or custom text")
     parser.add_argument("--all-models", action="store_true",
                         help="Run all models")
-    parser.add_argument("--output", default="data_pipeline/training/pretraining/output/vlm_benchmark_results.json",
+    parser.add_argument("--output", default="artifacts/generated/pretraining/legacy_corpus/vlm_benchmark_results.json",
                         help="Output JSON path")
     args = parser.parse_args()
 

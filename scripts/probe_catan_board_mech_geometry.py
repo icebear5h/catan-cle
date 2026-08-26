@@ -4,29 +4,25 @@ using Qwen visual-language residuals."""
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import re
-import sys
-from collections import Counter, defaultdict
+from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 import torch
 
-
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
-from catanbench.tokens import (
+from catan_board_bench.tokens import (
+    add_tokens_to_tokenizer,
     atlas_metadata,
     canonical_edge,
     edge_token,
     node_token,
     port_token,
     tile_token,
-)  # noqa: E402
+)
 
 
 CANONICAL_CATEGORY_MAP: dict[str, str] = {
@@ -257,7 +253,11 @@ def _infer_target_token(category: str, target: dict[str, Any]) -> tuple[str, str
         parsed = _kind_from_token(target["node_token"])
         if parsed:
             return parsed
-    if target_kind == "edge" and isinstance(target.get("edge_id"), (list, tuple)) and len(target["edge_id"]) == 2:
+    if (
+        target_kind == "edge"
+        and isinstance(target.get("edge_id"), (list, tuple))
+        and len(target["edge_id"]) == 2
+    ):
         return "edge", edge_token((int(target["edge_id"][0]), int(target["edge_id"][1])))
     if target_kind == "port" and isinstance(target.get("port_token"), str):
         parsed = _kind_from_token(target["port_token"])
@@ -291,7 +291,9 @@ def _load_manifest(path: Path | None) -> dict[str, str]:
     return mapping
 
 
-def _load_rows(qa_jsonl: Path, manifest: dict[str, str], dataset_root: Path, args: argparse.Namespace) -> list[dict[str, Any]]:
+def _load_rows(
+    qa_jsonl: Path, manifest: dict[str, str], dataset_root: Path, args: argparse.Namespace
+) -> list[dict[str, Any]]:
     allowed_categories = {cat.strip() for cat in args.categories.split(",") if cat.strip()}
     requested_parts = {part.strip().lower() for part in args.parts.split(",") if part.strip()}
     requested_parts = {part for part in requested_parts if part in PARTS}
@@ -368,8 +370,7 @@ def _build_atlas_graphs() -> dict[str, dict[int, set[int]]]:
     node_neighbors = {node_id: set() for node_id in range(54)}
     port_neighbors = {port_id: set() for port_id in range(9)}
 
-    # Edge id (canonical tuple) -> edge index
-    edge_id_to_index = token_maps["edge"]
+    # Edge token -> edge index
     edge_token_to_index = {tok: idx for idx, tok in enumerate(token_maps["edge_tokens"])}
     edge_graph = {idx: set() for idx in range(len(edge_token_to_index))}
 
@@ -441,7 +442,9 @@ def _token_index_maps() -> dict[str, Any]:
     meta = atlas_metadata()
     tile_map = {tile_token(tile["id"]): tile["id"] for tile in meta["tiles"]}
     node_map = {node_token(i): i for i in range(54)}
-    edge_tokens = [edge_token(canonical_edge((edge["id"][0], edge["id"][1]))) for edge in meta["edges"]]
+    edge_tokens = [
+        edge_token(canonical_edge((edge["id"][0], edge["id"][1]))) for edge in meta["edges"]
+    ]
     edge_map = {tok: idx for idx, tok in enumerate(edge_tokens)}
     edge_token_list = edge_tokens
     port_map = {port_token(port["id"]): port["id"] for port in meta["ports"]}
@@ -473,31 +476,32 @@ def _torch_dtype(name: str, fallback: str | None = None) -> torch.dtype:
 
 
 def _load_model_and_processor(args: argparse.Namespace):
-    from peft import PeftModel
-    from transformers import AutoModelForImageTextToText, AutoProcessor, BitsAndBytesConfig
-
-    from catanbench.tokens import add_tokens_to_tokenizer
+    peft = importlib.import_module("peft")
+    transformers = importlib.import_module("transformers")
 
     if args.bits in (4, 8):
-        import bitsandbytes  # noqa: F401
+        importlib.import_module("bitsandbytes")
 
-    processor = AutoProcessor.from_pretrained(args.model_id)
+    processor = transformers.AutoProcessor.from_pretrained(args.model_id)
     if hasattr(processor, "tokenizer"):
         processor.tokenizer.padding_side = "right"
 
     quant = None
     dtype = _torch_dtype(args.dtype, fallback="bf16")
     if args.bits == 4:
-        quant = BitsAndBytesConfig(
+        quant = transformers.BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_use_double_quant=True,
             bnb_4bit_compute_dtype=dtype,
             bnb_4bit_quant_type="nf4",
         )
     elif args.bits == 8:
-        quant = BitsAndBytesConfig(load_in_8bit=True, bnb_8bit_compute_dtype=dtype)
+        quant = transformers.BitsAndBytesConfig(
+            load_in_8bit=True,
+            bnb_8bit_compute_dtype=dtype,
+        )
 
-    model = AutoModelForImageTextToText.from_pretrained(
+    model = transformers.AutoModelForImageTextToText.from_pretrained(
         args.model_id,
         device_map="auto" if args.device == "auto" else None,
         torch_dtype=dtype,
@@ -516,7 +520,7 @@ def _load_model_and_processor(args: argparse.Namespace):
     )
 
     if args.adapter_dir:
-        model = PeftModel.from_pretrained(model, args.adapter_dir)
+        model = peft.PeftModel.from_pretrained(model, args.adapter_dir)
         print(f"loaded_adapter={args.adapter_dir}")
 
     model.eval()
@@ -657,7 +661,9 @@ def _evaluate_identity_by_layer(
             test_means[lbl] = (sum_by_class[lbl] - sample_vec) / (count_by_class[lbl] - 1)
             c_ids = sorted(test_means)
             centroid_matrix = np.stack([test_means[c] for c in c_ids], axis=0)
-            centroid_matrix = centroid_matrix / (np.linalg.norm(centroid_matrix, axis=1, keepdims=True) + 1e-9)
+            centroid_matrix = centroid_matrix / (
+                np.linalg.norm(centroid_matrix, axis=1, keepdims=True) + 1e-9
+            )
             pred_idx = int(np.argmax(sample_vec @ centroid_matrix.T))
             pred = c_ids[pred_idx]
             tested += 1

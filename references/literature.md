@@ -4,9 +4,9 @@ This folder tracks the papers and claims that matter for a Catan board-understan
 
 Project-specific benchmark evidence:
 
-- [Catan Bench 100 Initial Findings](catan_bench_100_findings.md)
+- [CatanBoardBench-100 Initial Findings](catan_board_bench_100_findings.md)
 - [Catan VLM Model Selection](vlm_model_selection.md)
-- [VLM Benchmarking Literature Review For CatanBench](vlm_benchmarking_review.md)
+- [VLM Benchmarking Literature Review For CatanBoardBench](vlm_benchmarking_review.md)
 
 ## Board Games and Symbolic State
 

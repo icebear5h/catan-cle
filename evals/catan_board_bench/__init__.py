@@ -1,0 +1,1 @@
+"""CatanBoardBench OpenBench integration."""

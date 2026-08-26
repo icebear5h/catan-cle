@@ -1,0 +1,208 @@
+CATAN FULL PUBLIC GRAPH V1
+ASCII VARIANT=topology_diagram
+ENTITY IDS ARE OPAQUE, PERMUTED, AND BOARD-LOCAL.
+ALL 19 TILES, 54 NODES, 72 EDGES, AND 9 PORTS ARE EXPLICIT.
+A dash (-) means no number, color, building, road, port, or adjacent tile.
+RECORDS: T=tile N=node E=edge P=port; lists are comma-separated.
+NODE / EDGE / TILE TOPOLOGY DIAGRAM
+                                 /N39\                /N49\                /N51\
+                            /E22/     \E06\\     /E39/     \E32\     /E40//     \E03\
+                        N06/                \N42/               \N13/                \N01
+                         /                    /                   /                    /
+                         /                    /                   /                    /
+                        E67       T15        E49      T03*       E16        T10       E02
+                         /                    /                   /                    /
+                         /                    /                   /                    /
+                       /N45\                /N15\               /N33\                /N35\
+                 /E30//     \E26\     /E64//     \E28\     /E04/     \E13\\     /E10/     \E58\\
+             N17/                \N32/                \N28/                \N21/                \N16
+              /                    /                    /                    /                    /
+             E59        T07       E61        T16       E08       T00        E17       T11        E34
+              /                    /                    /                    /                    /
+              /                    /                    /                    /                    /
+             N31                  N12                  N24                  N09                  N23
+        E24//   \\E36        E43//   \\E66        E38//   \\E37       E23///   \\E71       E01///   \\E09
+      ///           \\\\   ///           \\\\   ///           \\\   ////           \\\   ////           \\\
+   N46                  N07                  N04                 N40                  N50                  N27
+    /                    /                    /                   /                    /                    /
+   E21       T01        E05       T13        E12       T09       E27        T17       E41        T06       E70
+    /                    /                    /                   /                    /                    /
+   N38                  N48                  N44                 N20                  N11                  N02
+      \\E68       E14///   \\E31       E51///   \\E20       E46//   \\E00        E52//   \\E53        E50//
+         \\\\   ////          \\\\   ////          \\\\   ////          \\\\   ////          \\\\   ////
+             N36                  N30                  N47                  N53                  N10
+              /                    /                    /                    /                    /
+             E19                  E60                  E29                  E54                  E44
+              /         T08        /         T18        /        T12         /        T05         /
+              /                    /                    /                    /                    /
+             N26\                /N08\                /N41\                /N14\                /N52
+                 \E11\\     /E42/     \E48\\     /E15/     \E45\     /E25//     \E63\     /E47//
+                       \N34/                \N19/               \N22/                \N05/
+                         /                    /                   /                    /
+                         /                    /                   /                    /
+                        E56       T14        E07       T04       E62        T02       E33
+                         /                    /                   /                    /
+                         /                    /                   /                    /
+                        N37\                /N00\               /N29\                /N03
+                            \E65\     /E69//     \E55\     /E57/     \E18\\     /E35/
+                                 \N25/                \N43/                \N18/
+
+FULL FACT RECORDS
+TILES
+T|T00|cube=1,0,-1|resource=WOOD|number=6|robber=0|corners=NORTH:N33,NORTHEAST:N21,SOUTHEAST:N09,SOUTH:N40,SOUTHWEST:N24,NORTHWEST:N28|sides=EAST:E17,SOUTHEAST:E23,SOUTHWEST:E37,WEST:E08,NORTHWEST:E04,NORTHEAST:E13
+T|T01|cube=-2,2,0|resource=WHEAT|number=8|robber=0|corners=NORTH:N31,NORTHEAST:N07,SOUTHEAST:N48,SOUTH:N36,SOUTHWEST:N38,NORTHWEST:N46|sides=EAST:E05,SOUTHEAST:E14,SOUTHWEST:E68,WEST:E21,NORTHWEST:E24,NORTHEAST:E36
+T|T02|cube=0,-2,2|resource=BRICK|number=5|robber=0|corners=NORTH:N14,NORTHEAST:N05,SOUTHEAST:N03,SOUTH:N18,SOUTHWEST:N29,NORTHWEST:N22|sides=EAST:E33,SOUTHEAST:E35,SOUTHWEST:E18,WEST:E62,NORTHWEST:E25,NORTHEAST:E63
+T|T03|cube=1,1,-2|resource=DESERT|number=-|robber=1|corners=NORTH:N49,NORTHEAST:N13,SOUTHEAST:N33,SOUTH:N28,SOUTHWEST:N15,NORTHWEST:N42|sides=EAST:E16,SOUTHEAST:E04,SOUTHWEST:E28,WEST:E49,NORTHWEST:E39,NORTHEAST:E32
+T|T04|cube=-1,-1,2|resource=ORE|number=2|robber=0|corners=NORTH:N41,NORTHEAST:N22,SOUTHEAST:N29,SOUTH:N43,SOUTHWEST:N00,NORTHWEST:N19|sides=EAST:E62,SOUTHEAST:E57,SOUTHWEST:E55,WEST:E07,NORTHWEST:E15,NORTHEAST:E45
+T|T05|cube=1,-2,1|resource=SHEEP|number=8|robber=0|corners=NORTH:N11,NORTHEAST:N10,SOUTHEAST:N52,SOUTH:N05,SOUTHWEST:N14,NORTHWEST:N53|sides=EAST:E44,SOUTHEAST:E47,SOUTHWEST:E63,WEST:E54,NORTHWEST:E52,NORTHEAST:E53
+T|T06|cube=2,-2,0|resource=WOOD|number=4|robber=0|corners=NORTH:N23,NORTHEAST:N27,SOUTHEAST:N02,SOUTH:N10,SOUTHWEST:N11,NORTHWEST:N50|sides=EAST:E70,SOUTHEAST:E50,SOUTHWEST:E53,WEST:E41,NORTHWEST:E01,NORTHEAST:E09
+T|T07|cube=-1,2,-1|resource=SHEEP|number=10|robber=0|corners=NORTH:N45,NORTHEAST:N32,SOUTHEAST:N12,SOUTH:N07,SOUTHWEST:N31,NORTHWEST:N17|sides=EAST:E61,SOUTHEAST:E43,SOUTHWEST:E36,WEST:E59,NORTHWEST:E30,NORTHEAST:E26
+T|T08|cube=-2,1,1|resource=BRICK|number=3|robber=0|corners=NORTH:N48,NORTHEAST:N30,SOUTHEAST:N08,SOUTH:N34,SOUTHWEST:N26,NORTHWEST:N36|sides=EAST:E60,SOUTHEAST:E42,SOUTHWEST:E11,WEST:E19,NORTHWEST:E14,NORTHEAST:E31
+T|T09|cube=0,0,0|resource=BRICK|number=11|robber=0|corners=NORTH:N24,NORTHEAST:N40,SOUTHEAST:N20,SOUTH:N47,SOUTHWEST:N44,NORTHWEST:N04|sides=EAST:E27,SOUTHEAST:E46,SOUTHWEST:E20,WEST:E12,NORTHWEST:E38,NORTHEAST:E37
+T|T10|cube=2,0,-2|resource=WOOD|number=12|robber=0|corners=NORTH:N51,NORTHEAST:N01,SOUTHEAST:N35,SOUTH:N21,SOUTHWEST:N33,NORTHWEST:N13|sides=EAST:E02,SOUTHEAST:E10,SOUTHWEST:E13,WEST:E16,NORTHWEST:E40,NORTHEAST:E03
+T|T11|cube=2,-1,-1|resource=ORE|number=11|robber=0|corners=NORTH:N35,NORTHEAST:N16,SOUTHEAST:N23,SOUTH:N50,SOUTHWEST:N09,NORTHWEST:N21|sides=EAST:E34,SOUTHEAST:E01,SOUTHWEST:E71,WEST:E17,NORTHWEST:E10,NORTHEAST:E58
+T|T12|cube=0,-1,1|resource=SHEEP|number=10|robber=0|corners=NORTH:N20,NORTHEAST:N53,SOUTHEAST:N14,SOUTH:N22,SOUTHWEST:N41,NORTHWEST:N47|sides=EAST:E54,SOUTHEAST:E25,SOUTHWEST:E45,WEST:E29,NORTHWEST:E46,NORTHEAST:E00
+T|T13|cube=-1,1,0|resource=WOOD|number=4|robber=0|corners=NORTH:N12,NORTHEAST:N04,SOUTHEAST:N44,SOUTH:N30,SOUTHWEST:N48,NORTHWEST:N07|sides=EAST:E12,SOUTHEAST:E51,SOUTHWEST:E31,WEST:E05,NORTHWEST:E43,NORTHEAST:E66
+T|T14|cube=-2,0,2|resource=SHEEP|number=6|robber=0|corners=NORTH:N08,NORTHEAST:N19,SOUTHEAST:N00,SOUTH:N25,SOUTHWEST:N37,NORTHWEST:N34|sides=EAST:E07,SOUTHEAST:E69,SOUTHWEST:E65,WEST:E56,NORTHWEST:E42,NORTHEAST:E48
+T|T15|cube=0,2,-2|resource=WHEAT|number=9|robber=0|corners=NORTH:N39,NORTHEAST:N42,SOUTHEAST:N15,SOUTH:N32,SOUTHWEST:N45,NORTHWEST:N06|sides=EAST:E49,SOUTHEAST:E64,SOUTHWEST:E26,WEST:E67,NORTHWEST:E22,NORTHEAST:E06
+T|T16|cube=0,1,-1|resource=WHEAT|number=5|robber=0|corners=NORTH:N15,NORTHEAST:N28,SOUTHEAST:N24,SOUTH:N04,SOUTHWEST:N12,NORTHWEST:N32|sides=EAST:E08,SOUTHEAST:E38,SOUTHWEST:E66,WEST:E61,NORTHWEST:E64,NORTHEAST:E28
+T|T17|cube=1,-1,0|resource=ORE|number=3|robber=0|corners=NORTH:N09,NORTHEAST:N50,SOUTHEAST:N11,SOUTH:N53,SOUTHWEST:N20,NORTHWEST:N40|sides=EAST:E41,SOUTHEAST:E52,SOUTHWEST:E00,WEST:E27,NORTHWEST:E23,NORTHEAST:E71
+T|T18|cube=-1,0,1|resource=WHEAT|number=9|robber=0|corners=NORTH:N44,NORTHEAST:N47,SOUTHEAST:N41,SOUTH:N19,SOUTHWEST:N08,NORTHWEST:N30|sides=EAST:E29,SOUTHEAST:E15,SOUTHWEST:E48,WEST:E60,NORTHWEST:E51,NORTHEAST:E20
+NODES
+N|N00|color=-|building=-|tiles=T04,T14|edges=E07,E55,E69|ports=-
+N|N01|color=-|building=-|tiles=T10|edges=E02,E03|ports=-
+N|N02|color=-|building=-|tiles=T06|edges=E50,E70|ports=P05
+N|N03|color=-|building=-|tiles=T02|edges=E33,E35|ports=-
+N|N04|color=-|building=-|tiles=T09,T13,T16|edges=E12,E38,E66|ports=-
+N|N05|color=-|building=-|tiles=T02,T05|edges=E33,E47,E63|ports=P06
+N|N06|color=-|building=-|tiles=T15|edges=E22,E67|ports=P03
+N|N07|color=RED|building=SETTLEMENT|tiles=T01,T07,T13|edges=E05,E36,E43|ports=-
+N|N08|color=BLACK|building=SETTLEMENT|tiles=T08,T14,T18|edges=E42,E48,E60|ports=-
+N|N09|color=GREEN|building=SETTLEMENT|tiles=T00,T11,T17|edges=E17,E23,E71|ports=-
+N|N10|color=-|building=-|tiles=T05,T06|edges=E44,E50,E53|ports=-
+N|N11|color=-|building=-|tiles=T05,T06,T17|edges=E41,E52,E53|ports=-
+N|N12|color=-|building=-|tiles=T07,T13,T16|edges=E43,E61,E66|ports=-
+N|N13|color=-|building=-|tiles=T03,T10|edges=E16,E32,E40|ports=P04
+N|N14|color=BLUE|building=SETTLEMENT|tiles=T02,T05,T12|edges=E25,E54,E63|ports=-
+N|N15|color=-|building=-|tiles=T03,T15,T16|edges=E28,E49,E64|ports=-
+N|N16|color=-|building=-|tiles=T11|edges=E34,E58|ports=P01
+N|N17|color=-|building=-|tiles=T07|edges=E30,E59|ports=P07
+N|N18|color=-|building=-|tiles=T02|edges=E18,E35|ports=-
+N|N19|color=-|building=-|tiles=T04,T14,T18|edges=E07,E15,E48|ports=-
+N|N20|color=-|building=-|tiles=T09,T12,T17|edges=E00,E27,E46|ports=-
+N|N21|color=-|building=-|tiles=T00,T10,T11|edges=E10,E13,E17|ports=-
+N|N22|color=-|building=-|tiles=T02,T04,T12|edges=E25,E45,E62|ports=-
+N|N23|color=-|building=-|tiles=T06,T11|edges=E01,E09,E34|ports=-
+N|N24|color=-|building=-|tiles=T00,T09,T16|edges=E08,E37,E38|ports=-
+N|N25|color=-|building=-|tiles=T14|edges=E65,E69|ports=P02
+N|N26|color=-|building=-|tiles=T08|edges=E11,E19|ports=P08
+N|N27|color=-|building=-|tiles=T06|edges=E09,E70|ports=P05
+N|N28|color=-|building=-|tiles=T00,T03,T16|edges=E04,E08,E28|ports=-
+N|N29|color=-|building=-|tiles=T02,T04|edges=E18,E57,E62|ports=P00
+N|N30|color=-|building=-|tiles=T08,T13,T18|edges=E31,E51,E60|ports=-
+N|N31|color=-|building=-|tiles=T01,T07|edges=E24,E36,E59|ports=P07
+N|N32|color=-|building=-|tiles=T07,T15,T16|edges=E26,E61,E64|ports=-
+N|N33|color=-|building=-|tiles=T00,T03,T10|edges=E04,E13,E16|ports=-
+N|N34|color=-|building=-|tiles=T08,T14|edges=E11,E42,E56|ports=-
+N|N35|color=-|building=-|tiles=T10,T11|edges=E02,E10,E58|ports=P01
+N|N36|color=-|building=-|tiles=T01,T08|edges=E14,E19,E68|ports=P08
+N|N37|color=-|building=-|tiles=T14|edges=E56,E65|ports=P02
+N|N38|color=-|building=-|tiles=T01|edges=E21,E68|ports=-
+N|N39|color=-|building=-|tiles=T15|edges=E06,E22|ports=P03
+N|N40|color=-|building=-|tiles=T00,T09,T17|edges=E23,E27,E37|ports=-
+N|N41|color=-|building=-|tiles=T04,T12,T18|edges=E15,E29,E45|ports=-
+N|N42|color=-|building=-|tiles=T03,T15|edges=E06,E39,E49|ports=-
+N|N43|color=-|building=-|tiles=T04|edges=E55,E57|ports=P00
+N|N44|color=-|building=-|tiles=T09,T13,T18|edges=E12,E20,E51|ports=-
+N|N45|color=-|building=-|tiles=T07,T15|edges=E26,E30,E67|ports=-
+N|N46|color=-|building=-|tiles=T01|edges=E21,E24|ports=-
+N|N47|color=-|building=-|tiles=T09,T12,T18|edges=E20,E29,E46|ports=-
+N|N48|color=-|building=-|tiles=T01,T08,T13|edges=E05,E14,E31|ports=-
+N|N49|color=-|building=-|tiles=T03|edges=E32,E39|ports=P04
+N|N50|color=-|building=-|tiles=T06,T11,T17|edges=E01,E41,E71|ports=-
+N|N51|color=-|building=-|tiles=T10|edges=E03,E40|ports=-
+N|N52|color=-|building=-|tiles=T05|edges=E44,E47|ports=P06
+N|N53|color=-|building=-|tiles=T05,T12,T17|edges=E00,E52,E54|ports=-
+EDGES
+E|E00|nodes=N20,N53|road=-|tiles=T12,T17
+E|E01|nodes=N50,N23|road=-|tiles=T06,T11
+E|E02|nodes=N01,N35|road=-|tiles=T10
+E|E03|nodes=N51,N01|road=-|tiles=T10
+E|E04|nodes=N28,N33|road=-|tiles=T00,T03
+E|E05|nodes=N48,N07|road=RED|tiles=T01,T13
+E|E06|nodes=N39,N42|road=-|tiles=T15
+E|E07|nodes=N19,N00|road=-|tiles=T04,T14
+E|E08|nodes=N24,N28|road=-|tiles=T00,T16
+E|E09|nodes=N23,N27|road=-|tiles=T06
+E|E10|nodes=N21,N35|road=-|tiles=T10,T11
+E|E11|nodes=N34,N26|road=-|tiles=T08
+E|E12|nodes=N44,N04|road=-|tiles=T09,T13
+E|E13|nodes=N33,N21|road=-|tiles=T00,T10
+E|E14|nodes=N48,N36|road=-|tiles=T01,T08
+E|E15|nodes=N41,N19|road=-|tiles=T04,T18
+E|E16|nodes=N33,N13|road=-|tiles=T03,T10
+E|E17|nodes=N09,N21|road=-|tiles=T00,T11
+E|E18|nodes=N18,N29|road=-|tiles=T02
+E|E19|nodes=N26,N36|road=-|tiles=T08
+E|E20|nodes=N47,N44|road=-|tiles=T09,T18
+E|E21|nodes=N38,N46|road=-|tiles=T01
+E|E22|nodes=N39,N06|road=-|tiles=T15
+E|E23|nodes=N40,N09|road=GREEN|tiles=T00,T17
+E|E24|nodes=N31,N46|road=-|tiles=T01
+E|E25|nodes=N14,N22|road=BLUE|tiles=T02,T12
+E|E26|nodes=N32,N45|road=-|tiles=T07,T15
+E|E27|nodes=N40,N20|road=-|tiles=T09,T17
+E|E28|nodes=N15,N28|road=-|tiles=T03,T16
+E|E29|nodes=N47,N41|road=-|tiles=T12,T18
+E|E30|nodes=N45,N17|road=-|tiles=T07
+E|E31|nodes=N30,N48|road=-|tiles=T08,T13
+E|E32|nodes=N49,N13|road=-|tiles=T03
+E|E33|nodes=N05,N03|road=-|tiles=T02
+E|E34|nodes=N23,N16|road=-|tiles=T11
+E|E35|nodes=N03,N18|road=-|tiles=T02
+E|E36|nodes=N07,N31|road=-|tiles=T01,T07
+E|E37|nodes=N24,N40|road=-|tiles=T00,T09
+E|E38|nodes=N24,N04|road=-|tiles=T09,T16
+E|E39|nodes=N42,N49|road=-|tiles=T03
+E|E40|nodes=N13,N51|road=-|tiles=T10
+E|E41|nodes=N50,N11|road=-|tiles=T06,T17
+E|E42|nodes=N08,N34|road=-|tiles=T08,T14
+E|E43|nodes=N12,N07|road=-|tiles=T07,T13
+E|E44|nodes=N10,N52|road=-|tiles=T05
+E|E45|nodes=N22,N41|road=-|tiles=T04,T12
+E|E46|nodes=N20,N47|road=-|tiles=T09,T12
+E|E47|nodes=N52,N05|road=-|tiles=T05
+E|E48|nodes=N19,N08|road=BLACK|tiles=T14,T18
+E|E49|nodes=N15,N42|road=-|tiles=T03,T15
+E|E50|nodes=N02,N10|road=-|tiles=T06
+E|E51|nodes=N44,N30|road=-|tiles=T13,T18
+E|E52|nodes=N11,N53|road=-|tiles=T05,T17
+E|E53|nodes=N11,N10|road=-|tiles=T05,T06
+E|E54|nodes=N53,N14|road=-|tiles=T05,T12
+E|E55|nodes=N43,N00|road=-|tiles=T04
+E|E56|nodes=N37,N34|road=-|tiles=T14
+E|E57|nodes=N29,N43|road=-|tiles=T04
+E|E58|nodes=N35,N16|road=-|tiles=T11
+E|E59|nodes=N31,N17|road=-|tiles=T07
+E|E60|nodes=N08,N30|road=-|tiles=T08,T18
+E|E61|nodes=N12,N32|road=-|tiles=T07,T16
+E|E62|nodes=N22,N29|road=-|tiles=T02,T04
+E|E63|nodes=N14,N05|road=-|tiles=T02,T05
+E|E64|nodes=N15,N32|road=-|tiles=T15,T16
+E|E65|nodes=N25,N37|road=-|tiles=T14
+E|E66|nodes=N04,N12|road=-|tiles=T13,T16
+E|E67|nodes=N45,N06|road=-|tiles=T15
+E|E68|nodes=N36,N38|road=-|tiles=T01
+E|E69|nodes=N00,N25|road=-|tiles=T14
+E|E70|nodes=N27,N02|road=-|tiles=T06
+E|E71|nodes=N09,N50|road=-|tiles=T11,T17
+PORTS
+P|P00|cube=-1,-2,3|direction=NORTHWEST|resource=SHEEP|ratio=2:1|nodes=N29,N43
+P|P01|cube=3,-1,-2|direction=SOUTHWEST|resource=WHEAT|ratio=2:1|nodes=N35,N16
+P|P02|cube=-3,0,3|direction=NORTHEAST|resource=GENERIC|ratio=3:1|nodes=N25,N37
+P|P03|cube=0,3,-3|direction=SOUTHEAST|resource=WOOD|ratio=2:1|nodes=N06,N39
+P|P04|cube=2,1,-3|direction=SOUTHWEST|resource=GENERIC|ratio=3:1|nodes=N49,N13
+P|P05|cube=3,-3,0|direction=WEST|resource=GENERIC|ratio=3:1|nodes=N27,N02
+P|P06|cube=1,-3,2|direction=NORTHWEST|resource=BRICK|ratio=2:1|nodes=N52,N05
+P|P07|cube=-2,3,-1|direction=EAST|resource=ORE|ratio=2:1|nodes=N31,N17
+P|P08|cube=-3,2,1|direction=EAST|resource=GENERIC|ratio=3:1|nodes=N26,N36

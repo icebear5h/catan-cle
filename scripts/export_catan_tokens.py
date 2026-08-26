@@ -10,7 +10,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from catanbench.tokens import write_token_manifest
+from catan_board_bench.tokens import write_token_manifest
 
 
 def main() -> None:

@@ -9,7 +9,7 @@ Use **Qwen3-VL-8B-Instruct** as the first serious SFT target, with
 **Gemini, Grok 4.3, Claude Sonnet 4.6, and Gemma 4 31B** as eval/comparison
 models rather than main students.
 
-This is not because Qwen3-VL-8B won zero-shot CatanBench. It did not. The reason
+This is not because Qwen3-VL-8B won zero-shot CatanBoardBench. It did not. The reason
 is operational: it is closest to the requested 9B size, Apache-2.0, has active
 adapter/fine-tune ecosystem support, and has explicit VLM SFT recipes in NVIDIA
 NeMo. For this project, base zero-shot performance matters less than whether the
@@ -42,15 +42,15 @@ Current clean 40-question visual smoke:
 
 Source artifact:
 
-- `data_pipeline/catanbench/datasets/catanbench_100/reports/2026-05-13-small-vlm-visual-smoke.md`
+- `reports/catan_board_bench/2026-05-13-small-vlm-visual-smoke.md`
 
 Interpretation:
 
-- General VLM benchmarks are not enough. CatanBench is a fixed-slot board parsing
+- General VLM benchmarks are not enough. CatanBoardBench is a fixed-slot board parsing
   task with tile/node/edge/port binding.
 - Gemini proves that frontier VLMs can extract much of the board, but even it is
   not reliable enough for a parser.
-- The student should be chosen by adaptation path plus eventual full CatanBench
+- The student should be chosen by adaptation path plus eventual full CatanBoardBench
   score, not by out-of-the-box benchmark claims.
 - The 2026-05-14 follow-up runs argue that simple model scale within Qwen is not
   solving this task zero-shot. Test InternVL3.5 locally before committing all
@@ -100,7 +100,7 @@ Why:
 
 Risks:
 
-- Our zero-shot CatanBench result was bad.
+- Our zero-shot CatanBoardBench result was bad.
 - The 8B model may not have enough visual precision without a curriculum.
 - Thinking variants can be slower and more expensive; our earlier Qwen thinking
   smoke was not worth trusting because it came from a now-excluded leaky run.
@@ -143,7 +143,7 @@ Risks:
 
 What to test next:
 
-- Run a local CatanBench smoke as soon as local inference is available.
+- Run a local CatanBoardBench smoke as soon as local inference is available.
 - If it beats Qwen3-VL-8B zero-shot and QLoRA is smooth, promote it to primary.
 
 Sources:
@@ -175,7 +175,7 @@ Risks:
 - NVIDIA's Gemma 4 31B fine-tuning guide lists 8x A100 80GB or 8x H100 for its
   full FSDP recipe. QLoRA may be possible, but the 31B path is not the cheap first
   loop.
-- Our CatanBench category breakdown is still poor: 0/4 robber tile, 0/4 node
+- Our CatanBoardBench category breakdown is still poor: 0/4 robber tile, 0/4 node
   occupancy, 0/4 tile_has_robber, 0/4 color road locations.
 
 What to test next:
@@ -358,23 +358,23 @@ selection memo:
 
 | Model | Exact | Component | Log |
 | --- | ---: | ---: | --- |
-| `openrouter/qwen/qwen3-vl-32b-instruct` | 12.5% | 16.3% | `logs/2026-05-13T17-22-52-07-00_catanbench-visual_3sEP25BLYGN6ZeySusTk6C.json` |
-| `openrouter/qwen/qwen3-vl-30b-a3b-instruct` | 7.5% | 17.5% | `logs/2026-05-13T17-23-32-07-00_catanbench-visual_Ss7WUPEEbw2wZV7TgQ4TUF.json` |
-| `openrouter/google/gemma-4-26b-a4b-it` | 10.0% | 18.3% | `logs/2026-05-13T17-24-05-07-00_catanbench-visual_68coXZJ79X4D7FHGsmbXx4.json` |
-| `openrouter/meta-llama/llama-4-scout` | 10.0% | 14.4% | `logs/2026-05-13T17-24-54-07-00_catanbench-visual_GuAB6L9YPhRHji2nPrVhtG.json` |
+| `openrouter/qwen/qwen3-vl-32b-instruct` | 12.5% | 16.3% | `logs/2026-05-13T17-22-52-07-00_catan_board_bench-visual_3sEP25BLYGN6ZeySusTk6C.json` |
+| `openrouter/qwen/qwen3-vl-30b-a3b-instruct` | 7.5% | 17.5% | `logs/2026-05-13T17-23-32-07-00_catan_board_bench-visual_Ss7WUPEEbw2wZV7TgQ4TUF.json` |
+| `openrouter/google/gemma-4-26b-a4b-it` | 10.0% | 18.3% | `logs/2026-05-13T17-24-05-07-00_catan_board_bench-visual_68coXZJ79X4D7FHGsmbXx4.json` |
+| `openrouter/meta-llama/llama-4-scout` | 10.0% | 14.4% | `logs/2026-05-13T17-24-54-07-00_catan_board_bench-visual_GuAB6L9YPhRHji2nPrVhtG.json` |
 
 Additional big-model runs:
 
 | Model | Exact | Component | Log |
 | --- | ---: | ---: | --- |
-| `openrouter/qwen/qwen3-vl-235b-a22b-instruct` | 17.5% | 22.5% | `logs/2026-05-13T17-41-41-07-00_catanbench-visual_cM6wEnPB7rfntyHZBpoTxq.json` |
-| `openrouter/meta-llama/llama-4-maverick` | 12.5% | 18.8% | `logs/2026-05-13T17-42-21-07-00_catanbench-visual_a26Ds3bshcScSb6rDNNSQE.json` |
-| `openrouter/anthropic/claude-opus-4.7` | 17.5% | 25.8% | `logs/2026-05-13T17-42-49-07-00_catanbench-visual_6qw6xQVLL9weZk72PDxB74.json` |
-| `openrouter/anthropic/claude-sonnet-4.6` | 25.0% | 29.7% | `logs/2026-05-13T17-43-47-07-00_catanbench-visual_m2yWLSUSFx4Y4dmdxnmP59.json` |
-| `openrouter/openai/gpt-5.5` | 10.0% | 13.0% | `logs/2026-05-13T17-45-02-07-00_catanbench-visual_DzTSeLgfiA46857Tt3d6TV.json` |
-| `openrouter/x-ai/grok-4.3` | 30.0% | 39.4% | `logs/2026-05-13T17-48-00-07-00_catanbench-visual_GTkFqMxuEKLz2cjSuay8Uo.json` |
-| `openrouter/mistralai/mistral-large-2512` | 15.0% | 23.7% | `logs/2026-05-13T17-55-42-07-00_catanbench-visual_Kb9Prgw3FwVdtZJ3EjnDPR.json` |
-| `openrouter/z-ai/glm-5v-turbo` | 2.5% | 6.8% | `logs/2026-05-13T17-56-21-07-00_catanbench-visual_Nyi8jmGuWJNcd3pD9ncNvF.json` |
+| `openrouter/qwen/qwen3-vl-235b-a22b-instruct` | 17.5% | 22.5% | `logs/2026-05-13T17-41-41-07-00_catan_board_bench-visual_cM6wEnPB7rfntyHZBpoTxq.json` |
+| `openrouter/meta-llama/llama-4-maverick` | 12.5% | 18.8% | `logs/2026-05-13T17-42-21-07-00_catan_board_bench-visual_a26Ds3bshcScSb6rDNNSQE.json` |
+| `openrouter/anthropic/claude-opus-4.7` | 17.5% | 25.8% | `logs/2026-05-13T17-42-49-07-00_catan_board_bench-visual_6qw6xQVLL9weZk72PDxB74.json` |
+| `openrouter/anthropic/claude-sonnet-4.6` | 25.0% | 29.7% | `logs/2026-05-13T17-43-47-07-00_catan_board_bench-visual_m2yWLSUSFx4Y4dmdxnmP59.json` |
+| `openrouter/openai/gpt-5.5` | 10.0% | 13.0% | `logs/2026-05-13T17-45-02-07-00_catan_board_bench-visual_DzTSeLgfiA46857Tt3d6TV.json` |
+| `openrouter/x-ai/grok-4.3` | 30.0% | 39.4% | `logs/2026-05-13T17-48-00-07-00_catan_board_bench-visual_GTkFqMxuEKLz2cjSuay8Uo.json` |
+| `openrouter/mistralai/mistral-large-2512` | 15.0% | 23.7% | `logs/2026-05-13T17-55-42-07-00_catan_board_bench-visual_Kb9Prgw3FwVdtZJ3EjnDPR.json` |
+| `openrouter/z-ai/glm-5v-turbo` | 2.5% | 6.8% | `logs/2026-05-13T17-56-21-07-00_catan_board_bench-visual_Nyi8jmGuWJNcd3pD9ncNvF.json` |
 
 The next useful eval is no longer another larger general VLM on the same prompt.
 It should be one of:
@@ -389,7 +389,7 @@ It should be one of:
 The previous command template was:
 
 ```bash
-uv run --extra eval dotenv run -- bench eval catanbench \
+uv run --extra eval dotenv run -- bench eval catan_board_bench \
   --model openrouter/qwen/qwen3-vl-32b-instruct \
   --temperature 0 \
   --max-tokens 256 \

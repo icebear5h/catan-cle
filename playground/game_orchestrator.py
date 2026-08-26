@@ -1,4 +1,4 @@
-"""Game orchestrator for running Catan with LLM agents and event-driven memory updates."""
+"""GameEngine orchestrator for running Catan with LLM agents and event-driven memory updates."""
 
 from typing import List, Dict, Any, Optional
 import sys
@@ -7,9 +7,10 @@ import os
 # Add catanatron to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../catanatron/catanatron"))
 
-from engine.game import Game
-from engine.models.player import Color, Player
-from engine.models.enums import Action
+from game_engine.game import GameEngine
+from game_engine.models.player import Color
+from cle.players.legacy import Player
+from game_engine.models.enums import Action
 
 from ..agents.llm_agent_impl import StrategicLLMAgent
 
@@ -18,10 +19,10 @@ class GameOrchestrator:
     """Orchestrates Catan games with LLM agents.
 
     Handles:
-    - Game initialization with N agents
+    - GameEngine initialization with N agents
     - Event-driven memory updates (after every action)
     - Trajectory collection for training
-    - Game result extraction
+    - GameEngine result extraction
     """
 
     def __init__(self, num_players: int = 4, agent_config: Optional[Dict[str, Any]] = None):
@@ -43,17 +44,17 @@ class GameOrchestrator:
         # Agents
         self.agents: List[StrategicLLMAgent] = []
 
-        # Game instance
-        self.game: Optional[Game] = None
+        # GameEngine instance
+        self.game: Optional[GameEngine] = None
 
-    def initialize_game(self, seed: Optional[int] = None) -> Game:
+    def initialize_game(self, seed: Optional[int] = None) -> GameEngine:
         """Initialize a new game with LLM agents.
 
         Args:
             seed: Random seed for reproducibility
 
         Returns:
-            Initialized Game instance
+            Initialized GameEngine instance
         """
         # Create LLM agents
         self.agents = [
@@ -70,8 +71,8 @@ class GameOrchestrator:
         players = self._create_catanatron_players()
 
         # Initialize game
-        self.game = Game(
-            players=players,
+        self.game = GameEngine(
+            colors=[player.color for player in players],
             seed=seed
         )
 
@@ -81,10 +82,10 @@ class GameOrchestrator:
         """Run a complete game with event-driven memory updates.
 
         Returns:
-            Game results with trajectories and agent memories
+            GameEngine results with trajectories and agent memories
         """
         if not self.game:
-            raise RuntimeError("Game not initialized. Call initialize_game() first.")
+            raise RuntimeError("GameEngine not initialized. Call initialize_game() first.")
 
         print(f"Starting game with {self.num_players} LLM agents...")
 
@@ -112,7 +113,7 @@ class GameOrchestrator:
             print(f"    Action: {action}")
 
             # Execute action in game
-            self.game.execute(action)
+            self.game.step(action)
 
             # EVENT TRIGGER: Update ALL agents after action
             self._trigger_action_event(current_agent, action)
@@ -122,7 +123,7 @@ class GameOrchestrator:
                 print("Turn limit reached, ending game.")
                 break
 
-        # Game over
+        # GameEngine over
         winner = self.game.winning_color()
         print(f"\n=== GAME OVER ===")
         print(f"Winner: {winner.value if winner else 'None (turn limit)'}")

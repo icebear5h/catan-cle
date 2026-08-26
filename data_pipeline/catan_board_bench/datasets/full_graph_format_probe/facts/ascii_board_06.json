@@ -1,0 +1,2327 @@
+{
+  "edges": [
+    {
+      "id": "E00",
+      "nodes": [
+        "N16",
+        "N10"
+      ],
+      "road": null,
+      "tiles": [
+        "T14"
+      ]
+    },
+    {
+      "id": "E01",
+      "nodes": [
+        "N01",
+        "N18"
+      ],
+      "road": null,
+      "tiles": [
+        "T08",
+        "T11"
+      ]
+    },
+    {
+      "id": "E02",
+      "nodes": [
+        "N24",
+        "N38"
+      ],
+      "road": null,
+      "tiles": [
+        "T01",
+        "T18"
+      ]
+    },
+    {
+      "id": "E03",
+      "nodes": [
+        "N18",
+        "N43"
+      ],
+      "road": null,
+      "tiles": [
+        "T11",
+        "T17"
+      ]
+    },
+    {
+      "id": "E04",
+      "nodes": [
+        "N24",
+        "N27"
+      ],
+      "road": "ORANGE",
+      "tiles": [
+        "T15",
+        "T18"
+      ]
+    },
+    {
+      "id": "E05",
+      "nodes": [
+        "N41",
+        "N08"
+      ],
+      "road": null,
+      "tiles": [
+        "T15",
+        "T17"
+      ]
+    },
+    {
+      "id": "E06",
+      "nodes": [
+        "N42",
+        "N16"
+      ],
+      "road": null,
+      "tiles": [
+        "T00"
+      ]
+    },
+    {
+      "id": "E07",
+      "nodes": [
+        "N19",
+        "N11"
+      ],
+      "road": null,
+      "tiles": [
+        "T04",
+        "T08"
+      ]
+    },
+    {
+      "id": "E08",
+      "nodes": [
+        "N43",
+        "N13"
+      ],
+      "road": "ORANGE",
+      "tiles": [
+        "T09",
+        "T11"
+      ]
+    },
+    {
+      "id": "E09",
+      "nodes": [
+        "N44",
+        "N46"
+      ],
+      "road": null,
+      "tiles": [
+        "T04",
+        "T12"
+      ]
+    },
+    {
+      "id": "E10",
+      "nodes": [
+        "N20",
+        "N22"
+      ],
+      "road": null,
+      "tiles": [
+        "T04",
+        "T10"
+      ]
+    },
+    {
+      "id": "E11",
+      "nodes": [
+        "N04",
+        "N35"
+      ],
+      "road": null,
+      "tiles": [
+        "T12"
+      ]
+    },
+    {
+      "id": "E12",
+      "nodes": [
+        "N08",
+        "N33"
+      ],
+      "road": null,
+      "tiles": [
+        "T06",
+        "T15"
+      ]
+    },
+    {
+      "id": "E13",
+      "nodes": [
+        "N12",
+        "N03"
+      ],
+      "road": null,
+      "tiles": [
+        "T16"
+      ]
+    },
+    {
+      "id": "E14",
+      "nodes": [
+        "N21",
+        "N40"
+      ],
+      "road": null,
+      "tiles": [
+        "T16"
+      ]
+    },
+    {
+      "id": "E15",
+      "nodes": [
+        "N30",
+        "N08"
+      ],
+      "road": null,
+      "tiles": [
+        "T06",
+        "T17"
+      ]
+    },
+    {
+      "id": "E16",
+      "nodes": [
+        "N07",
+        "N50"
+      ],
+      "road": null,
+      "tiles": [
+        "T00",
+        "T11"
+      ]
+    },
+    {
+      "id": "E17",
+      "nodes": [
+        "N50",
+        "N13"
+      ],
+      "road": null,
+      "tiles": [
+        "T11",
+        "T14"
+      ]
+    },
+    {
+      "id": "E18",
+      "nodes": [
+        "N39",
+        "N52"
+      ],
+      "road": null,
+      "tiles": [
+        "T07"
+      ]
+    },
+    {
+      "id": "E19",
+      "nodes": [
+        "N53",
+        "N00"
+      ],
+      "road": null,
+      "tiles": [
+        "T03",
+        "T09"
+      ]
+    },
+    {
+      "id": "E20",
+      "nodes": [
+        "N46",
+        "N47"
+      ],
+      "road": "BLACK",
+      "tiles": [
+        "T02",
+        "T12"
+      ]
+    },
+    {
+      "id": "E21",
+      "nodes": [
+        "N52",
+        "N42"
+      ],
+      "road": null,
+      "tiles": [
+        "T00"
+      ]
+    },
+    {
+      "id": "E22",
+      "nodes": [
+        "N10",
+        "N29"
+      ],
+      "road": null,
+      "tiles": [
+        "T14"
+      ]
+    },
+    {
+      "id": "E23",
+      "nodes": [
+        "N47",
+        "N36"
+      ],
+      "road": null,
+      "tiles": [
+        "T02"
+      ]
+    },
+    {
+      "id": "E24",
+      "nodes": [
+        "N28",
+        "N39"
+      ],
+      "road": null,
+      "tiles": [
+        "T07"
+      ]
+    },
+    {
+      "id": "E25",
+      "nodes": [
+        "N13",
+        "N05"
+      ],
+      "road": "ORANGE",
+      "tiles": [
+        "T09",
+        "T14"
+      ]
+    },
+    {
+      "id": "E26",
+      "nodes": [
+        "N09",
+        "N28"
+      ],
+      "road": "BLUE",
+      "tiles": [
+        "T07"
+      ]
+    },
+    {
+      "id": "E27",
+      "nodes": [
+        "N38",
+        "N31"
+      ],
+      "road": null,
+      "tiles": [
+        "T01",
+        "T05"
+      ]
+    },
+    {
+      "id": "E28",
+      "nodes": [
+        "N46",
+        "N20"
+      ],
+      "road": "BLACK",
+      "tiles": [
+        "T02",
+        "T04"
+      ]
+    },
+    {
+      "id": "E29",
+      "nodes": [
+        "N33",
+        "N27"
+      ],
+      "road": "ORANGE",
+      "tiles": [
+        "T15",
+        "T16"
+      ]
+    },
+    {
+      "id": "E30",
+      "nodes": [
+        "N41",
+        "N26"
+      ],
+      "road": "BLACK",
+      "tiles": [
+        "T08",
+        "T15"
+      ]
+    },
+    {
+      "id": "E31",
+      "nodes": [
+        "N15",
+        "N48"
+      ],
+      "road": "RED",
+      "tiles": [
+        "T06"
+      ]
+    },
+    {
+      "id": "E32",
+      "nodes": [
+        "N40",
+        "N12"
+      ],
+      "road": null,
+      "tiles": [
+        "T16"
+      ]
+    },
+    {
+      "id": "E33",
+      "nodes": [
+        "N00",
+        "N25"
+      ],
+      "road": null,
+      "tiles": [
+        "T03"
+      ]
+    },
+    {
+      "id": "E34",
+      "nodes": [
+        "N35",
+        "N47"
+      ],
+      "road": null,
+      "tiles": [
+        "T12"
+      ]
+    },
+    {
+      "id": "E35",
+      "nodes": [
+        "N51",
+        "N04"
+      ],
+      "road": "BLUE",
+      "tiles": [
+        "T05"
+      ]
+    },
+    {
+      "id": "E36",
+      "nodes": [
+        "N26",
+        "N24"
+      ],
+      "road": null,
+      "tiles": [
+        "T01",
+        "T15"
+      ]
+    },
+    {
+      "id": "E37",
+      "nodes": [
+        "N17",
+        "N37"
+      ],
+      "road": null,
+      "tiles": [
+        "T02"
+      ]
+    },
+    {
+      "id": "E38",
+      "nodes": [
+        "N38",
+        "N34"
+      ],
+      "road": null,
+      "tiles": [
+        "T05",
+        "T18"
+      ]
+    },
+    {
+      "id": "E39",
+      "nodes": [
+        "N19",
+        "N44"
+      ],
+      "road": null,
+      "tiles": [
+        "T01",
+        "T04"
+      ]
+    },
+    {
+      "id": "E40",
+      "nodes": [
+        "N34",
+        "N45"
+      ],
+      "road": null,
+      "tiles": [
+        "T05"
+      ]
+    },
+    {
+      "id": "E41",
+      "nodes": [
+        "N50",
+        "N16"
+      ],
+      "road": null,
+      "tiles": [
+        "T00",
+        "T14"
+      ]
+    },
+    {
+      "id": "E42",
+      "nodes": [
+        "N48",
+        "N21"
+      ],
+      "road": null,
+      "tiles": [
+        "T06"
+      ]
+    },
+    {
+      "id": "E43",
+      "nodes": [
+        "N30",
+        "N15"
+      ],
+      "road": "RED",
+      "tiles": [
+        "T03",
+        "T06"
+      ]
+    },
+    {
+      "id": "E44",
+      "nodes": [
+        "N05",
+        "N29"
+      ],
+      "road": null,
+      "tiles": [
+        "T14"
+      ]
+    },
+    {
+      "id": "E45",
+      "nodes": [
+        "N02",
+        "N25"
+      ],
+      "road": null,
+      "tiles": [
+        "T03"
+      ]
+    },
+    {
+      "id": "E46",
+      "nodes": [
+        "N32",
+        "N23"
+      ],
+      "road": null,
+      "tiles": [
+        "T07",
+        "T13"
+      ]
+    },
+    {
+      "id": "E47",
+      "nodes": [
+        "N01",
+        "N07"
+      ],
+      "road": null,
+      "tiles": [
+        "T11",
+        "T13"
+      ]
+    },
+    {
+      "id": "E48",
+      "nodes": [
+        "N36",
+        "N17"
+      ],
+      "road": null,
+      "tiles": [
+        "T02"
+      ]
+    },
+    {
+      "id": "E49",
+      "nodes": [
+        "N11",
+        "N22"
+      ],
+      "road": null,
+      "tiles": [
+        "T04",
+        "T13"
+      ]
+    },
+    {
+      "id": "E50",
+      "nodes": [
+        "N41",
+        "N18"
+      ],
+      "road": null,
+      "tiles": [
+        "T08",
+        "T17"
+      ]
+    },
+    {
+      "id": "E51",
+      "nodes": [
+        "N11",
+        "N01"
+      ],
+      "road": null,
+      "tiles": [
+        "T08",
+        "T13"
+      ]
+    },
+    {
+      "id": "E52",
+      "nodes": [
+        "N45",
+        "N51"
+      ],
+      "road": null,
+      "tiles": [
+        "T05"
+      ]
+    },
+    {
+      "id": "E53",
+      "nodes": [
+        "N31",
+        "N04"
+      ],
+      "road": "BLUE",
+      "tiles": [
+        "T05",
+        "T12"
+      ]
+    },
+    {
+      "id": "E54",
+      "nodes": [
+        "N23",
+        "N52"
+      ],
+      "road": "RED",
+      "tiles": [
+        "T00",
+        "T07"
+      ]
+    },
+    {
+      "id": "E55",
+      "nodes": [
+        "N43",
+        "N53"
+      ],
+      "road": null,
+      "tiles": [
+        "T09",
+        "T17"
+      ]
+    },
+    {
+      "id": "E56",
+      "nodes": [
+        "N00",
+        "N14"
+      ],
+      "road": null,
+      "tiles": [
+        "T09"
+      ]
+    },
+    {
+      "id": "E57",
+      "nodes": [
+        "N30",
+        "N53"
+      ],
+      "road": null,
+      "tiles": [
+        "T03",
+        "T17"
+      ]
+    },
+    {
+      "id": "E58",
+      "nodes": [
+        "N03",
+        "N49"
+      ],
+      "road": null,
+      "tiles": [
+        "T18"
+      ]
+    },
+    {
+      "id": "E59",
+      "nodes": [
+        "N02",
+        "N15"
+      ],
+      "road": "RED",
+      "tiles": [
+        "T03"
+      ]
+    },
+    {
+      "id": "E60",
+      "nodes": [
+        "N37",
+        "N06"
+      ],
+      "road": "BLACK",
+      "tiles": [
+        "T10"
+      ]
+    },
+    {
+      "id": "E61",
+      "nodes": [
+        "N22",
+        "N32"
+      ],
+      "road": null,
+      "tiles": [
+        "T10",
+        "T13"
+      ]
+    },
+    {
+      "id": "E62",
+      "nodes": [
+        "N26",
+        "N19"
+      ],
+      "road": "BLACK",
+      "tiles": [
+        "T01",
+        "T08"
+      ]
+    },
+    {
+      "id": "E63",
+      "nodes": [
+        "N33",
+        "N21"
+      ],
+      "road": null,
+      "tiles": [
+        "T06",
+        "T16"
+      ]
+    },
+    {
+      "id": "E64",
+      "nodes": [
+        "N32",
+        "N09"
+      ],
+      "road": "BLUE",
+      "tiles": [
+        "T07",
+        "T10"
+      ]
+    },
+    {
+      "id": "E65",
+      "nodes": [
+        "N20",
+        "N37"
+      ],
+      "road": "BLACK",
+      "tiles": [
+        "T02",
+        "T10"
+      ]
+    },
+    {
+      "id": "E66",
+      "nodes": [
+        "N23",
+        "N07"
+      ],
+      "road": "RED",
+      "tiles": [
+        "T00",
+        "T13"
+      ]
+    },
+    {
+      "id": "E67",
+      "nodes": [
+        "N27",
+        "N03"
+      ],
+      "road": "ORANGE",
+      "tiles": [
+        "T16",
+        "T18"
+      ]
+    },
+    {
+      "id": "E68",
+      "nodes": [
+        "N05",
+        "N14"
+      ],
+      "road": null,
+      "tiles": [
+        "T09"
+      ]
+    },
+    {
+      "id": "E69",
+      "nodes": [
+        "N31",
+        "N44"
+      ],
+      "road": null,
+      "tiles": [
+        "T01",
+        "T12"
+      ]
+    },
+    {
+      "id": "E70",
+      "nodes": [
+        "N34",
+        "N49"
+      ],
+      "road": null,
+      "tiles": [
+        "T18"
+      ]
+    },
+    {
+      "id": "E71",
+      "nodes": [
+        "N06",
+        "N09"
+      ],
+      "road": null,
+      "tiles": [
+        "T10"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E19",
+        "E33",
+        "E56"
+      ],
+      "id": "N00",
+      "ports": [],
+      "tiles": [
+        "T03",
+        "T09"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E01",
+        "E47",
+        "E51"
+      ],
+      "id": "N01",
+      "ports": [],
+      "tiles": [
+        "T08",
+        "T11",
+        "T13"
+      ]
+    },
+    {
+      "building": "SETTLEMENT",
+      "color": "RED",
+      "edges": [
+        "E45",
+        "E59"
+      ],
+      "id": "N02",
+      "ports": [
+        "P01"
+      ],
+      "tiles": [
+        "T03"
+      ]
+    },
+    {
+      "building": "SETTLEMENT",
+      "color": "ORANGE",
+      "edges": [
+        "E13",
+        "E58",
+        "E67"
+      ],
+      "id": "N03",
+      "ports": [
+        "P06"
+      ],
+      "tiles": [
+        "T16",
+        "T18"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E11",
+        "E35",
+        "E53"
+      ],
+      "id": "N04",
+      "ports": [],
+      "tiles": [
+        "T05",
+        "T12"
+      ]
+    },
+    {
+      "building": "SETTLEMENT",
+      "color": "ORANGE",
+      "edges": [
+        "E25",
+        "E44",
+        "E68"
+      ],
+      "id": "N05",
+      "ports": [
+        "P02"
+      ],
+      "tiles": [
+        "T09",
+        "T14"
+      ]
+    },
+    {
+      "building": "SETTLEMENT",
+      "color": "BLACK",
+      "edges": [
+        "E60",
+        "E71"
+      ],
+      "id": "N06",
+      "ports": [
+        "P04"
+      ],
+      "tiles": [
+        "T10"
+      ]
+    },
+    {
+      "building": "SETTLEMENT",
+      "color": "RED",
+      "edges": [
+        "E16",
+        "E47",
+        "E66"
+      ],
+      "id": "N07",
+      "ports": [],
+      "tiles": [
+        "T00",
+        "T11",
+        "T13"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E05",
+        "E12",
+        "E15"
+      ],
+      "id": "N08",
+      "ports": [],
+      "tiles": [
+        "T06",
+        "T15",
+        "T17"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E26",
+        "E64",
+        "E71"
+      ],
+      "id": "N09",
+      "ports": [],
+      "tiles": [
+        "T07",
+        "T10"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E00",
+        "E22"
+      ],
+      "id": "N10",
+      "ports": [],
+      "tiles": [
+        "T14"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E07",
+        "E49",
+        "E51"
+      ],
+      "id": "N11",
+      "ports": [],
+      "tiles": [
+        "T04",
+        "T08",
+        "T13"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E13",
+        "E32"
+      ],
+      "id": "N12",
+      "ports": [],
+      "tiles": [
+        "T16"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E08",
+        "E17",
+        "E25"
+      ],
+      "id": "N13",
+      "ports": [],
+      "tiles": [
+        "T09",
+        "T11",
+        "T14"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E56",
+        "E68"
+      ],
+      "id": "N14",
+      "ports": [
+        "P02"
+      ],
+      "tiles": [
+        "T09"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E31",
+        "E43",
+        "E59"
+      ],
+      "id": "N15",
+      "ports": [],
+      "tiles": [
+        "T03",
+        "T06"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E00",
+        "E06",
+        "E41"
+      ],
+      "id": "N16",
+      "ports": [
+        "P07"
+      ],
+      "tiles": [
+        "T00",
+        "T14"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E37",
+        "E48"
+      ],
+      "id": "N17",
+      "ports": [],
+      "tiles": [
+        "T02"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E01",
+        "E03",
+        "E50"
+      ],
+      "id": "N18",
+      "ports": [],
+      "tiles": [
+        "T08",
+        "T11",
+        "T17"
+      ]
+    },
+    {
+      "building": "SETTLEMENT",
+      "color": "BLACK",
+      "edges": [
+        "E07",
+        "E39",
+        "E62"
+      ],
+      "id": "N19",
+      "ports": [],
+      "tiles": [
+        "T01",
+        "T04",
+        "T08"
+      ]
+    },
+    {
+      "building": "CITY",
+      "color": "BLACK",
+      "edges": [
+        "E10",
+        "E28",
+        "E65"
+      ],
+      "id": "N20",
+      "ports": [],
+      "tiles": [
+        "T02",
+        "T04",
+        "T10"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E14",
+        "E42",
+        "E63"
+      ],
+      "id": "N21",
+      "ports": [
+        "P03"
+      ],
+      "tiles": [
+        "T06",
+        "T16"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E10",
+        "E49",
+        "E61"
+      ],
+      "id": "N22",
+      "ports": [],
+      "tiles": [
+        "T04",
+        "T10",
+        "T13"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E46",
+        "E54",
+        "E66"
+      ],
+      "id": "N23",
+      "ports": [],
+      "tiles": [
+        "T00",
+        "T07",
+        "T13"
+      ]
+    },
+    {
+      "building": "SETTLEMENT",
+      "color": "ORANGE",
+      "edges": [
+        "E02",
+        "E04",
+        "E36"
+      ],
+      "id": "N24",
+      "ports": [],
+      "tiles": [
+        "T01",
+        "T15",
+        "T18"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E33",
+        "E45"
+      ],
+      "id": "N25",
+      "ports": [
+        "P01"
+      ],
+      "tiles": [
+        "T03"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E30",
+        "E36",
+        "E62"
+      ],
+      "id": "N26",
+      "ports": [],
+      "tiles": [
+        "T01",
+        "T08",
+        "T15"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E04",
+        "E29",
+        "E67"
+      ],
+      "id": "N27",
+      "ports": [],
+      "tiles": [
+        "T15",
+        "T16",
+        "T18"
+      ]
+    },
+    {
+      "building": "SETTLEMENT",
+      "color": "BLUE",
+      "edges": [
+        "E24",
+        "E26"
+      ],
+      "id": "N28",
+      "ports": [
+        "P00"
+      ],
+      "tiles": [
+        "T07"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E22",
+        "E44"
+      ],
+      "id": "N29",
+      "ports": [],
+      "tiles": [
+        "T14"
+      ]
+    },
+    {
+      "building": "CITY",
+      "color": "RED",
+      "edges": [
+        "E15",
+        "E43",
+        "E57"
+      ],
+      "id": "N30",
+      "ports": [],
+      "tiles": [
+        "T03",
+        "T06",
+        "T17"
+      ]
+    },
+    {
+      "building": "CITY",
+      "color": "BLUE",
+      "edges": [
+        "E27",
+        "E53",
+        "E69"
+      ],
+      "id": "N31",
+      "ports": [],
+      "tiles": [
+        "T01",
+        "T05",
+        "T12"
+      ]
+    },
+    {
+      "building": "CITY",
+      "color": "BLUE",
+      "edges": [
+        "E46",
+        "E61",
+        "E64"
+      ],
+      "id": "N32",
+      "ports": [],
+      "tiles": [
+        "T07",
+        "T10",
+        "T13"
+      ]
+    },
+    {
+      "building": "SETTLEMENT",
+      "color": "ORANGE",
+      "edges": [
+        "E12",
+        "E29",
+        "E63"
+      ],
+      "id": "N33",
+      "ports": [],
+      "tiles": [
+        "T06",
+        "T15",
+        "T16"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E38",
+        "E40",
+        "E70"
+      ],
+      "id": "N34",
+      "ports": [],
+      "tiles": [
+        "T05",
+        "T18"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E11",
+        "E34"
+      ],
+      "id": "N35",
+      "ports": [
+        "P05"
+      ],
+      "tiles": [
+        "T12"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E23",
+        "E48"
+      ],
+      "id": "N36",
+      "ports": [],
+      "tiles": [
+        "T02"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E37",
+        "E60",
+        "E65"
+      ],
+      "id": "N37",
+      "ports": [
+        "P04"
+      ],
+      "tiles": [
+        "T02",
+        "T10"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E02",
+        "E27",
+        "E38"
+      ],
+      "id": "N38",
+      "ports": [],
+      "tiles": [
+        "T01",
+        "T05",
+        "T18"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E18",
+        "E24"
+      ],
+      "id": "N39",
+      "ports": [
+        "P00"
+      ],
+      "tiles": [
+        "T07"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E14",
+        "E32"
+      ],
+      "id": "N40",
+      "ports": [],
+      "tiles": [
+        "T16"
+      ]
+    },
+    {
+      "building": "SETTLEMENT",
+      "color": "BLACK",
+      "edges": [
+        "E05",
+        "E30",
+        "E50"
+      ],
+      "id": "N41",
+      "ports": [],
+      "tiles": [
+        "T08",
+        "T15",
+        "T17"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E06",
+        "E21"
+      ],
+      "id": "N42",
+      "ports": [
+        "P07"
+      ],
+      "tiles": [
+        "T00"
+      ]
+    },
+    {
+      "building": "SETTLEMENT",
+      "color": "ORANGE",
+      "edges": [
+        "E03",
+        "E08",
+        "E55"
+      ],
+      "id": "N43",
+      "ports": [],
+      "tiles": [
+        "T09",
+        "T11",
+        "T17"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E09",
+        "E39",
+        "E69"
+      ],
+      "id": "N44",
+      "ports": [],
+      "tiles": [
+        "T01",
+        "T04",
+        "T12"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E40",
+        "E52"
+      ],
+      "id": "N45",
+      "ports": [
+        "P08"
+      ],
+      "tiles": [
+        "T05"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E09",
+        "E20",
+        "E28"
+      ],
+      "id": "N46",
+      "ports": [],
+      "tiles": [
+        "T02",
+        "T04",
+        "T12"
+      ]
+    },
+    {
+      "building": "SETTLEMENT",
+      "color": "BLACK",
+      "edges": [
+        "E20",
+        "E23",
+        "E34"
+      ],
+      "id": "N47",
+      "ports": [
+        "P05"
+      ],
+      "tiles": [
+        "T02",
+        "T12"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E31",
+        "E42"
+      ],
+      "id": "N48",
+      "ports": [
+        "P03"
+      ],
+      "tiles": [
+        "T06"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E58",
+        "E70"
+      ],
+      "id": "N49",
+      "ports": [
+        "P06"
+      ],
+      "tiles": [
+        "T18"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E16",
+        "E17",
+        "E41"
+      ],
+      "id": "N50",
+      "ports": [],
+      "tiles": [
+        "T00",
+        "T11",
+        "T14"
+      ]
+    },
+    {
+      "building": "CITY",
+      "color": "BLUE",
+      "edges": [
+        "E35",
+        "E52"
+      ],
+      "id": "N51",
+      "ports": [
+        "P08"
+      ],
+      "tiles": [
+        "T05"
+      ]
+    },
+    {
+      "building": "SETTLEMENT",
+      "color": "RED",
+      "edges": [
+        "E18",
+        "E21",
+        "E54"
+      ],
+      "id": "N52",
+      "ports": [],
+      "tiles": [
+        "T00",
+        "T07"
+      ]
+    },
+    {
+      "building": null,
+      "color": null,
+      "edges": [
+        "E19",
+        "E55",
+        "E57"
+      ],
+      "id": "N53",
+      "ports": [],
+      "tiles": [
+        "T03",
+        "T09",
+        "T17"
+      ]
+    }
+  ],
+  "ports": [
+    {
+      "cube": [
+        -3,
+        0,
+        3
+      ],
+      "direction": "NORTHEAST",
+      "id": "P00",
+      "nodes": [
+        "N28",
+        "N39"
+      ],
+      "ratio": "2:1",
+      "resource": "ORE"
+    },
+    {
+      "cube": [
+        0,
+        3,
+        -3
+      ],
+      "direction": "SOUTHEAST",
+      "id": "P01",
+      "nodes": [
+        "N25",
+        "N02"
+      ],
+      "ratio": "2:1",
+      "resource": "BRICK"
+    },
+    {
+      "cube": [
+        -2,
+        3,
+        -1
+      ],
+      "direction": "EAST",
+      "id": "P02",
+      "nodes": [
+        "N05",
+        "N14"
+      ],
+      "ratio": "3:1",
+      "resource": "GENERIC"
+    },
+    {
+      "cube": [
+        2,
+        1,
+        -3
+      ],
+      "direction": "SOUTHWEST",
+      "id": "P03",
+      "nodes": [
+        "N48",
+        "N21"
+      ],
+      "ratio": "3:1",
+      "resource": "GENERIC"
+    },
+    {
+      "cube": [
+        -1,
+        -2,
+        3
+      ],
+      "direction": "NORTHWEST",
+      "id": "P04",
+      "nodes": [
+        "N37",
+        "N06"
+      ],
+      "ratio": "2:1",
+      "resource": "WOOD"
+    },
+    {
+      "cube": [
+        1,
+        -3,
+        2
+      ],
+      "direction": "NORTHWEST",
+      "id": "P05",
+      "nodes": [
+        "N35",
+        "N47"
+      ],
+      "ratio": "3:1",
+      "resource": "GENERIC"
+    },
+    {
+      "cube": [
+        3,
+        -1,
+        -2
+      ],
+      "direction": "SOUTHWEST",
+      "id": "P06",
+      "nodes": [
+        "N03",
+        "N49"
+      ],
+      "ratio": "2:1",
+      "resource": "SHEEP"
+    },
+    {
+      "cube": [
+        -3,
+        2,
+        1
+      ],
+      "direction": "EAST",
+      "id": "P07",
+      "nodes": [
+        "N42",
+        "N16"
+      ],
+      "ratio": "3:1",
+      "resource": "GENERIC"
+    },
+    {
+      "cube": [
+        3,
+        -3,
+        0
+      ],
+      "direction": "WEST",
+      "id": "P08",
+      "nodes": [
+        "N45",
+        "N51"
+      ],
+      "ratio": "2:1",
+      "resource": "WHEAT"
+    }
+  ],
+  "schema": "catan_full_public_graph/v1",
+  "tiles": [
+    {
+      "corners": {
+        "NORTH": "N50",
+        "NORTHEAST": "N07",
+        "NORTHWEST": "N16",
+        "SOUTH": "N52",
+        "SOUTHEAST": "N23",
+        "SOUTHWEST": "N42"
+      },
+      "cube": [
+        -2,
+        1,
+        1
+      ],
+      "id": "T00",
+      "number": 11,
+      "resource": "ORE",
+      "robber": false,
+      "sides": {
+        "EAST": "E66",
+        "NORTHEAST": "E16",
+        "NORTHWEST": "E41",
+        "SOUTHEAST": "E54",
+        "SOUTHWEST": "E21",
+        "WEST": "E06"
+      }
+    },
+    {
+      "corners": {
+        "NORTH": "N24",
+        "NORTHEAST": "N38",
+        "NORTHWEST": "N26",
+        "SOUTH": "N44",
+        "SOUTHEAST": "N31",
+        "SOUTHWEST": "N19"
+      },
+      "cube": [
+        1,
+        -1,
+        0
+      ],
+      "id": "T01",
+      "number": 9,
+      "resource": "SHEEP",
+      "robber": true,
+      "sides": {
+        "EAST": "E27",
+        "NORTHEAST": "E02",
+        "NORTHWEST": "E36",
+        "SOUTHEAST": "E69",
+        "SOUTHWEST": "E39",
+        "WEST": "E62"
+      }
+    },
+    {
+      "corners": {
+        "NORTH": "N46",
+        "NORTHEAST": "N47",
+        "NORTHWEST": "N20",
+        "SOUTH": "N17",
+        "SOUTHEAST": "N36",
+        "SOUTHWEST": "N37"
+      },
+      "cube": [
+        0,
+        -2,
+        2
+      ],
+      "id": "T02",
+      "number": 5,
+      "resource": "WOOD",
+      "robber": false,
+      "sides": {
+        "EAST": "E23",
+        "NORTHEAST": "E20",
+        "NORTHWEST": "E28",
+        "SOUTHEAST": "E48",
+        "SOUTHWEST": "E37",
+        "WEST": "E65"
+      }
+    },
+    {
+      "corners": {
+        "NORTH": "N02",
+        "NORTHEAST": "N15",
+        "NORTHWEST": "N25",
+        "SOUTH": "N53",
+        "SOUTHEAST": "N30",
+        "SOUTHWEST": "N00"
+      },
+      "cube": [
+        0,
+        2,
+        -2
+      ],
+      "id": "T03",
+      "number": 10,
+      "resource": "SHEEP",
+      "robber": false,
+      "sides": {
+        "EAST": "E43",
+        "NORTHEAST": "E59",
+        "NORTHWEST": "E45",
+        "SOUTHEAST": "E57",
+        "SOUTHWEST": "E19",
+        "WEST": "E33"
+      }
+    },
+    {
+      "corners": {
+        "NORTH": "N19",
+        "NORTHEAST": "N44",
+        "NORTHWEST": "N11",
+        "SOUTH": "N20",
+        "SOUTHEAST": "N46",
+        "SOUTHWEST": "N22"
+      },
+      "cube": [
+        0,
+        -1,
+        1
+      ],
+      "id": "T04",
+      "number": 10,
+      "resource": "SHEEP",
+      "robber": false,
+      "sides": {
+        "EAST": "E09",
+        "NORTHEAST": "E39",
+        "NORTHWEST": "E07",
+        "SOUTHEAST": "E28",
+        "SOUTHWEST": "E10",
+        "WEST": "E49"
+      }
+    },
+    {
+      "corners": {
+        "NORTH": "N34",
+        "NORTHEAST": "N45",
+        "NORTHWEST": "N38",
+        "SOUTH": "N04",
+        "SOUTHEAST": "N51",
+        "SOUTHWEST": "N31"
+      },
+      "cube": [
+        2,
+        -2,
+        0
+      ],
+      "id": "T05",
+      "number": 6,
+      "resource": "WHEAT",
+      "robber": false,
+      "sides": {
+        "EAST": "E52",
+        "NORTHEAST": "E40",
+        "NORTHWEST": "E38",
+        "SOUTHEAST": "E35",
+        "SOUTHWEST": "E53",
+        "WEST": "E27"
+      }
+    },
+    {
+      "corners": {
+        "NORTH": "N48",
+        "NORTHEAST": "N21",
+        "NORTHWEST": "N15",
+        "SOUTH": "N08",
+        "SOUTHEAST": "N33",
+        "SOUTHWEST": "N30"
+      },
+      "cube": [
+        1,
+        1,
+        -2
+      ],
+      "id": "T06",
+      "number": 8,
+      "resource": "BRICK",
+      "robber": false,
+      "sides": {
+        "EAST": "E63",
+        "NORTHEAST": "E42",
+        "NORTHWEST": "E31",
+        "SOUTHEAST": "E12",
+        "SOUTHWEST": "E15",
+        "WEST": "E43"
+      }
+    },
+    {
+      "corners": {
+        "NORTH": "N23",
+        "NORTHEAST": "N32",
+        "NORTHWEST": "N52",
+        "SOUTH": "N28",
+        "SOUTHEAST": "N09",
+        "SOUTHWEST": "N39"
+      },
+      "cube": [
+        -2,
+        0,
+        2
+      ],
+      "id": "T07",
+      "number": 4,
+      "resource": "ORE",
+      "robber": false,
+      "sides": {
+        "EAST": "E64",
+        "NORTHEAST": "E46",
+        "NORTHWEST": "E54",
+        "SOUTHEAST": "E26",
+        "SOUTHWEST": "E24",
+        "WEST": "E18"
+      }
+    },
+    {
+      "corners": {
+        "NORTH": "N41",
+        "NORTHEAST": "N26",
+        "NORTHWEST": "N18",
+        "SOUTH": "N11",
+        "SOUTHEAST": "N19",
+        "SOUTHWEST": "N01"
+      },
+      "cube": [
+        0,
+        0,
+        0
+      ],
+      "id": "T08",
+      "number": 11,
+      "resource": "WOOD",
+      "robber": false,
+      "sides": {
+        "EAST": "E62",
+        "NORTHEAST": "E30",
+        "NORTHWEST": "E50",
+        "SOUTHEAST": "E07",
+        "SOUTHWEST": "E51",
+        "WEST": "E01"
+      }
+    },
+    {
+      "corners": {
+        "NORTH": "N00",
+        "NORTHEAST": "N53",
+        "NORTHWEST": "N14",
+        "SOUTH": "N13",
+        "SOUTHEAST": "N43",
+        "SOUTHWEST": "N05"
+      },
+      "cube": [
+        -1,
+        2,
+        -1
+      ],
+      "id": "T09",
+      "number": 9,
+      "resource": "BRICK",
+      "robber": false,
+      "sides": {
+        "EAST": "E55",
+        "NORTHEAST": "E19",
+        "NORTHWEST": "E56",
+        "SOUTHEAST": "E08",
+        "SOUTHWEST": "E25",
+        "WEST": "E68"
+      }
+    },
+    {
+      "corners": {
+        "NORTH": "N22",
+        "NORTHEAST": "N20",
+        "NORTHWEST": "N32",
+        "SOUTH": "N06",
+        "SOUTHEAST": "N37",
+        "SOUTHWEST": "N09"
+      },
+      "cube": [
+        -1,
+        -1,
+        2
+      ],
+      "id": "T10",
+      "number": 8,
+      "resource": "WHEAT",
+      "robber": false,
+      "sides": {
+        "EAST": "E65",
+        "NORTHEAST": "E10",
+        "NORTHWEST": "E61",
+        "SOUTHEAST": "E60",
+        "SOUTHWEST": "E71",
+        "WEST": "E64"
+      }
+    },
+    {
+      "corners": {
+        "NORTH": "N43",
+        "NORTHEAST": "N18",
+        "NORTHWEST": "N13",
+        "SOUTH": "N07",
+        "SOUTHEAST": "N01",
+        "SOUTHWEST": "N50"
+      },
+      "cube": [
+        -1,
+        1,
+        0
+      ],
+      "id": "T11",
+      "number": 6,
+      "resource": "SHEEP",
+      "robber": false,
+      "sides": {
+        "EAST": "E01",
+        "NORTHEAST": "E03",
+        "NORTHWEST": "E08",
+        "SOUTHEAST": "E47",
+        "SOUTHWEST": "E16",
+        "WEST": "E17"
+      }
+    },
+    {
+      "corners": {
+        "NORTH": "N31",
+        "NORTHEAST": "N04",
+        "NORTHWEST": "N44",
+        "SOUTH": "N47",
+        "SOUTHEAST": "N35",
+        "SOUTHWEST": "N46"
+      },
+      "cube": [
+        1,
+        -2,
+        1
+      ],
+      "id": "T12",
+      "number": 2,
+      "resource": "WHEAT",
+      "robber": false,
+      "sides": {
+        "EAST": "E11",
+        "NORTHEAST": "E53",
+        "NORTHWEST": "E69",
+        "SOUTHEAST": "E34",
+        "SOUTHWEST": "E20",
+        "WEST": "E09"
+      }
+    },
+    {
+      "corners": {
+        "NORTH": "N01",
+        "NORTHEAST": "N11",
+        "NORTHWEST": "N07",
+        "SOUTH": "N32",
+        "SOUTHEAST": "N22",
+        "SOUTHWEST": "N23"
+      },
+      "cube": [
+        -1,
+        0,
+        1
+      ],
+      "id": "T13",
+      "number": 3,
+      "resource": "WOOD",
+      "robber": false,
+      "sides": {
+        "EAST": "E49",
+        "NORTHEAST": "E51",
+        "NORTHWEST": "E47",
+        "SOUTHEAST": "E61",
+        "SOUTHWEST": "E46",
+        "WEST": "E66"
+      }
+    },
+    {
+      "corners": {
+        "NORTH": "N05",
+        "NORTHEAST": "N13",
+        "NORTHWEST": "N29",
+        "SOUTH": "N16",
+        "SOUTHEAST": "N50",
+        "SOUTHWEST": "N10"
+      },
+      "cube": [
+        -2,
+        2,
+        0
+      ],
+      "id": "T14",
+      "number": 12,
+      "resource": "ORE",
+      "robber": false,
+      "sides": {
+        "EAST": "E17",
+        "NORTHEAST": "E25",
+        "NORTHWEST": "E44",
+        "SOUTHEAST": "E41",
+        "SOUTHWEST": "E00",
+        "WEST": "E22"
+      }
+    },
+    {
+      "corners": {
+        "NORTH": "N33",
+        "NORTHEAST": "N27",
+        "NORTHWEST": "N08",
+        "SOUTH": "N26",
+        "SOUTHEAST": "N24",
+        "SOUTHWEST": "N41"
+      },
+      "cube": [
+        1,
+        0,
+        -1
+      ],
+      "id": "T15",
+      "number": 4,
+      "resource": "WOOD",
+      "robber": false,
+      "sides": {
+        "EAST": "E04",
+        "NORTHEAST": "E29",
+        "NORTHWEST": "E12",
+        "SOUTHEAST": "E36",
+        "SOUTHWEST": "E30",
+        "WEST": "E05"
+      }
+    },
+    {
+      "corners": {
+        "NORTH": "N40",
+        "NORTHEAST": "N12",
+        "NORTHWEST": "N21",
+        "SOUTH": "N27",
+        "SOUTHEAST": "N03",
+        "SOUTHWEST": "N33"
+      },
+      "cube": [
+        2,
+        0,
+        -2
+      ],
+      "id": "T16",
+      "number": 3,
+      "resource": "WHEAT",
+      "robber": false,
+      "sides": {
+        "EAST": "E13",
+        "NORTHEAST": "E32",
+        "NORTHWEST": "E14",
+        "SOUTHEAST": "E67",
+        "SOUTHWEST": "E29",
+        "WEST": "E63"
+      }
+    },
+    {
+      "corners": {
+        "NORTH": "N30",
+        "NORTHEAST": "N08",
+        "NORTHWEST": "N53",
+        "SOUTH": "N18",
+        "SOUTHEAST": "N41",
+        "SOUTHWEST": "N43"
+      },
+      "cube": [
+        0,
+        1,
+        -1
+      ],
+      "id": "T17",
+      "number": 5,
+      "resource": "BRICK",
+      "robber": false,
+      "sides": {
+        "EAST": "E05",
+        "NORTHEAST": "E15",
+        "NORTHWEST": "E57",
+        "SOUTHEAST": "E50",
+        "SOUTHWEST": "E03",
+        "WEST": "E55"
+      }
+    },
+    {
+      "corners": {
+        "NORTH": "N03",
+        "NORTHEAST": "N49",
+        "NORTHWEST": "N27",
+        "SOUTH": "N38",
+        "SOUTHEAST": "N34",
+        "SOUTHWEST": "N24"
+      },
+      "cube": [
+        2,
+        -1,
+        -1
+      ],
+      "id": "T18",
+      "number": null,
+      "resource": "DESERT",
+      "robber": false,
+      "sides": {
+        "EAST": "E70",
+        "NORTHEAST": "E58",
+        "NORTHWEST": "E67",
+        "SOUTHEAST": "E38",
+        "SOUTHWEST": "E02",
+        "WEST": "E04"
+      }
+    }
+  ]
+}

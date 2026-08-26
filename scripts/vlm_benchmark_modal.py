@@ -359,7 +359,7 @@ def main(
             print(result["response"][:2000])
 
     # Save results
-    output_path = Path("data_pipeline/training/pretraining/output/vlm_benchmark_results.json")
+    output_path = Path("artifacts/generated/pretraining/legacy_corpus/vlm_benchmark_results.json")
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w") as f:
         json.dump(results, f, indent=2, default=str)

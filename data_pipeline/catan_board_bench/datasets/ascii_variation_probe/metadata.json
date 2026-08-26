@@ -1,0 +1,35 @@
+{
+  "board_count": 12,
+  "categories": {
+    "building_counts": 6,
+    "direction_to_tile": 6,
+    "edge_state": 6,
+    "node_adjacent_tiles": 6,
+    "node_state": 6,
+    "nodes_connected": 6,
+    "port_occupancy": 6,
+    "road_inventory": 6,
+    "roll_production": 6,
+    "tile_to_direction": 6
+  },
+  "entity_ids": "deterministically permuted and board-local",
+  "fact_schema": "catan_full_public_graph/v1",
+  "images": false,
+  "precomputed_player_counts_in_facts": false,
+  "question_count": 60,
+  "questions_per_variant": 60,
+  "request_count": 360,
+  "schema": "catan_ascii_variation_probe/v1",
+  "source_game_count": 12,
+  "strict_json_answers": true,
+  "strict_scorer_sha256": "b80971f02ef525a56f5e84bd97801276f953620d82211cabc4a716baf9b9ed3e",
+  "strict_scorer_version": "strict_typed_json/v2",
+  "variants": [
+    "flat_sorted",
+    "flat_shuffled",
+    "sectioned",
+    "tile_rows",
+    "local_blocks",
+    "topology_diagram"
+  ]
+}

@@ -186,7 +186,7 @@ packed.
 
 ## Suggested Catan Experiment
 
-Use CatanBench to test whether the positional encoding advantage matters:
+Use CatanBoardBench to test whether the positional encoding advantage matters:
 
 1. Run the same visual QA on:
    - Qwen2.5-VL

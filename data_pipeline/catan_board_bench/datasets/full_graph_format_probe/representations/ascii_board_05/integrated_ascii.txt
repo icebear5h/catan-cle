@@ -1,0 +1,181 @@
+CATAN OCCUPATION-INTEGRATED BOARD V1
+Tile label: ID[RESOURCE/NUMBER*], where *=robber.
+Node label: ID[-] or ID[COLOR/S|C], where S=SETTLEMENT C=CITY.
+Edge label: ID[-] or ID[COLOR] for road ownership.
+COLOR CODES: BK=BLACK BL=BLUE BZ=BRONZE GD=GOLD GR=GREEN MB=MYSTIC_BLUE OR=ORANGE PK=PINK RD=RED SV=SILVER WH=WHITE
+GLOBAL POINTY-TOP BOARD
+                                                                        N46[-]                                N19[-]                                N49[-]
+                                                                    /////     \\\\\                       /////     \\\\\                       /////     \\\\\
+                                                              E27[-]             E65[-]             E45[-]             E09[-]             E64[-]             E24[-]
+                                                           /////                       \\\\\     /////                       \\\\\     /////                       \\\\\
+                                                     N51[-]                                N42[-]                                N05[-]                                N04[-]
+                                                        /                                     /                                     /                                     /
+                                                        /                                     /                                     /                                     /
+                                                        /                                     /                                     /                                     /
+                                                        /                                     /                                     /                                     /
+                                                     E48[-]          T07[WOOD/10]          E60[-]          T12[WHEAT/9]          E36[-]           T00[ORE/12]          E70[-]
+                                                        /                                     /                                     /                                     /
+                                                        /                                     /                                     /                                     /
+                                                        /                                     /                                     /                                     /
+                                                        /                                     /                                     /                                     /
+                                                     N07[-]                                N34[-]                                N39[-]                                N27[-]
+                                                 /////     \\\\\                       /////     \\\\\                       /////     \\\\\                       /////     \\\\\
+                                           E03[-]             E22[WH]            E51[-]             E57[-]             E23[BK]            E61[-]             E67[-]             E08[-]
+                                        /////                       \\\\\     /////                       \\\\\     /////                       \\\\\     /////                       \\\\\
+                                  N15[-]                               N23[WH/S]                             N21[BK/S]                              N44[-]                                N29[-]
+                                     /                                     /                                     /                                     /                                     /
+                                     /                                     /                                     /                                     /                                     /
+                                     /                                     /                                     /                                     /                                     /
+                                  E01[-]          T10[WHEAT/8]          E68[-]          T06[WHEAT/5]          E04[-]           T14[ORE/6]           E44[-]          T05[WOOD/11]          E59[-]
+                                     /                                     /                                     /                                     /                                     /
+                                     /                                     /                                     /                                     /                                     /
+                                     /                                     /                                     /                                     /                                     /
+                                     /                                     /                                     /                                     /                                     /
+                                  N25[-]                                N28[-]                                N32[-]                                N00[-]                                N10[-]
+                                ////   \\\\                           ////   \\\\                           ////   \\\\                           ////   \\\\                           ////    \\\
+                        E54[-]//           E52[BL]            E30[-]//           E42[-]             E15[-]//           E13[-]             E53[-]//           E47[-]             E40[-]//           \E06[-]
+                        ////                   \\\\           ////                   \\\\           ////                   \\\\           ////                   \\\\           ////                    \\\
+                    ////                           \\\\   ////                           \\\\   ////                           \\\\   ////                           \\\\   ////                           \\\\\
+               N41[-]                               N02[BL/S]                              N13[-]                                N18[-]                                N37[-]                                 N20[-]
+                  /                                     /                                     /                                     /                                     /                                      /
+                  /                                     /                                     /                                     /                                     /                                      /
+                  /                                     /                                     /                                     /                                     /                                      /
+               E43[-]          T17[SHEEP/3]          E41[-]          T09[BRICK/4]          E18[-]          T16[WHEAT/11]         E62[-]          T11[SHEEP/3]          E34[-]           T08[WOOD/4]           E29[-]
+                  /                                     /                                     /                                     /                                     /                                      /
+                  /                                     /                                     /                                     /                                     /                                      /
+                  /                                     /                                     /                                     /                                     /                                      /
+               N03[-]                                N09[-]                                N17[-]                                N16[-]                               N40[RD/S]                               N11[-]
+                    \\\\                           ////   \\\\                           ////   \\\\                           ////   \\\\                           ////   \\\\                           /////
+                        E00[-]             E49[-]//           E32[-]             E56[-]//           E10[-]             E31[-]//           E28[-]             E14[-]//           E58[RD]             E37[-]/
+                            \\\\           ////                   \\\\           ////                   \\\\           ////                   \\\\           ////                   \\\\           /////
+                                \\\\   ////                           \\\\   ////                           \\\\   ////                           \\\\   ////                           \\\\    ///
+                                  N43[-]                                N08[-]                                N50[-]                                N06[-]                                N24[-]
+                                     /                                     /                                     /                                     /                                     /
+                                     /                                     /                                     /                                     /                                     /
+                                     /                                     /                                     /                                     /                                     /
+                                  E17[-]                                E19[-]                                E38[-]                                E66[-]                                E26[-]
+                                     /            T02[BRICK/6]             /             T15[ORE/9]              /            T18[BRICK/10]            /            T03[SHEEP/8]             /
+                                     /                                     /                                     /                                     /                                     /
+                                     /                                     /                                     /                                     /                                     /
+                                     /                                     /                                     /                                     /                                     /
+                                  N22[-]                                N01[-]                                N30[-]                                N47[-]                                N53[-]
+                                        \\\\\                       /////     \\\\\                       /////     \\\\\                       /////     \\\\\                       /////
+                                           E07[-]             E16[-]             E63[-]             E35[-]             E71[-]             E21[-]             E39[-]             E50[-]
+                                                 \\\\\     /////                       \\\\\     /////                       \\\\\     /////                       \\\\\     /////
+                                                     N48[-]                                N36[-]                                N45[-]                                N26[-]
+                                                        /                                     /                                     /                                     /
+                                                        /                                     /                                     /                                     /
+                                                        /                                     /                                     /                                     /
+                                                        /                                     /                                     /                                     /
+                                                     E46[-]         T13[DESERT/-*]         E25[-]           T04[WOOD/2]          E02[-]          T01[SHEEP/5]          E20[-]
+                                                        /                                     /                                     /                                     /
+                                                        /                                     /                                     /                                     /
+                                                        /                                     /                                     /                                     /
+                                                        /                                     /                                     /                                     /
+                                                     N12[-]                                N35[-]                                N31[-]                                N52[-]
+                                                           \\\\\                       /////     \\\\\                       /////     \\\\\                       /////
+                                                              E69[-]             E05[-]             E55[-]             E33[-]             E11[-]             E12[-]
+                                                                    \\\\\     /////                       \\\\\     /////                       \\\\\     /////
+                                                                        N14[-]                                N33[-]                                N38[-]
+
+STATIC TOPOLOGY (dynamic tile/node/edge state occurs only above)
+IT|T00|cube=2,0,-2|corners=NORTH:N49,NORTHEAST:N04,SOUTHEAST:N27,SOUTH:N44,SOUTHWEST:N39,NORTHWEST:N05|sides=EAST:E70,SOUTHEAST:E67,SOUTHWEST:E61,WEST:E36,NORTHWEST:E64,NORTHEAST:E24
+IT|T01|cube=0,-2,2|corners=NORTH:N47,NORTHEAST:N26,SOUTHEAST:N52,SOUTH:N38,SOUTHWEST:N31,NORTHWEST:N45|sides=EAST:E20,SOUTHEAST:E12,SOUTHWEST:E11,WEST:E02,NORTHWEST:E21,NORTHEAST:E39
+IT|T02|cube=-2,1,1|corners=NORTH:N09,NORTHEAST:N08,SOUTHEAST:N01,SOUTH:N48,SOUTHWEST:N22,NORTHWEST:N43|sides=EAST:E19,SOUTHEAST:E16,SOUTHWEST:E07,WEST:E17,NORTHWEST:E49,NORTHEAST:E32
+IT|T03|cube=1,-2,1|corners=NORTH:N40,NORTHEAST:N24,SOUTHEAST:N53,SOUTH:N26,SOUTHWEST:N47,NORTHWEST:N06|sides=EAST:E26,SOUTHEAST:E50,SOUTHWEST:E39,WEST:E66,NORTHWEST:E14,NORTHEAST:E58
+IT|T04|cube=-1,-1,2|corners=NORTH:N30,NORTHEAST:N45,SOUTHEAST:N31,SOUTH:N33,SOUTHWEST:N35,NORTHWEST:N36|sides=EAST:E02,SOUTHEAST:E33,SOUTHWEST:E55,WEST:E25,NORTHWEST:E35,NORTHEAST:E71
+IT|T05|cube=2,-1,-1|corners=NORTH:N27,NORTHEAST:N29,SOUTHEAST:N10,SOUTH:N37,SOUTHWEST:N00,NORTHWEST:N44|sides=EAST:E59,SOUTHEAST:E40,SOUTHWEST:E47,WEST:E44,NORTHWEST:E67,NORTHEAST:E08
+IT|T06|cube=0,1,-1|corners=NORTH:N34,NORTHEAST:N21,SOUTHEAST:N32,SOUTH:N13,SOUTHWEST:N28,NORTHWEST:N23|sides=EAST:E04,SOUTHEAST:E15,SOUTHWEST:E42,WEST:E68,NORTHWEST:E51,NORTHEAST:E57
+IT|T07|cube=0,2,-2|corners=NORTH:N46,NORTHEAST:N42,SOUTHEAST:N34,SOUTH:N23,SOUTHWEST:N07,NORTHWEST:N51|sides=EAST:E60,SOUTHEAST:E51,SOUTHWEST:E22,WEST:E48,NORTHWEST:E27,NORTHEAST:E65
+IT|T08|cube=2,-2,0|corners=NORTH:N10,NORTHEAST:N20,SOUTHEAST:N11,SOUTH:N24,SOUTHWEST:N40,NORTHWEST:N37|sides=EAST:E29,SOUTHEAST:E37,SOUTHWEST:E58,WEST:E34,NORTHWEST:E40,NORTHEAST:E06
+IT|T09|cube=-1,1,0|corners=NORTH:N28,NORTHEAST:N13,SOUTHEAST:N17,SOUTH:N08,SOUTHWEST:N09,NORTHWEST:N02|sides=EAST:E18,SOUTHEAST:E56,SOUTHWEST:E32,WEST:E41,NORTHWEST:E30,NORTHEAST:E42
+IT|T10|cube=-1,2,-1|corners=NORTH:N07,NORTHEAST:N23,SOUTHEAST:N28,SOUTH:N02,SOUTHWEST:N25,NORTHWEST:N15|sides=EAST:E68,SOUTHEAST:E30,SOUTHWEST:E52,WEST:E01,NORTHWEST:E03,NORTHEAST:E22
+IT|T11|cube=1,-1,0|corners=NORTH:N00,NORTHEAST:N37,SOUTHEAST:N40,SOUTH:N06,SOUTHWEST:N16,NORTHWEST:N18|sides=EAST:E34,SOUTHEAST:E14,SOUTHWEST:E28,WEST:E62,NORTHWEST:E53,NORTHEAST:E47
+IT|T12|cube=1,1,-2|corners=NORTH:N19,NORTHEAST:N05,SOUTHEAST:N39,SOUTH:N21,SOUTHWEST:N34,NORTHWEST:N42|sides=EAST:E36,SOUTHEAST:E23,SOUTHWEST:E57,WEST:E60,NORTHWEST:E45,NORTHEAST:E09
+IT|T13|cube=-2,0,2|corners=NORTH:N01,NORTHEAST:N36,SOUTHEAST:N35,SOUTH:N14,SOUTHWEST:N12,NORTHWEST:N48|sides=EAST:E25,SOUTHEAST:E05,SOUTHWEST:E69,WEST:E46,NORTHWEST:E16,NORTHEAST:E63
+IT|T14|cube=1,0,-1|corners=NORTH:N39,NORTHEAST:N44,SOUTHEAST:N00,SOUTH:N18,SOUTHWEST:N32,NORTHWEST:N21|sides=EAST:E44,SOUTHEAST:E53,SOUTHWEST:E13,WEST:E04,NORTHWEST:E23,NORTHEAST:E61
+IT|T15|cube=-1,0,1|corners=NORTH:N17,NORTHEAST:N50,SOUTHEAST:N30,SOUTH:N36,SOUTHWEST:N01,NORTHWEST:N08|sides=EAST:E38,SOUTHEAST:E35,SOUTHWEST:E63,WEST:E19,NORTHWEST:E56,NORTHEAST:E10
+IT|T16|cube=0,0,0|corners=NORTH:N32,NORTHEAST:N18,SOUTHEAST:N16,SOUTH:N50,SOUTHWEST:N17,NORTHWEST:N13|sides=EAST:E62,SOUTHEAST:E31,SOUTHWEST:E10,WEST:E18,NORTHWEST:E15,NORTHEAST:E13
+IT|T17|cube=-2,2,0|corners=NORTH:N25,NORTHEAST:N02,SOUTHEAST:N09,SOUTH:N43,SOUTHWEST:N03,NORTHWEST:N41|sides=EAST:E41,SOUTHEAST:E49,SOUTHWEST:E00,WEST:E43,NORTHWEST:E54,NORTHEAST:E52
+IT|T18|cube=0,-1,1|corners=NORTH:N16,NORTHEAST:N06,SOUTHEAST:N47,SOUTH:N45,SOUTHWEST:N30,NORTHWEST:N50|sides=EAST:E66,SOUTHEAST:E21,SOUTHWEST:E71,WEST:E38,NORTHWEST:E31,NORTHEAST:E28
+IE|E00|nodes=N43,N03
+IE|E01|nodes=N25,N15
+IE|E02|nodes=N45,N31
+IE|E03|nodes=N07,N15
+IE|E04|nodes=N32,N21
+IE|E05|nodes=N35,N14
+IE|E06|nodes=N10,N20
+IE|E07|nodes=N48,N22
+IE|E08|nodes=N27,N29
+IE|E09|nodes=N19,N05
+IE|E10|nodes=N50,N17
+IE|E11|nodes=N38,N31
+IE|E12|nodes=N52,N38
+IE|E13|nodes=N32,N18
+IE|E14|nodes=N40,N06
+IE|E15|nodes=N32,N13
+IE|E16|nodes=N01,N48
+IE|E17|nodes=N22,N43
+IE|E18|nodes=N17,N13
+IE|E19|nodes=N01,N08
+IE|E20|nodes=N26,N52
+IE|E21|nodes=N47,N45
+IE|E22|nodes=N23,N07
+IE|E23|nodes=N21,N39
+IE|E24|nodes=N49,N04
+IE|E25|nodes=N36,N35
+IE|E26|nodes=N24,N53
+IE|E27|nodes=N46,N51
+IE|E28|nodes=N16,N06
+IE|E29|nodes=N20,N11
+IE|E30|nodes=N28,N02
+IE|E31|nodes=N16,N50
+IE|E32|nodes=N08,N09
+IE|E33|nodes=N31,N33
+IE|E34|nodes=N37,N40
+IE|E35|nodes=N30,N36
+IE|E36|nodes=N39,N05
+IE|E37|nodes=N11,N24
+IE|E38|nodes=N50,N30
+IE|E39|nodes=N47,N26
+IE|E40|nodes=N37,N10
+IE|E41|nodes=N09,N02
+IE|E42|nodes=N13,N28
+IE|E43|nodes=N03,N41
+IE|E44|nodes=N00,N44
+IE|E45|nodes=N42,N19
+IE|E46|nodes=N12,N48
+IE|E47|nodes=N00,N37
+IE|E48|nodes=N07,N51
+IE|E49|nodes=N09,N43
+IE|E50|nodes=N53,N26
+IE|E51|nodes=N34,N23
+IE|E52|nodes=N02,N25
+IE|E53|nodes=N18,N00
+IE|E54|nodes=N25,N41
+IE|E55|nodes=N33,N35
+IE|E56|nodes=N17,N08
+IE|E57|nodes=N34,N21
+IE|E58|nodes=N40,N24
+IE|E59|nodes=N10,N29
+IE|E60|nodes=N34,N42
+IE|E61|nodes=N39,N44
+IE|E62|nodes=N18,N16
+IE|E63|nodes=N36,N01
+IE|E64|nodes=N05,N49
+IE|E65|nodes=N46,N42
+IE|E66|nodes=N06,N47
+IE|E67|nodes=N44,N27
+IE|E68|nodes=N28,N23
+IE|E69|nodes=N14,N12
+IE|E70|nodes=N04,N27
+IE|E71|nodes=N45,N30
+IP|P00|cube=-3,0,3|direction=NORTHEAST|resource=SHEEP|ratio=2:1|nodes=N14,N12
+IP|P01|cube=2,1,-3|direction=SOUTHWEST|resource=GENERIC|ratio=3:1|nodes=N19,N05
+IP|P02|cube=-2,3,-1|direction=EAST|resource=WOOD|ratio=2:1|nodes=N25,N15
+IP|P03|cube=0,3,-3|direction=SOUTHEAST|resource=WHEAT|ratio=2:1|nodes=N51,N46
+IP|P04|cube=-3,2,1|direction=EAST|resource=ORE|ratio=2:1|nodes=N22,N43
+IP|P05|cube=-1,-2,3|direction=NORTHWEST|resource=GENERIC|ratio=3:1|nodes=N31,N33
+IP|P06|cube=1,-3,2|direction=NORTHWEST|resource=BRICK|ratio=2:1|nodes=N53,N26
+IP|P07|cube=3,-1,-2|direction=SOUTHWEST|resource=GENERIC|ratio=3:1|nodes=N27,N29
+IP|P08|cube=3,-3,0|direction=WEST|resource=GENERIC|ratio=3:1|nodes=N20,N11

@@ -1,15 +1,15 @@
-# VLM Benchmarking Literature Review For CatanBench
+# VLM Benchmarking Literature Review For CatanBoardBench
 
 Date reviewed: 2026-05-14
 
 ## Bottom Line
 
-CatanBench is directionally strong because it is **domain-specific,
+CatanBoardBench is directionally strong because it is **domain-specific,
 engine-scored, objective, and decomposed by board fact type**. That matches the
 best lesson from modern VLM evaluation: broad leaderboards do not reliably tell
 us whether a model can solve a specific visual-symbolic task.
 
-The main gap is that CatanBench is currently a good **model smoke test**, but not
+The main gap is that CatanBoardBench is currently a good **model smoke test**, but not
 yet a fully hardened benchmark. The next work is not more one-off model runs; it
 is adding the controls used by the stronger VLM benchmarks:
 
@@ -21,14 +21,14 @@ is adding the controls used by the stronger VLM benchmarks:
 - format-validity and abstention metrics
 - frozen train/dev/test splits with a held-out real replay set
 
-## Current CatanBench Snapshot
+## Current CatanBoardBench Snapshot
 
 Current implementation:
 
-- OpenBench/Inspect task: `data_pipeline/catanbench/eval/benchmark.py`
-- Questions: `data_pipeline/catanbench/datasets/catanbench_100/questions/`
-- Rendered contracts/images: `data_pipeline/catanbench/datasets/catanbench_100/`
-- Main result table: `data_pipeline/catanbench/datasets/catanbench_100/reports/2026-05-13-small-vlm-visual-smoke.md`
+- OpenBench/Inspect task: `data_pipeline/catan_board_bench/eval/benchmark.py`
+- Questions: `data_pipeline/catan_board_bench/datasets/catan_board_bench_100/questions/`
+- Rendered contracts/images: `data_pipeline/catan_board_bench/datasets/catan_board_bench_100/`
+- Main result table: `reports/catan_board_bench/2026-05-13-small-vlm-visual-smoke.md`
 
 Current suites:
 
@@ -85,7 +85,7 @@ Pattern to borrow:
 - uses concise prompts for quantitative comparison
 - manually designed annotations to reduce leakage
 
-CatanBench status:
+CatanBoardBench status:
 
 - Strong: visual vs logic split already follows this perception/cognition idea.
 - Missing: no explicit perception tier names yet, e.g. `slot_perception`,
@@ -102,7 +102,7 @@ Pattern to borrow:
 - dimensions for image and video comprehension
 - avoids GPT/human judging in the scoring loop
 
-CatanBench status:
+CatanBoardBench status:
 
 - Strong: objective engine scoring is better than LLM-as-judge for this task.
 - Tradeoff: free-form token answers are closer to the desired parser behavior,
@@ -120,7 +120,7 @@ Pattern to borrow:
 - CircularEval to reduce answer-position / instruction-following artifacts
 - answer extraction for free-form outputs
 
-CatanBench status:
+CatanBoardBench status:
 
 - Strong: category-level breakdown already gives useful ability-level feedback.
 - Missing: no prompt/candidate rotation equivalent. If we add multiple-choice
@@ -138,7 +138,7 @@ Pattern to borrow:
 - reports insights beyond simple ranking
 - supports open-ended tasks with a unified metric
 
-CatanBench status:
+CatanBoardBench status:
 
 - Strong: exact and component metrics give more than a single leaderboard rank.
 - Missing: no higher-level capability taxonomy yet. Example taxonomy:
@@ -159,9 +159,9 @@ Pattern to borrow:
 - MMMU-Pro filters questions answerable by text-only models
 - MMMU-Pro adds a vision-only input setting where questions are embedded in the image
 
-CatanBench status:
+CatanBoardBench status:
 
-- Strong: CatanBench is domain-specific and engine-oracle grounded.
+- Strong: CatanBoardBench is domain-specific and engine-oracle grounded.
 - Missing: no automated text-only/no-image filter for visual categories.
 - Useful addition: run every visual QA with `input_mode=text` and no image. If
   a category scores above chance from prompt/atlas alone, that category is not
@@ -177,7 +177,7 @@ Pattern to borrow:
 - measures data leakage and multimodal gain
 - human review to ensure visual dependency
 
-CatanBench status:
+CatanBoardBench status:
 
 - Strong: generated board states reduce public benchmark contamination risk.
 - Missing: no formal `visual_gain = image_score - no_image_score`.
@@ -196,7 +196,7 @@ Pattern to borrow:
 - hallucination/illusion failure analysis
 - consistency, not only per-question accuracy
 
-CatanBench status:
+CatanBoardBench status:
 
 - Strong: engine can generate exact counterfactual board pairs.
 - Missing: no paired counterfactual suite yet.
@@ -214,9 +214,9 @@ Pattern to borrow:
 - shows that "can see" is not the same as "can perceive"
 - includes tasks where humans are near ceiling but VLMs are not
 
-CatanBench status:
+CatanBoardBench status:
 
-- Strong: CatanBench has the same spirit for board-specific perception.
+- Strong: CatanBoardBench has the same spirit for board-specific perception.
 - Missing: no human baseline, no deterministic CV parser baseline, and no
   explicit "easy for humans" calibration.
 
@@ -229,7 +229,7 @@ Pattern to borrow:
 - simple low-level visual tasks can expose failures hidden by broad benchmarks
 - resolution/detail and exact geometry matter
 
-CatanBench status:
+CatanBoardBench status:
 
 - Strong: tile/node/edge binding is exactly the kind of low-level precision task
   broad VLM leaderboards hide.
@@ -244,7 +244,7 @@ Pattern to borrow:
 - high-resolution, visually crowded images require visual search
 - benchmark specifically tests focusing on small visual details
 
-CatanBench status:
+CatanBoardBench status:
 
 - Strong: Catan boards are visually crowded and detail-sensitive.
 - Missing: no "zoomed crop" or two-stage visual-search condition.
@@ -260,7 +260,7 @@ Pattern to borrow:
 - structured graphics require both visual extraction and logical reasoning
 - combines image-derived facts with a latent data table
 
-CatanBench status:
+CatanBoardBench status:
 
 - Very relevant analogy: screenshot -> structured board contract -> answer.
 - Strong: our engine contract is equivalent to ChartQA's underlying chart data.
@@ -276,7 +276,7 @@ Pattern to borrow:
 - text in images deserves its own evaluation axis
 - separate text recognition from downstream reasoning
 
-CatanBench status:
+CatanBoardBench status:
 
 - Relevant for dice numbers, port labels/icons, and token overlays.
 - Missing: no dedicated number-reading vs icon/resource-reading breakdown.
@@ -295,7 +295,7 @@ Pattern to borrow:
 - reproducible inference, post-processing, and metric calculation
 - leaderboards with standardized records
 
-CatanBench status:
+CatanBoardBench status:
 
 - Strong: OpenBench/Inspect gives us a reproducible local framework.
 - Missing: result normalization and model metadata are still manually maintained
@@ -314,13 +314,13 @@ Pattern to borrow:
 - emphasizes coverage, low cost, and contamination tradeoffs
 - supports many tasks and models from one pipeline
 
-CatanBench status:
+CatanBoardBench status:
 
 - Strong: our 40Q smoke is cheap and fast enough for iteration.
 - Missing: the "full" benchmark definition is not yet frozen into a canonical
   low-cost subset plus a canonical full suite.
 
-## Scorecard For CatanBench
+## Scorecard For CatanBoardBench
 
 | Criterion | Current Grade | Notes |
 | --- | --- | --- |
@@ -340,7 +340,7 @@ CatanBench status:
 Overall: **B for an early domain-specific benchmark, C+ as a publishable VLM
 benchmark**.
 
-## What CatanBench Already Gets Right
+## What CatanBoardBench Already Gets Right
 
 1. **Engine oracle**
    - Best possible ground truth for this domain.
@@ -428,7 +428,7 @@ specificity = unrelated answers stay stable
 
 ### 5. No resolution / crop / overlay ladder yet
 
-CatanBench needs to answer whether the model is failing because:
+CatanBoardBench needs to answer whether the model is failing because:
 
 - pixels are too small
 - atlas IDs are not grounded
@@ -590,7 +590,7 @@ resolution controls.
 
 ## Final Assessment
 
-CatanBench is a good start because it is not a vibe eval: it has generated data,
+CatanBoardBench is a good start because it is not a vibe eval: it has generated data,
 engine labels, exact scoring, repeatable OpenBench runs, and category analysis.
 
 To become a serious benchmark for training a board-understanding VLM, it needs

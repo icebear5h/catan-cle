@@ -16,13 +16,13 @@ printenv OPENROUTER_API_KEY | awk 'BEGIN{FS=""} {print "OPENROUTER_API_KEY is se
 This uses the existing script and existing dataset, not a custom scratch script.
 
 ```bash
-./.venv/bin/python scripts/eval_catanbench_openrouter.py \
+./.venv/bin/python scripts/eval_catan_board_bench_openrouter.py \
   --models qwen3-vl-8b,qwen3.5-9b \
   --limit-samples 5 \
   --questions-per-sample 6 \
   --categories robber_tile,tile_resource_number,node_occupancy,edge_road_owner,port_type_nodes,longest_road_holder \
   --concurrency 2 \
-  --output-dir data_pipeline/catanbench/datasets/catanbench_100/openrouter_eval/$(date -u +"%Y%m%dT%H%M%SZ")_qwen3_vs_qwen3.5
+  --output-dir artifacts/runs/catan_board_bench/catan_board_bench_100/openrouter/$(date -u +"%Y%m%dT%H%M%SZ")_qwen3_vs_qwen3.5
 ```
 
 Notes:
@@ -36,7 +36,7 @@ Notes:
 ```bash
 python - <<'PY'
 import json, pathlib
-out_dirs = sorted(pathlib.Path('data_pipeline/catanbench/datasets/catanbench_100/openrouter_eval').glob('*qwen3_vs_qwen3.5'))
+out_dirs = sorted(pathlib.Path('artifacts/runs/catan_board_bench/catan_board_bench_100/openrouter').glob('*qwen3_vs_qwen3.5'))
 if not out_dirs:
     raise SystemExit('No matching output directories found')
 out_dir = out_dirs[-1]
@@ -48,7 +48,7 @@ PY
 - Keep notes of empty-response counts and reasoning-token totals:
 
 ```bash
-OUT_DIR=$(ls -td data_pipeline/catanbench/datasets/catanbench_100/openrouter_eval/*qwen3_vs_qwen3.5* 2>/dev/null | head -n 1)
+OUT_DIR=$(ls -td artifacts/runs/catan_board_bench/catan_board_bench_100/openrouter/*qwen3_vs_qwen3.5* 2>/dev/null | head -n 1)
 if [ -z "$OUT_DIR" ]; then
   echo "No matching output directory found"
   exit 1
@@ -70,7 +70,7 @@ PY
 
 - Initial in-sandbox run failed with DNS/network resolution errors (`[Errno 8] nodename nor servname provided, or not known`), producing empty responses.
 - Re-ran with escalated network access and full output to:
-  - `data_pipeline/catanbench/datasets/catanbench_100/openrouter_eval/20260514T231751Z_qwen3_vs_qwen3.5_full_suite_nothink9b3`
+  - `artifacts/runs/catan_board_bench/catan_board_bench_100/openrouter/20260514T231751Z_qwen3_vs_qwen3.5_full_suite_nothink9b3`
 
 Summary:
 

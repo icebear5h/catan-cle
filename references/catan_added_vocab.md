@@ -9,7 +9,7 @@ Manifest:
 
 Source code:
 
-- `data_pipeline/catanbench/tokens.py`
+- `data_pipeline/catan_board_bench/tokens.py`
 - `scripts/export_catan_tokens.py`
 
 ## Counts
@@ -31,7 +31,7 @@ The manifest currently contains 197 tokens:
 ```python
 from transformers import AutoProcessor, AutoModelForImageTextToText
 
-from data_pipeline.catanbench.tokens import added_tokens
+from data_pipeline.catan_board_bench.tokens import added_tokens
 
 processor = AutoProcessor.from_pretrained(model_name)
 num_added = processor.tokenizer.add_tokens(added_tokens())
@@ -43,14 +43,14 @@ model.resize_token_embeddings(len(processor.tokenizer))
 Equivalent helper:
 
 ```python
-from data_pipeline.catanbench.tokens import add_tokens_to_tokenizer
+from data_pipeline.catan_board_bench.tokens import add_tokens_to_tokenizer
 
 num_added = add_tokens_to_tokenizer(processor.tokenizer)
 ```
 
 ## Benchmark Usage
 
-Do not require these custom tokens for the first Catan Bench 100 pass on existing
+Do not require these custom tokens for the first CatanBoardBench-100 pass on existing
 off-the-shelf VLMs. Those models have not had the Catan tokens added to their
 tokenizers, so prompts like `<N42>` or `<E12_17>` would be fragmented into
 ordinary sub-tokens and would partly test tokenizer mismatch rather than pure

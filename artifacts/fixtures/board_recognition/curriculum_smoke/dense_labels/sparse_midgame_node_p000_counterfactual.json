@@ -1,0 +1,669 @@
+{
+  "entities": {
+    "edges": [
+      {
+        "id": "<E00_01>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E00_05>",
+        "owner": "WHITE"
+      },
+      {
+        "id": "<E00_20>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E01_02>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E01_06>",
+        "owner": "BLUE"
+      },
+      {
+        "id": "<E02_03>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E02_09>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E03_04>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E03_12>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E04_05>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E04_15>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E05_16>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E06_07>",
+        "owner": "BLUE"
+      },
+      {
+        "id": "<E06_23>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E07_08>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E07_24>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E08_09>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E08_27>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E09_10>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E10_11>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E10_29>",
+        "owner": "RED"
+      },
+      {
+        "id": "<E11_12>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E11_32>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E12_13>",
+        "owner": "RED"
+      },
+      {
+        "id": "<E13_14>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E13_34>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E14_15>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E14_37>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E15_17>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E16_18>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E16_21>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E17_18>",
+        "owner": "RED"
+      },
+      {
+        "id": "<E17_39>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E18_40>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E19_20>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E19_21>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E19_46>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E20_22>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E21_43>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E22_23>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E22_49>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E23_52>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E24_25>",
+        "owner": "RED"
+      },
+      {
+        "id": "<E24_53>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E25_26>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E26_27>",
+        "owner": "BLUE"
+      },
+      {
+        "id": "<E27_28>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E28_29>",
+        "owner": "RED"
+      },
+      {
+        "id": "<E29_30>",
+        "owner": "BLUE"
+      },
+      {
+        "id": "<E30_31>",
+        "owner": "ORANGE"
+      },
+      {
+        "id": "<E31_32>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E32_33>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E33_34>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E34_35>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E35_36>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E36_37>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E37_38>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E38_39>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E39_41>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E40_42>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E40_44>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E41_42>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E43_44>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E43_47>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E45_46>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E45_47>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E46_48>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E48_49>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E49_50>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E50_51>",
+        "owner": "BLUE"
+      },
+      {
+        "id": "<E51_52>",
+        "owner": "EMPTY"
+      },
+      {
+        "id": "<E52_53>",
+        "owner": "EMPTY"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "<N00>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N01>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N02>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N03>",
+        "occupancy": "BLUE_CITY"
+      },
+      {
+        "id": "<N04>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N05>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N06>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N07>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N08>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N09>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N10>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N11>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N12>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N13>",
+        "occupancy": "RED_CITY"
+      },
+      {
+        "id": "<N14>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N15>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N16>",
+        "occupancy": "WHITE_SETTLEMENT"
+      },
+      {
+        "id": "<N17>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N18>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N19>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N20>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N21>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N22>",
+        "occupancy": "WHITE_SETTLEMENT"
+      },
+      {
+        "id": "<N23>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N24>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N25>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N26>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N27>",
+        "occupancy": "BLUE_SETTLEMENT"
+      },
+      {
+        "id": "<N28>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N29>",
+        "occupancy": "BLUE_SETTLEMENT"
+      },
+      {
+        "id": "<N30>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N31>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N32>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N33>",
+        "occupancy": "BLUE_CITY"
+      },
+      {
+        "id": "<N34>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N35>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N36>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N37>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N38>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N39>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N40>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N41>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N42>",
+        "occupancy": "BLUE_CITY"
+      },
+      {
+        "id": "<N43>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N44>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N45>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N46>",
+        "occupancy": "ORANGE_SETTLEMENT"
+      },
+      {
+        "id": "<N47>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N48>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N49>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N50>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N51>",
+        "occupancy": "RED_SETTLEMENT"
+      },
+      {
+        "id": "<N52>",
+        "occupancy": "EMPTY"
+      },
+      {
+        "id": "<N53>",
+        "occupancy": "EMPTY"
+      }
+    ],
+    "ports": [
+      {
+        "id": "<P00>",
+        "port_type": "THREE_TO_ONE"
+      },
+      {
+        "id": "<P01>",
+        "port_type": "TWO_TO_ONE_SHEEP"
+      },
+      {
+        "id": "<P02>",
+        "port_type": "THREE_TO_ONE"
+      },
+      {
+        "id": "<P03>",
+        "port_type": "TWO_TO_ONE_WHEAT"
+      },
+      {
+        "id": "<P04>",
+        "port_type": "TWO_TO_ONE_ORE"
+      },
+      {
+        "id": "<P05>",
+        "port_type": "THREE_TO_ONE"
+      },
+      {
+        "id": "<P06>",
+        "port_type": "TWO_TO_ONE_WOOD"
+      },
+      {
+        "id": "<P07>",
+        "port_type": "THREE_TO_ONE"
+      },
+      {
+        "id": "<P08>",
+        "port_type": "TWO_TO_ONE_BRICK"
+      }
+    ],
+    "tiles": [
+      {
+        "id": "<T00>",
+        "number": 10,
+        "resource": "WOOD",
+        "robber": false
+      },
+      {
+        "id": "<T01>",
+        "number": 3,
+        "resource": "WHEAT",
+        "robber": false
+      },
+      {
+        "id": "<T02>",
+        "number": 3,
+        "resource": "BRICK",
+        "robber": false
+      },
+      {
+        "id": "<T03>",
+        "number": 5,
+        "resource": "WOOD",
+        "robber": false
+      },
+      {
+        "id": "<T04>",
+        "number": 11,
+        "resource": "WOOD",
+        "robber": false
+      },
+      {
+        "id": "<T05>",
+        "number": 6,
+        "resource": "SHEEP",
+        "robber": false
+      },
+      {
+        "id": "<T06>",
+        "number": 4,
+        "resource": "BRICK",
+        "robber": false
+      },
+      {
+        "id": "<T07>",
+        "number": 10,
+        "resource": "ORE",
+        "robber": false
+      },
+      {
+        "id": "<T08>",
+        "number": 8,
+        "resource": "SHEEP",
+        "robber": false
+      },
+      {
+        "id": "<T09>",
+        "number": 9,
+        "resource": "SHEEP",
+        "robber": false
+      },
+      {
+        "id": "<T10>",
+        "number": 9,
+        "resource": "WHEAT",
+        "robber": true
+      },
+      {
+        "id": "<T11>",
+        "number": 4,
+        "resource": "BRICK",
+        "robber": false
+      },
+      {
+        "id": "<T12>",
+        "number": 6,
+        "resource": "ORE",
+        "robber": false
+      },
+      {
+        "id": "<T13>",
+        "number": 11,
+        "resource": "SHEEP",
+        "robber": false
+      },
+      {
+        "id": "<T14>",
+        "number": null,
+        "resource": "DESERT",
+        "robber": false
+      },
+      {
+        "id": "<T15>",
+        "number": 2,
+        "resource": "ORE",
+        "robber": false
+      },
+      {
+        "id": "<T16>",
+        "number": 5,
+        "resource": "WOOD",
+        "robber": false
+      },
+      {
+        "id": "<T17>",
+        "number": 12,
+        "resource": "WHEAT",
+        "robber": false
+      },
+      {
+        "id": "<T18>",
+        "number": 8,
+        "resource": "WHEAT",
+        "robber": false
+      }
+    ]
+  },
+  "sample_id": "sparse_midgame_node_p000_counterfactual",
+  "schema": "catan_board_recognition_dense_labels/v1",
+  "stage": "sparse_midgame"
+}

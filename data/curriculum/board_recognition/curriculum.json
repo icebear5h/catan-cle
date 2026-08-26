@@ -1,0 +1,191 @@
+{
+  "schema": "catan_board_recognition_curriculum/v1",
+  "name": "catan_board_recognition",
+  "purpose": "Direct slot classification from an ordinary full-board image into a complete symbolic Catan state.",
+  "generated_output": "artifacts/generated/board_recognition/curriculum",
+  "views": [
+    "raw_full_board"
+  ],
+  "render": {
+    "image_size": 1024,
+    "style_config": "configs/sft/renderer_style.json",
+    "image_annotation": null,
+    "allow_crops": false,
+    "allow_shifts": false,
+    "allow_overlays": false,
+    "allow_answer_leakage": false
+  },
+  "topology": {
+    "tiles": 19,
+    "nodes": 54,
+    "edges": 72,
+    "ports": 9
+  },
+  "class_vocabularies": {
+    "colors": [
+      "RED",
+      "BLUE",
+      "WHITE",
+      "ORANGE"
+    ],
+    "tile_resource": [
+      "DESERT",
+      "WOOD",
+      "BRICK",
+      "SHEEP",
+      "WHEAT",
+      "ORE"
+    ],
+    "tile_number": [
+      null,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "tile_robber": [
+      false,
+      true
+    ],
+    "node_occupancy": [
+      "EMPTY",
+      "RED_SETTLEMENT",
+      "RED_CITY",
+      "BLUE_SETTLEMENT",
+      "BLUE_CITY",
+      "WHITE_SETTLEMENT",
+      "WHITE_CITY",
+      "ORANGE_SETTLEMENT",
+      "ORANGE_CITY"
+    ],
+    "edge_owner": [
+      "EMPTY",
+      "RED",
+      "BLUE",
+      "WHITE",
+      "ORANGE"
+    ],
+    "port_type": [
+      "THREE_TO_ONE",
+      "TWO_TO_ONE_WOOD",
+      "TWO_TO_ONE_BRICK",
+      "TWO_TO_ONE_SHEEP",
+      "TWO_TO_ONE_WHEAT",
+      "TWO_TO_ONE_ORE"
+    ]
+  },
+  "stages": [
+    {
+      "id": "empty_setup",
+      "order": 0,
+      "target_occupancy": "EMPTY",
+      "distractor_buildings": 0,
+      "roads": 0,
+      "retained_training_mixture": {
+        "empty_setup": 1.0
+      }
+    },
+    {
+      "id": "initial_placements",
+      "order": 1,
+      "target_occupancy": "RED_SETTLEMENT",
+      "distractor_buildings": 3,
+      "roads": 4,
+      "retained_training_mixture": {
+        "empty_setup": 0.25,
+        "initial_placements": 0.75
+      }
+    },
+    {
+      "id": "sparse_midgame",
+      "order": 2,
+      "target_occupancy": "BLUE_CITY",
+      "distractor_buildings": 8,
+      "roads": 12,
+      "retained_training_mixture": {
+        "empty_setup": 0.1,
+        "initial_placements": 0.2,
+        "sparse_midgame": 0.7
+      }
+    },
+    {
+      "id": "dense_endgame",
+      "order": 3,
+      "target_occupancy": "ORANGE_SETTLEMENT",
+      "distractor_buildings": 14,
+      "roads": 28,
+      "retained_training_mixture": {
+        "empty_setup": 0.1,
+        "initial_placements": 0.15,
+        "sparse_midgame": 0.25,
+        "dense_endgame": 0.5
+      }
+    }
+  ],
+  "sampling": {
+    "method": "hierarchical_uniform",
+    "entity_type_order": [
+      "tile",
+      "node",
+      "edge",
+      "port"
+    ],
+    "attributes_by_entity_type": {
+      "tile": [
+        "resource",
+        "number",
+        "robber"
+      ],
+      "node": [
+        "occupancy"
+      ],
+      "edge": [
+        "owner"
+      ],
+      "port": [
+        "port_type"
+      ]
+    },
+    "procedure": "Choose entity type uniformly, then attribute uniformly, then canonical slot uniformly. Read the target class from the dense label payload.",
+    "require_uniform_at_each_level": true
+  },
+  "counterfactuals": {
+    "pair_size": 2,
+    "changed_dense_labels": 1,
+    "require_all_other_dense_labels_equal": true,
+    "require_same_split": true
+  },
+  "splits": {
+    "group_by": "counterfactual_group_id",
+    "bucket_modulus": 10,
+    "train": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "validation": [
+      8
+    ],
+    "test": [
+      9
+    ],
+    "benchmark_game_ids": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100/leakage/benchmark_game_ids.json",
+    "on_missing_or_unreadable": "fail_closed"
+  },
+  "provenance": {
+    "synthetic_requires_seed": true,
+    "replay_requires_known_game_id": true,
+    "benchmark_game_id_policy": "exclude"
+  }
+}

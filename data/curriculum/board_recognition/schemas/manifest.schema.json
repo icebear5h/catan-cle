@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://catan-learning.local/schemas/board_recognition/manifest.schema.json",
+  "title": "Catan board-recognition rendered-state manifest row",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "sample_id",
+    "counterfactual_group_id",
+    "counterfactual_role",
+    "split",
+    "stage",
+    "view",
+    "contract_path",
+    "label_path",
+    "image_path",
+    "image_size",
+    "source",
+    "counterfactual",
+    "render",
+    "sha256"
+  ],
+  "properties": {
+    "schema": {"const": "catan_board_recognition_sample/v1"},
+    "sample_id": {"type": "string", "minLength": 1},
+    "counterfactual_group_id": {"type": "string", "minLength": 1},
+    "counterfactual_role": {"enum": ["base", "counterfactual"]},
+    "split": {"enum": ["train", "validation", "test"]},
+    "stage": {
+      "enum": ["empty_setup", "initial_placements", "sparse_midgame", "dense_endgame"]
+    },
+    "view": {"const": "raw_full_board"},
+    "contract_path": {"type": "string", "pattern": "^contracts/.+\\.json$"},
+    "label_path": {"type": "string", "pattern": "^dense_labels/.+\\.json$"},
+    "image_path": {"type": "string", "pattern": "^images/.+\\.png$"},
+    "image_size": {
+      "type": "array",
+      "prefixItems": [
+        {"type": "integer", "minimum": 64},
+        {"type": "integer", "minimum": 64}
+      ],
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "generator",
+        "seed",
+        "curriculum_stage",
+        "counterfactual_group_id",
+        "benchmark_game_id"
+      ],
+      "properties": {
+        "kind": {"const": "synthetic_engine_contract"},
+        "generator": {"const": "scripts/build_catan_board_recognition_curriculum.py"},
+        "seed": {"type": "integer"},
+        "curriculum_stage": {
+          "enum": ["empty_setup", "initial_placements", "sparse_midgame", "dense_endgame"]
+        },
+        "counterfactual_group_id": {"type": "string", "minLength": 1},
+        "benchmark_game_id": {"type": "null"}
+      }
+    },
+    "counterfactual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["group_id", "target", "before", "after"],
+      "properties": {
+        "group_id": {"type": "string", "minLength": 1},
+        "target": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["entity_type", "entity_id", "attribute"],
+          "properties": {
+            "entity_type": {"enum": ["tile", "node", "edge", "port"]},
+            "entity_id": {
+              "type": "string",
+              "pattern": "^<(T|N|P)[0-9]{2}>$|^<E[0-9]{2}_[0-9]{2}>$"
+            },
+            "attribute": {
+              "enum": ["resource", "number", "robber", "occupancy", "owner", "port_type"]
+            }
+          }
+        },
+        "before": {"type": ["string", "integer", "boolean", "null"]},
+        "after": {"type": ["string", "integer", "boolean", "null"]}
+      }
+    },
+    "render": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["renderer", "style_config", "image_annotation"],
+      "properties": {
+        "renderer": {"const": "data_pipeline.catan_board_bench.render"},
+        "style_config": {"const": "configs/sft/renderer_style.json"},
+        "image_annotation": {"type": "null"}
+      }
+    },
+    "sha256": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "labels", "image"],
+      "properties": {
+        "contract": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "labels": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "image": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{"job_id":"242781000:547","paragraphs":[]}
+{"job_id":"242781000:548","paragraphs":[{"text":"He is very close. I count three VPs, plus one and one, and put him on eight.","evidence_ids":["u1","u3","u4"],"uncertainties":["The player referred to as 'he' is not identified in the utterances."]}]}
+{"job_id":"242781000:550","paragraphs":[{"text":"There is no way we're getting an eight here.","evidence_ids":["u0"],"uncertainties":["The ASR renders the key phrase as 'knocking eight,' so the exact wording is unclear."]}]}
+{"job_id":"242781000:555","paragraphs":[{"text":"I think that was smart, and these repeated sixes are crazy. I'm wondering whether I can put the 8–4.","evidence_ids":["u0","u1","u2","u3"],"uncertainties":["What 'put the 8–4' refers to is not identified."]}]}
+{"job_id":"242781000:556","paragraphs":[{"text":"That would be a winning roll; it is all a winning roll.","evidence_ids":["u0","u1"],"uncertainties":["The roll or alternatives being evaluated are not identified in this file."]}]}
+{"job_id":"242781000:557","paragraphs":[{"text":"Either way, that is probably my better play.","evidence_ids":["u0","u1"],"uncertainties":["The play being compared is not identified in this file."]}]}
+{"job_id":"242781000:558","paragraphs":[{"text":"I don't think he has it.","evidence_ids":["u0"],"uncertainties":["Neither 'he' nor 'it' is identified in the utterance."]}]}
+{"job_id":"242781000:559","paragraphs":[{"text":"I'm hoping for an eight; a four does not do it. That is extremely unfortunate for Red.","evidence_ids":["u0","u1","u2","u3"],"uncertainties":["'18' may be an ASR rendering of 'an eight.'"]}]}
+{"job_id":"242781000:561","paragraphs":[{"text":"We got very lucky.","evidence_ids":["u1"],"uncertainties":[]}]}

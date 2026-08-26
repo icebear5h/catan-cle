@@ -1,0 +1,16 @@
+{
+  "all_attempt_cost_usd": 0.44034495,
+  "generated_at": "2026-08-17T21:17:13.485947+00:00",
+  "initial_attempts_preserved_in_responses_jsonl": true,
+  "initial_run_cost_usd": 0.4259938,
+  "latest_attempt_cost_usd": 0.41718435,
+  "provider_attempt_count": 113,
+  "reason": "Retried two complete provider responses that returned no parseable action selection.",
+  "retry_cost_usd": 0.01435115,
+  "retry_decision_ids": [
+    "242781000:438",
+    "242781000:502"
+  ],
+  "schema": "replay-action-diff-retry-audit-v1",
+  "unique_decision_count": 111
+}

@@ -1,0 +1,140 @@
+{
+  "canonicalizations": [
+    {
+      "canonical_indices": [
+        35,
+        36
+      ],
+      "raw_event_index": 43,
+      "reason": "MOVE_ROBBER is the causal prerequisite of STEAL",
+      "source_replay_indices": [
+        35,
+        36
+      ]
+    },
+    {
+      "canonical_indices": [
+        214,
+        215
+      ],
+      "raw_event_index": 253,
+      "reason": "MOVE_ROBBER is the causal prerequisite of STEAL",
+      "source_replay_indices": [
+        214,
+        215
+      ]
+    },
+    {
+      "canonical_indices": [
+        313,
+        314
+      ],
+      "raw_event_index": 368,
+      "reason": "MOVE_ROBBER is the causal prerequisite of STEAL",
+      "source_replay_indices": [
+        313,
+        314
+      ]
+    },
+    {
+      "canonical_indices": [
+        329,
+        330
+      ],
+      "raw_event_index": 383,
+      "reason": "MOVE_ROBBER is the causal prerequisite of STEAL",
+      "source_replay_indices": [
+        329,
+        330
+      ]
+    },
+    {
+      "canonical_indices": [
+        358,
+        359
+      ],
+      "raw_event_index": 427,
+      "reason": "MOVE_ROBBER is the causal prerequisite of STEAL",
+      "source_replay_indices": [
+        358,
+        359
+      ]
+    },
+    {
+      "canonical_indices": [
+        371,
+        372
+      ],
+      "raw_event_index": 440,
+      "reason": "MOVE_ROBBER is the causal prerequisite of STEAL",
+      "source_replay_indices": [
+        371,
+        372
+      ]
+    },
+    {
+      "canonical_indices": [
+        399,
+        400
+      ],
+      "raw_event_index": 485,
+      "reason": "MOVE_ROBBER is the causal prerequisite of STEAL",
+      "source_replay_indices": [
+        399,
+        400
+      ]
+    },
+    {
+      "canonical_indices": [
+        410,
+        411
+      ],
+      "raw_event_index": 497,
+      "reason": "MOVE_ROBBER is the causal prerequisite of STEAL",
+      "source_replay_indices": [
+        410,
+        411
+      ]
+    },
+    {
+      "canonical_indices": [
+        454,
+        455
+      ],
+      "raw_event_index": 569,
+      "reason": "MOVE_ROBBER is the causal prerequisite of STEAL",
+      "source_replay_indices": [
+        454,
+        455
+      ]
+    }
+  ],
+  "exact_decision_count": 109,
+  "game_id": "242781000",
+  "generated_at": "2026-08-16T22:56:20.867570+00:00",
+  "manifest_sha256": "9803cef66e73796e2e092599158832f4490c00950af2174cc7b548d50287cc34",
+  "models": [
+    "qwen/qwen3.8-27b"
+  ],
+  "parsed_action_count": 570,
+  "schema_version": "replay-action-diff-v1",
+  "settings": {
+    "allow_lookahead": false,
+    "coarse_actions_excluded": true,
+    "context_version": "replay-decision-v2",
+    "execute_model_actions": false,
+    "headline_includes_forced_exact_choices": true,
+    "max_tokens": 8192,
+    "reasoning_control": {
+      "qwen/qwen3.8-27b": {
+        "enabled": false
+      }
+    },
+    "same_event_robber_order": "MOVE_ROBBER then STEAL",
+    "stateless_goals": true,
+    "temperature": 0.2
+  },
+  "target_engine_color": "BLACK",
+  "target_player": "captured",
+  "target_player_id": 5
+}

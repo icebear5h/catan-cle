@@ -1,0 +1,87 @@
+{
+  "all_attempts_file": "setup_strategy_attempts.jsonl",
+  "attempt_count": 38,
+  "base_action_diff_all_attempt_cost_usd": 0.44034495,
+  "base_evaluation_unchanged": true,
+  "combined_known_provider_cost_usd": 0.54440632,
+  "combined_provider_cost_usd": null,
+  "cost_note": "Known cost excludes one failed diagnostic rationale-repair call whose usage was not persisted.",
+  "cost_usd_by_version": {
+    "setup-strategy-v10": 0.0045346,
+    "setup-strategy-v11": 0.00946222,
+    "setup-strategy-v2": 0.01607755,
+    "setup-strategy-v3": 0.0116422,
+    "setup-strategy-v4": 0.0090074,
+    "setup-strategy-v5": 0.00842883,
+    "setup-strategy-v6": 0.00803325,
+    "setup-strategy-v7": 0.0088769,
+    "setup-strategy-v8": 0.00788311,
+    "setup-strategy-v9": 0.00928496
+  },
+  "game_id": "242781000",
+  "generated_at": "2026-08-17T22:46:41.401919+00:00",
+  "quality_file": "setup_strategy_quality.json",
+  "rationale_repair_attempts_file": "setup_rationale_repair_attempts.jsonl",
+  "schema": "setup-strategy-prompt-audit-v1",
+  "selected_model_drafts_are_caveated": true,
+  "selected_overrides": {
+    "242781000:0": {
+      "action_index": 7,
+      "recorded_at": "2026-08-17T22:26:20.788452+00:00",
+      "selection_reason": "qualitative coherence and factual consistency for replay comparison; not used in action-diff metrics",
+      "setup_strategy_version": "setup-strategy-v10"
+    },
+    "242781000:1": {
+      "action_index": 2,
+      "recorded_at": "2026-08-17T22:07:54.291385+00:00",
+      "selection_reason": "qualitative coherence and factual consistency for replay comparison; not used in action-diff metrics",
+      "setup_strategy_version": "setup-strategy-v8"
+    },
+    "242781000:14": {
+      "action_index": 10,
+      "recorded_at": "2026-08-17T22:26:27.951921+00:00",
+      "selection_reason": "qualitative coherence and factual consistency for replay comparison; not used in action-diff metrics",
+      "setup_strategy_version": "setup-strategy-v10"
+    },
+    "242781000:15": {
+      "action_index": 1,
+      "recorded_at": "2026-08-17T22:23:46.992537+00:00",
+      "selection_reason": "qualitative coherence and factual consistency for replay comparison; not used in action-diff metrics",
+      "setup_strategy_version": "setup-strategy-v9"
+    }
+  },
+  "selected_rationale_repair_count": 2,
+  "selected_rationale_repairs": {
+    "242781000:1": {
+      "recorded_at": "2026-08-17T22:38:30.016153+00:00",
+      "schema": "setup-rationale-repair-v1",
+      "source_recorded_at": "2026-08-17T22:07:54.291385+00:00"
+    },
+    "242781000:15": {
+      "recorded_at": "2026-08-17T22:38:41.362563+00:00",
+      "schema": "setup-rationale-repair-v1",
+      "source_recorded_at": "2026-08-17T22:23:46.992537+00:00"
+    }
+  },
+  "selected_rationale_repairs_file": "setup_rationale_repairs.jsonl",
+  "selected_trace_quality_warning_count": 4,
+  "setup_prompt_development_cost_usd": 0.09323102,
+  "successful_rationale_repair_attempt_count": 7,
+  "successful_rationale_repair_cost_usd": 0.01083035,
+  "target_engine_color": "BLUE",
+  "target_player_id": 2,
+  "ui_overrides_file": "setup_strategy_overrides.jsonl",
+  "unrecorded_failed_rationale_repair_attempt_count": 1,
+  "versions": [
+    "setup-strategy-v10",
+    "setup-strategy-v11",
+    "setup-strategy-v2",
+    "setup-strategy-v3",
+    "setup-strategy-v4",
+    "setup-strategy-v5",
+    "setup-strategy-v6",
+    "setup-strategy-v7",
+    "setup-strategy-v8",
+    "setup-strategy-v9"
+  ]
+}

@@ -1,0 +1,215 @@
+{
+  "game_id": "242781000",
+  "model_family": "gpt-5.6-sol",
+  "pending_job_count": 79,
+  "schema": "pi-narrator-observation-shards-v1",
+  "shards": [
+    {
+      "draft_path": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_drafts/shard_00.jsonl",
+      "input_dir": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_inputs/shard_00",
+      "job_count": 5,
+      "job_ids": [
+        "242781000:observation:0",
+        "242781000:observation:2",
+        "242781000:observation:6",
+        "242781000:observation:12",
+        "242781000:observation:14"
+      ],
+      "shard": "shard_00"
+    },
+    {
+      "draft_path": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_drafts/shard_01.jsonl",
+      "input_dir": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_inputs/shard_01",
+      "job_count": 5,
+      "job_ids": [
+        "242781000:observation:16",
+        "242781000:observation:22",
+        "242781000:observation:34",
+        "242781000:observation:35",
+        "242781000:observation:46"
+      ],
+      "shard": "shard_01"
+    },
+    {
+      "draft_path": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_drafts/shard_02.jsonl",
+      "input_dir": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_inputs/shard_02",
+      "job_count": 5,
+      "job_ids": [
+        "242781000:observation:53",
+        "242781000:observation:61",
+        "242781000:observation:89",
+        "242781000:observation:95",
+        "242781000:observation:104"
+      ],
+      "shard": "shard_02"
+    },
+    {
+      "draft_path": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_drafts/shard_03.jsonl",
+      "input_dir": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_inputs/shard_03",
+      "job_count": 5,
+      "job_ids": [
+        "242781000:observation:121",
+        "242781000:observation:129",
+        "242781000:observation:139",
+        "242781000:observation:150",
+        "242781000:observation:154"
+      ],
+      "shard": "shard_03"
+    },
+    {
+      "draft_path": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_drafts/shard_04.jsonl",
+      "input_dir": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_inputs/shard_04",
+      "job_count": 5,
+      "job_ids": [
+        "242781000:observation:158",
+        "242781000:observation:174",
+        "242781000:observation:182",
+        "242781000:observation:190",
+        "242781000:observation:196"
+      ],
+      "shard": "shard_04"
+    },
+    {
+      "draft_path": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_drafts/shard_05.jsonl",
+      "input_dir": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_inputs/shard_05",
+      "job_count": 5,
+      "job_ids": [
+        "242781000:observation:205",
+        "242781000:observation:220",
+        "242781000:observation:223",
+        "242781000:observation:225",
+        "242781000:observation:231"
+      ],
+      "shard": "shard_05"
+    },
+    {
+      "draft_path": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_drafts/shard_06.jsonl",
+      "input_dir": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_inputs/shard_06",
+      "job_count": 5,
+      "job_ids": [
+        "242781000:observation:248",
+        "242781000:observation:261",
+        "242781000:observation:262",
+        "242781000:observation:277",
+        "242781000:observation:284"
+      ],
+      "shard": "shard_06"
+    },
+    {
+      "draft_path": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_drafts/shard_07.jsonl",
+      "input_dir": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_inputs/shard_07",
+      "job_count": 5,
+      "job_ids": [
+        "242781000:observation:288",
+        "242781000:observation:289",
+        "242781000:observation:290",
+        "242781000:observation:308",
+        "242781000:observation:310"
+      ],
+      "shard": "shard_07"
+    },
+    {
+      "draft_path": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_drafts/shard_08.jsonl",
+      "input_dir": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_inputs/shard_08",
+      "job_count": 5,
+      "job_ids": [
+        "242781000:observation:323",
+        "242781000:observation:333",
+        "242781000:observation:339",
+        "242781000:observation:343",
+        "242781000:observation:356"
+      ],
+      "shard": "shard_08"
+    },
+    {
+      "draft_path": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_drafts/shard_09.jsonl",
+      "input_dir": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_inputs/shard_09",
+      "job_count": 5,
+      "job_ids": [
+        "242781000:observation:357",
+        "242781000:observation:360",
+        "242781000:observation:363",
+        "242781000:observation:367",
+        "242781000:observation:383"
+      ],
+      "shard": "shard_09"
+    },
+    {
+      "draft_path": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_drafts/shard_10.jsonl",
+      "input_dir": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_inputs/shard_10",
+      "job_count": 5,
+      "job_ids": [
+        "242781000:observation:385",
+        "242781000:observation:391",
+        "242781000:observation:398",
+        "242781000:observation:399",
+        "242781000:observation:422"
+      ],
+      "shard": "shard_10"
+    },
+    {
+      "draft_path": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_drafts/shard_11.jsonl",
+      "input_dir": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_inputs/shard_11",
+      "job_count": 5,
+      "job_ids": [
+        "242781000:observation:428",
+        "242781000:observation:438",
+        "242781000:observation:444",
+        "242781000:observation:453",
+        "242781000:observation:454"
+      ],
+      "shard": "shard_11"
+    },
+    {
+      "draft_path": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_drafts/shard_12.jsonl",
+      "input_dir": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_inputs/shard_12",
+      "job_count": 5,
+      "job_ids": [
+        "242781000:observation:461",
+        "242781000:observation:466",
+        "242781000:observation:468",
+        "242781000:observation:469",
+        "242781000:observation:475"
+      ],
+      "shard": "shard_12"
+    },
+    {
+      "draft_path": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_drafts/shard_13.jsonl",
+      "input_dir": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_inputs/shard_13",
+      "job_count": 5,
+      "job_ids": [
+        "242781000:observation:485",
+        "242781000:observation:491",
+        "242781000:observation:497",
+        "242781000:observation:514",
+        "242781000:observation:520"
+      ],
+      "shard": "shard_13"
+    },
+    {
+      "draft_path": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_drafts/shard_14.jsonl",
+      "input_dir": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_inputs/shard_14",
+      "job_count": 5,
+      "job_ids": [
+        "242781000:observation:535",
+        "242781000:observation:537",
+        "242781000:observation:548",
+        "242781000:observation:550",
+        "242781000:observation:559"
+      ],
+      "shard": "shard_14"
+    },
+    {
+      "draft_path": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_drafts/shard_15.jsonl",
+      "input_dir": "data_pipeline/training/reasoning/pilots/_2n5F2DxtPI/narrator_reasoning/gpt_5_6_sol_observation_v3_20260820/pi_inputs/shard_15",
+      "job_count": 4,
+      "job_ids": [
+        "242781000:observation:564",
+        "242781000:observation:567",
+        "242781000:observation:568",
+        "242781000:observation:570"
+      ],
+      "shard": "shard_15"
+    }
+  ]
+}

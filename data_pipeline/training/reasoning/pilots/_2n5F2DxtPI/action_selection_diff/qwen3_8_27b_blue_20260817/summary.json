@@ -1,0 +1,156 @@
+{
+  "canonicalization_count": 9,
+  "classification_counts": {
+    "coarse": 24,
+    "exact": 111,
+    "lifecycle": 26,
+    "unmappable": 3
+  },
+  "comparison_parser_version": "replay-action-parser-v2",
+  "complete": true,
+  "exact_decisions": 111,
+  "forced_exact_decisions": 22,
+  "game_id": "242781000",
+  "generated_at": "2026-08-17T21:16:56.691569+00:00",
+  "model_pair": null,
+  "models": {
+    "qwen/qwen3.8-27b": {
+      "agreement_rate_valid": 0.45045045045045046,
+      "agreements": 50,
+      "api_errors": 0,
+      "by_action_type": {
+        "ACCEPT_TRADE": {
+          "agreement_rate_valid": 1.0,
+          "agreements": 1,
+          "eligible": 1,
+          "valid": 1
+        },
+        "BUILD_CITY": {
+          "agreement_rate_valid": 1.0,
+          "agreements": 2,
+          "eligible": 2,
+          "valid": 2
+        },
+        "BUILD_ROAD": {
+          "agreement_rate_valid": 0.14285714285714285,
+          "agreements": 1,
+          "eligible": 7,
+          "valid": 7
+        },
+        "BUILD_SETTLEMENT": {
+          "agreement_rate_valid": 0.6666666666666666,
+          "agreements": 4,
+          "eligible": 6,
+          "valid": 6
+        },
+        "BUY_DEVELOPMENT_CARD": {
+          "agreement_rate_valid": 0.0,
+          "agreements": 0,
+          "eligible": 7,
+          "valid": 7
+        },
+        "END_TURN": {
+          "agreement_rate_valid": 0.21052631578947367,
+          "agreements": 4,
+          "eligible": 19,
+          "valid": 19
+        },
+        "MARITIME_TRADE": {
+          "agreement_rate_valid": 0.25,
+          "agreements": 1,
+          "eligible": 4,
+          "valid": 4
+        },
+        "MOVE_ROBBER": {
+          "agreement_rate_valid": 0.0,
+          "agreements": 0,
+          "eligible": 7,
+          "valid": 7
+        },
+        "PLAY_KNIGHT_CARD": {
+          "agreement_rate_valid": 0.2,
+          "agreements": 1,
+          "eligible": 5,
+          "valid": 5
+        },
+        "PLAY_ROAD_BUILDING": {
+          "agreement_rate_valid": 1.0,
+          "agreements": 1,
+          "eligible": 1,
+          "valid": 1
+        },
+        "REJECT_TRADE": {
+          "agreement_rate_valid": 0.5416666666666666,
+          "agreements": 13,
+          "eligible": 24,
+          "valid": 24
+        },
+        "ROLL": {
+          "agreement_rate_valid": 0.85,
+          "agreements": 17,
+          "eligible": 20,
+          "valid": 20
+        },
+        "STEAL": {
+          "agreement_rate_valid": 0.7142857142857143,
+          "agreements": 5,
+          "eligible": 7,
+          "valid": 7
+        },
+        "YEAR_OF_PLENTY_RESOURCES": {
+          "agreement_rate_valid": 0.0,
+          "agreements": 0,
+          "eligible": 1,
+          "valid": 1
+        }
+      },
+      "coverage": 1.0,
+      "eligible_decisions": 111,
+      "forced": {
+        "agreement_rate_valid": 1.0,
+        "agreements": 22,
+        "eligible": 22,
+        "strict_agreement_rate": 1.0,
+        "valid": 22
+      },
+      "latency_ms": {
+        "max": 156265.0,
+        "mean": 31441.981981981982,
+        "median": 21336.0,
+        "p95": 96708.0
+      },
+      "nontrivial": {
+        "agreement_rate_valid": 0.3146067415730337,
+        "agreements": 28,
+        "eligible": 89,
+        "strict_agreement_rate": 0.3146067415730337,
+        "valid": 89
+      },
+      "parse_errors": 35,
+      "responses_present": 111,
+      "strict_agreement_rate": 0.45045045045045046,
+      "usage": {
+        "completion_tokens": 113004,
+        "cost_usd": 0.41718435,
+        "prompt_tokens": 164201,
+        "total_tokens": 277205
+      },
+      "valid_selections": 111
+    }
+  },
+  "new_requests_this_invocation": {},
+  "nontrivial_exact_decisions": 89,
+  "parsed_action_count": 570,
+  "schema_version": "replay-action-diff-v1",
+  "semantic_error_count": 0,
+  "step_statuses": {
+    "closed": 54,
+    "deferred": 4,
+    "ok": 477,
+    "overlay_applied": 29,
+    "trade_applied": 6
+  },
+  "target_action_records": 164,
+  "target_engine_color": "BLUE",
+  "target_player_id": 2
+}

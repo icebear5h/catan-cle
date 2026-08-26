@@ -8,7 +8,8 @@
  },
  "replay": {
   "game_id": "242781000",
-  "source_url": "https://colonist.io/replay?q=bootymun&gameId=242781000&playerColor=5",
+  "source_url": "https://colonist.io/replay?q=bootymun&gameId=242781000&playerColor=2",
+  "archived_capture_url": "https://colonist.io/replay?q=bootymun&gameId=242781000&playerColor=5",
   "archived_path": "data_pipeline/bootstrapping/data/replay_staging/242781000.json",
   "sha256": "b07dfe7aa9aa0214e6be4627e23a23dcb9620f2175016eed7eb8805485eae2e4",
   "size_bytes": 249784,

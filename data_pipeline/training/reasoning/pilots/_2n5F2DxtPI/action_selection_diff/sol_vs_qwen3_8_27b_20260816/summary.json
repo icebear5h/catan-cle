@@ -1,0 +1,268 @@
+{
+  "canonicalization_count": 9,
+  "classification_counts": {
+    "coarse": 20,
+    "exact": 109,
+    "lifecycle": 15,
+    "unmappable": 1
+  },
+  "comparison_parser_version": "replay-action-parser-v2",
+  "complete": true,
+  "exact_decisions": 109,
+  "forced_exact_decisions": 20,
+  "game_id": "242781000",
+  "generated_at": "2026-08-16T23:58:51.168217+00:00",
+  "model_pair": {
+    "both_match_human": 40,
+    "both_valid": 109,
+    "left_only_matches_human": 12,
+    "models": [
+      "openai/gpt-5.6-sol",
+      "qwen/qwen3.8-27b"
+    ],
+    "neither_matches_human": 44,
+    "right_only_matches_human": 13,
+    "same_nonhuman_alternative": 29,
+    "same_selection": 69,
+    "same_selection_rate": 0.6330275229357798
+  },
+  "models": {
+    "openai/gpt-5.6-sol": {
+      "agreement_rate_valid": 0.47706422018348627,
+      "agreements": 52,
+      "api_errors": 0,
+      "by_action_type": {
+        "ACCEPT_TRADE": {
+          "agreement_rate_valid": 1.0,
+          "agreements": 1,
+          "eligible": 1,
+          "valid": 1
+        },
+        "BUILD_ROAD": {
+          "agreement_rate_valid": 0.2,
+          "agreements": 2,
+          "eligible": 10,
+          "valid": 10
+        },
+        "BUILD_SETTLEMENT": {
+          "agreement_rate_valid": 0.75,
+          "agreements": 3,
+          "eligible": 4,
+          "valid": 4
+        },
+        "BUY_DEVELOPMENT_CARD": {
+          "agreement_rate_valid": 1.0,
+          "agreements": 7,
+          "eligible": 7,
+          "valid": 7
+        },
+        "END_TURN": {
+          "agreement_rate_valid": 0.05263157894736842,
+          "agreements": 1,
+          "eligible": 19,
+          "valid": 19
+        },
+        "MARITIME_TRADE": {
+          "agreement_rate_valid": 0.4,
+          "agreements": 2,
+          "eligible": 5,
+          "valid": 5
+        },
+        "MONOPOLY_RESOURCE": {
+          "agreement_rate_valid": 0.0,
+          "agreements": 0,
+          "eligible": 1,
+          "valid": 1
+        },
+        "MOVE_ROBBER": {
+          "agreement_rate_valid": 0.0,
+          "agreements": 0,
+          "eligible": 5,
+          "valid": 5
+        },
+        "PLAY_KNIGHT_CARD": {
+          "agreement_rate_valid": 0.6666666666666666,
+          "agreements": 2,
+          "eligible": 3,
+          "valid": 3
+        },
+        "REJECT_TRADE": {
+          "agreement_rate_valid": 0.43333333333333335,
+          "agreements": 13,
+          "eligible": 30,
+          "valid": 30
+        },
+        "ROLL": {
+          "agreement_rate_valid": 0.8947368421052632,
+          "agreements": 17,
+          "eligible": 19,
+          "valid": 19
+        },
+        "STEAL": {
+          "agreement_rate_valid": 0.8,
+          "agreements": 4,
+          "eligible": 5,
+          "valid": 5
+        }
+      },
+      "coverage": 1.0,
+      "eligible_decisions": 109,
+      "forced": {
+        "agreement_rate_valid": 1.0,
+        "agreements": 20,
+        "eligible": 20,
+        "strict_agreement_rate": 1.0,
+        "valid": 20
+      },
+      "latency_ms": {
+        "max": 33679.0,
+        "mean": 9344.073394495414,
+        "median": 7531.0,
+        "p95": 26134.0
+      },
+      "nontrivial": {
+        "agreement_rate_valid": 0.3595505617977528,
+        "agreements": 32,
+        "eligible": 89,
+        "strict_agreement_rate": 0.3595505617977528,
+        "valid": 89
+      },
+      "parse_errors": 0,
+      "responses_present": 109,
+      "strict_agreement_rate": 0.47706422018348627,
+      "usage": {
+        "completion_tokens": 46847,
+        "cost_usd": 2.29713225,
+        "prompt_tokens": 150175,
+        "total_tokens": 197022
+      },
+      "valid_selections": 109
+    },
+    "qwen/qwen3.8-27b": {
+      "agreement_rate_valid": 0.48623853211009177,
+      "agreements": 53,
+      "api_errors": 0,
+      "by_action_type": {
+        "ACCEPT_TRADE": {
+          "agreement_rate_valid": 0.0,
+          "agreements": 0,
+          "eligible": 1,
+          "valid": 1
+        },
+        "BUILD_ROAD": {
+          "agreement_rate_valid": 0.1,
+          "agreements": 1,
+          "eligible": 10,
+          "valid": 10
+        },
+        "BUILD_SETTLEMENT": {
+          "agreement_rate_valid": 0.5,
+          "agreements": 2,
+          "eligible": 4,
+          "valid": 4
+        },
+        "BUY_DEVELOPMENT_CARD": {
+          "agreement_rate_valid": 0.7142857142857143,
+          "agreements": 5,
+          "eligible": 7,
+          "valid": 7
+        },
+        "END_TURN": {
+          "agreement_rate_valid": 0.10526315789473684,
+          "agreements": 2,
+          "eligible": 19,
+          "valid": 19
+        },
+        "MARITIME_TRADE": {
+          "agreement_rate_valid": 0.4,
+          "agreements": 2,
+          "eligible": 5,
+          "valid": 5
+        },
+        "MONOPOLY_RESOURCE": {
+          "agreement_rate_valid": 0.0,
+          "agreements": 0,
+          "eligible": 1,
+          "valid": 1
+        },
+        "MOVE_ROBBER": {
+          "agreement_rate_valid": 0.2,
+          "agreements": 1,
+          "eligible": 5,
+          "valid": 5
+        },
+        "PLAY_KNIGHT_CARD": {
+          "agreement_rate_valid": 0.6666666666666666,
+          "agreements": 2,
+          "eligible": 3,
+          "valid": 3
+        },
+        "REJECT_TRADE": {
+          "agreement_rate_valid": 0.5666666666666667,
+          "agreements": 17,
+          "eligible": 30,
+          "valid": 30
+        },
+        "ROLL": {
+          "agreement_rate_valid": 0.8947368421052632,
+          "agreements": 17,
+          "eligible": 19,
+          "valid": 19
+        },
+        "STEAL": {
+          "agreement_rate_valid": 0.8,
+          "agreements": 4,
+          "eligible": 5,
+          "valid": 5
+        }
+      },
+      "coverage": 1.0,
+      "eligible_decisions": 109,
+      "forced": {
+        "agreement_rate_valid": 1.0,
+        "agreements": 20,
+        "eligible": 20,
+        "strict_agreement_rate": 1.0,
+        "valid": 20
+      },
+      "latency_ms": {
+        "max": 157236.0,
+        "mean": 28610.65137614679,
+        "median": 20297.0,
+        "p95": 92557.0
+      },
+      "nontrivial": {
+        "agreement_rate_valid": 0.3707865168539326,
+        "agreements": 33,
+        "eligible": 89,
+        "strict_agreement_rate": 0.3707865168539326,
+        "valid": 89
+      },
+      "parse_errors": 23,
+      "responses_present": 109,
+      "strict_agreement_rate": 0.48623853211009177,
+      "usage": {
+        "completion_tokens": 83616,
+        "cost_usd": 0.32424175,
+        "prompt_tokens": 158066,
+        "total_tokens": 241682
+      },
+      "valid_selections": 109
+    }
+  },
+  "new_requests_this_invocation": {},
+  "nontrivial_exact_decisions": 89,
+  "parsed_action_count": 570,
+  "schema_version": "replay-action-diff-v1",
+  "semantic_error_count": 0,
+  "step_statuses": {
+    "closed": 54,
+    "deferred": 4,
+    "ok": 477,
+    "overlay_applied": 29,
+    "trade_applied": 6
+  },
+  "target_action_records": 145,
+  "target_engine_color": "BLACK",
+  "target_player_id": 5
+}

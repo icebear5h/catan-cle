@@ -1,0 +1,351 @@
+id: catan-decision-spot-checks
+version: 1.0.0
+schema: decision-bucket-suite-v1
+
+stage_rules:
+  - id: setup
+    label: Setup
+    description: Initial settlement and road placement before normal turns begin.
+    detection: Decision phase is initial_placement.
+  - id: early
+    label: Early game
+    description: The first three completed table rounds after setup.
+    detection: Setup is complete, no player has seven public VP, and completed turns are fewer than three times the player count.
+  - id: mid
+    label: Midgame
+    description: Normal play after the first three rounds and before a player reaches seven public VP.
+    detection: The decision is neither setup, early, nor late.
+  - id: late
+    label: Late game
+    description: At least one player is within three public VP of winning.
+    detection: Any player has at least seven public VP; this takes precedence over the turn-count rule.
+
+critical_rule:
+  label: Critical pressure
+  description: The actor or an opponent is one visible point from winning.
+  detection: The actor's actual known VP or any opponent's public VP is at least nine.
+
+buckets:
+  - id: first_settlement
+    label: First settlement
+    group: setup
+    description: Selects the first setup settlement while preserving a complementary second placement.
+    review_unit: setup_pair
+    target_samples: 10
+    detection: First BUILD_SETTLEMENT decision in initial placement.
+    rubric:
+      - Production strength and number diversity.
+      - Resource mix and second-settlement flexibility.
+      - Whether the selected node beats other strong candidates.
+  - id: second_settlement
+    label: Second settlement
+    group: setup
+    description: Completes the setup portfolio and determines starting resources.
+    review_unit: setup_pair
+    target_samples: 10
+    detection: Second BUILD_SETTLEMENT decision in initial placement.
+    rubric:
+      - Complements the first settlement's resource gaps.
+      - Starting resources enable a concrete opening sequence.
+      - Port and expansion implications are grounded in the board.
+  - id: initial_road
+    label: Initial road
+    group: setup
+    description: Preserves useful expansion lanes from either setup settlement.
+    review_unit: setup_pair
+    target_samples: 10
+    detection: BUILD_ROAD decision in initial placement.
+    rubric:
+      - Points toward reachable legal settlement sites.
+      - Preserves alternatives rather than entering a dead end.
+      - Does not confuse the road with the independently placed second settlement.
+  - id: early_opening_turn
+    label: Opening turn
+    group: early
+    description: Converts setup resources and first production into an opening plan.
+    review_unit: whole_turn
+    target_samples: 10
+    detection: Non-forced decision during the actor's first post-setup table round.
+    rubric:
+      - Uses available resources efficiently.
+      - Establishes a coherent first build sequence.
+      - Avoids ending while a valuable action remains.
+  - id: early_expansion
+    label: Early expansion
+    group: early
+    description: Contests settlement sites and road lanes during the first three rounds.
+    review_unit: whole_turn
+    target_samples: 10
+    detection: Early decision selecting or offering BUILD_ROAD or BUILD_SETTLEMENT.
+    rubric:
+      - Prioritizes scarce reachable settlement locations.
+      - Road direction supports a realistic follow-up.
+      - Expansion timing is balanced against city or development-card value.
+  - id: early_build_priority
+    label: Early build priority
+    group: early
+    description: Chooses among multiple materially different purchases in the early game.
+    review_unit: whole_turn
+    target_samples: 10
+    detection: Early menu contains at least two of settlement, city, development-card, or road purchases.
+    rubric:
+      - Selected purchase best advances the current plan.
+      - Opportunity cost of alternatives is recognized.
+      - Resource and hand-risk implications are sensible.
+  - id: early_robber
+    label: Early robber
+    group: early
+    description: Handles an early robber move, victim choice, or Knight play.
+    review_unit: robber_episode
+    target_samples: 10
+    detection: Early MOVE_ROBBER, STEAL, or PLAY_KNIGHT_CARD decision.
+    rubric:
+      - Avoids blocking the actor's own production.
+      - Targets meaningful opponent production or an urgent threat.
+      - Victim choice is consistent with the destination and visible state.
+  - id: early_discard
+    label: Early discard
+    group: early
+    description: Preserves an opening build while discarding replaceable cards.
+    review_unit: robber_episode
+    target_samples: 8
+    detection: Early DISCARD decision.
+    rubric:
+      - Keeps resources required for the next build.
+      - Discards surplus or reliably produced resources first.
+      - Accounts for the likely robber follow-up.
+  - id: early_trade_offer
+    label: Early trade offer
+    group: early
+    description: Initiates or counters a player trade with a concrete early-game unlock.
+    review_unit: trade_episode
+    target_samples: 10
+    detection: Early OFFER_TRADE or COUNTER_OFFER decision.
+    rubric:
+      - Requested terms unlock a named build or sequence.
+      - Price is reasonable relative to bank and port alternatives.
+      - The offer does not unnecessarily accelerate an opponent.
+  - id: early_trade_response
+    label: Early trade response
+    group: early
+    description: Accepts, rejects, counters, or confirms an early player trade.
+    review_unit: trade_episode
+    target_samples: 10
+    detection: Early ACCEPT_TRADE, REJECT_TRADE, COUNTER_OFFER, or CONFIRM_TRADE decision.
+    rubric:
+      - Personal gain exceeds the opponent's strategic benefit.
+      - Counter terms improve the deal rather than adding noise.
+      - Confirmation chooses the best willing counterparty.
+  - id: maritime_trade
+    label: Maritime trade
+    group: economy
+    description: Uses the bank or a port only when its conversion improves the turn.
+    review_unit: whole_turn
+    target_samples: 10
+    detection: MARITIME_TRADE decision at any stage.
+    rubric:
+      - Correct rate and port access are used.
+      - Player-trade alternatives are considered when relevant.
+      - The conversion immediately advances a valuable action.
+  - id: multi_action_turn
+    label: Multi-action turn
+    group: sequencing
+    description: Evaluates a turn containing at least two consequential non-roll actions.
+    review_unit: whole_turn
+    target_samples: 12
+    detection: Two or more build, buy, play, or trade actions share the same completed-turn index.
+    rubric:
+      - Actions are ordered to preserve optionality.
+      - Trades and card plays unlock the intended builds.
+      - The sequence ends only after useful follow-ups are exhausted.
+  - id: development_card_timing
+    label: Development-card timing
+    group: development
+    description: Chooses when and how to play a non-VP development card.
+    review_unit: whole_turn
+    target_samples: 10
+    detection: PLAY_KNIGHT_CARD, PLAY_MONOPOLY, MONOPOLY_RESOURCE, PLAY_YEAR_OF_PLENTY, YEAR_OF_PLENTY_RESOURCES, or PLAY_ROAD_BUILDING decision.
+    rubric:
+      - Card creates more value now than preserving it.
+      - Resource or road choices support a concrete sequence.
+      - Timing accounts for awards, threats, and hand risk.
+  - id: award_race
+    label: Award race
+    group: development
+    description: Advances or protects Longest Road or Largest Army near its threshold.
+    review_unit: whole_turn
+    target_samples: 10
+    detection: Road or Knight decision while the actor is near an award threshold or already holds an award.
+    rubric:
+      - The award path is realistically completable.
+      - Effective VP swing justifies the resources or card.
+      - Vulnerability to an opponent retake is considered.
+  - id: midgame_build_priority
+    label: Midgame build priority
+    group: midgame
+    description: Chooses among materially different purchases after opening plans develop.
+    review_unit: whole_turn
+    target_samples: 10
+    detection: Midgame menu contains at least two of settlement, city, development-card, or road purchases.
+    rubric:
+      - Purchase converts production into VP efficiently.
+      - Choice fits the board's remaining expansion and award paths.
+      - The decision updates rather than blindly follows the opening plan.
+  - id: midgame_blocking
+    label: Midgame blocking
+    group: midgame
+    description: Uses roads, settlements, or the robber to constrain an opponent.
+    review_unit: whole_turn
+    target_samples: 10
+    detection: Midgame BUILD_ROAD, BUILD_SETTLEMENT, MOVE_ROBBER, STEAL, or PLAY_KNIGHT_CARD decision.
+    rubric:
+      - Block targets a meaningful route, site, or production engine.
+      - Defensive value outweighs the actor's best proactive alternative.
+      - The action does not create avoidable retaliation or self-harm.
+  - id: late_turn
+    label: Late-game turn
+    group: late
+    description: Reviews a complete non-forced turn once any player reaches seven public VP.
+    review_unit: whole_turn
+    target_samples: 12
+    detection: Any non-forced late-game decision.
+    rubric:
+      - Turn maximizes win probability rather than raw resource value.
+      - Immediate wins and opponent threats are checked first.
+      - Every action contributes to winning or necessary denial.
+  - id: late_win_conversion
+    label: Immediate win conversion
+    group: late
+    description: Converts a nine-point or stronger position into a win when possible.
+    review_unit: whole_turn
+    target_samples: 10
+    detection: Late decision with actor actual known VP at least nine and a VP-producing action in the menu.
+    rubric:
+      - Finds the complete legal winning sequence.
+      - Avoids unnecessary trades or actions before winning.
+      - Does not end the turn with a win available.
+  - id: late_win_setup
+    label: Late win setup
+    group: late
+    description: Builds the strongest one- or two-turn path from seven or eight VP.
+    review_unit: whole_turn
+    target_samples: 10
+    detection: Late decision with actor actual known VP between seven and eight.
+    rubric:
+      - Establishes a concrete path to the remaining VP.
+      - Protects cards and awards needed for that path.
+      - Accounts for likely opponent denial.
+  - id: late_opponent_denial
+    label: Opponent win denial
+    group: late
+    description: Responds when an opponent has at least nine public VP.
+    review_unit: whole_turn
+    target_samples: 10
+    detection: Non-forced decision while an opponent has at least nine public VP.
+    rubric:
+      - Identifies the opponent's actual immediate win route.
+      - Uses the least costly effective denial.
+      - Avoids strengthening a different near-winner.
+  - id: late_trade
+    label: Late trade
+    group: late
+    description: Reviews any player or maritime trade after the game reaches seven public VP.
+    review_unit: trade_episode
+    target_samples: 10
+    detection: Late OFFER_TRADE, ACCEPT_TRADE, REJECT_TRADE, COUNTER_OFFER, CONFIRM_TRADE, or MARITIME_TRADE decision.
+    rubric:
+      - Trade does not enable an opponent's immediate win.
+      - Actor receives direct winning or defensive value.
+      - Counterparty selection avoids kingmaking.
+  - id: late_robber
+    label: Late robber
+    group: late
+    description: Places the robber and selects a victim under endgame pressure.
+    review_unit: robber_episode
+    target_samples: 10
+    detection: Late MOVE_ROBBER, STEAL, or PLAY_KNIGHT_CARD decision.
+    rubric:
+      - Targets the most credible win threat.
+      - Blocks the resource needed for that threat's next action.
+      - Victim selection avoids kingmaking and self-blocking.
+  - id: late_award_swing
+    label: Late award swing
+    group: late
+    description: Handles a potential Longest Road or Largest Army transfer late in the game.
+    review_unit: whole_turn
+    target_samples: 10
+    detection: Late decision that also qualifies for award_race.
+    rubric:
+      - Recognizes the effective four-point transfer when applicable.
+      - Completes or defends the award with a valid sequence.
+      - Accounts for the opponent's cheapest retake.
+  - id: end_turn_discipline
+    label: End-turn discipline
+    group: sequencing
+    description: Reviews an END_TURN choice made while alternatives remain.
+    review_unit: whole_turn
+    target_samples: 12
+    detection: Non-forced END_TURN decision with more than one legal action.
+    rubric:
+      - No valuable build, trade, or development-card play remains.
+      - Holding cards is worth the seven-risk and lost tempo.
+      - The choice is consistent with the stated game plan.
+
+review_labels:
+  - id: missed_immediate_win
+    label: Missed immediate win
+    description: A legal winning sequence was available but not taken.
+  - id: enables_opponent_win
+    label: Enables opponent win
+    description: The choice directly gives an opponent a winning resource, route, or award.
+  - id: self_blocks
+    label: Self-blocks
+    description: The action unnecessarily harms the actor's production or expansion.
+  - id: hallucinates_state
+    label: Hallucinates state
+    description: The rationale relies on a board, card, cost, or action fact absent from the visible context.
+  - id: ignores_legal_sequence
+    label: Ignores legal sequence
+    description: The analysis misses a legal multi-action combination present in the menu.
+  - id: overpays
+    label: Overpays
+    description: A trade gives materially more than needed relative to visible alternatives.
+  - id: unnecessary_trade
+    label: Unnecessary trade
+    description: The trade adds opponent value without unlocking a worthwhile action.
+  - id: plan_inertia
+    label: Plan inertia
+    description: The model follows stale strategic memory despite changed board conditions.
+  - id: poor_hand_risk
+    label: Poor hand risk
+    description: The choice exposes an avoidably large or strategically fragile hand.
+  - id: wrong_threat_target
+    label: Wrong threat target
+    description: Blocking or robber pressure is directed away from the credible leader.
+  - id: rationale_action_mismatch
+    label: Rationale/action mismatch
+    description: The visible rationale supports a different action than the selected one.
+  - id: reasonable_alternative
+    label: Reasonable alternative
+    description: The model differs from the recorded human but remains strategically defensible.
+
+verdicts:
+  - id: strong
+    label: Strong
+    description: Clearly advances win probability and handles the important alternatives.
+  - id: reasonable
+    label: Reasonable
+    description: Strategically defensible even if another action may be slightly better.
+  - id: questionable
+    label: Questionable
+    description: Material concerns exist, but the choice is not clearly game-losing.
+  - id: blunder
+    label: Blunder
+    description: Misses or causes a major tactical or strategic swing.
+
+sampling:
+  default_target_per_bucket: 10
+  random_fraction: 0.5
+  reasoning_disagreement_fraction: 0.25
+  high_stakes_fraction: 0.25
+  include_model_agreements: true

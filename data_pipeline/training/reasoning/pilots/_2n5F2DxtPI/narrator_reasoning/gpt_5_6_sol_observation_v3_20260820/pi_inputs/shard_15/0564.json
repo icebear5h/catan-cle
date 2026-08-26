@@ -1,0 +1,1530 @@
+{
+  "allowed_kinds": [
+    "decision_reasoning",
+    "board_observation",
+    "opponent_assessment",
+    "reaction",
+    "reflection"
+  ],
+  "already_visible_public_events": [
+    {
+      "observation_id": "o559",
+      "replay_index": 559,
+      "summary": "ORANGE: ended the turn"
+    },
+    {
+      "observation_id": "o560",
+      "replay_index": 560,
+      "summary": "RED: played a knight card"
+    },
+    {
+      "observation_id": "o561",
+      "replay_index": 561,
+      "summary": "RED: moved the robber to tile 7 at (1, 1)"
+    },
+    {
+      "observation_id": "o562",
+      "replay_index": 562,
+      "summary": "RED: stole an unknown resource from BLACK"
+    },
+    {
+      "observation_id": "o563",
+      "replay_index": 563,
+      "summary": "RED: rolled 5 + 1 = 6\n  - RED: +2 WOOD, +2 BRICK\n  - BLACK: +1 WOOD, +1 BRICK"
+    }
+  ],
+  "anchor_kind": "observation",
+  "availability_window": {
+    "end_s": 2358.6999999999985,
+    "start_s": 2298.299999999999
+  },
+  "decision_ids": [],
+  "game_id": "242781000",
+  "generator_version": "narrator-observation-assembly-v1",
+  "instructions": [
+    "Assemble related commentary across replay-row boundaries.",
+    "Use only captions, visible public events, and the public board.",
+    "Never infer the action at this cursor, future events, or hidden hands.",
+    "Preserve uncertainty, alternatives, mistakes, and changes of mind.",
+    "Use decision_reasoning only at a decision anchor and only for explicit deliberation.",
+    "Cite every evidence ID exactly once or list it as omitted filler/repetition/chatter.",
+    "Return at most eight concise first-person prose paragraphs."
+  ],
+  "job_id": "242781000:observation:564",
+  "location_tool_results": {},
+  "output_shape": {
+    "job_id": "242781000:observation:564",
+    "omitted_evidence_ids": [
+      "e0002"
+    ],
+    "paragraphs": [
+      {
+        "evidence_ids": [
+          "e0001"
+        ],
+        "kind": "board_observation",
+        "text": "coherent prose",
+        "uncertainties": []
+      }
+    ]
+  },
+  "public_board_tool_result": {
+    "activity_window": {
+      "end_replay_index": 564,
+      "row_count": 6,
+      "start_replay_index": 558,
+      "truncated": false
+    },
+    "board_state_hash": "5add54e75f6402830365a0fcc5f583c2e6cff66631d0c20ec4bdc8b1153527cb",
+    "buildings": [
+      {
+        "adjacent_tiles": [
+          {
+            "coordinate": [
+              0,
+              0,
+              0
+            ],
+            "number": 11,
+            "resource": "SHEEP",
+            "tile_id": 0
+          },
+          {
+            "coordinate": [
+              1,
+              -1,
+              0
+            ],
+            "number": 4,
+            "resource": "SHEEP",
+            "tile_id": 1
+          },
+          {
+            "coordinate": [
+              1,
+              0,
+              -1
+            ],
+            "number": 5,
+            "resource": "WOOD",
+            "tile_id": 6
+          }
+        ],
+        "building": "SETTLEMENT",
+        "colonist_corner_id": 53,
+        "color": "BLACK",
+        "engine_node_id": 1,
+        "ports": []
+      },
+      {
+        "adjacent_tiles": [
+          {
+            "coordinate": [
+              0,
+              0,
+              0
+            ],
+            "number": 11,
+            "resource": "SHEEP",
+            "tile_id": 0
+          },
+          {
+            "coordinate": [
+              -1,
+              0,
+              1
+            ],
+            "number": null,
+            "resource": null,
+            "tile_id": 3
+          },
+          {
+            "coordinate": [
+              -1,
+              1,
+              0
+            ],
+            "number": 3,
+            "resource": "SHEEP",
+            "tile_id": 4
+          }
+        ],
+        "building": "SETTLEMENT",
+        "colonist_corner_id": 50,
+        "color": "RED",
+        "engine_node_id": 4,
+        "ports": []
+      },
+      {
+        "adjacent_tiles": [
+          {
+            "coordinate": [
+              1,
+              -1,
+              0
+            ],
+            "number": 4,
+            "resource": "SHEEP",
+            "tile_id": 1
+          },
+          {
+            "coordinate": [
+              2,
+              -2,
+              0
+            ],
+            "number": 8,
+            "resource": "BRICK",
+            "tile_id": 7
+          },
+          {
+            "coordinate": [
+              2,
+              -1,
+              -1
+            ],
+            "number": 10,
+            "resource": "WHEAT",
+            "tile_id": 18
+          }
+        ],
+        "building": "CITY",
+        "colonist_corner_id": 37,
+        "color": "BLUE",
+        "engine_node_id": 7,
+        "ports": []
+      },
+      {
+        "adjacent_tiles": [
+          {
+            "coordinate": [
+              0,
+              -1,
+              1
+            ],
+            "number": 9,
+            "resource": "SHEEP",
+            "tile_id": 2
+          },
+          {
+            "coordinate": [
+              1,
+              -2,
+              1
+            ],
+            "number": 3,
+            "resource": "ORE",
+            "tile_id": 8
+          },
+          {
+            "coordinate": [
+              0,
+              -2,
+              2
+            ],
+            "number": 6,
+            "resource": "BRICK",
+            "tile_id": 9
+          }
+        ],
+        "building": "SETTLEMENT",
+        "colonist_corner_id": 26,
+        "color": "BLACK",
+        "engine_node_id": 10,
+        "ports": []
+      },
+      {
+        "adjacent_tiles": [
+          {
+            "coordinate": [
+              0,
+              -1,
+              1
+            ],
+            "number": 9,
+            "resource": "SHEEP",
+            "tile_id": 2
+          },
+          {
+            "coordinate": [
+              -1,
+              0,
+              1
+            ],
+            "number": null,
+            "resource": null,
+            "tile_id": 3
+          },
+          {
+            "coordinate": [
+              -1,
+              -1,
+              2
+            ],
+            "number": 2,
+            "resource": "WHEAT",
+            "tile_id": 10
+          }
+        ],
+        "building": "SETTLEMENT",
+        "colonist_corner_id": 22,
+        "color": "BLACK",
+        "engine_node_id": 12,
+        "ports": []
+      },
+      {
+        "adjacent_tiles": [
+          {
+            "coordinate": [
+              -1,
+              0,
+              1
+            ],
+            "number": null,
+            "resource": null,
+            "tile_id": 3
+          },
+          {
+            "coordinate": [
+              -2,
+              0,
+              2
+            ],
+            "number": 5,
+            "resource": "WHEAT",
+            "tile_id": 11
+          },
+          {
+            "coordinate": [
+              -2,
+              1,
+              1
+            ],
+            "number": 10,
+            "resource": "WOOD",
+            "tile_id": 12
+          }
+        ],
+        "building": "SETTLEMENT",
+        "colonist_corner_id": 15,
+        "color": "ORANGE",
+        "engine_node_id": 14,
+        "ports": []
+      },
+      {
+        "adjacent_tiles": [
+          {
+            "coordinate": [
+              -1,
+              1,
+              0
+            ],
+            "number": 3,
+            "resource": "SHEEP",
+            "tile_id": 4
+          },
+          {
+            "coordinate": [
+              0,
+              1,
+              -1
+            ],
+            "number": 6,
+            "resource": "WOOD",
+            "tile_id": 5
+          },
+          {
+            "coordinate": [
+              -1,
+              2,
+              -1
+            ],
+            "number": 4,
+            "resource": "ORE",
+            "tile_id": 14
+          }
+        ],
+        "building": "CITY",
+        "colonist_corner_id": 6,
+        "color": "RED",
+        "engine_node_id": 16,
+        "ports": []
+      },
+      {
+        "adjacent_tiles": [
+          {
+            "coordinate": [
+              -1,
+              1,
+              0
+            ],
+            "number": 3,
+            "resource": "SHEEP",
+            "tile_id": 4
+          },
+          {
+            "coordinate": [
+              -2,
+              1,
+              1
+            ],
+            "number": 10,
+            "resource": "WOOD",
+            "tile_id": 12
+          },
+          {
+            "coordinate": [
+              -2,
+              2,
+              0
+            ],
+            "number": 8,
+            "resource": "ORE",
+            "tile_id": 13
+          }
+        ],
+        "building": "SETTLEMENT",
+        "colonist_corner_id": 10,
+        "color": "ORANGE",
+        "engine_node_id": 17,
+        "ports": []
+      },
+      {
+        "adjacent_tiles": [
+          {
+            "coordinate": [
+              0,
+              1,
+              -1
+            ],
+            "number": 6,
+            "resource": "WOOD",
+            "tile_id": 5
+          },
+          {
+            "coordinate": [
+              1,
+              0,
+              -1
+            ],
+            "number": 5,
+            "resource": "WOOD",
+            "tile_id": 6
+          },
+          {
+            "coordinate": [
+              1,
+              1,
+              -2
+            ],
+            "number": 12,
+            "resource": "WHEAT",
+            "tile_id": 16
+          }
+        ],
+        "building": "SETTLEMENT",
+        "colonist_corner_id": 47,
+        "color": "BLACK",
+        "engine_node_id": 20,
+        "ports": []
+      },
+      {
+        "adjacent_tiles": [
+          {
+            "coordinate": [
+              1,
+              0,
+              -1
+            ],
+            "number": 5,
+            "resource": "WOOD",
+            "tile_id": 6
+          },
+          {
+            "coordinate": [
+              2,
+              0,
+              -2
+            ],
+            "number": 9,
+            "resource": "BRICK",
+            "tile_id": 17
+          },
+          {
+            "coordinate": [
+              2,
+              -1,
+              -1
+            ],
+            "number": 10,
+            "resource": "WHEAT",
+            "tile_id": 18
+          }
+        ],
+        "building": "CITY",
+        "colonist_corner_id": 41,
+        "color": "ORANGE",
+        "engine_node_id": 23,
+        "ports": []
+      },
+      {
+        "adjacent_tiles": [
+          {
+            "coordinate": [
+              2,
+              -2,
+              0
+            ],
+            "number": 8,
+            "resource": "BRICK",
+            "tile_id": 7
+          }
+        ],
+        "building": "SETTLEMENT",
+        "colonist_corner_id": 35,
+        "color": "BLUE",
+        "engine_node_id": 25,
+        "ports": [
+          "3:1"
+        ]
+      },
+      {
+        "adjacent_tiles": [
+          {
+            "coordinate": [
+              2,
+              -2,
+              0
+            ],
+            "number": 8,
+            "resource": "BRICK",
+            "tile_id": 7
+          },
+          {
+            "coordinate": [
+              1,
+              -2,
+              1
+            ],
+            "number": 3,
+            "resource": "ORE",
+            "tile_id": 8
+          }
+        ],
+        "building": "SETTLEMENT",
+        "colonist_corner_id": 31,
+        "color": "BLUE",
+        "engine_node_id": 27,
+        "ports": []
+      },
+      {
+        "adjacent_tiles": [
+          {
+            "coordinate": [
+              0,
+              -2,
+              2
+            ],
+            "number": 6,
+            "resource": "BRICK",
+            "tile_id": 9
+          }
+        ],
+        "building": "SETTLEMENT",
+        "colonist_corner_id": 28,
+        "color": "RED",
+        "engine_node_id": 30,
+        "ports": []
+      },
+      {
+        "adjacent_tiles": [
+          {
+            "coordinate": [
+              0,
+              -2,
+              2
+            ],
+            "number": 6,
+            "resource": "BRICK",
+            "tile_id": 9
+          },
+          {
+            "coordinate": [
+              -1,
+              -1,
+              2
+            ],
+            "number": 2,
+            "resource": "WHEAT",
+            "tile_id": 10
+          }
+        ],
+        "building": "SETTLEMENT",
+        "colonist_corner_id": 24,
+        "color": "RED",
+        "engine_node_id": 32,
+        "ports": [
+          "3:1"
+        ]
+      },
+      {
+        "adjacent_tiles": [
+          {
+            "coordinate": [
+              -1,
+              -1,
+              2
+            ],
+            "number": 2,
+            "resource": "WHEAT",
+            "tile_id": 10
+          },
+          {
+            "coordinate": [
+              -2,
+              0,
+              2
+            ],
+            "number": 5,
+            "resource": "WHEAT",
+            "tile_id": 11
+          }
+        ],
+        "building": "SETTLEMENT",
+        "colonist_corner_id": 19,
+        "color": "RED",
+        "engine_node_id": 34,
+        "ports": []
+      },
+      {
+        "adjacent_tiles": [
+          {
+            "coordinate": [
+              -2,
+              0,
+              2
+            ],
+            "number": 5,
+            "resource": "WHEAT",
+            "tile_id": 11
+          }
+        ],
+        "building": "SETTLEMENT",
+        "colonist_corner_id": 21,
+        "color": "ORANGE",
+        "engine_node_id": 36,
+        "ports": [
+          "2:1 WOOD"
+        ]
+      },
+      {
+        "adjacent_tiles": [
+          {
+            "coordinate": [
+              -2,
+              2,
+              0
+            ],
+            "number": 8,
+            "resource": "ORE",
+            "tile_id": 13
+          },
+          {
+            "coordinate": [
+              -1,
+              2,
+              -1
+            ],
+            "number": 4,
+            "resource": "ORE",
+            "tile_id": 14
+          }
+        ],
+        "building": "SETTLEMENT",
+        "colonist_corner_id": 8,
+        "color": "BLUE",
+        "engine_node_id": 40,
+        "ports": [
+          "3:1"
+        ]
+      },
+      {
+        "adjacent_tiles": [
+          {
+            "coordinate": [
+              -1,
+              2,
+              -1
+            ],
+            "number": 4,
+            "resource": "ORE",
+            "tile_id": 14
+          },
+          {
+            "coordinate": [
+              0,
+              2,
+              -2
+            ],
+            "number": 11,
+            "resource": "WOOD",
+            "tile_id": 15
+          }
+        ],
+        "building": "SETTLEMENT",
+        "colonist_corner_id": 4,
+        "color": "RED",
+        "engine_node_id": 43,
+        "ports": []
+      },
+      {
+        "adjacent_tiles": [
+          {
+            "coordinate": [
+              0,
+              2,
+              -2
+            ],
+            "number": 11,
+            "resource": "WOOD",
+            "tile_id": 15
+          },
+          {
+            "coordinate": [
+              1,
+              1,
+              -2
+            ],
+            "number": 12,
+            "resource": "WHEAT",
+            "tile_id": 16
+          }
+        ],
+        "building": "SETTLEMENT",
+        "colonist_corner_id": 1,
+        "color": "ORANGE",
+        "engine_node_id": 46,
+        "ports": []
+      },
+      {
+        "adjacent_tiles": [
+          {
+            "coordinate": [
+              1,
+              1,
+              -2
+            ],
+            "number": 12,
+            "resource": "WHEAT",
+            "tile_id": 16
+          },
+          {
+            "coordinate": [
+              2,
+              0,
+              -2
+            ],
+            "number": 9,
+            "resource": "BRICK",
+            "tile_id": 17
+          }
+        ],
+        "building": "SETTLEMENT",
+        "colonist_corner_id": 45,
+        "color": "ORANGE",
+        "engine_node_id": 49,
+        "ports": [
+          "2:1 SHEEP"
+        ]
+      },
+      {
+        "adjacent_tiles": [
+          {
+            "coordinate": [
+              2,
+              -1,
+              -1
+            ],
+            "number": 10,
+            "resource": "WHEAT",
+            "tile_id": 18
+          }
+        ],
+        "building": "SETTLEMENT",
+        "colonist_corner_id": 39,
+        "color": "BLUE",
+        "engine_node_id": 53,
+        "ports": [
+          "2:1 BRICK"
+        ]
+      }
+    ],
+    "current_player_color": "RED",
+    "game_id": "242781000",
+    "narrator_color": "BLUE",
+    "phase": "main_game",
+    "players": [
+      {
+        "cities": 1,
+        "color": "BLUE",
+        "longest_road_length": 4,
+        "played_knights": 5,
+        "public_victory_points": 8,
+        "roads": 7,
+        "settlements": 4
+      },
+      {
+        "cities": 0,
+        "color": "BLACK",
+        "longest_road_length": 10,
+        "played_knights": 3,
+        "public_victory_points": 6,
+        "roads": 10,
+        "settlements": 4
+      },
+      {
+        "cities": 1,
+        "color": "ORANGE",
+        "longest_road_length": 6,
+        "played_knights": 1,
+        "public_victory_points": 7,
+        "roads": 10,
+        "settlements": 5
+      },
+      {
+        "cities": 1,
+        "color": "RED",
+        "longest_road_length": 5,
+        "played_knights": 4,
+        "public_victory_points": 7,
+        "roads": 9,
+        "settlements": 5
+      }
+    ],
+    "recent_public_activity": [
+      "ORANGE: rolled 4 + 6 = 10\n  - ORANGE: +2 WOOD, +2 WHEAT\n  - BLUE: +3 WHEAT",
+      "ORANGE: ended the turn",
+      "RED: played a knight card",
+      "RED: moved the robber to tile 7 at (1, 1)",
+      "RED: stole an unknown resource from BLACK",
+      "RED: rolled 5 + 1 = 6\n  - RED: +2 WOOD, +2 BRICK\n  - BLACK: +1 WOOD, +1 BRICK"
+    ],
+    "replay_index": 564,
+    "roads": [
+      {
+        "colonist_edge_id": 3,
+        "color": "RED",
+        "engine_nodes": [
+          21,
+          43
+        ]
+      },
+      {
+        "colonist_edge_id": 6,
+        "color": "RED",
+        "engine_nodes": [
+          16,
+          21
+        ]
+      },
+      {
+        "colonist_edge_id": 12,
+        "color": "ORANGE",
+        "engine_nodes": [
+          17,
+          39
+        ]
+      },
+      {
+        "colonist_edge_id": 14,
+        "color": "BLUE",
+        "engine_nodes": [
+          41,
+          42
+        ]
+      },
+      {
+        "colonist_edge_id": 15,
+        "color": "BLUE",
+        "engine_nodes": [
+          40,
+          42
+        ]
+      },
+      {
+        "colonist_edge_id": 16,
+        "color": "ORANGE",
+        "engine_nodes": [
+          15,
+          17
+        ]
+      },
+      {
+        "colonist_edge_id": 17,
+        "color": "ORANGE",
+        "engine_nodes": [
+          14,
+          15
+        ]
+      },
+      {
+        "colonist_edge_id": 18,
+        "color": "ORANGE",
+        "engine_nodes": [
+          14,
+          37
+        ]
+      },
+      {
+        "colonist_edge_id": 20,
+        "color": "ORANGE",
+        "engine_nodes": [
+          38,
+          39
+        ]
+      },
+      {
+        "colonist_edge_id": 25,
+        "color": "ORANGE",
+        "engine_nodes": [
+          36,
+          37
+        ]
+      },
+      {
+        "colonist_edge_id": 26,
+        "color": "BLACK",
+        "engine_nodes": [
+          11,
+          12
+        ]
+      },
+      {
+        "colonist_edge_id": 28,
+        "color": "RED",
+        "engine_nodes": [
+          32,
+          33
+        ]
+      },
+      {
+        "colonist_edge_id": 29,
+        "color": "RED",
+        "engine_nodes": [
+          33,
+          34
+        ]
+      },
+      {
+        "colonist_edge_id": 31,
+        "color": "BLACK",
+        "engine_nodes": [
+          10,
+          29
+        ]
+      },
+      {
+        "colonist_edge_id": 33,
+        "color": "RED",
+        "engine_nodes": [
+          30,
+          31
+        ]
+      },
+      {
+        "colonist_edge_id": 34,
+        "color": "RED",
+        "engine_nodes": [
+          31,
+          32
+        ]
+      },
+      {
+        "colonist_edge_id": 35,
+        "color": "BLACK",
+        "engine_nodes": [
+          10,
+          11
+        ]
+      },
+      {
+        "colonist_edge_id": 36,
+        "color": "BLUE",
+        "engine_nodes": [
+          8,
+          27
+        ]
+      },
+      {
+        "colonist_edge_id": 38,
+        "color": "BLACK",
+        "engine_nodes": [
+          28,
+          29
+        ]
+      },
+      {
+        "colonist_edge_id": 41,
+        "color": "BLUE",
+        "engine_nodes": [
+          24,
+          25
+        ]
+      },
+      {
+        "colonist_edge_id": 44,
+        "color": "BLUE",
+        "engine_nodes": [
+          7,
+          8
+        ]
+      },
+      {
+        "colonist_edge_id": 45,
+        "color": "BLUE",
+        "engine_nodes": [
+          7,
+          24
+        ]
+      },
+      {
+        "colonist_edge_id": 47,
+        "color": "BLUE",
+        "engine_nodes": [
+          24,
+          53
+        ]
+      },
+      {
+        "colonist_edge_id": 53,
+        "color": "ORANGE",
+        "engine_nodes": [
+          22,
+          23
+        ]
+      },
+      {
+        "colonist_edge_id": 54,
+        "color": "ORANGE",
+        "engine_nodes": [
+          22,
+          49
+        ]
+      },
+      {
+        "colonist_edge_id": 56,
+        "color": "ORANGE",
+        "engine_nodes": [
+          48,
+          49
+        ]
+      },
+      {
+        "colonist_edge_id": 58,
+        "color": "BLACK",
+        "engine_nodes": [
+          19,
+          20
+        ]
+      },
+      {
+        "colonist_edge_id": 59,
+        "color": "ORANGE",
+        "engine_nodes": [
+          46,
+          48
+        ]
+      },
+      {
+        "colonist_edge_id": 60,
+        "color": "BLACK",
+        "engine_nodes": [
+          0,
+          20
+        ]
+      },
+      {
+        "colonist_edge_id": 62,
+        "color": "RED",
+        "engine_nodes": [
+          5,
+          16
+        ]
+      },
+      {
+        "colonist_edge_id": 63,
+        "color": "RED",
+        "engine_nodes": [
+          4,
+          5
+        ]
+      },
+      {
+        "colonist_edge_id": 64,
+        "color": "RED",
+        "engine_nodes": [
+          4,
+          15
+        ]
+      },
+      {
+        "colonist_edge_id": 66,
+        "color": "BLACK",
+        "engine_nodes": [
+          3,
+          12
+        ]
+      },
+      {
+        "colonist_edge_id": 68,
+        "color": "BLACK",
+        "engine_nodes": [
+          2,
+          3
+        ]
+      },
+      {
+        "colonist_edge_id": 69,
+        "color": "BLACK",
+        "engine_nodes": [
+          1,
+          2
+        ]
+      },
+      {
+        "colonist_edge_id": 71,
+        "color": "BLACK",
+        "engine_nodes": [
+          0,
+          1
+        ]
+      }
+    ],
+    "tiles": [
+      {
+        "coordinate": [
+          -2,
+          0,
+          2
+        ],
+        "number": 5,
+        "resource": "WHEAT",
+        "robber": false,
+        "tile_id": 11
+      },
+      {
+        "coordinate": [
+          -2,
+          1,
+          1
+        ],
+        "number": 10,
+        "resource": "WOOD",
+        "robber": false,
+        "tile_id": 12
+      },
+      {
+        "coordinate": [
+          -2,
+          2,
+          0
+        ],
+        "number": 8,
+        "resource": "ORE",
+        "robber": false,
+        "tile_id": 13
+      },
+      {
+        "coordinate": [
+          -1,
+          -1,
+          2
+        ],
+        "number": 2,
+        "resource": "WHEAT",
+        "robber": false,
+        "tile_id": 10
+      },
+      {
+        "coordinate": [
+          -1,
+          0,
+          1
+        ],
+        "number": null,
+        "resource": null,
+        "robber": false,
+        "tile_id": 3
+      },
+      {
+        "coordinate": [
+          -1,
+          1,
+          0
+        ],
+        "number": 3,
+        "resource": "SHEEP",
+        "robber": false,
+        "tile_id": 4
+      },
+      {
+        "coordinate": [
+          -1,
+          2,
+          -1
+        ],
+        "number": 4,
+        "resource": "ORE",
+        "robber": false,
+        "tile_id": 14
+      },
+      {
+        "coordinate": [
+          0,
+          -2,
+          2
+        ],
+        "number": 6,
+        "resource": "BRICK",
+        "robber": false,
+        "tile_id": 9
+      },
+      {
+        "coordinate": [
+          0,
+          -1,
+          1
+        ],
+        "number": 9,
+        "resource": "SHEEP",
+        "robber": false,
+        "tile_id": 2
+      },
+      {
+        "coordinate": [
+          0,
+          0,
+          0
+        ],
+        "number": 11,
+        "resource": "SHEEP",
+        "robber": false,
+        "tile_id": 0
+      },
+      {
+        "coordinate": [
+          0,
+          1,
+          -1
+        ],
+        "number": 6,
+        "resource": "WOOD",
+        "robber": false,
+        "tile_id": 5
+      },
+      {
+        "coordinate": [
+          0,
+          2,
+          -2
+        ],
+        "number": 11,
+        "resource": "WOOD",
+        "robber": false,
+        "tile_id": 15
+      },
+      {
+        "coordinate": [
+          1,
+          -2,
+          1
+        ],
+        "number": 3,
+        "resource": "ORE",
+        "robber": true,
+        "tile_id": 8
+      },
+      {
+        "coordinate": [
+          1,
+          -1,
+          0
+        ],
+        "number": 4,
+        "resource": "SHEEP",
+        "robber": false,
+        "tile_id": 1
+      },
+      {
+        "coordinate": [
+          1,
+          0,
+          -1
+        ],
+        "number": 5,
+        "resource": "WOOD",
+        "robber": false,
+        "tile_id": 6
+      },
+      {
+        "coordinate": [
+          1,
+          1,
+          -2
+        ],
+        "number": 12,
+        "resource": "WHEAT",
+        "robber": false,
+        "tile_id": 16
+      },
+      {
+        "coordinate": [
+          2,
+          -2,
+          0
+        ],
+        "number": 8,
+        "resource": "BRICK",
+        "robber": false,
+        "tile_id": 7
+      },
+      {
+        "coordinate": [
+          2,
+          -1,
+          -1
+        ],
+        "number": 10,
+        "resource": "WHEAT",
+        "robber": false,
+        "tile_id": 18
+      },
+      {
+        "coordinate": [
+          2,
+          0,
+          -2
+        ],
+        "number": 9,
+        "resource": "BRICK",
+        "robber": false,
+        "tile_id": 17
+      }
+    ],
+    "turn_number": 81
+  },
+  "replay_index": 564,
+  "schema": "pi-narrator-observation-input-v1",
+  "utterances": [
+    {
+      "available_replay_index": 561,
+      "end_s": 2308.6800000000003,
+      "evidence_id": "e0492",
+      "source_end_index": 621,
+      "source_segment_count": 1,
+      "source_start_index": 621,
+      "start_s": 2301.88,
+      "text": ">> What like El Primo rolls."
+    },
+    {
+      "available_replay_index": 561,
+      "end_s": 2310.2000000000003,
+      "evidence_id": "e0493",
+      "source_end_index": 622,
+      "source_segment_count": 2,
+      "source_start_index": 621,
+      "start_s": 2301.88,
+      "text": "We got very lucky."
+    },
+    {
+      "available_replay_index": 563,
+      "end_s": 2314.3599999999997,
+      "evidence_id": "e0494",
+      "source_end_index": 624,
+      "source_segment_count": 3,
+      "source_start_index": 622,
+      "start_s": 2305.4,
+      "text": "I think um a lot [music] of things went our way there."
+    },
+    {
+      "available_replay_index": 563,
+      "end_s": 2314.3599999999997,
+      "evidence_id": "e0495",
+      "source_end_index": 624,
+      "source_segment_count": 1,
+      "source_start_index": 624,
+      "start_s": 2310.2,
+      "text": "Like I'm just going to be real."
+    },
+    {
+      "available_replay_index": 564,
+      "end_s": 2316.84,
+      "evidence_id": "e0496",
+      "source_end_index": 625,
+      "source_segment_count": 2,
+      "source_start_index": 624,
+      "start_s": 2310.2,
+      "text": "A lot of things went our way."
+    },
+    {
+      "available_replay_index": 564,
+      "end_s": 2317.88,
+      "evidence_id": "e0497",
+      "source_end_index": 626,
+      "source_segment_count": 2,
+      "source_start_index": 625,
+      "start_s": 2312.44,
+      "text": "We got very timely."
+    },
+    {
+      "available_replay_index": 564,
+      "end_s": 2319.96,
+      "evidence_id": "e0498",
+      "source_end_index": 627,
+      "source_segment_count": 2,
+      "source_start_index": 626,
+      "start_s": 2314.36,
+      "text": "Look at these dice just maxed out."
+    },
+    {
+      "available_replay_index": 564,
+      "end_s": 2321.52,
+      "evidence_id": "e0499",
+      "source_end_index": 628,
+      "source_segment_count": 1,
+      "source_start_index": 628,
+      "start_s": 2317.88,
+      "text": "Dice maxing for sure."
+    },
+    {
+      "available_replay_index": 564,
+      "end_s": 2326.2,
+      "evidence_id": "e0500",
+      "source_end_index": 630,
+      "source_segment_count": 2,
+      "source_start_index": 629,
+      "start_s": 2319.96,
+      "text": "Then what's crazy though is we actually didn't roll the most."
+    },
+    {
+      "available_replay_index": 564,
+      "end_s": 2327.8799999999997,
+      "evidence_id": "e0501",
+      "source_end_index": 631,
+      "source_segment_count": 2,
+      "source_start_index": 630,
+      "start_s": 2321.52,
+      "text": "We we rolled the least amount of cards."
+    },
+    {
+      "available_replay_index": 564,
+      "end_s": 2332.96,
+      "evidence_id": "e0502",
+      "source_end_index": 633,
+      "source_segment_count": 3,
+      "source_start_index": 631,
+      "start_s": 2323.72,
+      "text": "But it really was just the efficiency of the development cards."
+    },
+    {
+      "available_replay_index": 564,
+      "end_s": 2332.96,
+      "evidence_id": "e0503",
+      "source_end_index": 633,
+      "source_segment_count": 1,
+      "source_start_index": 633,
+      "start_s": 2327.88,
+      "text": "We pulled no VPs."
+    },
+    {
+      "available_replay_index": 564,
+      "end_s": 2336.64,
+      "evidence_id": "e0504",
+      "source_end_index": 634,
+      "source_segment_count": 1,
+      "source_start_index": 634,
+      "start_s": 2330.16,
+      "text": "It This is not an easy situation."
+    },
+    {
+      "available_replay_index": 564,
+      "end_s": 2342.4,
+      "evidence_id": "e0505",
+      "source_end_index": 636,
+      "source_segment_count": 2,
+      "source_start_index": 635,
+      "start_s": 2332.96,
+      "text": "Um playing coastal port uh no VPs."
+    },
+    {
+      "available_replay_index": 564,
+      "end_s": 2346.2799999999997,
+      "evidence_id": "e0506",
+      "source_end_index": 637,
+      "source_segment_count": 1,
+      "source_start_index": 637,
+      "start_s": 2339.12,
+      "text": "We did have a monopoly I believe."
+    },
+    {
+      "available_replay_index": 564,
+      "end_s": 2346.2799999999997,
+      "evidence_id": "e0507",
+      "source_end_index": 637,
+      "source_segment_count": 1,
+      "source_start_index": 637,
+      "start_s": 2339.12,
+      "text": "No."
+    },
+    {
+      "available_replay_index": 564,
+      "end_s": 2346.28,
+      "evidence_id": "e0508",
+      "source_end_index": 638,
+      "source_segment_count": 1,
+      "source_start_index": 638,
+      "start_s": 2342.4,
+      "text": "No."
+    },
+    {
+      "available_replay_index": 564,
+      "end_s": 2346.28,
+      "evidence_id": "e0509",
+      "source_end_index": 638,
+      "source_segment_count": 1,
+      "source_start_index": 638,
+      "start_s": 2342.4,
+      "text": "We What were our devs?"
+    },
+    {
+      "available_replay_index": 564,
+      "end_s": 2352.7200000000003,
+      "evidence_id": "e0510",
+      "source_end_index": 639,
+      "source_segment_count": 1,
+      "source_start_index": 639,
+      "start_s": 2346.44,
+      "text": "We pulled yop, road builder."
+    },
+    {
+      "available_replay_index": 564,
+      "end_s": 2355.3199999999997,
+      "evidence_id": "e0511",
+      "source_end_index": 640,
+      "source_segment_count": 1,
+      "source_start_index": 640,
+      "start_s": 2351.08,
+      "text": "And then I think just knights."
+    },
+    {
+      "available_replay_index": 564,
+      "end_s": 2355.3199999999997,
+      "evidence_id": "e0512",
+      "source_end_index": 641,
+      "source_segment_count": 2,
+      "source_start_index": 640,
+      "start_s": 2351.08,
+      "text": "Is that correct?"
+    }
+  ]
+}

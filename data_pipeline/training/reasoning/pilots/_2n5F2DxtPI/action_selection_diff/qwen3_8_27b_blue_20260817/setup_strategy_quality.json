@@ -1,0 +1,13 @@
+{
+  "decision_warnings": {
+    "242781000:0": [
+      "BRICK supports roads and settlements, not city upgrades; this site still needs ORE and WOOD from the second placement or later trade.",
+      "Taking one 8 does not prevent opponents from selecting other sites on an 8."
+    ],
+    "242781000:14": [
+      "The WHEAT 2:1 port is useful only when BLUE can produce or acquire enough WHEAT; one WHEAT-10 tile does not guarantee repeated port volume.",
+      "Being near ORANGE and RED is public fact, but this trace does not prove a successful block."
+    ]
+  },
+  "schema": "setup-strategy-quality-v1"
+}

@@ -1,0 +1,3218 @@
+{
+  "anchor_count": 123,
+  "anchors": [
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:0"
+      ],
+      "replay_index": 0,
+      "utterance_count": 26
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:1"
+      ],
+      "replay_index": 1,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "observation",
+      "decision_ids": [],
+      "replay_index": 2,
+      "utterance_count": 41
+    },
+    {
+      "anchor_kind": "observation",
+      "decision_ids": [],
+      "replay_index": 6,
+      "utterance_count": 38
+    },
+    {
+      "anchor_kind": "observation",
+      "decision_ids": [],
+      "replay_index": 12,
+      "utterance_count": 32
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:14"
+      ],
+      "replay_index": 14,
+      "utterance_count": 1
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:15"
+      ],
+      "replay_index": 15,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:16"
+      ],
+      "replay_index": 16,
+      "utterance_count": 1
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:17"
+      ],
+      "replay_index": 17,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:22"
+      ],
+      "replay_index": 22,
+      "utterance_count": 4
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:34"
+      ],
+      "replay_index": 34,
+      "utterance_count": 9
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:35"
+      ],
+      "replay_index": 35,
+      "utterance_count": 4
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:36",
+        "242781000:37"
+      ],
+      "replay_index": 37,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:46"
+      ],
+      "replay_index": 46,
+      "utterance_count": 4
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:47"
+      ],
+      "replay_index": 47,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:53"
+      ],
+      "replay_index": 53,
+      "utterance_count": 2
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:61"
+      ],
+      "replay_index": 61,
+      "utterance_count": 1
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:76"
+      ],
+      "replay_index": 76,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:77"
+      ],
+      "replay_index": 77,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:89"
+      ],
+      "replay_index": 89,
+      "utterance_count": 5
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:95"
+      ],
+      "replay_index": 95,
+      "utterance_count": 2
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:104"
+      ],
+      "replay_index": 104,
+      "utterance_count": 1
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:121"
+      ],
+      "replay_index": 121,
+      "utterance_count": 6
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:129"
+      ],
+      "replay_index": 129,
+      "utterance_count": 6
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:139"
+      ],
+      "replay_index": 139,
+      "utterance_count": 17
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:146"
+      ],
+      "replay_index": 146,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:150"
+      ],
+      "replay_index": 150,
+      "utterance_count": 5
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:154"
+      ],
+      "replay_index": 154,
+      "utterance_count": 1
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:158"
+      ],
+      "replay_index": 158,
+      "utterance_count": 4
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:174"
+      ],
+      "replay_index": 174,
+      "utterance_count": 4
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:175"
+      ],
+      "replay_index": 175,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:182"
+      ],
+      "replay_index": 182,
+      "utterance_count": 1
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:190"
+      ],
+      "replay_index": 190,
+      "utterance_count": 4
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:196"
+      ],
+      "replay_index": 196,
+      "utterance_count": 4
+    },
+    {
+      "anchor_kind": "observation",
+      "decision_ids": [],
+      "replay_index": 205,
+      "utterance_count": 34
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:206"
+      ],
+      "replay_index": 206,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:207"
+      ],
+      "replay_index": 207,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:208"
+      ],
+      "replay_index": 208,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:209"
+      ],
+      "replay_index": 209,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:210"
+      ],
+      "replay_index": 210,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:211"
+      ],
+      "replay_index": 211,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "observation",
+      "decision_ids": [],
+      "replay_index": 220,
+      "utterance_count": 14
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:223"
+      ],
+      "replay_index": 223,
+      "utterance_count": 3
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:224"
+      ],
+      "replay_index": 224,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:225"
+      ],
+      "replay_index": 225,
+      "utterance_count": 5
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:226"
+      ],
+      "replay_index": 226,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:231"
+      ],
+      "replay_index": 231,
+      "utterance_count": 3
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:248"
+      ],
+      "replay_index": 248,
+      "utterance_count": 12
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:250"
+      ],
+      "replay_index": 250,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:261"
+      ],
+      "replay_index": 261,
+      "utterance_count": 8
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:262"
+      ],
+      "replay_index": 262,
+      "utterance_count": 1
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:264"
+      ],
+      "replay_index": 264,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:265"
+      ],
+      "replay_index": 265,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:266"
+      ],
+      "replay_index": 266,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:277"
+      ],
+      "replay_index": 277,
+      "utterance_count": 2
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:284"
+      ],
+      "replay_index": 284,
+      "utterance_count": 6
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:285"
+      ],
+      "replay_index": 285,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:288"
+      ],
+      "replay_index": 288,
+      "utterance_count": 1
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:289"
+      ],
+      "replay_index": 289,
+      "utterance_count": 3
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:290"
+      ],
+      "replay_index": 290,
+      "utterance_count": 3
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:291"
+      ],
+      "replay_index": 291,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:308"
+      ],
+      "replay_index": 308,
+      "utterance_count": 3
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:309"
+      ],
+      "replay_index": 309,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:310"
+      ],
+      "replay_index": 310,
+      "utterance_count": 1
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:323"
+      ],
+      "replay_index": 323,
+      "utterance_count": 6
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:324"
+      ],
+      "replay_index": 324,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:325"
+      ],
+      "replay_index": 325,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:326"
+      ],
+      "replay_index": 326,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:327"
+      ],
+      "replay_index": 327,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:333"
+      ],
+      "replay_index": 333,
+      "utterance_count": 1
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:339"
+      ],
+      "replay_index": 339,
+      "utterance_count": 4
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:343"
+      ],
+      "replay_index": 343,
+      "utterance_count": 3
+    },
+    {
+      "anchor_kind": "observation",
+      "decision_ids": [],
+      "replay_index": 356,
+      "utterance_count": 12
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:357"
+      ],
+      "replay_index": 357,
+      "utterance_count": 1
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:358"
+      ],
+      "replay_index": 358,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:359",
+        "242781000:360"
+      ],
+      "replay_index": 360,
+      "utterance_count": 1
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:361"
+      ],
+      "replay_index": 361,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:362"
+      ],
+      "replay_index": 362,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:363"
+      ],
+      "replay_index": 363,
+      "utterance_count": 1
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:367"
+      ],
+      "replay_index": 367,
+      "utterance_count": 2
+    },
+    {
+      "anchor_kind": "observation",
+      "decision_ids": [],
+      "replay_index": 383,
+      "utterance_count": 9
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:385"
+      ],
+      "replay_index": 385,
+      "utterance_count": 5
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:391"
+      ],
+      "replay_index": 391,
+      "utterance_count": 6
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:398"
+      ],
+      "replay_index": 398,
+      "utterance_count": 2
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:399"
+      ],
+      "replay_index": 399,
+      "utterance_count": 1
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:400",
+        "242781000:401"
+      ],
+      "replay_index": 401,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:407"
+      ],
+      "replay_index": 407,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "observation",
+      "decision_ids": [],
+      "replay_index": 422,
+      "utterance_count": 7
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:428"
+      ],
+      "replay_index": 428,
+      "utterance_count": 3
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:438"
+      ],
+      "replay_index": 438,
+      "utterance_count": 11
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:444"
+      ],
+      "replay_index": 444,
+      "utterance_count": 3
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:453"
+      ],
+      "replay_index": 453,
+      "utterance_count": 2
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:454"
+      ],
+      "replay_index": 454,
+      "utterance_count": 1
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:455"
+      ],
+      "replay_index": 456,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:461"
+      ],
+      "replay_index": 461,
+      "utterance_count": 2
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:466"
+      ],
+      "replay_index": 466,
+      "utterance_count": 5
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:468"
+      ],
+      "replay_index": 468,
+      "utterance_count": 3
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:469"
+      ],
+      "replay_index": 469,
+      "utterance_count": 1
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:475"
+      ],
+      "replay_index": 475,
+      "utterance_count": 1
+    },
+    {
+      "anchor_kind": "observation",
+      "decision_ids": [],
+      "replay_index": 485,
+      "utterance_count": 10
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:491"
+      ],
+      "replay_index": 491,
+      "utterance_count": 2
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:497"
+      ],
+      "replay_index": 497,
+      "utterance_count": 11
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:498"
+      ],
+      "replay_index": 498,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:499"
+      ],
+      "replay_index": 499,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:500"
+      ],
+      "replay_index": 500,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:501"
+      ],
+      "replay_index": 501,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:502"
+      ],
+      "replay_index": 502,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "observation",
+      "decision_ids": [],
+      "replay_index": 514,
+      "utterance_count": 9
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:520"
+      ],
+      "replay_index": 520,
+      "utterance_count": 2
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:526"
+      ],
+      "replay_index": 526,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "observation",
+      "decision_ids": [],
+      "replay_index": 535,
+      "utterance_count": 15
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:537"
+      ],
+      "replay_index": 537,
+      "utterance_count": 1
+    },
+    {
+      "anchor_kind": "observation",
+      "decision_ids": [],
+      "replay_index": 548,
+      "utterance_count": 11
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:549"
+      ],
+      "replay_index": 549,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:550"
+      ],
+      "replay_index": 550,
+      "utterance_count": 1
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:551"
+      ],
+      "replay_index": 551,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "observation",
+      "decision_ids": [],
+      "replay_index": 559,
+      "utterance_count": 15
+    },
+    {
+      "anchor_kind": "observation",
+      "decision_ids": [],
+      "replay_index": 564,
+      "utterance_count": 21
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:566"
+      ],
+      "replay_index": 566,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:567"
+      ],
+      "replay_index": 567,
+      "utterance_count": 1
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:568"
+      ],
+      "replay_index": 568,
+      "utterance_count": 3
+    },
+    {
+      "anchor_kind": "decision",
+      "decision_ids": [
+        "242781000:569"
+      ],
+      "replay_index": 569,
+      "utterance_count": 0
+    },
+    {
+      "anchor_kind": "complete",
+      "decision_ids": [],
+      "replay_index": 570,
+      "utterance_count": 10
+    }
+  ],
+  "created_at": "2026-08-21T04:28:44.823352+00:00",
+  "decision_count": 111,
+  "decision_manifest_sha256": "dc36d80a7eda4c8a97b9ce3afa835caa9a731dd26e59339c6c22fa1e53a44f0a",
+  "decision_plan_sha256": "b6e4335f228446c3230f2fa3b2b06023807dafe9d1b22b7dc064a8f83f5fc679",
+  "evidence_count": 527,
+  "game_id": "242781000",
+  "generator_version": "narrator-observation-assembly-v1",
+  "job_count": 79,
+  "jobs": [
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "ee76f12abe7717b6a42322fa425d7b9dec8c7ce4ea481af60097ffe79269d379",
+      "decision_ids": [
+        "242781000:0"
+      ],
+      "evidence_ids": [
+        "e0000",
+        "e0001",
+        "e0002",
+        "e0003",
+        "e0004",
+        "e0005",
+        "e0006",
+        "e0007",
+        "e0008",
+        "e0009",
+        "e0010",
+        "e0011",
+        "e0012",
+        "e0013",
+        "e0014",
+        "e0015",
+        "e0016",
+        "e0017",
+        "e0018",
+        "e0019",
+        "e0020",
+        "e0021",
+        "e0022",
+        "e0023",
+        "e0024",
+        "e0025"
+      ],
+      "game_id": "242781000",
+      "input_hash": "9ad3b3f38abb9d71e2b130d1d7a6f8f17aac1032e33938b5c97331aa5ed93753",
+      "job_id": "242781000:observation:0",
+      "previous_replay_index": -1,
+      "replay_index": 0,
+      "source_end_index": 40,
+      "source_end_s": 93.48,
+      "source_start_index": 0,
+      "source_start_s": 0.0,
+      "utterance_count": 26,
+      "visible_observation_count": 0,
+      "window_end_s": 94.0,
+      "window_start_s": 0.0
+    },
+    {
+      "anchor_kind": "observation",
+      "board_state_hash": "7e2154399daab61a61a9820cf03c9d357946479f1e97d2bcf72252afb4dd5e75",
+      "decision_ids": [],
+      "evidence_ids": [
+        "e0026",
+        "e0027",
+        "e0028",
+        "e0029",
+        "e0030",
+        "e0031",
+        "e0032",
+        "e0033",
+        "e0034",
+        "e0035",
+        "e0036",
+        "e0037",
+        "e0038",
+        "e0039",
+        "e0040",
+        "e0041",
+        "e0042",
+        "e0043",
+        "e0044",
+        "e0045",
+        "e0046",
+        "e0047",
+        "e0048",
+        "e0049",
+        "e0050",
+        "e0051",
+        "e0052",
+        "e0053",
+        "e0054",
+        "e0055",
+        "e0056",
+        "e0057",
+        "e0058",
+        "e0059",
+        "e0060",
+        "e0061",
+        "e0062",
+        "e0063",
+        "e0064",
+        "e0065",
+        "e0066"
+      ],
+      "game_id": "242781000",
+      "input_hash": "529cd97134bf5a404650edac594e9176bcdde486e8adab0167df7ffcb170b357",
+      "job_id": "242781000:observation:2",
+      "previous_replay_index": 1,
+      "replay_index": 2,
+      "source_end_index": 96,
+      "source_end_s": 207.07999999999998,
+      "source_start_index": 40,
+      "source_start_s": 89.48,
+      "utterance_count": 41,
+      "visible_observation_count": 1,
+      "window_end_s": 207.4,
+      "window_start_s": 95.0
+    },
+    {
+      "anchor_kind": "observation",
+      "board_state_hash": "e749544bc386bd8af6cc2b090f20cdb478ba40a26bd0e02d9b741471be5c5481",
+      "decision_ids": [],
+      "evidence_ids": [
+        "e0067",
+        "e0068",
+        "e0069",
+        "e0070",
+        "e0071",
+        "e0072",
+        "e0073",
+        "e0074",
+        "e0075",
+        "e0076",
+        "e0077",
+        "e0078",
+        "e0079",
+        "e0080",
+        "e0081",
+        "e0082",
+        "e0083",
+        "e0084",
+        "e0085",
+        "e0086",
+        "e0087",
+        "e0088",
+        "e0089",
+        "e0090",
+        "e0091",
+        "e0092",
+        "e0093",
+        "e0094",
+        "e0095",
+        "e0096",
+        "e0097",
+        "e0098",
+        "e0099",
+        "e0100",
+        "e0101",
+        "e0102",
+        "e0103",
+        "e0104"
+      ],
+      "game_id": "242781000",
+      "input_hash": "2b109088283c5e480fad1cfd1936c0202670624856ec93d4759d4fdee51e0979",
+      "job_id": "242781000:observation:6",
+      "previous_replay_index": 2,
+      "replay_index": 6,
+      "source_end_index": 146,
+      "source_end_s": 325.36,
+      "source_start_index": 97,
+      "source_start_s": 205.48,
+      "utterance_count": 38,
+      "visible_observation_count": 4,
+      "window_end_s": 327.40000000000003,
+      "window_start_s": 207.4
+    },
+    {
+      "anchor_kind": "observation",
+      "board_state_hash": "0953eda65be8eaf5d8b09fa5a81b67b516f86f4a7486daa14e362d4ed859006e",
+      "decision_ids": [],
+      "evidence_ids": [
+        "e0105",
+        "e0106",
+        "e0107",
+        "e0108",
+        "e0109",
+        "e0110",
+        "e0111",
+        "e0112",
+        "e0113",
+        "e0114",
+        "e0115",
+        "e0116",
+        "e0117",
+        "e0118",
+        "e0119",
+        "e0120",
+        "e0121",
+        "e0122",
+        "e0123",
+        "e0124",
+        "e0125",
+        "e0126",
+        "e0127",
+        "e0128",
+        "e0129",
+        "e0130",
+        "e0131",
+        "e0132",
+        "e0133",
+        "e0134",
+        "e0135",
+        "e0136"
+      ],
+      "game_id": "242781000",
+      "input_hash": "5532cade51117e71dd23b2e8db3bb72e78acd4f842f4bde8e5a36c133b519dd1",
+      "job_id": "242781000:observation:12",
+      "previous_replay_index": 6,
+      "replay_index": 12,
+      "source_end_index": 195,
+      "source_end_s": 446.919,
+      "source_start_index": 147,
+      "source_start_s": 326.84,
+      "utterance_count": 32,
+      "visible_observation_count": 6,
+      "window_end_s": 457.4,
+      "window_start_s": 327.40000000000003
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "96da5da73ee289dbe02857f41510c08a45a3390ec29caaa269af06cfb9fbf3b5",
+      "decision_ids": [
+        "242781000:14"
+      ],
+      "evidence_ids": [
+        "e0137"
+      ],
+      "game_id": "242781000",
+      "input_hash": "4cef502eb07b88ef0b95453e8a084a141bc11779bedf2a34b893bf216eeada9d",
+      "job_id": "242781000:observation:14",
+      "previous_replay_index": 12,
+      "replay_index": 14,
+      "source_end_index": 197,
+      "source_end_s": 457.56,
+      "source_start_index": 196,
+      "source_start_s": 451.84,
+      "utterance_count": 1,
+      "visible_observation_count": 2,
+      "window_end_s": 459.4,
+      "window_start_s": 457.4
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "c5072309dec900edddcd1b4b7fba6107b712707418331da66c081c26d7634521",
+      "decision_ids": [
+        "242781000:16"
+      ],
+      "evidence_ids": [
+        "e0138"
+      ],
+      "game_id": "242781000",
+      "input_hash": "cc0187388a6bf8eabc62d38db223d96e32470e79615b63974a9ae08ac7ebd886",
+      "job_id": "242781000:observation:16",
+      "previous_replay_index": 15,
+      "replay_index": 16,
+      "source_end_index": 198,
+      "source_end_s": 460.79999999999995,
+      "source_start_index": 198,
+      "source_start_s": 455.4,
+      "utterance_count": 1,
+      "visible_observation_count": 1,
+      "window_end_s": 460.99999999999994,
+      "window_start_s": 460.29999999999995
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "595e97bcbbae9ba9073c96990d8a4aa5f3c4397a1c442d6a5fde143df719c1e5",
+      "decision_ids": [
+        "242781000:22"
+      ],
+      "evidence_ids": [
+        "e0139",
+        "e0140",
+        "e0141",
+        "e0142"
+      ],
+      "game_id": "242781000",
+      "input_hash": "810ee141611f35535e12dfabec894e8718437dfc7a4c089dbba4cbec0d1caa33",
+      "job_id": "242781000:observation:22",
+      "previous_replay_index": 17,
+      "replay_index": 22,
+      "source_end_index": 203,
+      "source_end_s": 472.84000000000003,
+      "source_start_index": 198,
+      "source_start_s": 455.4,
+      "utterance_count": 4,
+      "visible_observation_count": 5,
+      "window_end_s": 483.79999999999995,
+      "window_start_s": 461.69999999999993
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "01170c8d177f33a17fd5dd37059bd46064e90e6fa071f44629091b3b8c624f07",
+      "decision_ids": [
+        "242781000:34"
+      ],
+      "evidence_ids": [
+        "e0143",
+        "e0144",
+        "e0145",
+        "e0146",
+        "e0147",
+        "e0148",
+        "e0149",
+        "e0150",
+        "e0151"
+      ],
+      "game_id": "242781000",
+      "input_hash": "7ebf22802e3d0cfd2c9d02b5e2ab7d0f5fcabd6cb8383d87a8a8bda7997800c4",
+      "job_id": "242781000:observation:34",
+      "previous_replay_index": 22,
+      "replay_index": 34,
+      "source_end_index": 215,
+      "source_end_s": 522.7600000000001,
+      "source_start_index": 204,
+      "source_start_s": 489.6,
+      "utterance_count": 9,
+      "visible_observation_count": 12,
+      "window_end_s": 523.4000000000001,
+      "window_start_s": 483.79999999999995
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "7f6e89f28d2d7d8955aa0efe9db02f81cf2ede333de1c2e9497077e03640a70b",
+      "decision_ids": [
+        "242781000:35"
+      ],
+      "evidence_ids": [
+        "e0152",
+        "e0153",
+        "e0154",
+        "e0155"
+      ],
+      "game_id": "242781000",
+      "input_hash": "e709ee36959af966647014235b9eb0a52588f521249fc3efbe7e4d8a839bf20e",
+      "job_id": "242781000:observation:35",
+      "previous_replay_index": 34,
+      "replay_index": 35,
+      "source_end_index": 219,
+      "source_end_s": 530.7199999999999,
+      "source_start_index": 216,
+      "source_start_s": 521.08,
+      "utterance_count": 4,
+      "visible_observation_count": 1,
+      "window_end_s": 531.6000000000001,
+      "window_start_s": 523.4000000000001
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "ac8e0f8559d9fd0077f852adfa46413b03667654c5c944d2b7a0b7e94cb4e76e",
+      "decision_ids": [
+        "242781000:46"
+      ],
+      "evidence_ids": [
+        "e0156",
+        "e0157",
+        "e0158",
+        "e0159"
+      ],
+      "game_id": "242781000",
+      "input_hash": "6fbb103f26fae56d9fd3592f87f76012f60f9e2b564425caefa714b262acf6fc",
+      "job_id": "242781000:observation:46",
+      "previous_replay_index": 37,
+      "replay_index": 46,
+      "source_end_index": 223,
+      "source_end_s": 548.24,
+      "source_start_index": 219,
+      "source_start_s": 526.04,
+      "utterance_count": 4,
+      "visible_observation_count": 9,
+      "window_end_s": 552.2,
+      "window_start_s": 532.7000000000002
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "1ff0f896a2e6b6212628f058af2b7812d6d7af24e4d1d82906c45379090cff7d",
+      "decision_ids": [
+        "242781000:53"
+      ],
+      "evidence_ids": [
+        "e0160",
+        "e0161"
+      ],
+      "game_id": "242781000",
+      "input_hash": "0448cf72c7182817a099fbc5745347e0fd75e61dd2e0cae92f6b5a96cca022f8",
+      "job_id": "242781000:observation:53",
+      "previous_replay_index": 47,
+      "replay_index": 53,
+      "source_end_index": 225,
+      "source_end_s": 561.4,
+      "source_start_index": 224,
+      "source_start_s": 554.839,
+      "utterance_count": 2,
+      "visible_observation_count": 6,
+      "window_end_s": 570.6999999999999,
+      "window_start_s": 553.1
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "9c4088bcb1b4d2772a69a6f730e1ab4a0124d343731b63915cbe0500d78a0d98",
+      "decision_ids": [
+        "242781000:61"
+      ],
+      "evidence_ids": [
+        "e0162"
+      ],
+      "game_id": "242781000",
+      "input_hash": "ad0ab3fe8cb864abe1d578fe4680dbf1772187124ea989ad0b1553a90acfaf00",
+      "job_id": "242781000:observation:61",
+      "previous_replay_index": 53,
+      "replay_index": 61,
+      "source_end_index": 226,
+      "source_end_s": 576.5999999999999,
+      "source_start_index": 226,
+      "source_start_s": 574.04,
+      "utterance_count": 1,
+      "visible_observation_count": 8,
+      "window_end_s": 577.6999999999998,
+      "window_start_s": 570.6999999999999
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "ab18d2f4af87815964fea02b885cad5d2d92621471b8679144eaa3c024fa4e85",
+      "decision_ids": [
+        "242781000:89"
+      ],
+      "evidence_ids": [
+        "e0163",
+        "e0164",
+        "e0165",
+        "e0166",
+        "e0167"
+      ],
+      "game_id": "242781000",
+      "input_hash": "d9705268191fa5a544a0b9a853f1bc899e45910ebf2f90f140dd4bafd38b45ed",
+      "job_id": "242781000:observation:89",
+      "previous_replay_index": 77,
+      "replay_index": 89,
+      "source_end_index": 231,
+      "source_end_s": 643.839,
+      "source_start_index": 227,
+      "source_start_s": 618.04,
+      "utterance_count": 5,
+      "visible_observation_count": 12,
+      "window_end_s": 646.5999999999998,
+      "window_start_s": 600.2999999999997
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "7a03aa1674892df6ca9678ba88e143bc8ab8a51125d8cfda4026487afd9d1e29",
+      "decision_ids": [
+        "242781000:95"
+      ],
+      "evidence_ids": [
+        "e0168",
+        "e0169"
+      ],
+      "game_id": "242781000",
+      "input_hash": "137b2313fbf8e1d935efc0f0ab10be044571a88652d690a46a715eefab0b73d8",
+      "job_id": "242781000:observation:95",
+      "previous_replay_index": 89,
+      "replay_index": 95,
+      "source_end_index": 235,
+      "source_end_s": 657.2,
+      "source_start_index": 231,
+      "source_start_s": 640.24,
+      "utterance_count": 2,
+      "visible_observation_count": 6,
+      "window_end_s": 663.1999999999996,
+      "window_start_s": 646.5999999999998
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "2eecdd9ff72c55423a21340974c9940ad6d7c086f93d045e467fc929190243a4",
+      "decision_ids": [
+        "242781000:104"
+      ],
+      "evidence_ids": [
+        "e0170"
+      ],
+      "game_id": "242781000",
+      "input_hash": "ba078f06c972dbb567a4ee6bee3df31995c96792ae7678888ebe5e81942ce81c",
+      "job_id": "242781000:observation:104",
+      "previous_replay_index": 95,
+      "replay_index": 104,
+      "source_end_index": 236,
+      "source_end_s": 681.5999999999999,
+      "source_start_index": 236,
+      "source_start_s": 678.8,
+      "utterance_count": 1,
+      "visible_observation_count": 9,
+      "window_end_s": 686.2999999999998,
+      "window_start_s": 663.1999999999996
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "af9c01088e02d9db112f17353cc41a6a1491a54246c418f7076fd5bc2ad2c325",
+      "decision_ids": [
+        "242781000:121"
+      ],
+      "evidence_ids": [
+        "e0171",
+        "e0172",
+        "e0173",
+        "e0174",
+        "e0175",
+        "e0176"
+      ],
+      "game_id": "242781000",
+      "input_hash": "60e4f88705d97ddbfa3cf764fd96e5f0134bd2406672fa1f73506d02556b8b13",
+      "job_id": "242781000:observation:121",
+      "previous_replay_index": 104,
+      "replay_index": 121,
+      "source_end_index": 242,
+      "source_end_s": 706.4,
+      "source_start_index": 237,
+      "source_start_s": 683.08,
+      "utterance_count": 6,
+      "visible_observation_count": 17,
+      "window_end_s": 713.3,
+      "window_start_s": 686.2999999999998
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "052ad5f1cbc2090e6d3f7c2f3ee676a48c2245ffba0d64288ac68fc5c7a35dfd",
+      "decision_ids": [
+        "242781000:129"
+      ],
+      "evidence_ids": [
+        "e0177",
+        "e0178",
+        "e0179",
+        "e0180",
+        "e0181",
+        "e0182"
+      ],
+      "game_id": "242781000",
+      "input_hash": "f51deb63f11ae5a5df34722fe3d73c3495e2ff829dcbc4142c0b310a243917be",
+      "job_id": "242781000:observation:129",
+      "previous_replay_index": 121,
+      "replay_index": 129,
+      "source_end_index": 248,
+      "source_end_s": 732.9200000000001,
+      "source_start_index": 243,
+      "source_start_s": 713.08,
+      "utterance_count": 6,
+      "visible_observation_count": 8,
+      "window_end_s": 737.6999999999999,
+      "window_start_s": 713.3
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "366dfcf55bcd5297861b49a44133096a9b0f47e557dd539c28702ec5a4e3e601",
+      "decision_ids": [
+        "242781000:139"
+      ],
+      "evidence_ids": [
+        "e0183",
+        "e0184",
+        "e0185",
+        "e0186",
+        "e0187",
+        "e0188",
+        "e0189",
+        "e0190",
+        "e0191",
+        "e0192",
+        "e0193",
+        "e0194",
+        "e0195",
+        "e0196",
+        "e0197",
+        "e0198",
+        "e0199"
+      ],
+      "game_id": "242781000",
+      "input_hash": "71983cfae6a28805690c325ab7624303f8f5145bd87fe55afcdb2f104f5f9ea5",
+      "job_id": "242781000:observation:139",
+      "previous_replay_index": 129,
+      "replay_index": 139,
+      "source_end_index": 262,
+      "source_end_s": 774.1600000000001,
+      "source_start_index": 249,
+      "source_start_s": 735.44,
+      "utterance_count": 17,
+      "visible_observation_count": 10,
+      "window_end_s": 791.6000000000001,
+      "window_start_s": 737.6999999999999
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "3fa7d46036f95875c569881144c6420bf67ae012d00e57ddfbb18ceebf90f40e",
+      "decision_ids": [
+        "242781000:150"
+      ],
+      "evidence_ids": [
+        "e0200",
+        "e0201",
+        "e0202",
+        "e0203",
+        "e0204"
+      ],
+      "game_id": "242781000",
+      "input_hash": "b4c2f29442273dee5c1866bf7ed4160cfb57c519b988dafee2ca0e13cc4c851e",
+      "job_id": "242781000:observation:150",
+      "previous_replay_index": 146,
+      "replay_index": 150,
+      "source_end_index": 264,
+      "source_end_s": 813.5600000000001,
+      "source_start_index": 263,
+      "source_start_s": 807.0,
+      "utterance_count": 5,
+      "visible_observation_count": 4,
+      "window_end_s": 815.1000000000003,
+      "window_start_s": 801.2000000000002
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "13184b30e80819cc3cf14d04da11f1f98df8f83e535e70d5a1b22f54d88d3ced",
+      "decision_ids": [
+        "242781000:154"
+      ],
+      "evidence_ids": [
+        "e0205"
+      ],
+      "game_id": "242781000",
+      "input_hash": "dd59c27850a2a2a3f24ece5ddfdfdd37933600a1491574e87ae5c61dfd733f0b",
+      "job_id": "242781000:observation:154",
+      "previous_replay_index": 150,
+      "replay_index": 154,
+      "source_end_index": 265,
+      "source_end_s": 818.72,
+      "source_start_index": 264,
+      "source_start_s": 810.36,
+      "utterance_count": 1,
+      "visible_observation_count": 4,
+      "window_end_s": 822.0000000000002,
+      "window_start_s": 815.1000000000003
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "73ede83b9928383696b1f7d627902a1b1a9507010ab18b0f5a74dc857e590e88",
+      "decision_ids": [
+        "242781000:158"
+      ],
+      "evidence_ids": [
+        "e0206",
+        "e0207",
+        "e0208",
+        "e0209"
+      ],
+      "game_id": "242781000",
+      "input_hash": "43b800002e872119145dd56190c4570140367f7c51877fac6b7d45982fd6d174",
+      "job_id": "242781000:observation:158",
+      "previous_replay_index": 154,
+      "replay_index": 158,
+      "source_end_index": 269,
+      "source_end_s": 829.0,
+      "source_start_index": 265,
+      "source_start_s": 814.28,
+      "utterance_count": 4,
+      "visible_observation_count": 4,
+      "window_end_s": 829.3000000000003,
+      "window_start_s": 822.0000000000002
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "23fa185894f62efcb643557156012ea4f0a9d86927b57c8eb44234ca35597929",
+      "decision_ids": [
+        "242781000:174"
+      ],
+      "evidence_ids": [
+        "e0210",
+        "e0211",
+        "e0212",
+        "e0213"
+      ],
+      "game_id": "242781000",
+      "input_hash": "4c2af60c0800858caaed3e95431497cb24781a02dc88b2d74eed01bf3d34ab5f",
+      "job_id": "242781000:observation:174",
+      "previous_replay_index": 158,
+      "replay_index": 174,
+      "source_end_index": 273,
+      "source_end_s": 839.16,
+      "source_start_index": 269,
+      "source_start_s": 824.92,
+      "utterance_count": 4,
+      "visible_observation_count": 16,
+      "window_end_s": 849.3000000000002,
+      "window_start_s": 829.3000000000003
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "81573c64ab3e04b374b53b89178ec7b68b9363a9af42261e3157c9a8b1d670f3",
+      "decision_ids": [
+        "242781000:182"
+      ],
+      "evidence_ids": [
+        "e0214"
+      ],
+      "game_id": "242781000",
+      "input_hash": "b06b93c53fa933eaef9824af779b336117df9c9306445d38984a42dd11004afb",
+      "job_id": "242781000:observation:182",
+      "previous_replay_index": 175,
+      "replay_index": 182,
+      "source_end_index": 277,
+      "source_end_s": 855.24,
+      "source_start_index": 274,
+      "source_start_s": 844.52,
+      "utterance_count": 1,
+      "visible_observation_count": 7,
+      "window_end_s": 855.9000000000002,
+      "window_start_s": 850.0000000000002
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "8a12b64498199ddb5a2d31b2083ad59785639bd219f6e9f242caccbdda2fcfd3",
+      "decision_ids": [
+        "242781000:190"
+      ],
+      "evidence_ids": [
+        "e0215",
+        "e0216",
+        "e0217",
+        "e0218"
+      ],
+      "game_id": "242781000",
+      "input_hash": "8d9303a4fe8fa29f8e82780ba9a75639d5bff731c48b3bad8453414465483f6e",
+      "job_id": "242781000:observation:190",
+      "previous_replay_index": 182,
+      "replay_index": 190,
+      "source_end_index": 281,
+      "source_end_s": 862.4399999999999,
+      "source_start_index": 278,
+      "source_start_s": 853.48,
+      "utterance_count": 4,
+      "visible_observation_count": 8,
+      "window_end_s": 866.9000000000003,
+      "window_start_s": 855.9000000000002
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "85a00f27bf47071d75782ebe398cc6ba16e4d49f93d7f3e1b274ecb6f369ce0e",
+      "decision_ids": [
+        "242781000:196"
+      ],
+      "evidence_ids": [
+        "e0219",
+        "e0220",
+        "e0221",
+        "e0222"
+      ],
+      "game_id": "242781000",
+      "input_hash": "17032e480238e298f3f47e28773607536cfbdbffe9b268917441d3b8694b0eda",
+      "job_id": "242781000:observation:196",
+      "previous_replay_index": 190,
+      "replay_index": 196,
+      "source_end_index": 289,
+      "source_end_s": 891.12,
+      "source_start_index": 282,
+      "source_start_s": 862.48,
+      "utterance_count": 4,
+      "visible_observation_count": 6,
+      "window_end_s": 892.8000000000003,
+      "window_start_s": 866.9000000000003
+    },
+    {
+      "anchor_kind": "observation",
+      "board_state_hash": "0445d513c995cab8648dc77fa36db77aec88ece106ad1c84aecd38d5701481dd",
+      "decision_ids": [],
+      "evidence_ids": [
+        "e0223",
+        "e0224",
+        "e0225",
+        "e0226",
+        "e0227",
+        "e0228",
+        "e0229",
+        "e0230",
+        "e0231",
+        "e0232",
+        "e0233",
+        "e0234",
+        "e0235",
+        "e0236",
+        "e0237",
+        "e0238",
+        "e0239",
+        "e0240",
+        "e0241",
+        "e0242",
+        "e0243",
+        "e0244",
+        "e0245",
+        "e0246",
+        "e0247",
+        "e0248",
+        "e0249",
+        "e0250",
+        "e0251",
+        "e0252",
+        "e0253",
+        "e0254",
+        "e0255",
+        "e0256"
+      ],
+      "game_id": "242781000",
+      "input_hash": "50ff16741024ddd27e4011334bc527ef6932d28a151cd4d8994dfa755d4b3458",
+      "job_id": "242781000:observation:205",
+      "previous_replay_index": 196,
+      "replay_index": 205,
+      "source_end_index": 324,
+      "source_end_s": 986.28,
+      "source_start_index": 290,
+      "source_start_s": 889.04,
+      "utterance_count": 34,
+      "visible_observation_count": 9,
+      "window_end_s": 993.9000000000005,
+      "window_start_s": 892.8000000000003
+    },
+    {
+      "anchor_kind": "observation",
+      "board_state_hash": "c6582e223431a998a565848547da5ce929ae6d01f0353d9b390c092067dda3be",
+      "decision_ids": [],
+      "evidence_ids": [
+        "e0257",
+        "e0258",
+        "e0259",
+        "e0260",
+        "e0261",
+        "e0262",
+        "e0263",
+        "e0264",
+        "e0265",
+        "e0266",
+        "e0267",
+        "e0268",
+        "e0269",
+        "e0270"
+      ],
+      "game_id": "242781000",
+      "input_hash": "0938e76ac685c94766cd06c77cde3a46a82f9245176c9fd4066b2f36d7fc8e9e",
+      "job_id": "242781000:observation:220",
+      "previous_replay_index": 211,
+      "replay_index": 220,
+      "source_end_index": 342,
+      "source_end_s": 1048.68,
+      "source_start_index": 325,
+      "source_start_s": 1003.6,
+      "utterance_count": 14,
+      "visible_observation_count": 9,
+      "window_end_s": 1049.0000000000005,
+      "window_start_s": 1001.7000000000004
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "f57940b699e60123ebbbc81dca8ff8263755752afe707aa4343c004e8b5fb5cd",
+      "decision_ids": [
+        "242781000:223"
+      ],
+      "evidence_ids": [
+        "e0271",
+        "e0272",
+        "e0273"
+      ],
+      "game_id": "242781000",
+      "input_hash": "524cbce1588beb453dd5a59e2a1fc9bba017cec0b3d34864907be30bb699418f",
+      "job_id": "242781000:observation:223",
+      "previous_replay_index": 220,
+      "replay_index": 223,
+      "source_end_index": 347,
+      "source_end_s": 1057.28,
+      "source_start_index": 342,
+      "source_start_s": 1045.0,
+      "utterance_count": 3,
+      "visible_observation_count": 3,
+      "window_end_s": 1059.0000000000002,
+      "window_start_s": 1049.0000000000005
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "179985b6b4629e762f3bc6958e0a8aceac735c0a834b8e72508ade4c0d282be9",
+      "decision_ids": [
+        "242781000:225"
+      ],
+      "evidence_ids": [
+        "e0274",
+        "e0275",
+        "e0276",
+        "e0277",
+        "e0278"
+      ],
+      "game_id": "242781000",
+      "input_hash": "12d38584cbdf649904c597e6dd4e7cb3e72141260c6ec321ba6031a0fef026e5",
+      "job_id": "242781000:observation:225",
+      "previous_replay_index": 224,
+      "replay_index": 225,
+      "source_end_index": 353,
+      "source_end_s": 1072.12,
+      "source_start_index": 348,
+      "source_start_s": 1057.92,
+      "utterance_count": 5,
+      "visible_observation_count": 1,
+      "window_end_s": 1074.0000000000002,
+      "window_start_s": 1060.8000000000002
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "efd225dc15aac262e83b29a4999fbd0092d8f62437ac42d768256c420b4786c8",
+      "decision_ids": [
+        "242781000:231"
+      ],
+      "evidence_ids": [
+        "e0279",
+        "e0280",
+        "e0281"
+      ],
+      "game_id": "242781000",
+      "input_hash": "783c590e536a330b45eba598b4f5cb629e4387aa9e152483132c395adb85becb",
+      "job_id": "242781000:observation:231",
+      "previous_replay_index": 226,
+      "replay_index": 231,
+      "source_end_index": 356,
+      "source_end_s": 1078.0800000000002,
+      "source_start_index": 354,
+      "source_start_s": 1072.56,
+      "utterance_count": 3,
+      "visible_observation_count": 5,
+      "window_end_s": 1082.5000000000002,
+      "window_start_s": 1075.0000000000002
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "070e595f0669e777d77d0dabe7bd44c927799670a3ecd72562b8f05fdb18f013",
+      "decision_ids": [
+        "242781000:248"
+      ],
+      "evidence_ids": [
+        "e0282",
+        "e0283",
+        "e0284",
+        "e0285",
+        "e0286",
+        "e0287",
+        "e0288",
+        "e0289",
+        "e0290",
+        "e0291",
+        "e0292",
+        "e0293"
+      ],
+      "game_id": "242781000",
+      "input_hash": "c04a825e1f1d8f373d2f299c637ed8cb0807908270e2fad185603906c9fc0e2d",
+      "job_id": "242781000:observation:248",
+      "previous_replay_index": 231,
+      "replay_index": 248,
+      "source_end_index": 371,
+      "source_end_s": 1125.24,
+      "source_start_index": 357,
+      "source_start_s": 1081.56,
+      "utterance_count": 12,
+      "visible_observation_count": 17,
+      "window_end_s": 1125.8000000000004,
+      "window_start_s": 1082.5000000000002
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "eb21cc825c9fbc62d934a60d9d500b7ebb165417d3f4b4abd339fcc94995c6b3",
+      "decision_ids": [
+        "242781000:261"
+      ],
+      "evidence_ids": [
+        "e0294",
+        "e0295",
+        "e0296",
+        "e0297",
+        "e0298",
+        "e0299",
+        "e0300",
+        "e0301"
+      ],
+      "game_id": "242781000",
+      "input_hash": "4917a35ea659cef50ef91ae288f0bbf8e3c68107ea897e9a19fe64bc592c5982",
+      "job_id": "242781000:observation:261",
+      "previous_replay_index": 250,
+      "replay_index": 261,
+      "source_end_index": 383,
+      "source_end_s": 1165.0,
+      "source_start_index": 372,
+      "source_start_s": 1123.337,
+      "utterance_count": 8,
+      "visible_observation_count": 11,
+      "window_end_s": 1178.2,
+      "window_start_s": 1125.6000000000004
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "e75fa07f0a73bb88c154c1531394895fc71509d4f7eb2ec3559b6688b1592cb1",
+      "decision_ids": [
+        "242781000:262"
+      ],
+      "evidence_ids": [
+        "e0302"
+      ],
+      "game_id": "242781000",
+      "input_hash": "779dfd788057e5f7af5a40800725ba65c5d8d672bc98ff3b3ab22c6166f0e50f",
+      "job_id": "242781000:observation:262",
+      "previous_replay_index": 261,
+      "replay_index": 262,
+      "source_end_index": 384,
+      "source_end_s": 1178.44,
+      "source_start_index": 384,
+      "source_start_s": 1173.28,
+      "utterance_count": 1,
+      "visible_observation_count": 1,
+      "window_end_s": 1179.4,
+      "window_start_s": 1178.2
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "665548102ba3793f98b9086914fa06302b376760cec1eb3a31f6db6480a339e4",
+      "decision_ids": [
+        "242781000:277"
+      ],
+      "evidence_ids": [
+        "e0303",
+        "e0304"
+      ],
+      "game_id": "242781000",
+      "input_hash": "cf3e198066be50bc820eaf686dfd3f5f29461473a7dcd363025c936a0c70144c",
+      "job_id": "242781000:observation:277",
+      "previous_replay_index": 266,
+      "replay_index": 277,
+      "source_end_index": 388,
+      "source_end_s": 1211.96,
+      "source_start_index": 385,
+      "source_start_s": 1175.92,
+      "utterance_count": 2,
+      "visible_observation_count": 11,
+      "window_end_s": 1223.1000000000001,
+      "window_start_s": 1181.3
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "0abade2acb7138d831919f6667ba7dede8d2aa21f02ec513770db30c5172b919",
+      "decision_ids": [
+        "242781000:284"
+      ],
+      "evidence_ids": [
+        "e0305",
+        "e0306",
+        "e0307",
+        "e0308",
+        "e0309",
+        "e0310"
+      ],
+      "game_id": "242781000",
+      "input_hash": "c69bc6ef4dd93a0c7d59e90ecf5816ad34bffb6f9e8c949cf2aabf0765e40a9f",
+      "job_id": "242781000:observation:284",
+      "previous_replay_index": 277,
+      "replay_index": 284,
+      "source_end_index": 400,
+      "source_end_s": 1247.16,
+      "source_start_index": 389,
+      "source_start_s": 1222.2,
+      "utterance_count": 6,
+      "visible_observation_count": 7,
+      "window_end_s": 1247.4,
+      "window_start_s": 1223.1000000000001
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "710290b81a6193e1fe375e62a0e528423b5aa2c93f5e6e769eb9f402ee09e340",
+      "decision_ids": [
+        "242781000:288"
+      ],
+      "evidence_ids": [
+        "e0311"
+      ],
+      "game_id": "242781000",
+      "input_hash": "04cc5e7f389896dca936aad7e4264b0462718a1968744deed77880e699ef80ca",
+      "job_id": "242781000:observation:288",
+      "previous_replay_index": 285,
+      "replay_index": 288,
+      "source_end_index": 403,
+      "source_end_s": 1255.1999999999998,
+      "source_start_index": 401,
+      "source_start_s": 1247.6,
+      "utterance_count": 1,
+      "visible_observation_count": 3,
+      "window_end_s": 1258.3,
+      "window_start_s": 1250.5
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "4179199bf17941bb305b8ad274a932289536a621c555fcc4dcd4a1afb53709fc",
+      "decision_ids": [
+        "242781000:289"
+      ],
+      "evidence_ids": [
+        "e0312",
+        "e0313",
+        "e0314"
+      ],
+      "game_id": "242781000",
+      "input_hash": "62c9e69b9ad8cb54f2814a3d4ee7c8be7f02221a0827d678908bd76d13be3e6a",
+      "job_id": "242781000:observation:289",
+      "previous_replay_index": 288,
+      "replay_index": 289,
+      "source_end_index": 408,
+      "source_end_s": 1265.6000000000001,
+      "source_start_index": 403,
+      "source_start_s": 1251.12,
+      "utterance_count": 3,
+      "visible_observation_count": 1,
+      "window_end_s": 1266.5,
+      "window_start_s": 1258.3
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "c48ec0349b30fee2ebac1439669b5418b0729de0cadb34559419ecebb4746d0f",
+      "decision_ids": [
+        "242781000:290"
+      ],
+      "evidence_ids": [
+        "e0315",
+        "e0316",
+        "e0317"
+      ],
+      "game_id": "242781000",
+      "input_hash": "6a840e3fcce9665c91691f4658fd3ab9014674d75d563763e37cb19286b22deb",
+      "job_id": "242781000:observation:290",
+      "previous_replay_index": 289,
+      "replay_index": 290,
+      "source_end_index": 415,
+      "source_end_s": 1282.72,
+      "source_start_index": 409,
+      "source_start_s": 1269.04,
+      "utterance_count": 3,
+      "visible_observation_count": 1,
+      "window_end_s": 1283.7,
+      "window_start_s": 1266.5
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "e5b60c1e28f7301c2b328b1767cd363820b1f1a5d98a9550acbc0780127abbf5",
+      "decision_ids": [
+        "242781000:308"
+      ],
+      "evidence_ids": [
+        "e0318",
+        "e0319",
+        "e0320"
+      ],
+      "game_id": "242781000",
+      "input_hash": "f84107ecaa1a5b98433f04dfe98971ae5bf53ad9f582a2989879bbb93f919f82",
+      "job_id": "242781000:observation:308",
+      "previous_replay_index": 291,
+      "replay_index": 308,
+      "source_end_index": 419,
+      "source_end_s": 1303.44,
+      "source_start_index": 416,
+      "source_start_s": 1288.92,
+      "utterance_count": 3,
+      "visible_observation_count": 17,
+      "window_end_s": 1316.0999999999997,
+      "window_start_s": 1284.8
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "0b088c34f1ae56a40fbe6b01a515f61079f49d6ed0af45287fd670551f352f8b",
+      "decision_ids": [
+        "242781000:310"
+      ],
+      "evidence_ids": [
+        "e0321"
+      ],
+      "game_id": "242781000",
+      "input_hash": "6c5846010382561f0c74928995500517326ea0037d6703e056cb14c0b8718ab9",
+      "job_id": "242781000:observation:310",
+      "previous_replay_index": 309,
+      "replay_index": 310,
+      "source_end_index": 420,
+      "source_end_s": 1317.4,
+      "source_start_index": 420,
+      "source_start_s": 1313.88,
+      "utterance_count": 1,
+      "visible_observation_count": 1,
+      "window_end_s": 1326.3999999999996,
+      "window_start_s": 1317.0999999999997
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "9dbef616360eb92834a6c2f6ef914bcf58cb80889c0fabd72ab66b42f5d35dee",
+      "decision_ids": [
+        "242781000:323"
+      ],
+      "evidence_ids": [
+        "e0322",
+        "e0323",
+        "e0324",
+        "e0325",
+        "e0326",
+        "e0327"
+      ],
+      "game_id": "242781000",
+      "input_hash": "f821f005f38fde90978c041dee59849e16b82a7b278258946dc370ce6ffa264f",
+      "job_id": "242781000:observation:323",
+      "previous_replay_index": 310,
+      "replay_index": 323,
+      "source_end_index": 428,
+      "source_end_s": 1357.76,
+      "source_start_index": 421,
+      "source_start_s": 1330.64,
+      "utterance_count": 6,
+      "visible_observation_count": 13,
+      "window_end_s": 1367.7999999999997,
+      "window_start_s": 1326.3999999999996
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "7f0ecf3e3ede180379801639a8f0fd18b1481d8c2e18238b7d8b210ecaab7e59",
+      "decision_ids": [
+        "242781000:333"
+      ],
+      "evidence_ids": [
+        "e0328"
+      ],
+      "game_id": "242781000",
+      "input_hash": "69ee2d354ef8a7cdfb1d6480580cf18c36d6787b2d0e351f59834b171a6abcde",
+      "job_id": "242781000:observation:333",
+      "previous_replay_index": 327,
+      "replay_index": 333,
+      "source_end_index": 429,
+      "source_end_s": 1391.28,
+      "source_start_index": 429,
+      "source_start_s": 1386.12,
+      "utterance_count": 1,
+      "visible_observation_count": 6,
+      "window_end_s": 1396.0999999999995,
+      "window_start_s": 1384.6999999999996
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "204b64e8efdd88821ed97d25d922e865e75864149ddf410d94c0dccc42f2df9a",
+      "decision_ids": [
+        "242781000:339"
+      ],
+      "evidence_ids": [
+        "e0329",
+        "e0330",
+        "e0331",
+        "e0332"
+      ],
+      "game_id": "242781000",
+      "input_hash": "8e720267ecf496ac19277f3100eace0cf52987c3f2bec64e43d62d268be1163a",
+      "job_id": "242781000:observation:339",
+      "previous_replay_index": 333,
+      "replay_index": 339,
+      "source_end_index": 432,
+      "source_end_s": 1409.2,
+      "source_start_index": 430,
+      "source_start_s": 1401.0,
+      "utterance_count": 4,
+      "visible_observation_count": 6,
+      "window_end_s": 1414.2999999999997,
+      "window_start_s": 1396.0999999999995
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "494db36eb46db2daed24210a4f6b8675b685273fd152731fa78a5462082d268f",
+      "decision_ids": [
+        "242781000:343"
+      ],
+      "evidence_ids": [
+        "e0333",
+        "e0334",
+        "e0335"
+      ],
+      "game_id": "242781000",
+      "input_hash": "359eb51e7e9f0b2e08d98e0e31ffa0032775b4ec4b6d63bc73b5c375218857b2",
+      "job_id": "242781000:observation:343",
+      "previous_replay_index": 339,
+      "replay_index": 343,
+      "source_end_index": 434,
+      "source_end_s": 1428.44,
+      "source_start_index": 433,
+      "source_start_s": 1423.08,
+      "utterance_count": 3,
+      "visible_observation_count": 4,
+      "window_end_s": 1428.4999999999995,
+      "window_start_s": 1414.2999999999997
+    },
+    {
+      "anchor_kind": "observation",
+      "board_state_hash": "505c2ed19efbf5a73ce4cfb7ac5629a9a6882d8b6b094c245454f914554a2159",
+      "decision_ids": [],
+      "evidence_ids": [
+        "e0336",
+        "e0337",
+        "e0338",
+        "e0339",
+        "e0340",
+        "e0341",
+        "e0342",
+        "e0343",
+        "e0344",
+        "e0345",
+        "e0346",
+        "e0347"
+      ],
+      "game_id": "242781000",
+      "input_hash": "5f3c1814c6a3f241cda8f88346a8d5e60365f5139da74ac3a63bee2f20fbc013",
+      "job_id": "242781000:observation:356",
+      "previous_replay_index": 343,
+      "replay_index": 356,
+      "source_end_index": 446,
+      "source_end_s": 1490.32,
+      "source_start_index": 435,
+      "source_start_s": 1425.88,
+      "utterance_count": 12,
+      "visible_observation_count": 13,
+      "window_end_s": 1491.3999999999994,
+      "window_start_s": 1428.4999999999995
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "10cf8cb78442a394f4ef7e16b4c0a1978bcedf4e923ffd06da017caf3e234aba",
+      "decision_ids": [
+        "242781000:357"
+      ],
+      "evidence_ids": [
+        "e0348"
+      ],
+      "game_id": "242781000",
+      "input_hash": "9fe51c08c0111371e8d59629b50f7a68324a30639d49c10c75ece410e52ce4df",
+      "job_id": "242781000:observation:357",
+      "previous_replay_index": 356,
+      "replay_index": 357,
+      "source_end_index": 447,
+      "source_end_s": 1491.64,
+      "source_start_index": 447,
+      "source_start_s": 1487.92,
+      "utterance_count": 1,
+      "visible_observation_count": 1,
+      "window_end_s": 1493.3999999999994,
+      "window_start_s": 1491.3999999999994
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "e3e97b6282b1feb41912732431c1d8fb080178ab944f98a817c38166f28462b1",
+      "decision_ids": [
+        "242781000:359",
+        "242781000:360"
+      ],
+      "evidence_ids": [
+        "e0349"
+      ],
+      "game_id": "242781000",
+      "input_hash": "c0f94dc2fe0e4ec0be0024fe5fd35fdcc0b39249ca3e639b17c9261f1c1ef052",
+      "job_id": "242781000:observation:360",
+      "previous_replay_index": 358,
+      "replay_index": 360,
+      "source_end_index": 449,
+      "source_end_s": 1494.16,
+      "source_start_index": 448,
+      "source_start_s": 1490.32,
+      "utterance_count": 1,
+      "visible_observation_count": 2,
+      "window_end_s": 1495.3999999999994,
+      "window_start_s": 1494.0999999999995
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "6cb83fb8fb3f8712b25bed54f4637b17628dc416aa6370090569f9f45efd39e7",
+      "decision_ids": [
+        "242781000:363"
+      ],
+      "evidence_ids": [
+        "e0350"
+      ],
+      "game_id": "242781000",
+      "input_hash": "eab50d4fe37f42dde2cd5d5e80f2872fb32e47579b12f06c86c87f4633422c31",
+      "job_id": "242781000:observation:363",
+      "previous_replay_index": 362,
+      "replay_index": 363,
+      "source_end_index": 451,
+      "source_end_s": 1502.04,
+      "source_start_index": 450,
+      "source_start_s": 1496.52,
+      "utterance_count": 1,
+      "visible_observation_count": 1,
+      "window_end_s": 1503.3999999999994,
+      "window_start_s": 1500.8999999999994
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "8b0ceae954b24e400af6dd7c8b916e3ce53bd126ecd59760027387e649ffb2e4",
+      "decision_ids": [
+        "242781000:367"
+      ],
+      "evidence_ids": [
+        "e0351",
+        "e0352"
+      ],
+      "game_id": "242781000",
+      "input_hash": "ed37ae0ccc4412fdd7f320d6a42ba0da8d166d5d7c9fea73df82bc11cf08d17f",
+      "job_id": "242781000:observation:367",
+      "previous_replay_index": 363,
+      "replay_index": 367,
+      "source_end_index": 453,
+      "source_end_s": 1504.5600000000002,
+      "source_start_index": 451,
+      "source_start_s": 1498.8,
+      "utterance_count": 2,
+      "visible_observation_count": 4,
+      "window_end_s": 1515.7999999999995,
+      "window_start_s": 1503.3999999999994
+    },
+    {
+      "anchor_kind": "observation",
+      "board_state_hash": "1daabcc362784bfa0d376de68019d0d975cc8288cbf4f7626ed3a02c48d3e8dd",
+      "decision_ids": [],
+      "evidence_ids": [
+        "e0353",
+        "e0354",
+        "e0355",
+        "e0356",
+        "e0357",
+        "e0358",
+        "e0359",
+        "e0360",
+        "e0361"
+      ],
+      "game_id": "242781000",
+      "input_hash": "b2ea2bc19585f11337389ca0b60843cb05ba1053c4151040a7e1d0105c7e55ef",
+      "job_id": "242781000:observation:383",
+      "previous_replay_index": 367,
+      "replay_index": 383,
+      "source_end_index": 463,
+      "source_end_s": 1585.04,
+      "source_start_index": 454,
+      "source_start_s": 1518.96,
+      "utterance_count": 9,
+      "visible_observation_count": 16,
+      "window_end_s": 1591.8999999999992,
+      "window_start_s": 1515.7999999999995
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "6d46024c6530a8d0fd46d65e530f70bb60dbda7ba54465727baa59e62b6d6825",
+      "decision_ids": [
+        "242781000:385"
+      ],
+      "evidence_ids": [
+        "e0362",
+        "e0363",
+        "e0364",
+        "e0365",
+        "e0366"
+      ],
+      "game_id": "242781000",
+      "input_hash": "ff9f288a84be67e1a476fe1e0909ab3d478bf5283673367efdd267530f61eddc",
+      "job_id": "242781000:observation:385",
+      "previous_replay_index": 383,
+      "replay_index": 385,
+      "source_end_index": 465,
+      "source_end_s": 1597.8400000000001,
+      "source_start_index": 464,
+      "source_start_s": 1590.28,
+      "utterance_count": 5,
+      "visible_observation_count": 2,
+      "window_end_s": 1601.899999999999,
+      "window_start_s": 1591.8999999999992
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "fcb0a3b78c87398a95f6f17174645a3c9eb899af48b5b980bafc9ad9eb3f06d9",
+      "decision_ids": [
+        "242781000:391"
+      ],
+      "evidence_ids": [
+        "e0367",
+        "e0368",
+        "e0369",
+        "e0370",
+        "e0371",
+        "e0372"
+      ],
+      "game_id": "242781000",
+      "input_hash": "85adf9125943ce99f159bb76959df220951402424f6b0299ff6c5fe410190291",
+      "job_id": "242781000:observation:391",
+      "previous_replay_index": 385,
+      "replay_index": 391,
+      "source_end_index": 474,
+      "source_end_s": 1639.6399999999999,
+      "source_start_index": 466,
+      "source_start_s": 1600.88,
+      "utterance_count": 6,
+      "visible_observation_count": 6,
+      "window_end_s": 1641.899999999999,
+      "window_start_s": 1601.899999999999
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "278e7be80e17ef5104eca1d7a824b05d9805c98d81ffaba6567bbf96b8fb8df4",
+      "decision_ids": [
+        "242781000:398"
+      ],
+      "evidence_ids": [
+        "e0373",
+        "e0374"
+      ],
+      "game_id": "242781000",
+      "input_hash": "a36abcc68756d78084f3464bf9d019b7ebbc75662353a5e185e737ae7b04fa47",
+      "job_id": "242781000:observation:398",
+      "previous_replay_index": 391,
+      "replay_index": 398,
+      "source_end_index": 477,
+      "source_end_s": 1645.3200000000002,
+      "source_start_index": 474,
+      "source_start_s": 1634.6,
+      "utterance_count": 2,
+      "visible_observation_count": 7,
+      "window_end_s": 1653.6999999999987,
+      "window_start_s": 1641.899999999999
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "b5a015f1d43ce542f6eec162ee638bfff1775c8fd6cac578c294ae5f53960045",
+      "decision_ids": [
+        "242781000:399"
+      ],
+      "evidence_ids": [
+        "e0375"
+      ],
+      "game_id": "242781000",
+      "input_hash": "32ca52d335409837b832d6ea134c01b822326ca22c078dbd082295de0233df59",
+      "job_id": "242781000:observation:399",
+      "previous_replay_index": 398,
+      "replay_index": 399,
+      "source_end_index": 478,
+      "source_end_s": 1654.1599999999999,
+      "source_start_index": 478,
+      "source_start_s": 1651.8,
+      "utterance_count": 1,
+      "visible_observation_count": 1,
+      "window_end_s": 1654.5999999999988,
+      "window_start_s": 1653.6999999999987
+    },
+    {
+      "anchor_kind": "observation",
+      "board_state_hash": "ff0390fec0143c00139f2221299128b57481d908771780632065f3b42c8d40c9",
+      "decision_ids": [],
+      "evidence_ids": [
+        "e0376",
+        "e0377",
+        "e0378",
+        "e0379",
+        "e0380",
+        "e0381",
+        "e0382"
+      ],
+      "game_id": "242781000",
+      "input_hash": "bf0208f9b8104565694248884cc7ae1191eb8b4175db93b0b875228c9c99aef6",
+      "job_id": "242781000:observation:422",
+      "previous_replay_index": 407,
+      "replay_index": 422,
+      "source_end_index": 485,
+      "source_end_s": 1730.4,
+      "source_start_index": 479,
+      "source_start_s": 1680.0,
+      "utterance_count": 7,
+      "visible_observation_count": 15,
+      "window_end_s": 1732.6999999999982,
+      "window_start_s": 1666.6999999999987
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "16f6f38113e99997e2e951f53fe0be3f617d60c4abca197c860ee3ce82def8ce",
+      "decision_ids": [
+        "242781000:428"
+      ],
+      "evidence_ids": [
+        "e0383",
+        "e0384",
+        "e0385"
+      ],
+      "game_id": "242781000",
+      "input_hash": "05a0c051e3e4954937bcad0040479e8dda27a4b1402a21ba91430a98264f7ee0",
+      "job_id": "242781000:observation:428",
+      "previous_replay_index": 422,
+      "replay_index": 428,
+      "source_end_index": 488,
+      "source_end_s": 1738.08,
+      "source_start_index": 485,
+      "source_start_s": 1726.4,
+      "utterance_count": 3,
+      "visible_observation_count": 6,
+      "window_end_s": 1739.3999999999983,
+      "window_start_s": 1732.6999999999982
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "8ca9d69a6f896e9a23fa1b2038af134ee35d8da6ea35f317063adeeec1df75f8",
+      "decision_ids": [
+        "242781000:438"
+      ],
+      "evidence_ids": [
+        "e0386",
+        "e0387",
+        "e0388",
+        "e0389",
+        "e0390",
+        "e0391",
+        "e0392",
+        "e0393",
+        "e0394",
+        "e0395",
+        "e0396"
+      ],
+      "game_id": "242781000",
+      "input_hash": "6a519b40d3fb49dd942567e688bb9d0870b9ca69cd7f688e293add2c349dd53a",
+      "job_id": "242781000:observation:438",
+      "previous_replay_index": 428,
+      "replay_index": 438,
+      "source_end_index": 502,
+      "source_end_s": 1763.24,
+      "source_start_index": 489,
+      "source_start_s": 1736.32,
+      "utterance_count": 11,
+      "visible_observation_count": 10,
+      "window_end_s": 1764.3999999999983,
+      "window_start_s": 1739.3999999999983
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "2335eed4f2dcce4dd897ae3e943a560f96f16a9286d1c93be2c4bd2ad6e6b768",
+      "decision_ids": [
+        "242781000:444"
+      ],
+      "evidence_ids": [
+        "e0397",
+        "e0398",
+        "e0399"
+      ],
+      "game_id": "242781000",
+      "input_hash": "2d7daa7e2b4dbf3c88e65813ff3157f2646b1689e0ff01f5b1b3953170b9d705",
+      "job_id": "242781000:observation:444",
+      "previous_replay_index": 438,
+      "replay_index": 444,
+      "source_end_index": 505,
+      "source_end_s": 1776.435,
+      "source_start_index": 503,
+      "source_start_s": 1763.32,
+      "utterance_count": 3,
+      "visible_observation_count": 6,
+      "window_end_s": 1783.7999999999981,
+      "window_start_s": 1764.3999999999983
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "e29679fdafc3a73b9c77234a415049f833e1a8486610f3f4c0c99eb6b51cd989",
+      "decision_ids": [
+        "242781000:453"
+      ],
+      "evidence_ids": [
+        "e0400",
+        "e0401"
+      ],
+      "game_id": "242781000",
+      "input_hash": "1da40660af09893de18ca962c62068899bcf0e4faf17e6d4d4777aed805a162d",
+      "job_id": "242781000:observation:453",
+      "previous_replay_index": 444,
+      "replay_index": 453,
+      "source_end_index": 508,
+      "source_end_s": 1786.88,
+      "source_start_index": 506,
+      "source_start_s": 1780.92,
+      "utterance_count": 2,
+      "visible_observation_count": 9,
+      "window_end_s": 1788.7999999999981,
+      "window_start_s": 1783.7999999999981
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "8019402d5acf8c87a9bd50d743463ad8f48ecef703a5cc0404b187cc35ccdcc2",
+      "decision_ids": [
+        "242781000:454"
+      ],
+      "evidence_ids": [
+        "e0402"
+      ],
+      "game_id": "242781000",
+      "input_hash": "54711ce6f7742291d1e2e4198ce96ce268b2f853d84af3d91f1fd30718ffba09",
+      "job_id": "242781000:observation:454",
+      "previous_replay_index": 453,
+      "replay_index": 454,
+      "source_end_index": 509,
+      "source_end_s": 1791.8,
+      "source_start_index": 509,
+      "source_start_s": 1789.36,
+      "utterance_count": 1,
+      "visible_observation_count": 1,
+      "window_end_s": 1794.8999999999983,
+      "window_start_s": 1788.7999999999981
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "ee98d34585b5258b5cc691a3ddd9a22b848c66e739676243d4db4f9f5cf47ab5",
+      "decision_ids": [
+        "242781000:461"
+      ],
+      "evidence_ids": [
+        "e0403",
+        "e0404"
+      ],
+      "game_id": "242781000",
+      "input_hash": "7244ea9720fcb302eedaf5f1342b8661ba2de546c246b67807c8e74529304bdd",
+      "job_id": "242781000:observation:461",
+      "previous_replay_index": 456,
+      "replay_index": 461,
+      "source_end_index": 512,
+      "source_end_s": 1803.6399999999999,
+      "source_start_index": 510,
+      "source_start_s": 1794.84,
+      "utterance_count": 2,
+      "visible_observation_count": 5,
+      "window_end_s": 1805.4999999999984,
+      "window_start_s": 1799.3999999999983
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "7e2a32c220a2b0475f4c1ac0c68ec7ebaaf01b06f3e95e3c341528c1c15aabe5",
+      "decision_ids": [
+        "242781000:466"
+      ],
+      "evidence_ids": [
+        "e0405",
+        "e0406",
+        "e0407",
+        "e0408",
+        "e0409"
+      ],
+      "game_id": "242781000",
+      "input_hash": "3769af4a62bdec800ed542d6ec09fe2381edbac5ade1ba05c347a98130376e44",
+      "job_id": "242781000:observation:466",
+      "previous_replay_index": 461,
+      "replay_index": 466,
+      "source_end_index": 519,
+      "source_end_s": 1818.76,
+      "source_start_index": 513,
+      "source_start_s": 1801.8,
+      "utterance_count": 5,
+      "visible_observation_count": 5,
+      "window_end_s": 1818.9999999999982,
+      "window_start_s": 1805.4999999999984
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "f1d2254e0faaff0be442d3f894d5c128a689fd28a2abefec3b98060f4fd86b7b",
+      "decision_ids": [
+        "242781000:468"
+      ],
+      "evidence_ids": [
+        "e0410",
+        "e0411",
+        "e0412"
+      ],
+      "game_id": "242781000",
+      "input_hash": "d83e136f8d0909bd38a412ea3cfbc362a9b28677d828f099780c194f6638e44b",
+      "job_id": "242781000:observation:468",
+      "previous_replay_index": 466,
+      "replay_index": 468,
+      "source_end_index": 523,
+      "source_end_s": 1825.76,
+      "source_start_index": 520,
+      "source_start_s": 1817.645,
+      "utterance_count": 3,
+      "visible_observation_count": 2,
+      "window_end_s": 1826.3999999999983,
+      "window_start_s": 1818.9999999999982
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "a15043fa932beaef1c91d10a129db0b2d40f3195fe43b8a8859855d5a533d2a5",
+      "decision_ids": [
+        "242781000:469"
+      ],
+      "evidence_ids": [
+        "e0413"
+      ],
+      "game_id": "242781000",
+      "input_hash": "394a3e3cad5091c73fe60ea39a7b388c01f4985077c4ade2f55b76820fb3bac7",
+      "job_id": "242781000:observation:469",
+      "previous_replay_index": 468,
+      "replay_index": 469,
+      "source_end_index": 525,
+      "source_end_s": 1828.16,
+      "source_start_index": 524,
+      "source_start_s": 1824.0,
+      "utterance_count": 1,
+      "visible_observation_count": 1,
+      "window_end_s": 1828.4999999999982,
+      "window_start_s": 1826.3999999999983
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "ae60b94b6ad5450ef991e04a7f503d0edd16844f0abe0206d3fcfa24a50535bf",
+      "decision_ids": [
+        "242781000:475"
+      ],
+      "evidence_ids": [
+        "e0414"
+      ],
+      "game_id": "242781000",
+      "input_hash": "6d7cedd6d9e1cd970568fb605c343ba02dfa894edb8be453094ba912ea4fc4a0",
+      "job_id": "242781000:observation:475",
+      "previous_replay_index": 469,
+      "replay_index": 475,
+      "source_end_index": 526,
+      "source_end_s": 1831.3600000000001,
+      "source_start_index": 526,
+      "source_start_s": 1828.44,
+      "utterance_count": 1,
+      "visible_observation_count": 6,
+      "window_end_s": 1836.8999999999983,
+      "window_start_s": 1828.4999999999982
+    },
+    {
+      "anchor_kind": "observation",
+      "board_state_hash": "8fa6887c6b89eeaa5105a8e1d31db2572d9e3c1c09006030cf6200139280dbff",
+      "decision_ids": [],
+      "evidence_ids": [
+        "e0415",
+        "e0416",
+        "e0417",
+        "e0418",
+        "e0419",
+        "e0420",
+        "e0421",
+        "e0422",
+        "e0423",
+        "e0424"
+      ],
+      "game_id": "242781000",
+      "input_hash": "4e356f9a4d4a7fe4c64710421ab89157fa348f9f78cd8323fae10f06d090fe80",
+      "job_id": "242781000:observation:485",
+      "previous_replay_index": 475,
+      "replay_index": 485,
+      "source_end_index": 537,
+      "source_end_s": 1896.3200000000002,
+      "source_start_index": 527,
+      "source_start_s": 1835.92,
+      "utterance_count": 10,
+      "visible_observation_count": 10,
+      "window_end_s": 1899.099999999998,
+      "window_start_s": 1836.8999999999983
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "aa787aba992a881c531050f2baa4f5c2b4191ce29c093e2f2447cd6ac84a48e0",
+      "decision_ids": [
+        "242781000:491"
+      ],
+      "evidence_ids": [
+        "e0425",
+        "e0426"
+      ],
+      "game_id": "242781000",
+      "input_hash": "52cbaba7abaace92f6602c41241f63e78066d4df1111cb8c8d655e38372f8683",
+      "job_id": "242781000:observation:491",
+      "previous_replay_index": 485,
+      "replay_index": 491,
+      "source_end_index": 539,
+      "source_end_s": 1905.5600000000002,
+      "source_start_index": 538,
+      "source_start_s": 1900.28,
+      "utterance_count": 2,
+      "visible_observation_count": 6,
+      "window_end_s": 1906.899999999998,
+      "window_start_s": 1899.099999999998
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "1360664780ea4344a17a876c08d2705156ae2c85dd3a9d5fba8ea14439db3613",
+      "decision_ids": [
+        "242781000:497"
+      ],
+      "evidence_ids": [
+        "e0427",
+        "e0428",
+        "e0429",
+        "e0430",
+        "e0431",
+        "e0432",
+        "e0433",
+        "e0434",
+        "e0435",
+        "e0436",
+        "e0437"
+      ],
+      "game_id": "242781000",
+      "input_hash": "5cda5b20d0bae239a7ab321ba610ec82ac71f2f3f9612e7f7c13704754d06545",
+      "job_id": "242781000:observation:497",
+      "previous_replay_index": 491,
+      "replay_index": 497,
+      "source_end_index": 551,
+      "source_end_s": 1937.3200000000002,
+      "source_start_index": 540,
+      "source_start_s": 1903.56,
+      "utterance_count": 11,
+      "visible_observation_count": 6,
+      "window_end_s": 1943.7999999999981,
+      "window_start_s": 1906.899999999998
+    },
+    {
+      "anchor_kind": "observation",
+      "board_state_hash": "fff3463203594535b73f20e0a3d3b2de4728d2cb302041793c603b270238b8b0",
+      "decision_ids": [],
+      "evidence_ids": [
+        "e0438",
+        "e0439",
+        "e0440",
+        "e0441",
+        "e0442",
+        "e0443",
+        "e0444",
+        "e0445",
+        "e0446"
+      ],
+      "game_id": "242781000",
+      "input_hash": "2d64a9607a06dac2201a472dc9a7481b5d22805e04a6fa094f13855428e0f882",
+      "job_id": "242781000:observation:514",
+      "previous_replay_index": 502,
+      "replay_index": 514,
+      "source_end_index": 562,
+      "source_end_s": 2022.0800000000002,
+      "source_start_index": 552,
+      "source_start_s": 1973.32,
+      "utterance_count": 9,
+      "visible_observation_count": 12,
+      "window_end_s": 2028.3999999999976,
+      "window_start_s": 1961.599999999998
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "45a7932bd25fcfc82461bc319420ef1312aeae9bbc5821e7b6d1e7b177618e55",
+      "decision_ids": [
+        "242781000:520"
+      ],
+      "evidence_ids": [
+        "e0447",
+        "e0448"
+      ],
+      "game_id": "242781000",
+      "input_hash": "4c22ab19f1edc56d340de5d7d893f24886d2eaebc9053b59b295696619f6c7fe",
+      "job_id": "242781000:observation:520",
+      "previous_replay_index": 514,
+      "replay_index": 520,
+      "source_end_index": 565,
+      "source_end_s": 2061.96,
+      "source_start_index": 563,
+      "source_start_s": 2054.44,
+      "utterance_count": 2,
+      "visible_observation_count": 6,
+      "window_end_s": 2070.9999999999973,
+      "window_start_s": 2028.3999999999976
+    },
+    {
+      "anchor_kind": "observation",
+      "board_state_hash": "fe50772537d48e5e7b900510f58b1cdc6f9059a4637908b20e2ca5e1b92a536c",
+      "decision_ids": [],
+      "evidence_ids": [
+        "e0449",
+        "e0450",
+        "e0451",
+        "e0452",
+        "e0453",
+        "e0454",
+        "e0455",
+        "e0456",
+        "e0457",
+        "e0458",
+        "e0459",
+        "e0460",
+        "e0461",
+        "e0462",
+        "e0463"
+      ],
+      "game_id": "242781000",
+      "input_hash": "0571d7bcd3c11444fffbe6e2b5815ffc0d75d55f861c50bdbb853bb58c40a487",
+      "job_id": "242781000:observation:535",
+      "previous_replay_index": 526,
+      "replay_index": 535,
+      "source_end_index": 585,
+      "source_end_s": 2166.56,
+      "source_start_index": 566,
+      "source_start_s": 2115.4,
+      "utterance_count": 15,
+      "visible_observation_count": 9,
+      "window_end_s": 2168.2999999999984,
+      "window_start_s": 2081.7999999999975
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "cb770d79b3fcebfdcc8b838795ff9e28e1f8fcf10f6b76c10356d5221f56ea87",
+      "decision_ids": [
+        "242781000:537"
+      ],
+      "evidence_ids": [
+        "e0464"
+      ],
+      "game_id": "242781000",
+      "input_hash": "012914a3c4eba7da25bdd81b1002791443f02d3412fbf2910e5b8ea00da9cf93",
+      "job_id": "242781000:observation:537",
+      "previous_replay_index": 535,
+      "replay_index": 537,
+      "source_end_index": 586,
+      "source_end_s": 2169.52,
+      "source_start_index": 586,
+      "source_start_s": 2167.04,
+      "utterance_count": 1,
+      "visible_observation_count": 2,
+      "window_end_s": 2171.699999999998,
+      "window_start_s": 2168.2999999999984
+    },
+    {
+      "anchor_kind": "observation",
+      "board_state_hash": "16b810dfbc1b6e7165c986f36a639703ad85bb791a85b3e23fa735084ecaead8",
+      "decision_ids": [],
+      "evidence_ids": [
+        "e0465",
+        "e0466",
+        "e0467",
+        "e0468",
+        "e0469",
+        "e0470",
+        "e0471",
+        "e0472",
+        "e0473",
+        "e0474",
+        "e0475"
+      ],
+      "game_id": "242781000",
+      "input_hash": "d320e44fa94bc90761c1476367f1f59357d6ec91c5547b53451bc43e4085cf01",
+      "job_id": "242781000:observation:548",
+      "previous_replay_index": 537,
+      "replay_index": 548,
+      "source_end_index": 600,
+      "source_end_s": 2227.84,
+      "source_start_index": 587,
+      "source_start_s": 2171.36,
+      "utterance_count": 11,
+      "visible_observation_count": 11,
+      "window_end_s": 2229.499999999998,
+      "window_start_s": 2171.699999999998
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "3191883b0489c626833bb18bb504097955c0f6e09badb55fab66c8040bc3ac98",
+      "decision_ids": [
+        "242781000:550"
+      ],
+      "evidence_ids": [
+        "e0476"
+      ],
+      "game_id": "242781000",
+      "input_hash": "d175844973f4f0adfbeef2ecffb221bc53534caddaaab2c8e87f10d8f69d849c",
+      "job_id": "242781000:observation:550",
+      "previous_replay_index": 549,
+      "replay_index": 550,
+      "source_end_index": 601,
+      "source_end_s": 2232.0,
+      "source_start_index": 601,
+      "source_start_s": 2228.16,
+      "utterance_count": 1,
+      "visible_observation_count": 1,
+      "window_end_s": 2232.499999999998,
+      "window_start_s": 2230.3999999999983
+    },
+    {
+      "anchor_kind": "observation",
+      "board_state_hash": "e3388a12e57936ac90be0e4fdebc1e7ece770907b5a6e53ff5d3b57af6b44d18",
+      "decision_ids": [],
+      "evidence_ids": [
+        "e0477",
+        "e0478",
+        "e0479",
+        "e0480",
+        "e0481",
+        "e0482",
+        "e0483",
+        "e0484",
+        "e0485",
+        "e0486",
+        "e0487",
+        "e0488",
+        "e0489",
+        "e0490",
+        "e0491"
+      ],
+      "game_id": "242781000",
+      "input_hash": "d30ee805438bf8dae382a73505de2284570675e57609f1c945c5ed37ba1cf44a",
+      "job_id": "242781000:observation:559",
+      "previous_replay_index": 551,
+      "replay_index": 559,
+      "source_end_index": 620,
+      "source_end_s": 2297.8210000000004,
+      "source_start_index": 602,
+      "source_start_s": 2239.16,
+      "utterance_count": 15,
+      "visible_observation_count": 8,
+      "window_end_s": 2298.299999999999,
+      "window_start_s": 2233.3999999999983
+    },
+    {
+      "anchor_kind": "observation",
+      "board_state_hash": "5add54e75f6402830365a0fcc5f583c2e6cff66631d0c20ec4bdc8b1153527cb",
+      "decision_ids": [],
+      "evidence_ids": [
+        "e0492",
+        "e0493",
+        "e0494",
+        "e0495",
+        "e0496",
+        "e0497",
+        "e0498",
+        "e0499",
+        "e0500",
+        "e0501",
+        "e0502",
+        "e0503",
+        "e0504",
+        "e0505",
+        "e0506",
+        "e0507",
+        "e0508",
+        "e0509",
+        "e0510",
+        "e0511",
+        "e0512"
+      ],
+      "game_id": "242781000",
+      "input_hash": "14aa2770ff9aa7f060d588c6ea078545b171bee2c5c6ca57a9a3bcc6bd574096",
+      "job_id": "242781000:observation:564",
+      "previous_replay_index": 559,
+      "replay_index": 564,
+      "source_end_index": 641,
+      "source_end_s": 2355.3199999999997,
+      "source_start_index": 621,
+      "source_start_s": 2301.88,
+      "utterance_count": 21,
+      "visible_observation_count": 5,
+      "window_end_s": 2358.6999999999985,
+      "window_start_s": 2298.299999999999
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "b09535fc3af04f452769f6f022ce0fb24c35b5b1192564d519897e1fce219b60",
+      "decision_ids": [
+        "242781000:567"
+      ],
+      "evidence_ids": [
+        "e0513"
+      ],
+      "game_id": "242781000",
+      "input_hash": "d7fb946490d4102d4a4c2a325f750f2b83dc2a3c519f725d613ed2c7d701719c",
+      "job_id": "242781000:observation:567",
+      "previous_replay_index": 566,
+      "replay_index": 567,
+      "source_end_index": 642,
+      "source_end_s": 2361.8,
+      "source_start_index": 642,
+      "source_start_s": 2357.36,
+      "utterance_count": 1,
+      "visible_observation_count": 1,
+      "window_end_s": 2363.099999999998,
+      "window_start_s": 2360.999999999998
+    },
+    {
+      "anchor_kind": "decision",
+      "board_state_hash": "69844e1362920f65a4b72a189387d475042c6764a52b0ded15a46afac449c66b",
+      "decision_ids": [
+        "242781000:568"
+      ],
+      "evidence_ids": [
+        "e0514",
+        "e0515",
+        "e0516"
+      ],
+      "game_id": "242781000",
+      "input_hash": "66ec7d6bda9675ad5c77c6dc18d678e0f46ea1680ddc968ef3c80383634b4bbd",
+      "job_id": "242781000:observation:568",
+      "previous_replay_index": 567,
+      "replay_index": 568,
+      "source_end_index": 644,
+      "source_end_s": 2364.88,
+      "source_start_index": 643,
+      "source_start_s": 2359.28,
+      "utterance_count": 3,
+      "visible_observation_count": 1,
+      "window_end_s": 2365.199999999998,
+      "window_start_s": 2363.099999999998
+    },
+    {
+      "anchor_kind": "complete",
+      "board_state_hash": "5279a1886705c69e43101d22ddba6c7666e04aea20ab5e87c7a053849f7c34cd",
+      "decision_ids": [],
+      "evidence_ids": [
+        "e0517",
+        "e0518",
+        "e0519",
+        "e0520",
+        "e0521",
+        "e0522",
+        "e0523",
+        "e0524",
+        "e0525",
+        "e0526"
+      ],
+      "game_id": "242781000",
+      "input_hash": "963146b6e2478d9c678733d4499861545c19e2ee69567937ef7569deadc90440",
+      "job_id": "242781000:observation:570",
+      "previous_replay_index": 569,
+      "replay_index": 570,
+      "source_end_index": 658,
+      "source_end_s": 2389.2000000000003,
+      "source_start_index": 645,
+      "source_start_s": 2363.44,
+      "utterance_count": 10,
+      "visible_observation_count": 1,
+      "window_end_s": 2389.2000000000003,
+      "window_start_s": 2366.199999999998
+    }
+  ],
+  "model_id": "openai/gpt-5.6-sol",
+  "narrator": {
+    "colonist_color": 2,
+    "status": "provisional_strong",
+    "username": "FunDipDevRip"
+  },
+  "replay_sha256": "b07dfe7aa9aa0214e6be4627e23a23dcb9620f2175016eed7eb8805485eae2e4",
+  "schema": "narrator-observation-assembly-run-v1",
+  "total_replay_events": 570,
+  "transcript_sha256": "a884b4899954266d0eaf7f43a31886a81a12b3d90bab4e026b5e74cff5319c01"
+}

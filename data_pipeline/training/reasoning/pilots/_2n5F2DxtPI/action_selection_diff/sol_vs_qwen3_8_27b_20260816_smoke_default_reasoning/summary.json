@@ -1,0 +1,270 @@
+{
+  "canonicalization_count": 9,
+  "classification_counts": {
+    "coarse": 20,
+    "exact": 109,
+    "lifecycle": 15,
+    "unmappable": 1
+  },
+  "complete": false,
+  "exact_decisions": 109,
+  "forced_exact_decisions": 20,
+  "game_id": "242781000",
+  "generated_at": "2026-08-16T22:54:42.398612+00:00",
+  "model_pair": {
+    "both_match_human": 0,
+    "both_valid": 0,
+    "left_only_matches_human": 0,
+    "models": [
+      "openai/gpt-5.6-sol",
+      "qwen/qwen3.8-27b"
+    ],
+    "neither_matches_human": 0,
+    "right_only_matches_human": 0,
+    "same_nonhuman_alternative": 0,
+    "same_selection": 0,
+    "same_selection_rate": null
+  },
+  "models": {
+    "openai/gpt-5.6-sol": {
+      "agreement_rate_valid": 0.0,
+      "agreements": 0,
+      "api_errors": 0,
+      "by_action_type": {
+        "ACCEPT_TRADE": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 1,
+          "valid": 0
+        },
+        "BUILD_ROAD": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 10,
+          "valid": 0
+        },
+        "BUILD_SETTLEMENT": {
+          "agreement_rate_valid": 0.0,
+          "agreements": 0,
+          "eligible": 4,
+          "valid": 1
+        },
+        "BUY_DEVELOPMENT_CARD": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 7,
+          "valid": 0
+        },
+        "END_TURN": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 19,
+          "valid": 0
+        },
+        "MARITIME_TRADE": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 5,
+          "valid": 0
+        },
+        "MONOPOLY_RESOURCE": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 1,
+          "valid": 0
+        },
+        "MOVE_ROBBER": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 5,
+          "valid": 0
+        },
+        "PLAY_KNIGHT_CARD": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 3,
+          "valid": 0
+        },
+        "REJECT_TRADE": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 30,
+          "valid": 0
+        },
+        "ROLL": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 19,
+          "valid": 0
+        },
+        "STEAL": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 5,
+          "valid": 0
+        }
+      },
+      "coverage": 0.009174311926605505,
+      "eligible_decisions": 109,
+      "forced": {
+        "agreement_rate_valid": null,
+        "agreements": 0,
+        "eligible": 20,
+        "strict_agreement_rate": 0.0,
+        "valid": 0
+      },
+      "latency_ms": {
+        "max": 8242.0,
+        "mean": 8242.0,
+        "median": 8242.0,
+        "p95": 8242.0
+      },
+      "nontrivial": {
+        "agreement_rate_valid": 0.0,
+        "agreements": 0,
+        "eligible": 89,
+        "strict_agreement_rate": 0.0,
+        "valid": 1
+      },
+      "parse_errors": 0,
+      "responses_present": 1,
+      "strict_agreement_rate": 0.0,
+      "usage": {
+        "completion_tokens": 376,
+        "cost_usd": 0.03190125,
+        "prompt_tokens": 3300,
+        "total_tokens": 3676
+      },
+      "valid_selections": 1
+    },
+    "qwen/qwen3.8-27b": {
+      "agreement_rate_valid": null,
+      "agreements": 0,
+      "api_errors": 0,
+      "by_action_type": {
+        "ACCEPT_TRADE": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 1,
+          "valid": 0
+        },
+        "BUILD_ROAD": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 10,
+          "valid": 0
+        },
+        "BUILD_SETTLEMENT": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 4,
+          "valid": 0
+        },
+        "BUY_DEVELOPMENT_CARD": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 7,
+          "valid": 0
+        },
+        "END_TURN": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 19,
+          "valid": 0
+        },
+        "MARITIME_TRADE": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 5,
+          "valid": 0
+        },
+        "MONOPOLY_RESOURCE": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 1,
+          "valid": 0
+        },
+        "MOVE_ROBBER": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 5,
+          "valid": 0
+        },
+        "PLAY_KNIGHT_CARD": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 3,
+          "valid": 0
+        },
+        "REJECT_TRADE": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 30,
+          "valid": 0
+        },
+        "ROLL": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 19,
+          "valid": 0
+        },
+        "STEAL": {
+          "agreement_rate_valid": null,
+          "agreements": 0,
+          "eligible": 5,
+          "valid": 0
+        }
+      },
+      "coverage": 0.0,
+      "eligible_decisions": 109,
+      "forced": {
+        "agreement_rate_valid": null,
+        "agreements": 0,
+        "eligible": 20,
+        "strict_agreement_rate": 0.0,
+        "valid": 0
+      },
+      "latency_ms": {
+        "max": 137548.0,
+        "mean": 137548.0,
+        "median": 137548.0,
+        "p95": 137548.0
+      },
+      "nontrivial": {
+        "agreement_rate_valid": null,
+        "agreements": 0,
+        "eligible": 89,
+        "strict_agreement_rate": 0.0,
+        "valid": 0
+      },
+      "parse_errors": 1,
+      "responses_present": 1,
+      "strict_agreement_rate": 0.0,
+      "usage": {
+        "completion_tokens": 8192,
+        "cost_usd": 0.0260208,
+        "prompt_tokens": 3612,
+        "total_tokens": 11804
+      },
+      "valid_selections": 0
+    }
+  },
+  "new_requests_this_invocation": {
+    "openai/gpt-5.6-sol": 1,
+    "qwen/qwen3.8-27b": 1
+  },
+  "nontrivial_exact_decisions": 89,
+  "parsed_action_count": 570,
+  "schema_version": "replay-action-diff-v1",
+  "semantic_error_count": 0,
+  "step_statuses": {
+    "closed": 54,
+    "deferred": 4,
+    "ok": 477,
+    "overlay_applied": 29,
+    "trade_applied": 6
+  },
+  "target_action_records": 145,
+  "target_engine_color": "BLACK",
+  "target_player_id": 5
+}

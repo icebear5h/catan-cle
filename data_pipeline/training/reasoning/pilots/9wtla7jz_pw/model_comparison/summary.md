@@ -30,7 +30,7 @@ blocking opponent is paladyn019 (dark/grey) near 8-3-4.
    tokens for the same file). New default for Role A.
 5. Gemini reasoning models must be run with `reasoning: {effort: minimal}` for this
    task or thinking consumes the entire completion budget (same failure mode as the
-   Fable CatanBench run).
+   Fable CatanBoardBench run).
 6. qwen3.7-flash silently dropped the 4.9MB base64 video (prompt shows only caption
    text tokens), returned `finish_reason: error` after 199s, and produced fluent
    caption-only confabulation in the requested schema. Cheap-tier video support must

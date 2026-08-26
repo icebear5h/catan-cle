@@ -1,0 +1,9 @@
+{"job_id":"242781000:217","paragraphs":[{"text":"I thought it was certainly an option.","evidence_ids":["u0"],"uncertainties":["The option being evaluated is not identified in the utterance."]}]}
+{"job_id":"242781000:219","paragraphs":[{"text":"I thought the 8 was also really nice.","evidence_ids":["u1"],"uncertainties":[]}]}
+{"job_id":"242781000:220","paragraphs":[{"text":"I wasn't sure whether he had it.","evidence_ids":["u0"],"uncertainties":["The person and what he might have are not identified in the utterance."]},{"text":"The problem was that, if we didn't roll anything, I thought we could double-pop. I didn't want to trade three sheep at 3:1, use up all my sheep, and then be left with only two ore.","evidence_ids":["u1","u2"],"uncertainties":["The phrase following ‘double pop’ is unclear in the caption."]}]}
+{"job_id":"242781000:221","paragraphs":[{"text":"I'd rather double-pop because it gives me more value while letting me keep an ore and two sheep.","evidence_ids":["u0","u1"],"uncertainties":[]}]}
+{"job_id":"242781000:222","paragraphs":[]}
+{"job_id":"242781000:223","paragraphs":[{"text":"I thought having more chances to hit the 10 and 8 on actual rolls was a little better.","evidence_ids":["u0","u1"],"uncertainties":[]}]}
+{"job_id":"242781000:225","paragraphs":[{"text":"I liked Red building because it kept the game's parity interesting.","evidence_ids":["u0","u1"],"uncertainties":[]},{"text":"I thought Black was in a great spot, but luckily the port wasn't very useful for him, which helped us.","evidence_ids":["u2","u3","u4"],"uncertainties":["The specific port is not identified in the utterances."]}]}
+{"job_id":"242781000:227","paragraphs":[{"text":"I thought we had a good game here.","evidence_ids":["u0"],"uncertainties":[]}]}
+{"job_id":"242781000:228","paragraphs":[{"text":"I really thought we had a bit of a scrap.","evidence_ids":["u0","u1"],"uncertainties":[]}]}

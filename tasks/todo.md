@@ -1,3 +1,53 @@
+# SFT run fixes after catan-qwen38-spatial-sft-b32-20260901
+
+## Findings
+- Vision tower and merger were trained as raw bf16 parameters under AdamW with no
+  fp32 master copy, so updates at 1e-6 and 1e-5 mostly rounded to zero. The run
+  was effectively LoRA r8 plus 154 token rows.
+- The 154 atlas rows were seeded from the checkpoint's untrained padding rows
+  because the embedding matrix was already 248,320 wide and resize was a no-op.
+- Logged loss and token accuracy were diluted 3:1 by the trivial end-of-turn
+  and newline tokens; 0.5 loss meant the answer token sat near chance.
+- Learning rates were full-fine-tune values on a 515-step LoRA run; warmup was
+  16 steps.
+- New spatial_localization_v1 curriculum: stage 1 rows are grouped by image
+  (2 to 3 images per batch of 32 under the sequential sampler), stage 2 appends
+  the marker replay slice at the end, stage 2 leans "no" 4,296 to 3,312, and the
+  probe dot is sub-patch (12 px radius vs 32 px merged patch).
+
+## Plan
+- [x] Trainer: promote the visual module to fp32 master weights after wrapping,
+  after initial-bundle load, and after checkpoint resume; save checkpoints in
+  fp32 and the final bundle in bf16; audit dtypes in the trainable scope.
+- [x] Trainer: initialize the 154 atlas rows (embed and lm_head) from the base
+  vocabulary mean plus small seeded noise before PEFT wrapping; report norms.
+- [x] Trainer: log answer-token accuracy and teacher-forced row exact match,
+  excluding end-of-turn and newline tokens, via a language-module hidden-state
+  hook and the merged trainable-token head.
+- [x] Trainer: log pre-clip gradient norm per optimizer group.
+- [x] Trainer and launcher: raise default learning rates (tokens 5e-4, LoRA
+  1e-4, merger 5e-5, vision 5e-6) and warmup ratio to 0.1.
+- [x] Curriculum: deterministic shuffle of stage 1 and stage 2 train rows,
+  interleaving the replay slice.
+- [x] Curriculum: balance stage 2 yes/no per entity and relationship by adding
+  minority-polarity repetitions.
+- [x] Curriculum: emit small and marker-sized gray-dot probes.
+- [x] Update tests, README, regenerate spatial_localization_v1, run tests.
+
+## Review
+- Trainer changes are confined to `sft/scripts/train_trl_catan_vision.py`
+  plus defaults in `sft/modal_catan_vision_sft.py`. Checkpoint visual state is
+  now fp32 (about 1.8 GB) so resume keeps master precision; the final bundle
+  stays bf16 for the eval and Hub contract.
+- Curriculum changes are confined to
+  `data_pipeline/board_recognition/spatial_localization.py`; the dataset was
+  regenerated with `--overwrite`.
+- Local venv pins transformers 4.57.1 / trl 0.24.0 / peft 0.17.1, while the
+  Modal image pins 5.16.1 / 1.12.0 / 0.20.0. Unit tests exercise pure
+  functions only; the trainer subclass paths run only on Modal.
+
+---
+
 # Strict raw-image resolution beyond 1024px
 
 ## Goal

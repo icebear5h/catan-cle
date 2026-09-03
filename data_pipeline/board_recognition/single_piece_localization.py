@@ -11,18 +11,23 @@ on one edge, in one player color. Four rows accompany every image:
 
 The forward rows use the exact production ``node.occupancy`` and
 ``edge.owner`` prompts, so this stage trains the heads that collapsed to
-"empty" on dense boards, with a single piece and no clutter. One player color
-is withheld from training and appears only in validation and test, which makes
-the held-out color the generalization probe. Train rows are written in a
-deterministic shuffled order; validation and test keep canonical order.
+"empty" on dense boards, with a single piece and no clutter. All eleven player
+colors are trained. Validation and test add a novel probe color that exists in
+no sprite set: a seeded hue from the gaps between the real colors, applied by
+hue-rotating the red sprites. Novel-color images carry only the rows whose
+answer does not name the color (type-only localization, the empty negative,
+and tile rows). Train rows are written in a deterministic shuffled order;
+validation and test keep canonical order.
 """
 
 from __future__ import annotations
 
 import argparse
+import colorsys
 import copy
 import json
 import os
+import re
 import shutil
 from concurrent.futures import ProcessPoolExecutor
 from collections import Counter
@@ -47,6 +52,7 @@ from data_pipeline.board_recognition.spatial_localization import (
     _write_jsonl,
     atlas_regions,
 )
+from evals.catan_board_bench import render as board_render
 from evals.catan_board_bench.render import render_contract_image
 
 
@@ -67,7 +73,13 @@ COLORS = (
     "PINK",
     "MYSTIC_BLUE",
 )
-HELDOUT_COLOR = "PINK"
+NOVEL_COLOR_FRACTION = 0.2
+# Hue intervals (degrees) with at least 25 degrees of clearance from every
+# saturated stop in the shipped piece sprites.
+NOVEL_HUE_INTERVALS = ((70, 105), (145, 190), (250, 275), (295, 325))
+NOVEL_SPRITE_BASE = "red"
+SPRITE_PIECES = ("settlement", "city", "road")
+HEX_COLOR_RE = re.compile(r"#([0-9a-fA-F]{6})")
 NODE_PIECES = ("SETTLEMENT", "CITY")
 EDGE_PIECE = "ROAD"
 TRAIN_IMAGES_PER_BOARD_PER_ENTITY = 70
@@ -173,6 +185,51 @@ def tile_rows_for_image(
 
 def color_words(color: str) -> str:
     return color.lower().replace("_", " ")
+
+
+def is_novel_color(color: str) -> bool:
+    return color.startswith("NOVEL_")
+
+
+def novel_hue(seed: str) -> int:
+    """Pick a probe hue deterministically from the gaps between real colors."""
+
+    span = sum(high - low for low, high in NOVEL_HUE_INTERVALS)
+    offset = _stable_rank(seed, "novel_hue") % span
+    for low, high in NOVEL_HUE_INTERVALS:
+        if offset < high - low:
+            return low + offset
+        offset -= high - low
+    raise AssertionError("unreachable")
+
+
+def recolor_svg(svg: str, hue_degrees: int, *, min_saturation: float = 0.25) -> str:
+    """Rotate every saturated hex stop onto ``hue_degrees``, keeping S and V."""
+
+    def swap(match: re.Match[str]) -> str:
+        value = match.group(1)
+        r, g, b = (int(value[i : i + 2], 16) / 255 for i in (0, 2, 4))
+        _, sat, val = colorsys.rgb_to_hsv(r, g, b)
+        if sat < min_saturation:
+            return match.group(0)
+        nr, ng, nb = colorsys.hsv_to_rgb(hue_degrees / 360, sat, val)
+        return "#%02X%02X%02X" % (round(nr * 255), round(ng * 255), round(nb * 255))
+
+    return HEX_COLOR_RE.sub(swap, svg)
+
+
+def write_novel_sprites(asset_root: Path, name: str, hue_degrees: int) -> list[Path]:
+    """Create ``<piece>_<name>.svg`` sprites in a private copy of the asset tree."""
+
+    if not asset_root.exists():
+        shutil.copytree(board_render.ASSET_ROOT, asset_root)
+    written = []
+    for piece in SPRITE_PIECES:
+        source = asset_root / "pieces" / f"{piece}_{NOVEL_SPRITE_BASE}.svg"
+        target = asset_root / "pieces" / f"{piece}_{name.lower()}.svg"
+        target.write_text(recolor_svg(source.read_text(), hue_degrees))
+        written.append(target)
+    return written
 
 
 def piece_words(piece: str) -> str:
@@ -293,7 +350,7 @@ def rows_for_placement(
 ) -> list[JsonDict]:
     entity_type = regions[token]["entity_type"]
     noun = LOCATION_NOUN[entity_type]
-    heldout = color == HELDOUT_COLOR
+    novel = is_novel_color(color)
     metadata = {
         "split": state["split"],
         "state_id": state["sample_id"],
@@ -301,23 +358,12 @@ def rows_for_placement(
         "target_token": token,
         "piece": piece,
         "color": color_words(color),
-        "color_heldout": heldout,
+        "color_heldout": novel,
     }
     target = _spatial_target(regions[token], controls[token])
     stem = f"{state['sample_id']}_{token[1:-1]}_{piece}_{color}"
     category = "node.occupancy" if entity_type == "node" else "edge.owner"
-    return [
-        _row(
-            row_id=f"{stem}_piece_to_token",
-            image_name=image_name,
-            prompt=f"Which {noun} has the {piece_words(piece)}?",
-            answer=token,
-            task_type="piece_to_token",
-            category="localization",
-            polarity="token_return",
-            metadata=metadata,
-            spatial_target=target,
-        ),
+    named_rows = [] if novel else [
         _row(
             row_id=f"{stem}_colored_piece_to_token",
             image_name=image_name,
@@ -340,6 +386,20 @@ def rows_for_placement(
             metadata=metadata,
             spatial_target=target,
         ),
+    ]
+    return [
+        _row(
+            row_id=f"{stem}_piece_to_token",
+            image_name=image_name,
+            prompt=f"Which {noun} has the {piece_words(piece)}?",
+            answer=token,
+            task_type="piece_to_token",
+            category="localization",
+            polarity="token_return",
+            metadata=metadata,
+            spatial_target=target,
+        ),
+        *named_rows,
         _row(
             row_id=f"{stem}_occupancy_negative",
             image_name=image_name,
@@ -362,9 +422,12 @@ def render_placement(
     image_size: int,
     style: Any,
     destination: Path,
+    asset_root: Path | None = None,
 ) -> str:
     """Render one single-piece board to ``destination`` (runs in a worker)."""
 
+    if asset_root is not None:
+        board_render.ASSET_ROOT = Path(asset_root)
     rendered = render_contract_image(
         place_piece(contract, token, piece, color),
         image_size=image_size,
@@ -386,8 +449,14 @@ def build_board(
     colors: Sequence[str],
     pool: ProcessPoolExecutor | None = None,
     tile_rows: bool = False,
+    novel_color: str | None = None,
+    asset_root: Path | None = None,
 ) -> list[JsonDict]:
-    """Render every sampled single-piece board for one empty state."""
+    """Render every sampled single-piece board for one empty state.
+
+    ``novel_color`` adds ``NOVEL_COLOR_FRACTION`` of the placements in a probe
+    color whose sprites live under ``asset_root``.
+    """
 
     image_size = int(state["image_size"][0])
     regions = atlas_regions(
@@ -400,13 +469,22 @@ def build_board(
     rows: list[JsonDict] = []
     for entity_type in ("node", "edge"):
         tokens = [token for token, region in regions.items() if region["entity_type"] == entity_type]
+        novel_count = round(images_per_entity * NOVEL_COLOR_FRACTION) if novel_color else 0
         placements = sample_placements(
             sample_id=state["sample_id"],
             entity_type=entity_type,
             tokens=tokens,
             colors=colors,
-            count=images_per_entity,
+            count=images_per_entity - novel_count,
         )
+        if novel_count:
+            placements += sample_placements(
+                sample_id=state["sample_id"] + "_novel",
+                entity_type=entity_type,
+                tokens=tokens,
+                colors=(novel_color,),
+                count=novel_count,
+            )
         jobs = [
             (
                 token,
@@ -418,10 +496,12 @@ def build_board(
         ]
         if pool is None:
             for token, piece, color, destination in jobs:
-                render_placement(contract, token, piece, color, image_size, style, destination)
+                render_placement(contract, token, piece, color, image_size, style, destination, asset_root)
         else:
             futures = [
-                pool.submit(render_placement, contract, token, piece, color, image_size, style, destination)
+                pool.submit(
+                    render_placement, contract, token, piece, color, image_size, style, destination, asset_root
+                )
                 for token, piece, color, destination in jobs
             ]
             for future in futures:
@@ -495,7 +575,13 @@ def export_single_piece_curriculum(
         "test": 5,
     }:
         raise SpatialLocalizationError("replay_v1 empty-board split counts changed")
-    train_colors = tuple(color for color in COLORS if color != HELDOUT_COLOR)
+    asset_root = output / "assets"
+    novel_colors = {}
+    for split in ("validation", "test"):
+        hue = novel_hue(f"{split}:{file_sha256(dataset_root / 'manifest.jsonl')}")
+        name = f"NOVEL_{split.upper()}_H{hue:03d}"
+        write_novel_sprites(asset_root, name, hue)
+        novel_colors[split] = {"name": name, "hue_degrees": hue}
 
     files: dict[str, JsonDict] = {}
     worker_count = workers if workers is not None else max(1, (os.cpu_count() or 2) - 1)
@@ -517,9 +603,11 @@ def export_single_piece_curriculum(
                             if split == "train"
                             else eval_images_per_board_per_entity
                         ),
-                        colors=train_colors if split == "train" else COLORS,
+                        colors=COLORS,
                         pool=pool,
                         tile_rows=tile_rows,
+                        novel_color=novel_colors[split]["name"] if split in novel_colors else None,
+                        asset_root=asset_root,
                     )
                 )
             if split == "train":
@@ -538,7 +626,10 @@ def export_single_piece_curriculum(
         "source_manifest_sha256": file_sha256(dataset_root / "manifest.jsonl"),
         "style_sha256": file_sha256(Path(style_path)),
         "colors": list(COLORS),
-        "heldout_color": HELDOUT_COLOR,
+        "novel_colors": novel_colors,
+        "novel_color_fraction": NOVEL_COLOR_FRACTION,
+        "novel_sprite_base": NOVEL_SPRITE_BASE,
+        "asset_root": str(asset_root),
         "node_pieces": list(NODE_PIECES),
         "edge_piece": EDGE_PIECE,
         "train_images_per_board_per_entity": train_images_per_board_per_entity,

@@ -5,12 +5,15 @@ import pytest
 
 from data_pipeline.board_recognition.single_piece_localization import (
     COLORS,
-    HELDOUT_COLOR,
+    NOVEL_HUE_INTERVALS,
     build_board,
     forward_answer,
+    novel_hue,
     place_piece,
+    recolor_svg,
     rows_for_placement,
     sample_placements,
+    write_novel_sprites,
 )
 from data_pipeline.board_recognition.replay_dataset import DEFAULT_STYLE_PATH, load_render_style
 from data_pipeline.board_recognition.spatial_localization import (
@@ -46,18 +49,55 @@ def test_place_piece_sets_exactly_one_piece_and_refuses_occupied_locations():
         place_piece(with_city, "<N17>", "SETTLEMENT", "BLUE")
 
 
-def test_sampling_is_deterministic_and_respects_the_held_out_color():
+def test_sampling_is_deterministic_and_covers_every_color():
     tokens = [f"<N{i:02d}>" for i in range(54)]
-    train_colors = tuple(color for color in COLORS if color != HELDOUT_COLOR)
 
-    first = sample_placements(sample_id="board_a", entity_type="node", tokens=tokens, colors=train_colors, count=70)
-    second = sample_placements(sample_id="board_a", entity_type="node", tokens=tokens, colors=train_colors, count=70)
-    other = sample_placements(sample_id="board_b", entity_type="node", tokens=tokens, colors=train_colors, count=70)
+    first = sample_placements(sample_id="board_a", entity_type="node", tokens=tokens, colors=COLORS, count=70)
+    second = sample_placements(sample_id="board_a", entity_type="node", tokens=tokens, colors=COLORS, count=70)
+    other = sample_placements(sample_id="board_b", entity_type="node", tokens=tokens, colors=COLORS, count=70)
 
     assert first == second and first != other
     assert len(set(first)) == 70
-    assert not any(color == HELDOUT_COLOR for _, _, color in first)
     assert {piece for _, piece, _ in first} == {"SETTLEMENT", "CITY"}
+    assert len({color for _, _, color in first}) >= 9
+
+
+def test_novel_hue_lands_in_a_gap_and_recolor_keeps_shading(tmp_path):
+    hue = novel_hue("validation:abc")
+    assert any(low <= hue < high for low, high in NOVEL_HUE_INTERVALS)
+    assert novel_hue("validation:abc") == hue and novel_hue("test:abc") != hue
+
+    svg = '<stop stop-color="#FF0000"/><stop stop-color="#B30000"/><path fill="#8C0039"/><g fill="#CCCCCC"/>'
+    rotated = recolor_svg(svg, 165)
+    assert "#CCCCCC" in rotated and "#FF0000" not in rotated
+    colors = [c for c in rotated.split('"') if c.startswith("#")]
+    assert len(set(colors)) == 4  # three shaded stops stay distinct, gray untouched
+
+    written = write_novel_sprites(tmp_path / "assets", "NOVEL_VALIDATION_H165", 165)
+    assert [path.name for path in written] == [
+        "settlement_novel_validation_h165.svg",
+        "city_novel_validation_h165.svg",
+        "road_novel_validation_h165.svg",
+    ]
+    assert (tmp_path / "assets" / "pieces" / "settlement_red.svg").is_file()
+
+
+def test_novel_color_rows_never_name_the_color():
+    state, contract = _fixture_contract()
+    regions = atlas_regions(contract, image_size=1024, view_padding_factor=1.2)
+    rows = rows_for_placement(
+        state={**state, "split": "validation", "sample_id": "fixture_empty"},
+        regions=regions,
+        controls=_control_regions(regions),
+        token="<N17>",
+        piece="CITY",
+        color="NOVEL_VALIDATION_H165",
+        image_name="x.png",
+        empty_token="<N20>",
+    )
+    assert [row["task_type"] for row in rows] == ["piece_to_token", "occupancy_negative"]
+    assert all(row["color_heldout"] is True for row in rows)
+    assert "novel" not in rows[0]["messages"][0]["content"]
 
 
 def test_rows_mirror_production_forward_prompts():
@@ -83,7 +123,7 @@ def test_rows_mirror_production_forward_prompts():
     assert prompts["occupancy_negative"] == ("<image>\n<E00_05> road?", "empty")
     assert all(row["category"] in {"localization", "edge.owner"} for row in rows)
     assert all(row["color_heldout"] is False for row in rows)
-    assert "spatial_targets" not in rows[3] and rows[0]["spatial_targets"][0]["token"] == "<E00_01>"
+    assert len(rows) == 4 and "spatial_targets" not in rows[3] and rows[0]["spatial_targets"][0]["token"] == "<E00_01>"
     assert forward_answer("PINK", "SETTLEMENT") == "pink settlement"
 
 

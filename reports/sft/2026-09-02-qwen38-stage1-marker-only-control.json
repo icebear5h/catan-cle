@@ -1,0 +1,79 @@
+{
+  "chance_floor_answer_accuracy": 0.25,
+  "checkpoint": "/runs/catan-vision-sft/catan-qwen38-sl-stage1-marker-only-20260902/334d305b1c43/checkpoints/checkpoint-256",
+  "dataset": {
+    "rows": 24080,
+    "rows_validation": 1540,
+    "train": "spatial_localization_v1/stage1/train.jsonl",
+    "unique_images": 1720,
+    "validation": "spatial_localization_v1/stage1/validation.jsonl",
+    "validation_marker_style": "validation_diamond"
+  },
+  "gradient_accumulation_steps": 2,
+  "hardware": "H200",
+  "hub_publish": {
+    "private": true,
+    "published_at": "2026-09-03T01:47:59+00:00",
+    "repo_id": "icebear5h/catan-qwen3.8-27b-spatial-sft-marker-only-control",
+    "script": ".modal/publish_marker_control.py",
+    "sha": "b366613bb835fee10ccbc84d3af99ac8d456ab7b"
+  },
+  "learning_rates": {
+    "language_lora": 0.0001,
+    "merger": 5e-05,
+    "token_rows": 0.0005,
+    "vision": 5e-06
+  },
+  "modal_app": "ap-soNGGKHXLygmhCwK3Phb4x",
+  "modal_function_call": "fc-01M1J4QKJYB53CTXPCC1N2EGT2",
+  "model_id": "Qwen/Qwen3.8-27B",
+  "patch_loss_weight": 0.0,
+  "pending_gates": [
+    "gray-dot probes (small and large) on checkpoint-256",
+    "blank/shuffle/occlusion image variants",
+    "correct-target and shuffled-target patch-loss arms",
+    "check_spatial_grounding_gates stage1"
+  ],
+  "per_device_train_batch_size": 16,
+  "planned_steps": 753,
+  "profile": "vision_tokens_lora",
+  "run_name": "catan-qwen38-sl-stage1-marker-only-20260902",
+  "schema": "catan_qwen38_stage1_marker_only_control/v1",
+  "spatial_target_mode": "correct",
+  "status": "stopped_intentionally_after_checkpoint_256",
+  "step_wall_seconds": 34.0,
+  "stopped_at_step": 293,
+  "train_curve": {
+    "mean_answer_token_accuracy_steps_225_256": 0.96,
+    "step_12": {
+      "answer_token_accuracy": 0.1562,
+      "grad_norm_language_lora": 5.3766,
+      "grad_norm_token_rows": 21.7729,
+      "grad_norm_vision": 155.9028,
+      "loss": 3.0753
+    },
+    "step_128": {
+      "answer_token_accuracy": 0.5625,
+      "grad_norm_language_lora": 8.9155,
+      "grad_norm_token_rows": 6.5221,
+      "grad_norm_vision": 626.7982,
+      "loss": 0.6353
+    },
+    "step_256": {
+      "answer_token_accuracy": 0.9688,
+      "grad_norm_language_lora": 2.1581,
+      "grad_norm_token_rows": 1.7581,
+      "grad_norm_vision": 55.3264,
+      "loss": 0.0251
+    }
+  },
+  "validation_step_256": {
+    "answer_row_exact": 0.9307,
+    "answer_token_accuracy": 0.9307,
+    "eval_loss": 0.093,
+    "eval_mean_token_accuracy": 0.9765,
+    "eval_runtime_seconds": 381.0
+  },
+  "visual_master_weights": "fp32",
+  "warmup_ratio": 0.1
+}

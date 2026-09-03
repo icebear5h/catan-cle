@@ -9,7 +9,18 @@ from pathlib import Path
 
 import modal
 
-from sft.paths import resolve_dataset_asset
+from sft.paths import resolve_dataset_asset, resolve_dataset_image
+from sft.scripts.train_trl_catan_vision import (
+    ACCELERATE_VERSION,
+    HUGGINGFACE_HUB_VERSION,
+    PEFT_VERSION,
+    PILLOW_VERSION,
+    SAFETENSORS_VERSION,
+    TORCH_VERSION,
+    TORCHVISION_VERSION,
+    TRANSFORMERS_VERSION,
+    load_token_inventory,
+)
 
 
 APP_NAME = "catan-qwen-series-eval"
@@ -26,17 +37,16 @@ sft_runs = modal.Volume.from_name("catan-sft-runs", create_if_missing=True)
 
 eval_image = (
     modal.Image.debian_slim(python_version="3.12")
-    .apt_install("git", "build-essential")
     .pip_install(
-        "torch==2.8.0",
-        "torchvision==0.23.0",
-        "transformers==5.3.0",
-        "accelerate==1.10.1",
-        "peft==0.15.2",
+        f"torch=={TORCH_VERSION}",
+        f"torchvision=={TORCHVISION_VERSION}",
+        f"transformers=={TRANSFORMERS_VERSION}",
+        f"accelerate=={ACCELERATE_VERSION}",
+        f"peft=={PEFT_VERSION}",
+        f"huggingface-hub=={HUGGINGFACE_HUB_VERSION}",
+        f"safetensors=={SAFETENSORS_VERSION}",
+        f"Pillow=={PILLOW_VERSION}",
         "bitsandbytes==0.49.2",
-        "qwen-vl-utils==0.0.14",
-        "Pillow==11.3.0",
-        "av==17.0.1",
         "sentencepiece",
         "protobuf",
     )
@@ -50,10 +60,19 @@ eval_image = (
             "PYTHONPATH": REMOTE_WORKDIR,
         }
     )
-    .add_local_python_source("data_pipeline")
-    .add_local_python_source("engine")
+    .add_local_python_source("cle")
+    .add_local_python_source("evals")
     .add_local_python_source("sft")
 )
+
+
+def _image_reference(row: dict) -> str:
+    if row.get("image"):
+        return str(row["image"])
+    images = row.get("images")
+    if isinstance(images, list) and len(images) == 1:
+        return str(images[0])
+    raise ValueError("eval row must reference exactly one image")
 
 
 def _iter_jsonl(path: Path):
@@ -64,8 +83,14 @@ def _iter_jsonl(path: Path):
                 yield json.loads(line)
 
 
-def upload_eval_jsonl(eval_jsonl: Path, remote_dir: str) -> str:
-    """Upload eval JSONL and referenced images into the Modal data volume."""
+def upload_eval_jsonl(
+    eval_jsonl: Path,
+    remote_dir: str,
+    *,
+    image_root: Path | None = None,
+    token_inventory: Path | None = None,
+) -> tuple[str, str | None]:
+    """Upload eval rows, explicit-root images, and optional token inventory."""
 
     eval_jsonl = eval_jsonl.resolve()
     remote_dir = "/" + remote_dir.strip("/")
@@ -77,7 +102,12 @@ def upload_eval_jsonl(eval_jsonl: Path, remote_dir: str) -> str:
 
     with sft_data.batch_upload(force=True) as batch:
         for row in _iter_jsonl(eval_jsonl):
-            local_image = resolve_dataset_asset(eval_jsonl, row["image"])
+            reference = _image_reference(row)
+            local_image = (
+                resolve_dataset_image(image_root, reference)
+                if image_root is not None
+                else resolve_dataset_asset(eval_jsonl, reference)
+            )
             if not local_image.exists():
                 raise FileNotFoundError(local_image)
             remote_image = image_map.get(str(local_image))
@@ -89,6 +119,7 @@ def upload_eval_jsonl(eval_jsonl: Path, remote_dir: str) -> str:
 
             row = dict(row)
             row["image"] = f"{REMOTE_DATA_MOUNT}{remote_image}"
+            row.pop("images", None)
             rows.append(row)
 
         with tempfile.NamedTemporaryFile("w", suffix=".jsonl", delete=False) as handle:
@@ -96,11 +127,73 @@ def upload_eval_jsonl(eval_jsonl: Path, remote_dir: str) -> str:
             for row in rows:
                 handle.write(json.dumps(row, sort_keys=True) + "\n")
         batch.put_file(temp_jsonl, remote_jsonl)
+        remote_inventory = None
+        if token_inventory is not None:
+            load_token_inventory(token_inventory)
+            remote_inventory = f"{remote_dir}/trainable_tokens.json"
+            batch.put_file(token_inventory.resolve(), remote_inventory)
 
     print(f"uploaded_rows={len(rows)}")
     print(f"uploaded_images={len(image_map)}")
     print(f"remote_eval_jsonl={REMOTE_DATA_MOUNT}{remote_jsonl}")
-    return f"{REMOTE_DATA_MOUNT}{remote_jsonl}"
+    return (
+        f"{REMOTE_DATA_MOUNT}{remote_jsonl}",
+        f"{REMOTE_DATA_MOUNT}{remote_inventory}" if remote_inventory else None,
+    )
+
+
+def _run_eval(
+    eval_jsonl: str,
+    output_dir: str,
+    adapter_dir: str | None = None,
+    model_id: str = "Qwen/Qwen3-VL-4B-Instruct",
+    limit: int | None = None,
+    max_new_tokens: int = 16,
+    bits: int = 4,
+    token_inventory: str | None = None,
+    batch_size: int = 1,
+    image_variant: str = "original",
+    occlusion_margin: float = 0.03,
+    candidate_scoring: bool = True,
+) -> dict:
+    command = [
+        "python",
+        "-m",
+        "sft.scripts.eval_qwen_vl_adapter",
+        "--eval-jsonl",
+        eval_jsonl,
+        "--output-dir",
+        output_dir,
+        "--model-id",
+        model_id,
+        "--max-new-tokens",
+        str(max_new_tokens),
+        "--bits",
+        str(bits),
+        "--batch-size",
+        str(batch_size),
+        "--image-variant",
+        image_variant,
+        "--occlusion-margin",
+        str(occlusion_margin),
+    ]
+    if adapter_dir:
+        command.extend(["--adapter-dir", adapter_dir])
+    if token_inventory:
+        command.extend(["--token-inventory", token_inventory])
+    if limit is not None:
+        command.extend(["--limit", str(limit)])
+    if not candidate_scoring:
+        command.append("--no-candidate-scoring")
+
+    print("running:", " ".join(command))
+    subprocess.run(command, check=True)
+    sft_runs.commit()
+
+    summary_path = Path(output_dir) / "summary.json"
+    if summary_path.exists():
+        return json.loads(summary_path.read_text())
+    return {"output_dir": output_dir}
 
 
 @app.function(
@@ -119,53 +212,137 @@ def eval_remote(
     adapter_dir: str | None = None,
     model_id: str = "Qwen/Qwen3-VL-4B-Instruct",
     limit: int | None = None,
-    max_new_tokens: int = 256,
+    max_new_tokens: int = 16,
+    bits: int = 4,
+    token_inventory: str | None = None,
+    batch_size: int = 1,
+    image_variant: str = "original",
+    occlusion_margin: float = 0.03,
+    candidate_scoring: bool = True,
 ) -> dict:
-    command = [
-        "python",
-        "-m",
-        "sft.scripts.eval_qwen_vl_adapter",
-        "--eval-jsonl",
+    return _run_eval(
         eval_jsonl,
-        "--output-dir",
         output_dir,
-        "--model-id",
+        adapter_dir,
         model_id,
-        "--max-new-tokens",
-        str(max_new_tokens),
-    ]
-    if adapter_dir:
-        command.extend(["--adapter-dir", adapter_dir])
-    if limit is not None:
-        command.extend(["--limit", str(limit)])
+        limit,
+        max_new_tokens,
+        bits,
+        token_inventory,
+        batch_size,
+        image_variant,
+        occlusion_margin,
+        candidate_scoring,
+    )
 
-    print("running:", " ".join(command))
-    subprocess.run(command, check=True)
-    sft_runs.commit()
 
-    summary_path = Path(output_dir) / "summary.json"
-    if summary_path.exists():
-        return json.loads(summary_path.read_text())
-    return {"output_dir": output_dir}
+@app.function(
+    image=eval_image,
+    gpu="H200",
+    volumes={
+        REMOTE_CACHE_MOUNT: hf_cache,
+        REMOTE_DATA_MOUNT: sft_data,
+        REMOTE_RUNS_MOUNT: sft_runs,
+    },
+    timeout=60 * 60 * 8,
+)
+def eval_h200(
+    eval_jsonl: str,
+    output_dir: str,
+    adapter_dir: str | None = None,
+    model_id: str = "Qwen/Qwen3-VL-4B-Instruct",
+    limit: int | None = None,
+    max_new_tokens: int = 16,
+    bits: int = 16,
+    token_inventory: str | None = None,
+    batch_size: int = 8,
+    image_variant: str = "original",
+    occlusion_margin: float = 0.03,
+    candidate_scoring: bool = True,
+) -> dict:
+    return _run_eval(
+        eval_jsonl,
+        output_dir,
+        adapter_dir,
+        model_id,
+        limit,
+        max_new_tokens,
+        bits,
+        token_inventory,
+        batch_size,
+        image_variant,
+        occlusion_margin,
+        candidate_scoring,
+    )
 
 
 @app.local_entrypoint()
 def main(
     eval_jsonl: str,
+    image_root: str | None = None,
+    token_inventory: str | None = None,
     remote_dir: str = "catan-qwen-series-eval/heldout",
     output_dir: str = f"{REMOTE_RUNS_MOUNT}/qwen-series-eval",
     adapter_dir: str | None = None,
     model_id: str = "Qwen/Qwen3-VL-4B-Instruct",
     limit: int | None = None,
-    max_new_tokens: int = 256,
+    max_new_tokens: int = 16,
+    bits: int = 4,
+    batch_size: int = 1,
+    gpu: str = "l40s",
+    image_variant: str = "original",
+    occlusion_margin: float = 0.03,
+    candidate_scoring: bool = True,
+    spawn_eval: bool = False,
 ):
-    remote_eval_jsonl = upload_eval_jsonl(Path(eval_jsonl), remote_dir)
-    result = eval_remote.remote(
-        eval_jsonl=remote_eval_jsonl,
-        output_dir=output_dir,
-        adapter_dir=adapter_dir,
-        model_id=model_id,
-        limit=limit,
-        max_new_tokens=max_new_tokens,
+    if bits not in {4, 8, 16}:
+        raise ValueError("--bits must be 4, 8, or 16")
+    if batch_size < 1:
+        raise ValueError("--batch-size must be positive")
+    if gpu not in {"l40s", "h200"}:
+        raise ValueError("--gpu must be l40s or h200")
+    if image_variant not in {
+        "original",
+        "blank",
+        "shuffle",
+        "target_occlusion",
+        "control_occlusion",
+    }:
+        raise ValueError("unsupported --image-variant")
+    remote_eval_jsonl, remote_token_inventory = upload_eval_jsonl(
+        Path(eval_jsonl),
+        remote_dir,
+        image_root=Path(image_root) if image_root else None,
+        token_inventory=Path(token_inventory) if token_inventory else None,
     )
+    kwargs = {
+        "eval_jsonl": remote_eval_jsonl,
+        "output_dir": output_dir,
+        "adapter_dir": adapter_dir,
+        "model_id": model_id,
+        "limit": limit,
+        "max_new_tokens": max_new_tokens,
+        "bits": bits,
+        "token_inventory": remote_token_inventory,
+        "batch_size": batch_size,
+        "image_variant": image_variant,
+        "occlusion_margin": occlusion_margin,
+        "candidate_scoring": candidate_scoring,
+    }
+    remote_function = eval_h200 if gpu == "h200" else eval_remote
+    if spawn_eval:
+        call = remote_function.spawn(**kwargs)
+        print(
+            json.dumps(
+                {
+                    "status": "spawned",
+                    "function_call_id": call.object_id,
+                    "output_dir": output_dir,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return
+    result = remote_function.remote(**kwargs)
     print(json.dumps(result, indent=2, sort_keys=True))

@@ -226,7 +226,18 @@ intentionally resets optimizer, scheduler, and RNG state. It is distinct from
 
 Run exact-match and causal visual controls with
 `sft/modal_qwen_series_eval.py`. Its `--image-variant` accepts `original`,
-`blank`, `shuffle`, `target_occlusion`, and `control_occlusion`. Compare the
+`blank`, `shuffle`, `target_occlusion`, and `control_occlusion`.
+
+Every eval also records a location-only score. For rows with a closed answer
+set (atlas-token answers restrict to tokens of the requested entity type,
+marker answers to A/B/C/D, polarity answers to yes/no) the evaluator ranks the
+candidates by first-token log-probability and stores `candidate_score` on the
+record: the restricted argmax, whether it matched, and the expected token's
+rank. Summaries carry `candidate_exact_accuracy` and
+`candidate_expected_rank_mean` overall and per dimension. Read this beside
+`exact_accuracy`: on the step-256 marker-only control, 78 of 126 free-generation
+probe misses were wrong-entity-type tokens, which the restricted score removes.
+Pass `--no-candidate-scoring` to skip it. Compare the
 resulting summaries with the fail-closed gate checker:
 
 ```bash

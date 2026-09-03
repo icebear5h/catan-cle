@@ -34,6 +34,19 @@
 - [x] Curriculum: emit small and marker-sized gray-dot probes.
 - [x] Update tests, README, regenerate spatial_localization_v1, run tests.
 
+## Result (2026-09-02, Stage 1 marker-only control)
+- Profile at batch 16 x accumulation 2: 98.7 GB peak, 34 s/step, fp32 vision
+  and merger confirmed by the dtype audit, vision grad norm 150 to 300.
+- Full arm reached 93.1% held-out answer-row exact match (diamond markers,
+  five unseen boards) at step 256 with eval loss 0.093; chance is 25%.
+  Train answer accuracy was 97 to 100% by step 250 and vision grad norm
+  had fallen to about 2. Stopped from the CLI at step 293 after checkpoint
+  256 persisted. Checkpoint 256 was published privately as
+  `icebear5h/catan-qwen3.8-27b-spatial-sft-marker-only-control`.
+- Report: `reports/sft/2026-09-02-qwen38-stage1-marker-only-control.json`.
+- Still pending: gray-dot probes at both sizes, blank/shuffle/occlusion
+  variants, the two patch-loss arms, and the Stage 1 gate check.
+
 ## Review
 - Trainer changes are confined to `sft/scripts/train_trl_catan_vision.py`
   plus defaults in `sft/modal_catan_vision_sft.py`. Checkpoint visual state is

@@ -256,7 +256,7 @@ def eval_h200(
     max_new_tokens: int = 16,
     bits: int = 16,
     token_inventory: str | None = None,
-    batch_size: int = 8,
+    batch_size: int = 48,
     image_variant: str = "original",
     occlusion_margin: float = 0.03,
     candidate_scoring: bool = True,

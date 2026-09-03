@@ -65,7 +65,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--adapter-dir", required=True, help="Remote checkpoint or final bundle directory")
     parser.add_argument("--label", required=True, help="Output directory name under regression-panel/")
     parser.add_argument("--gpu", default="h200", choices=("h200", "l40s"))
-    parser.add_argument("--batch-size", type=int, default=8)
+    parser.add_argument("--batch-size", type=int, default=48)
     parser.add_argument("--limit", type=int, help="Rows per set, for smoke runs")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args(argv)

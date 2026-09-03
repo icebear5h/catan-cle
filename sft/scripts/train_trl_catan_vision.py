@@ -165,6 +165,7 @@ class TrainConfig:
     max_steps: int | None = None
     num_train_epochs: float = 1.0
     per_device_train_batch_size: int = 1
+    per_device_eval_batch_size: int = 32
     gradient_accumulation_steps: int = 8
     learning_rate: float = 5e-4
     language_lora_learning_rate: float = 1e-4
@@ -1723,6 +1724,7 @@ def run_training(config: TrainConfig) -> JsonDict:
         max_steps=-1 if config.max_steps is None else config.max_steps,
         num_train_epochs=config.num_train_epochs,
         per_device_train_batch_size=config.per_device_train_batch_size,
+        per_device_eval_batch_size=config.per_device_eval_batch_size,
         gradient_accumulation_steps=config.gradient_accumulation_steps,
         learning_rate=config.learning_rate,
         weight_decay=config.weight_decay,
@@ -1820,6 +1822,7 @@ def parse_args(argv: Iterable[str] | None = None) -> TrainConfig:
     parser.add_argument("--max-steps", type=int, default=0)
     parser.add_argument("--num-train-epochs", type=float, default=1.0)
     parser.add_argument("--per-device-train-batch-size", type=int, default=1)
+    parser.add_argument("--per-device-eval-batch-size", type=int, default=32)
     parser.add_argument("--gradient-accumulation-steps", type=int, default=8)
     parser.add_argument("--learning-rate", type=float, default=5e-4)
     parser.add_argument("--language-lora-learning-rate", type=float, default=1e-4)
@@ -1862,6 +1865,7 @@ def parse_args(argv: Iterable[str] | None = None) -> TrainConfig:
         max_steps=None if args.max_steps == 0 else args.max_steps,
         num_train_epochs=args.num_train_epochs,
         per_device_train_batch_size=args.per_device_train_batch_size,
+        per_device_eval_batch_size=args.per_device_eval_batch_size,
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         learning_rate=args.learning_rate,
         language_lora_learning_rate=args.language_lora_learning_rate,

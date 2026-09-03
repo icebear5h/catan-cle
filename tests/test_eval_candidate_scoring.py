@@ -84,3 +84,31 @@ def test_summary_carries_candidate_accuracy_beside_exact_match():
     assert small["candidate_exact_accuracy"] == pytest.approx(0.5)
     assert small["candidate_expected_rank_mean"] == pytest.approx(2.0)
     assert "candidate_total" not in summary["by_probe_style"]["large"] or summary["by_probe_style"]["large"]["candidate_total"] == 1
+
+
+def test_eval_jobs_keep_single_layout_and_nest_batches(tmp_path):
+    import argparse
+
+    from sft.scripts.eval_qwen_vl_adapter import eval_jobs
+
+    single = argparse.Namespace(
+        eval_jsonl=["probes/validation.jsonl"], image_variant="original", output_dir=str(tmp_path)
+    )
+    assert eval_jobs(single) == [
+        {"eval_jsonl": "probes/validation.jsonl", "image_variant": "original", "output_dir": str(tmp_path)}
+    ]
+
+    batch = argparse.Namespace(
+        eval_jsonl=["probes/validation.jsonl", "stage1/validation.jsonl"],
+        image_variant="original, blank",
+        output_dir=str(tmp_path),
+    )
+    jobs = eval_jobs(batch)
+    assert [job["output_dir"] for job in jobs] == [
+        str(tmp_path / "probes-validation" / "original"),
+        str(tmp_path / "probes-validation" / "blank"),
+        str(tmp_path / "stage1-validation" / "original"),
+        str(tmp_path / "stage1-validation" / "blank"),
+    ]
+    with pytest.raises(ValueError):
+        eval_jobs(argparse.Namespace(eval_jsonl=["a.jsonl"], image_variant="sepia", output_dir="x"))

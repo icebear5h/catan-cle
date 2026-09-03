@@ -104,6 +104,7 @@ def score_response(expected: str, response: str) -> dict[str, Any]:
     }
 
 
+IMAGE_VARIANTS = ("original", "blank", "shuffle", "target_occlusion", "control_occlusion")
 ATLAS_TOKEN_RE = re.compile(r"^<([NETP])[0-9_]+>$")
 MARKER_LETTERS = ("A", "B", "C", "D")
 ENTITY_PREFIXES = {"node": "N", "edge": "E", "tile": "T", "port": "P"}
@@ -566,31 +567,33 @@ def load_model(
     return model, processor, adapter_evidence
 
 
-def run_eval(args: argparse.Namespace) -> dict[str, Any]:
-    eval_jsonl = Path(args.eval_jsonl)
-    rows = [row for _, row in iter_jsonl(eval_jsonl)]
+def run_eval_job(
+    *,
+    model: Any,
+    processor: Any,
+    adapter_evidence: dict[str, Any],
+    args: argparse.Namespace,
+    eval_jsonl: str,
+    image_variant: str,
+    output_dir: Path,
+) -> dict[str, Any]:
+    """Score one eval set under one image variant with an already-loaded model."""
+
+    eval_path = Path(eval_jsonl)
+    rows = [row for _, row in iter_jsonl(eval_path)]
     for row in rows:
         reference = image_reference(row)
         image_path = (
             resolve_dataset_image(Path(args.image_root), reference)
             if args.image_root
-            else resolve_dataset_asset(eval_jsonl, reference)
+            else resolve_dataset_asset(eval_path, reference)
         )
         row["image"] = str(image_path)
         row.pop("images", None)
     if args.limit is not None:
         rows = rows[: args.limit]
-    shuffled_images = _shuffled_image_map(rows) if args.image_variant == "shuffle" else None
+    shuffled_images = _shuffled_image_map(rows) if image_variant == "shuffle" else None
 
-    model, processor, adapter_evidence = load_model(
-        model_id=args.model_id,
-        adapter_dir=args.adapter_dir,
-        bits=args.bits,
-        disable_flash_attn2=args.disable_flash_attn2,
-        token_inventory=args.token_inventory,
-    )
-
-    output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     records_path = output_dir / "records.jsonl"
 
@@ -607,14 +610,14 @@ def run_eval(args: argparse.Namespace) -> dict[str, Any]:
                 processor=processor,
                 rows=batch,
                 max_new_tokens=args.max_new_tokens,
-                image_variant=args.image_variant,
+                image_variant=image_variant,
                 shuffled_images=shuffled_images,
                 occlusion_margin=args.occlusion_margin,
             )
             for offset, (row, response) in enumerate(zip(batch, responses, strict=True)):
                 index = batch_start + offset + 1
                 target = expected_text(row)
-                metadata = evaluation_metadata(row, image_variant=args.image_variant)
+                metadata = evaluation_metadata(row, image_variant=image_variant)
                 category = metadata.get("category") or metadata.get("task_type", "")
                 score = score_response(target, response)
                 candidate_score = None
@@ -659,7 +662,7 @@ def run_eval(args: argparse.Namespace) -> dict[str, Any]:
         {
             "model_id": args.model_id,
             "adapter_dir": args.adapter_dir,
-            "eval_jsonl": args.eval_jsonl,
+            "eval_jsonl": eval_jsonl,
             "bits": args.bits,
             "batch_size": args.batch_size,
             "max_new_tokens": args.max_new_tokens,
@@ -668,7 +671,7 @@ def run_eval(args: argparse.Namespace) -> dict[str, Any]:
             "image_root": args.image_root,
             "token_inventory": args.token_inventory,
             "reasoning_enabled": False,
-            "image_variant": args.image_variant,
+            "image_variant": image_variant,
             "occlusion_margin": args.occlusion_margin,
             "candidate_scoring": bool(args.candidate_scoring),
         }
@@ -678,9 +681,86 @@ def run_eval(args: argparse.Namespace) -> dict[str, Any]:
     return summary
 
 
+def eval_jobs(args: argparse.Namespace) -> list[dict[str, str]]:
+    """Expand eval sets x image variants into output directories.
+
+    A single set under a single variant keeps the historical layout, writing
+    straight into ``--output-dir``. Any batch nests each job under
+    ``<output-dir>/<eval-stem>/<variant>`` so summaries never collide.
+    """
+
+    eval_sets = list(args.eval_jsonl)
+    variants = [item.strip() for item in args.image_variant.split(",") if item.strip()]
+    for variant in variants:
+        if variant not in IMAGE_VARIANTS:
+            raise ValueError(f"unsupported image variant: {variant}")
+    single = len(eval_sets) == 1 and len(variants) == 1
+    jobs = []
+    for eval_jsonl in eval_sets:
+        stem = Path(eval_jsonl).parent.name + "-" + Path(eval_jsonl).stem
+        for variant in variants:
+            output_dir = Path(args.output_dir)
+            if not single:
+                output_dir = output_dir / stem / variant
+            jobs.append({"eval_jsonl": eval_jsonl, "image_variant": variant, "output_dir": str(output_dir)})
+    return jobs
+
+
+def run_eval(args: argparse.Namespace) -> dict[str, Any]:
+    """Load the adapter once, then score every requested set and variant."""
+
+    jobs = eval_jobs(args)
+    model, processor, adapter_evidence = load_model(
+        model_id=args.model_id,
+        adapter_dir=args.adapter_dir,
+        bits=args.bits,
+        disable_flash_attn2=args.disable_flash_attn2,
+        token_inventory=args.token_inventory,
+    )
+    results = []
+    for job in jobs:
+        summary = run_eval_job(
+            model=model,
+            processor=processor,
+            adapter_evidence=adapter_evidence,
+            args=args,
+            eval_jsonl=job["eval_jsonl"],
+            image_variant=job["image_variant"],
+            output_dir=Path(job["output_dir"]),
+        )
+        results.append(
+            {
+                **job,
+                "rows": summary["rows"],
+                "exact_accuracy": summary["exact_accuracy"],
+                "candidate_exact_accuracy": summary.get("candidate_exact_accuracy"),
+                "candidate_expected_rank_mean": summary.get("candidate_expected_rank_mean"),
+            }
+        )
+    if len(jobs) == 1:
+        return results[0]
+    batch = {
+        "schema": "catan_qwen_eval_batch/v1",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "adapter_dir": args.adapter_dir,
+        "model_id": args.model_id,
+        "jobs": results,
+    }
+    batch_path = Path(args.output_dir) / "batch_summary.json"
+    batch_path.parent.mkdir(parents=True, exist_ok=True)
+    batch_path.write_text(json.dumps(batch, indent=2, sort_keys=True) + "\n")
+    print(json.dumps(batch, indent=2, sort_keys=True))
+    return batch
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--eval-jsonl", required=True)
+    parser.add_argument(
+        "--eval-jsonl",
+        required=True,
+        nargs="+",
+        help="One or more eval sets; all are scored with a single model load.",
+    )
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--model-id", default="Qwen/Qwen3-VL-4B-Instruct")
     parser.add_argument("--adapter-dir")
@@ -693,8 +773,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--long-max-new-tokens", type=int, default=2048)
     parser.add_argument(
         "--image-variant",
-        choices=("original", "blank", "shuffle", "target_occlusion", "control_occlusion"),
         default="original",
+        help="Comma-separated subset of: " + ", ".join(IMAGE_VARIANTS),
     )
     parser.add_argument("--occlusion-margin", type=float, default=0.03)
     parser.add_argument(

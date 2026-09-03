@@ -161,7 +161,7 @@ def _run_eval(
         "-m",
         "sft.scripts.eval_qwen_vl_adapter",
         "--eval-jsonl",
-        eval_jsonl,
+        *eval_jsonl.split(","),
         "--output-dir",
         output_dir,
         "--model-id",
@@ -190,9 +190,10 @@ def _run_eval(
     subprocess.run(command, check=True)
     sft_runs.commit()
 
-    summary_path = Path(output_dir) / "summary.json"
-    if summary_path.exists():
-        return json.loads(summary_path.read_text())
+    for name in ("batch_summary.json", "summary.json"):
+        summary_path = Path(output_dir) / name
+        if summary_path.exists():
+            return json.loads(summary_path.read_text())
     return {"output_dir": output_dir}
 
 
@@ -301,22 +302,32 @@ def main(
         raise ValueError("--batch-size must be positive")
     if gpu not in {"l40s", "h200"}:
         raise ValueError("--gpu must be l40s or h200")
-    if image_variant not in {
-        "original",
-        "blank",
-        "shuffle",
-        "target_occlusion",
-        "control_occlusion",
-    }:
-        raise ValueError("unsupported --image-variant")
-    remote_eval_jsonl, remote_token_inventory = upload_eval_jsonl(
-        Path(eval_jsonl),
-        remote_dir,
-        image_root=Path(image_root) if image_root else None,
-        token_inventory=Path(token_inventory) if token_inventory else None,
-    )
+    for variant in image_variant.split(","):
+        if variant.strip() not in {
+            "original",
+            "blank",
+            "shuffle",
+            "target_occlusion",
+            "control_occlusion",
+        }:
+            raise ValueError(f"unsupported --image-variant: {variant}")
+    # Comma-separated eval sets share one image root and token inventory and are
+    # scored in one container with a single model load.
+    remote_sets = []
+    remote_token_inventory = None
+    for index, local_eval in enumerate(eval_jsonl.split(",")):
+        local_path = Path(local_eval.strip())
+        set_dir = remote_dir if index == 0 else f"{remote_dir}/{local_path.parent.name}-{local_path.stem}"
+        remote_set, remote_inventory = upload_eval_jsonl(
+            local_path,
+            set_dir,
+            image_root=Path(image_root) if image_root else None,
+            token_inventory=Path(token_inventory) if token_inventory else None,
+        )
+        remote_sets.append(remote_set)
+        remote_token_inventory = remote_token_inventory or remote_inventory
     kwargs = {
-        "eval_jsonl": remote_eval_jsonl,
+        "eval_jsonl": ",".join(remote_sets),
         "output_dir": output_dir,
         "adapter_dir": adapter_dir,
         "model_id": model_id,

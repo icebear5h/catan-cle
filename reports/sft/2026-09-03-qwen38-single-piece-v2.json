@@ -106,6 +106,72 @@
     "at_step": 293,
     "reason": "row exact flat 74.1 -> 75.4 between 128 and 256; v3 launched from checkpoint-256"
   },
+  "v3_dense_zero_shot": {
+    "abandoned_runs_2026_09_03": [
+      "catan-qwen38-sl-v4-single-piece-adjneg-20260903 (1 adjacent + 1 far, full epoch) ap-SmkyFaQNTmi5UKJQd46ZJm",
+      "catan-qwen38-sl-v4-single-piece-adjneg-s256-20260903 ap-ulF9u7QEXYLGkbIyh4G6Em",
+      "catan-qwen38-sl-v5-single-piece-neg5-s256-20260903 (2 adjacent, 1 cross, 2 far) ap-AuE4sQgeHstcUPKdBuGRLW",
+      "catan-qwen38-sl-v6-single-piece-near7far7-s256-20260903 (70% empty rows) ap-3zD033fPGb5DwN9VCjjiJm"
+    ],
+    "adapter": "/runs/catan-vision-sft/catan-qwen38-sl-v3-single-piece-tiles-novel-20260903/020dd5ad268f/final",
+    "by_category": {
+      "edge.owner": 0.602,
+      "inverse.edge": 0.047,
+      "inverse.node": 0.141,
+      "inverse.port": 0.0,
+      "inverse.tile": 0.984,
+      "node.occupancy": 0.625,
+      "port.port_type": 0.0,
+      "robber": 0.0,
+      "spatial_grounding": 0.375,
+      "tile.number": 1.0,
+      "tile.resource": 1.0,
+      "tile.robber": 0.0
+    },
+    "decision": "stop single-piece negative-ratio runs; build adjacent-pair curriculum, then sparse, then dense boards",
+    "eval": "replay_v1/evals/validation_v1.jsonl original variant, 1080 rows, exact 0.335, candidate 0.450",
+    "occupancy_owner_by_density_exact": {
+      "dense": 0.55,
+      "empty": 1.0,
+      "setup": 0.63,
+      "sparse": 0.54
+    },
+    "occupancy_owner_misses_99": {
+      "A_false_negative_occupied_answered_empty": 43,
+      "B2_cross_type_false_positive": 1,
+      "B_neighbor_false_positive_hop1": 14,
+      "B_neighbor_false_positive_hop2": 11,
+      "C_false_positive_piece_elsewhere_on_board": 12,
+      "E2_wrong_piece_named_touching_cross_type": 8,
+      "E_wrong_piece_named_hop2_neighbor": 7,
+      "G_right_type_wrong_color": 1,
+      "H_unrelated": 2
+    },
+    "occupied_recall_by_piece_color": {
+      "BLACK": "17/28",
+      "BLUE": "22/29",
+      "BRONZE": "0/8",
+      "GREEN": "0/7",
+      "MYSTIC_BLUE": "7/11",
+      "ORANGE": "6/21",
+      "RED": "15/24"
+    },
+    "occupied_recall_by_touching_pieces": {
+      "0": "2/2",
+      "1": "49/97",
+      "2": "12/23",
+      "3+": "4/6"
+    },
+    "panel_output": "/runs/qwen-series-eval/regression-panel/single-piece-v3-final",
+    "single_piece_v3_validation": {
+      "blank_exact": 0.152,
+      "candidate": 0.999,
+      "exact": 0.976,
+      "heldout_color_exact": 0.983,
+      "occupancy_negative": 0.89,
+      "occupancy_positive": 0.942
+    }
+  },
   "v3_run": {
     "dataset": "spatial_localization_v3 (tiles, all colors, novel teal/magenta probes)",
     "function_call": "fc-01M1KAWD4WRF4EXN4DQ7MFM85P",

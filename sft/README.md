@@ -207,11 +207,22 @@ order.
 The marker curriculum above proves the tower can read a position, but the cue
 we need read is a game piece. `spatial_localization_v2` renders each validated
 empty board with exactly one real settlement, city, or road through the
-production renderer, and emits four rows per image: "Which node has the
+production renderer, and emits five rows per image: "Which node has the
 settlement?" and "Which node has the red settlement?" -> `<N17>`, the exact
-production prompt `<N17> building?` -> "red settlement", and one hard negative
-`<N20> building?` -> "empty". Pink is withheld from training and appears only
-in validation and test, so the held-out color is the generalization probe.
+production prompt `<N17> building?` -> "red settlement", and a configurable
+set of hard negatives answered "empty" (`--negatives adjacent=1,far=1` by
+default): `occupancy_negative_adjacent` queries same-type locations within
+three hops of the piece, touching ones first and then each ring outward, and
+`occupancy_negative_far` queries locations beyond three hops. Each kind draws
+without replacement in a stable hashed order, nothing repeats within an
+image, and every negative row records `negative_distance` (1, 2, 3, or
+"far"). At the default counts the near negative always touches the piece;
+the outer rings only matter for heavier mixes, where three hops is the
+smallest ring that gives coastal placements seven near candidates. The
+shipped v2 and v3 builds predate the split and carry one uniformly sampled
+`occupancy_negative` per image, which touched the piece only 5% of the time.
+Pink is withheld from training and appears only in validation and test, so the
+held-out color is the generalization probe.
 
 ```bash
 uv run python -m data_pipeline.board_recognition.single_piece_localization \
@@ -240,6 +251,23 @@ uv run python -m data_pipeline.board_recognition.single_piece_localization \
   --output-dir artifacts/generated/board_recognition/replay_v1/spatial_localization_v3 \
   --tile-rows --train-images-per-board-per-entity 40 --overwrite
 ```
+
+`spatial_localization_v7` is the v3 recipe rebuilt with the default one
+touching and one far negative per image (eight rows per image with tiles,
+27,520 train rows), so "empty" is 25% of the file, the closest integer split
+to the 20% target. It exists because the v3 final adapter, scored on
+single-piece validation, answered adjacent empties with the real piece 6
+times in 8 while far empties failed 19 in 139: the model localizes to the
+right neighborhood and blames the wrong entity. Build it with the v3 command
+plus `--output-dir .../spatial_localization_v7`; continue from the v3
+`final` bundle through `--initial-bundle` rather than from the marker
+control. Three heavier mixes were built and launched first and abandoned
+within minutes each: `v4` (the same counts under the older touching-only
+sampler), `v5` (two near, one cross-type, two far), and `v6` (seven near,
+seven far, which made "empty" 70% of rows). Read the v7 in-run eval by row
+type: the negatives should climb from the v3 panel's 89.0%, while
+`occupancy_positive` (94.2%), the tile rows, and `piece_to_token` (100%) are
+the forgetting check.
 
 The active trainer can combine completion NLL with a normalized post-merger
 patch loss. It uses cosine similarity directly between Qwen's merged visual

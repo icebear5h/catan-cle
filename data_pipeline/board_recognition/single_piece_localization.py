@@ -2,12 +2,24 @@
 
 Each image is a validated empty replay board with exactly one real piece added
 through the production renderer: a settlement or city on one node, or a road
-on one edge, in one player color. Four rows accompany every image:
+on one edge, in one player color. Three rows name the piece and a
+configurable set of "empty" negatives accompanies every image:
 
 - ``piece_to_token``: "Which node has the settlement?" -> ``<N17>``
 - ``colored_piece_to_token``: "Which node has the red settlement?" -> ``<N17>``
 - ``occupancy_positive``: "<N17> building?" -> "red settlement"
-- ``occupancy_negative``: "<N20> building?" -> "empty" for another location
+- ``occupancy_negative_adjacent``: "<N16> building?" -> "empty" for a node
+  within ``NEAR_MAX_HOPS`` edges of the piece (or an edge within that many
+  nodes of the road); touching locations rank first, then each further ring
+- ``occupancy_negative_far``: "<N40> building?" -> "empty" for a location
+  beyond ``NEAR_MAX_HOPS`` from the piece
+
+``DEFAULT_NEGATIVES`` sets how many of each kind an image carries; the
+default 1 and 1 beside the six named and tile rows keeps "empty" at 25% of
+the file. The adjacent negatives exist because a model that localizes
+the piece to the right neighborhood but blames the wrong entity answers them
+with the real piece; uniform empties almost never sample that case. Every
+negative row records ``negative_distance`` (1, 2, or "far").
 
 The forward rows use the exact production ``node.occupancy`` and
 ``edge.owner`` prompts, so this stage trains the heads that collapsed to
@@ -87,6 +99,101 @@ EVAL_IMAGES_PER_BOARD_PER_ENTITY = 30
 FORWARD_QUERY = {"node": "building?", "edge": "road?"}
 LOCATION_NOUN = {"node": "node", "edge": "edge"}
 TILE_ROWS_PER_IMAGE = 3
+NAMED_ROWS_PER_IMAGE = 3
+NEGATIVE_KINDS = ("adjacent", "far")
+DEFAULT_NEGATIVES = {"adjacent": 1, "far": 1}
+# Coastal nodes have only five same-type locations within two hops; three
+# hops gives every placement at least seven near candidates when a heavier
+# mix is requested. The default single near negative always touches the piece.
+NEAR_MAX_HOPS = 3
+
+
+def parse_negatives(spec: str) -> dict[str, int]:
+    """Parse ``adjacent=1,far=1`` into per-kind counts."""
+
+    counts = dict(DEFAULT_NEGATIVES)
+    for part in filter(None, (piece.strip() for piece in spec.split(","))):
+        kind, _, value = part.partition("=")
+        if kind not in NEGATIVE_KINDS or not value.isdigit():
+            raise SpatialLocalizationError(f"bad negative spec {part!r}; kinds are {NEGATIVE_KINDS}")
+        counts[kind] = int(value)
+    return counts
+
+
+def neighbor_tokens(contract: JsonDict) -> dict[str, list[str]]:
+    """Map every node and edge token to its touching same-type locations.
+
+    Nodes neighbor the nodes they share an edge with; edges neighbor the edges
+    they share a node with. Both come straight from the contract graph.
+    """
+
+    nodes_of_edge = {edge["token"]: list(edge["node_tokens"]) for edge in contract["edges"]}
+    edges_of_node = {node["token"]: list(node["adjacent_edge_tokens"]) for node in contract["nodes"]}
+    neighbors: dict[str, list[str]] = {}
+    for node_token, edge_tokens in edges_of_node.items():
+        neighbors[node_token] = sorted(
+            {other for edge_token in edge_tokens for other in nodes_of_edge[edge_token] if other != node_token}
+        )
+    for edge_token, endpoints in nodes_of_edge.items():
+        neighbors[edge_token] = sorted(
+            {other for node_token in endpoints for other in edges_of_node[node_token] if other != edge_token}
+        )
+    return neighbors
+
+
+def neighbor_distances(neighbors: dict[str, list[str]], token: str, max_hops: int = NEAR_MAX_HOPS) -> dict[str, int]:
+    """Hop distance from ``token`` to every same-type location within ``max_hops``."""
+
+    distances = {token: 0}
+    frontier = [token]
+    for hops in range(1, max_hops + 1):
+        frontier = [other for current in frontier for other in neighbors[current] if other not in distances]
+        for other in frontier:
+            distances.setdefault(other, hops)
+    return distances
+
+
+def sample_empty_tokens(
+    *,
+    sample_id: str,
+    token: str,
+    piece: str,
+    color: str,
+    tokens: Sequence[str],
+    neighbors: dict[str, list[str]],
+    counts: dict[str, int],
+) -> dict[str, list[str]]:
+    """Pick the empty locations queried for one placement, per negative kind.
+
+    ``adjacent`` draws touching locations first, then each further ring out
+    to ``NEAR_MAX_HOPS``, each in a stable hashed order; ``far`` draws from
+    everything beyond that.
+    Nothing repeats within an image, and a count larger than its pool is
+    capped by the pool.
+    """
+
+    distances = neighbor_distances(neighbors, token)
+
+    def ranked(kind: str, candidates: Sequence[str]) -> list[str]:
+        return sorted(
+            candidates,
+            key=lambda item: (
+                distances.get(item, 0),
+                _stable_rank(sample_id, token, piece, color, f"empty_{kind}", item),
+                item,
+            ),
+        )
+
+    pools = {
+        "adjacent": ranked("adjacent", [candidate for candidate in tokens if distances.get(candidate, 0) > 0]),
+        "far": ranked("far", [candidate for candidate in tokens if candidate not in distances]),
+    }
+    chosen: dict[str, list[str]] = {}
+    for kind in NEGATIVE_KINDS:
+        if counts.get(kind, 0) and not pools[kind]:
+            raise SpatialLocalizationError(f"{token} has no {kind} empty candidates")
+        chosen[kind] = pools[kind][: counts.get(kind, 0)]
+    return chosen
 
 
 def tile_facts(contract: JsonDict) -> list[JsonDict]:
@@ -346,9 +453,11 @@ def rows_for_placement(
     piece: str,
     color: str,
     image_name: str,
-    empty_token: str,
+    empty_tokens: dict[str, list[str]],
+    distances: dict[str, int] | None = None,
 ) -> list[JsonDict]:
     entity_type = regions[token]["entity_type"]
+    distances = distances or {}
     noun = LOCATION_NOUN[entity_type]
     novel = is_novel_color(color)
     metadata = {
@@ -400,16 +509,25 @@ def rows_for_placement(
             spatial_target=target,
         ),
         *named_rows,
-        _row(
-            row_id=f"{stem}_occupancy_negative",
-            image_name=image_name,
-            prompt=f"{empty_token} {FORWARD_QUERY[entity_type]}",
-            answer="empty",
-            task_type="occupancy_negative",
-            category=category,
-            polarity="hard_negative",
-            metadata={**metadata, "queried_token": empty_token},
-            spatial_target=None,
+        *(
+            _row(
+                row_id=f"{stem}_occupancy_negative_{kind}_{index}",
+                image_name=image_name,
+                prompt=f"{empty_token} {FORWARD_QUERY[entity_type]}",
+                answer="empty",
+                task_type=f"occupancy_negative_{kind}",
+                category=category,
+                polarity="hard_negative",
+                metadata={
+                    **metadata,
+                    "queried_token": empty_token,
+                    "negative_kind": kind,
+                    "negative_distance": distances.get(empty_token, "far"),
+                },
+                spatial_target=None,
+            )
+            for kind in NEGATIVE_KINDS
+            for index, empty_token in enumerate(empty_tokens.get(kind, ()))
         ),
     ]
 
@@ -451,6 +569,7 @@ def build_board(
     tile_rows: bool = False,
     novel_color: str | None = None,
     asset_root: Path | None = None,
+    negatives: dict[str, int] | None = None,
 ) -> list[JsonDict]:
     """Render every sampled single-piece board for one empty state.
 
@@ -465,6 +584,8 @@ def build_board(
         view_padding_factor=style.view_padding_factor,
     )
     controls = _control_regions(regions)
+    neighbors = neighbor_tokens(contract)
+    negative_counts = dict(DEFAULT_NEGATIVES if negatives is None else negatives)
     tiles = tile_facts(contract) if tile_rows else []
     rows: list[JsonDict] = []
     for entity_type in ("node", "edge"):
@@ -508,8 +629,15 @@ def build_board(
                 future.result()
         for token, piece, color, destination in jobs:
             image_name = destination.name
-            others = [candidate for candidate in tokens if candidate != token]
-            empty_token = others[_stable_rank(state["sample_id"], token, piece, color, "empty") % len(others)]
+            empty_tokens = sample_empty_tokens(
+                sample_id=state["sample_id"],
+                token=token,
+                piece=piece,
+                color=color,
+                tokens=tokens,
+                neighbors=neighbors,
+                counts=negative_counts,
+            )
             rows.extend(
                 rows_for_placement(
                     state=state,
@@ -519,7 +647,8 @@ def build_board(
                     piece=piece,
                     color=color,
                     image_name=image_name,
-                    empty_token=empty_token,
+                    empty_tokens=empty_tokens,
+                    distances=neighbor_distances(neighbors, token),
                 )
             )
             if tile_rows:
@@ -546,7 +675,9 @@ def export_single_piece_curriculum(
     eval_images_per_board_per_entity: int = EVAL_IMAGES_PER_BOARD_PER_ENTITY,
     workers: int | None = None,
     tile_rows: bool = False,
+    negatives: dict[str, int] | None = None,
 ) -> JsonDict:
+    negative_counts = dict(DEFAULT_NEGATIVES if negatives is None else negatives)
     dataset_root = Path(dataset_dir).resolve()
     output = (
         Path(output_dir).resolve()
@@ -608,6 +739,7 @@ def export_single_piece_curriculum(
                         tile_rows=tile_rows,
                         novel_color=novel_colors[split]["name"] if split in novel_colors else None,
                         asset_root=asset_root,
+                        negatives=negative_counts,
                     )
                 )
             if split == "train":
@@ -634,7 +766,10 @@ def export_single_piece_curriculum(
         "edge_piece": EDGE_PIECE,
         "train_images_per_board_per_entity": train_images_per_board_per_entity,
         "eval_images_per_board_per_entity": eval_images_per_board_per_entity,
-        "rows_per_image": 4 + (TILE_ROWS_PER_IMAGE if tile_rows else 0),
+        "negatives_per_image": negative_counts,
+        "rows_per_image": (
+            NAMED_ROWS_PER_IMAGE + sum(negative_counts.values()) + (TILE_ROWS_PER_IMAGE if tile_rows else 0)
+        ),
         "tile_rows": tile_rows,
         "train_row_order": "deterministic_shuffle",
         "files": files,
@@ -656,6 +791,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="Add tile resource, number, and inverse rows for one tile per image.",
     )
     parser.add_argument(
+        "--negatives",
+        default=",".join(f"{kind}={count}" for kind, count in DEFAULT_NEGATIVES.items()),
+        help="Empty negatives per image by kind, e.g. adjacent=1,far=1.",
+    )
+    parser.add_argument(
         "--train-images-per-board-per-entity",
         type=int,
         default=TRAIN_IMAGES_PER_BOARD_PER_ENTITY,
@@ -675,6 +815,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         eval_images_per_board_per_entity=args.eval_images_per_board_per_entity,
         workers=args.workers,
         tile_rows=args.tile_rows,
+        negatives=parse_negatives(args.negatives),
     )
     print(json.dumps({key: value for key, value in result.items() if key != "files"}, indent=2, sort_keys=True))
     return 0

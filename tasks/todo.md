@@ -2557,3 +2557,73 @@ deselected. Focused first-party Ruff, both frontend builds, and `git diff
 CatanBoardBench receipt drift in `.gitignore`, `index.html`, `src/App.tsx`, and
 generated `tsconfig.tsbuildinfo`; full-repository Ruff also reports only
 pre-existing vendored/reference findings.
+
+# Single-piece v4: adjacent and far hard negatives (2026-09-03)
+
+## Findings
+- Regression panel on the v3 final adapter (single-piece v2 validation, original
+  images, first 590 rows): localization 291/295, occupancy/owner misses were
+  25 false positives that all named the real piece on an empty spot plus 8
+  false negatives. Adjacent empties fail 6/8, far empties 19/139.
+- The exporter drew the one empty token uniformly from every other token of
+  the same type, so only 5.3% of v3 training negatives touch the piece.
+
+## Plan
+- [x] Exporter: derive node and edge neighbors from the contract; emit two
+  negatives per image, `occupancy_negative_adjacent` from the piece's
+  neighbors and `occupancy_negative_far` from non-neighbors.
+- [x] Update tests for the extra row and adjacency classification.
+- [x] Export `spatial_localization_v4` with tile rows and 40 placements.
+- [x] Add the v4 validation set to the regression panel; document in README.
+- [x] Launch a continuation run from the v3 final bundle on v4.
+- [x] User asked for more negatives: add cross-type touching negatives and a
+  `--negatives` knob (default adjacent=2,cross=1,far=2), export v5, stop the
+  v4 run, relaunch on v5.
+- [x] User then asked for about 20% "empty" rows: default back to one
+  touching and one far negative (25%), export v7, stop the v6 run, relaunch.
+- [x] (Superseded) User asked for no cross negatives and a 35/35/30 near/far/rest mix:
+  drop cross, rank near negatives touching-first out to three hops, default
+  adjacent=7,far=7, export v6 with 10 eval images per board per entity, stop
+  the v5 run, relaunch on v6 at 256 steps as a loss and forgetting check.
+
+Stopped within minutes, superseded: run `catan-qwen38-sl-v6-single-piece-near7far7-s256-20260903`,
+data identity `cac36091f53f`, app ap-3zD033fPGb5DwN9VCjjiJm, call
+fc-01M1MD633VTGD5EBH8T1AQG8QQ, from the v3 final bundle, batch 16 x 2, 256
+steps, eval and save every 64. Train 68,800 rows (35% near, 35% far, 5% each
+of the six other row types); near negatives are 44% touching, 51% two hops,
+5% three hops. Output under
+`/runs/catan-vision-sft/catan-qwen38-sl-v6-single-piece-near7far7-s256-20260903/cac36091f53f`.
+Gate: `occupancy_positive`, `tile_*`, and `piece_to_token` on v6 validation
+must hold near the v3 panel (94.2% / 100% / 100%) while the negatives climb
+from 89.0%.
+
+Relaunched 2026-09-03: run `catan-qwen38-sl-v5-single-piece-neg5-s256-20260903`,
+data identity `7f1bf048fa32`, app ap-AuE4sQgeHstcUPKdBuGRLW, call
+fc-01M1MCQ44YD5HMCRQMKYFJ3V0J, from the v3 final bundle, batch 16 x 2, 256
+steps, eval and save every 64. Output under
+`/runs/catan-vision-sft/catan-qwen38-sl-v5-single-piece-neg5-s256-20260903/7f1bf048fa32`.
+Gate: `occupancy_positive` on v5 validation must hold near the v3 panel's
+94.2% while the three negative kinds climb from 89.0%.
+
+Launched 2026-09-03: run `catan-qwen38-sl-v4-single-piece-adjneg-s256-20260903`,
+data identity `9394f6a3c699`, call fc-01M1MBCX9M74DY46AB2MM2P27R, batch 16 x 2,
+capped at 256 steps, eval and save every 64 steps. Output under
+`/runs/catan-vision-sft/catan-qwen38-sl-v4-single-piece-adjneg-s256-20260903/9394f6a3c699`.
+A first launch of the same data at one full epoch (app ap-SmkyFaQNTmi5UKJQd46ZJm)
+was stopped within minutes; ignore its output directory.
+Score checkpoints with the regression panel; the v4 validation set is now in
+the panel so adjacent versus far negatives report separately.
+
+# Adjacent-pair curriculum, then sparse, then dense (approved plan 2026-09-03)
+
+Plan file: ~/.claude/plans/async-wandering-phoenix.md. Dense zero-shot table
+for the v3 adapter recorded in reports/sft/2026-09-03-qwen38-single-piece-v2.json.
+
+- [x] Step 0: commit today's exporter work and the zero-shot record.
+- [ ] Step 1: sft/scripts/analyze_occupancy_misses.py with a fixture test.
+- [ ] Step 2: adjacent_pair_localization.py exporter, render_contract and
+  _row refactor, tests, evaluator metadata and neighbor_confusion block,
+  panel entry, README; export pairs_v1; launch 256 steps from v3 final.
+- [ ] Step 3: after the pair gate (positives and negatives >= 98%, no hop-1
+  false positives), run production_curriculum_v1 empty/setup + sparse from
+  the pair bundle, then dense.

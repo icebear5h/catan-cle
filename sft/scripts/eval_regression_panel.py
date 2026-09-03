@@ -31,6 +31,7 @@ PANEL = (
     (REPLAY_ROOT / "spatial_localization_v1/probes/validation.jsonl", REPLAY_ROOT / "spatial_localization_v1/images", "gray-dot probes, both sizes"),
     (REPLAY_ROOT / "spatial_localization_v2/stage1/validation.jsonl", REPLAY_ROOT / "spatial_localization_v2/images", "single-piece validation"),
     (REPLAY_ROOT / "spatial_localization_v3/stage1/validation.jsonl", REPLAY_ROOT / "spatial_localization_v3/images", "single-piece plus tile validation"),
+    (REPLAY_ROOT / "spatial_localization_v7/stage1/validation.jsonl", REPLAY_ROOT / "spatial_localization_v7/images", "single-piece plus tile validation, one touching and one far negative per image"),
     (REPLAY_ROOT / "evals/validation_v1.jsonl", REPLAY_ROOT / "images", "replay production heads and inverse rows"),
 )
 VARIANTS = "original,blank"

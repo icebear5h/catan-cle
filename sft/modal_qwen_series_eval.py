@@ -315,13 +315,19 @@ def main(
     # scored in one container with a single model load.
     remote_sets = []
     remote_token_inventory = None
-    for index, local_eval in enumerate(eval_jsonl.split(",")):
-        local_path = Path(local_eval.strip())
+    local_sets = [item.strip() for item in eval_jsonl.split(",")]
+    roots = [item.strip() for item in image_root.split(",")] if image_root else [None] * len(local_sets)
+    if len(roots) == 1 and len(local_sets) > 1:
+        roots = roots * len(local_sets)
+    if len(roots) != len(local_sets):
+        raise ValueError("--image-root must be one root or one root per eval set")
+    for index, (local_eval, local_root) in enumerate(zip(local_sets, roots, strict=True)):
+        local_path = Path(local_eval)
         set_dir = remote_dir if index == 0 else f"{remote_dir}/{local_path.parent.name}-{local_path.stem}"
         remote_set, remote_inventory = upload_eval_jsonl(
             local_path,
             set_dir,
-            image_root=Path(image_root) if image_root else None,
+            image_root=Path(local_root) if local_root else None,
             token_inventory=Path(token_inventory) if token_inventory else None,
         )
         remote_sets.append(remote_set)

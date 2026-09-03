@@ -54,6 +54,9 @@ def build_command(adapter_dir: str, label: str, *, gpu: str, batch_size: int, li
         "--batch-size", str(batch_size),
         "--max-new-tokens", "16",
         "--image-variant", VARIANTS,
+        # Spawn so a client-side disconnect or a stopped local app cannot
+        # cancel the scoring; results land under --output-dir on the volume.
+        "--spawn-eval",
     ]
     if limit is not None:
         command.extend(["--limit", str(limit)])

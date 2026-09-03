@@ -109,8 +109,42 @@
   "v3_run": {
     "dataset": "spatial_localization_v3 (tiles, all colors, novel teal/magenta probes)",
     "function_call": "fc-01M1KAWD4WRF4EXN4DQ7MFM85P",
+    "in_run_eval": {
+      "128": {
+        "eval_loss": 0.2264,
+        "row_exact": 0.7697
+      },
+      "256": {
+        "eval_loss": 0.1013,
+        "row_exact": 0.876
+      },
+      "384": {
+        "eval_loss": 0.0886,
+        "row_exact": 0.9062
+      },
+      "512": {
+        "eval_loss": 0.0371,
+        "row_exact": 0.9486
+      },
+      "640": {
+        "eval_loss": 0.0255,
+        "row_exact": 0.9728
+      }
+    },
     "initial_bundle": "v2 checkpoint-256",
     "modal_app": "ap-J1J9PHV5MyWD3PJZ7jJwqy",
-    "run_name": "catan-qwen38-sl-v3-single-piece-tiles-novel-20260903"
+    "run_name": "catan-qwen38-sl-v3-single-piece-tiles-novel-20260903",
+    "train_curve": {
+      "steps_1_16": {
+        "gn_vision": 297.9,
+        "loss": 2.124,
+        "row_exact": 0.424
+      },
+      "steps_632_640": {
+        "gn_vision": 19.0,
+        "loss": 0.028,
+        "row_exact": 0.951
+      }
+    }
   }
 }

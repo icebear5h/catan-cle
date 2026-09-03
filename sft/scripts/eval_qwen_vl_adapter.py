@@ -388,6 +388,10 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
         "polarity",
         "marker_style",
         "probe_style",
+        "piece",
+        "color",
+        "color_heldout",
+        "grounding_stage",
         "eval_variant",
     ):
         summary[f"by_{key}"] = summarize_dimension(attempted, key)
@@ -411,6 +415,9 @@ def evaluation_metadata(row: dict[str, Any], *, image_variant: str) -> dict[str,
         "polarity",
         "marker_style",
         "probe_style",
+        "piece",
+        "color",
+        "color_heldout",
         "target_token",
     ):
         if key in row:

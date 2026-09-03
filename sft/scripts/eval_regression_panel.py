@@ -37,6 +37,11 @@ VARIANTS = "original,blank"
 
 
 def build_command(adapter_dir: str, label: str, *, gpu: str, batch_size: int, limit: int | None) -> list[str]:
+    if not adapter_dir.startswith("/runs/"):
+        raise ValueError(
+            "adapter_dir must be the container mount path under /runs/, not the "
+            f"volume-relative path shown by `modal volume ls`: {adapter_dir}"
+        )
     missing = [str(path) for path, root, _ in PANEL if not path.is_file() or not root.is_dir()]
     if missing:
         raise FileNotFoundError(f"regression panel inputs missing: {missing}")

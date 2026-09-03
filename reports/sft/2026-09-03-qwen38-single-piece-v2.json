@@ -1,0 +1,67 @@
+{
+  "batch": "16 x 2 accumulation",
+  "checkpoint_128_batch_eval": {
+    "gray_dot_probe_v1": {
+      "blank": {
+        "candidate": 0.016
+      },
+      "original": {
+        "candidate": 0.909,
+        "exact": 0.726,
+        "large": 0.944,
+        "rank_mean": 1.13,
+        "small": 0.873
+      },
+      "target_occlusion": {
+        "candidate": 0.135
+      }
+    },
+    "occupancy_positive_failure": "answers 'empty' on 251 of 300 occupied rows; color correct on 47 of 48 committed answers; gold 25/41 and mystic blue 18/26 are the only colors that survive",
+    "output_dir": "/runs/qwen-series-eval/single-piece-v2/ck128",
+    "single_piece_validation": {
+      "blank": {
+        "candidate": 0.032,
+        "exact": 0.25
+      },
+      "original": {
+        "by_task_type": {
+          "colored_piece_to_token": 0.97,
+          "occupancy_negative": 0.857,
+          "occupancy_positive": 0.16,
+          "piece_to_token": 0.973
+        },
+        "candidate": 0.977,
+        "exact": 0.74,
+        "heldout_pink_exact": 0.732
+      },
+      "target_occlusion": {
+        "candidate": 0.322,
+        "exact": 0.15
+      }
+    }
+  },
+  "comparison": {
+    "marker_control_ck256_probe_candidate": 0.639,
+    "marker_control_ck256_single_piece_zero_shot_candidate": 0.08
+  },
+  "dataset": "spatial_localization_v2 (24,080 rows, 6,020 single-piece images, pink held out)",
+  "in_run_eval": {
+    "step_128": {
+      "answer_row_exact": 0.7408,
+      "answer_token_accuracy": 0.8037,
+      "eval_loss": 0.209
+    }
+  },
+  "initial_bundle": "marker-only control checkpoint-256",
+  "learning_rates": {
+    "language_lora": 0.0001,
+    "merger": 5e-05,
+    "token_rows": 0.0005,
+    "vision": 5e-06
+  },
+  "modal_app": "ap-YT2dybLVHcEM9lLXjPQLzW",
+  "next": "spatial_localization_v3 adds one tile per image (resource, number, inverse); decision on patch loss pending the step-256 occupancy read",
+  "patch_loss_weight": 0.0,
+  "run_name": "catan-qwen38-sl-v2-single-piece-20260903",
+  "schema": "catan_qwen38_single_piece_v2/v1"
+}

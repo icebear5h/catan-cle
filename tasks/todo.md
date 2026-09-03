@@ -34,6 +34,12 @@
 - [x] Curriculum: emit small and marker-sized gray-dot probes.
 - [x] Update tests, README, regenerate spatial_localization_v1, run tests.
 
+## Follow-ups
+- [ ] Profile eval generation batch on H200 and raise the default above 48
+  (memory headroom exists; 96 or higher is likely fine for 16-token answers).
+- [ ] Decide whether the regression panel should run inside the training
+  container at each checkpoint instead of as a separate launch.
+
 ## Result (2026-09-02, Stage 1 marker-only control)
 - Profile at batch 16 x accumulation 2: 98.7 GB peak, 34 s/step, fp32 vision
   and merger confirmed by the dtype audit, vision grad norm 150 to 300.

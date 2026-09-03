@@ -202,6 +202,29 @@ trainer never shuffles, and the unshuffled Stage 1 file put only two or three
 boards in every batch of 32. Validation, test, and probe files keep canonical
 order.
 
+### Single-piece localization (`spatial_localization_v2`)
+
+The marker curriculum above proves the tower can read a position, but the cue
+we need read is a game piece. `spatial_localization_v2` renders each validated
+empty board with exactly one real settlement, city, or road through the
+production renderer, and emits four rows per image: "Which node has the
+settlement?" and "Which node has the red settlement?" -> `<N17>`, the exact
+production prompt `<N17> building?` -> "red settlement", and one hard negative
+`<N20> building?` -> "empty". Pink is withheld from training and appears only
+in validation and test, so the held-out color is the generalization probe.
+
+```bash
+uv run python -m data_pipeline.board_recognition.single_piece_localization \
+  artifacts/generated/board_recognition/replay_v1 --overwrite
+```
+
+The default build renders 70 node and 70 edge placements per training board
+(6,020 images, 24,080 rows) and 30 each per validation and test board (300
+images, 1,200 rows) in about two minutes on a laptop with a process pool.
+Train from the marker-only control through `--initial-bundle` so the learned
+position-to-token mapping carries over; `spatial_localization_v1` stays as the
+gray-dot multiple-choice probe and the marker control comparison.
+
 The active trainer can combine completion NLL with a normalized post-merger
 patch loss. It uses cosine similarity directly between Qwen's merged visual
 patches and the requested semantic-token embedding; no learnable localization

@@ -2624,7 +2624,20 @@ for the v3 adapter recorded in reports/sft/2026-09-03-qwen38-single-piece-v2.jso
 - [x] Step 2a: adjacent_pair_localization.py exporter, render_contract and
   _row refactor, 9 tests, panel entry, README.
 - [x] Step 2b: evaluator metadata and neighbor_confusion block.
-- [ ] Step 2c: export pairs_v1 (running); launch 256 steps from v3 final.
+- [x] Step 2c: exported pairs_v1 (51,564 train rows, 20% empty, 2,159
+  validation rows, audit clean); launched 256 steps from v3 final.
+
+Launched 2026-09-03 13:55 PDT: run `catan-qwen38-sl-pairs-v1-s256-20260903`,
+data identity `82b9664c0c46`, app ap-GJWUfVfWDMWGJ6CGc0nADW, call
+fc-01M1MH3P4TKCWJGQAHPBK8ZJ4N, batch 16 x 2, 256 steps, eval and save every
+64. Output under
+`/runs/catan-vision-sft/catan-qwen38-sl-pairs-v1-s256-20260903/82b9664c0c46`.
+Gate before sparse: occupancy positives and negatives >= 98% on pair
+validation, no hop-1 false positives in the neighbor_confusion block, tile
+and localization rows unchanged. Then run the regression panel on the final
+bundle and `sft/scripts/analyze_occupancy_misses.py` on its replay set.
+(An earlier launch at 13:47, app ap-XmbzzSYHOxaU5ZLDzFskw8, was interrupted
+during upload before any call spawned and is stopped.)
 - [ ] Step 3: after the pair gate (positives and negatives >= 98%, no hop-1
   false positives), run production_curriculum_v1 empty/setup + sparse from
   the pair bundle, then dense.

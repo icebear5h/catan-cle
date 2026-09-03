@@ -41,7 +41,9 @@ def build_command(adapter_dir: str, label: str, *, gpu: str, batch_size: int, li
     if missing:
         raise FileNotFoundError(f"regression panel inputs missing: {missing}")
     command = [
-        "uv", "run", "modal", "run", "sft/modal_qwen_series_eval.py",
+        # --detach keeps the ephemeral app alive after the entrypoint exits;
+        # without it Modal cancels the spawned call.
+        "uv", "run", "modal", "run", "--detach", "sft/modal_qwen_series_eval.py",
         "--eval-jsonl", ",".join(str(path) for path, _, _ in PANEL),
         "--image-root", ",".join(str(root) for _, root, _ in PANEL),
         "--token-inventory", str(TOKEN_INVENTORY),

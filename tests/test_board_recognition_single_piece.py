@@ -102,3 +102,29 @@ def test_build_board_renders_one_image_per_placement(tmp_path):
     assert len(rows) == 8
     assert len(list(tmp_path.glob("test_fixture_empty_*.png"))) == 2
     assert {row["entity_type"] for row in rows} == {"node", "edge"}
+
+
+def test_tile_rows_use_production_prompts_and_unique_descriptions():
+    from data_pipeline.board_recognition.single_piece_localization import tile_facts, tile_rows_for_image
+
+    state, contract = _fixture_contract()
+    tiles = tile_facts(contract)
+    assert len(tiles) == 19
+    assert sum(tile["resource"] == "desert" for tile in tiles) == 1
+    desert = next(tile for tile in tiles if tile["resource"] == "desert")
+    assert desert["number"] == "none" and desert["description"] == "the desert tile"
+    regions = atlas_regions(contract, image_size=1024, view_padding_factor=1.2)
+    rows = tile_rows_for_image(
+        state={**state, "split": "train", "sample_id": "fixture_empty"},
+        tiles=tiles,
+        regions=regions,
+        controls=_control_regions(regions),
+        image_name="x.png",
+        salt="N17_CITY_RED",
+    )
+    prompts = {row["task_type"]: (row["messages"][0]["content"], row["messages"][1]["content"]) for row in rows}
+    token = rows[0]["target_token"]
+    assert prompts["tile_resource"][0] == f"<image>\n{token} resource?"
+    assert prompts["tile_number"][0] == f"<image>\n{token} number?"
+    assert prompts["tile_to_token"][1] == token and prompts["tile_to_token"][0].startswith("<image>\nWhere is the ")
+    assert all(row["entity_type"] == "tile" for row in rows)

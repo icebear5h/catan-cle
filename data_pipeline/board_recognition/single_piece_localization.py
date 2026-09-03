@@ -74,6 +74,101 @@ TRAIN_IMAGES_PER_BOARD_PER_ENTITY = 70
 EVAL_IMAGES_PER_BOARD_PER_ENTITY = 30
 FORWARD_QUERY = {"node": "building?", "edge": "road?"}
 LOCATION_NOUN = {"node": "node", "edge": "edge"}
+TILE_ROWS_PER_IMAGE = 3
+
+
+def tile_facts(contract: JsonDict) -> list[JsonDict]:
+    """Tile token, resource word, number word, and a unique description if any.
+
+    The description mirrors the inverse corpus ("Where is the 8 wheat tile?")
+    and is only emitted when that number/resource pair is unique on the board.
+    """
+
+    tiles = []
+    for tile in contract["tiles"]:
+        resource = "desert" if tile.get("resource") is None else str(tile["resource"]).lower()
+        number = "none" if tile.get("number") is None else str(tile["number"])
+        tiles.append({"token": tile["token"], "resource": resource, "number": number})
+    pairs = Counter((tile["resource"], tile["number"]) for tile in tiles)
+    for tile in tiles:
+        if tile["resource"] == "desert":
+            tile["description"] = "the desert tile" if pairs[("desert", "none")] == 1 else None
+        elif pairs[(tile["resource"], tile["number"])] == 1:
+            tile["description"] = f"the {tile['number']} {tile['resource']} tile"
+        else:
+            tile["description"] = None
+    return tiles
+
+
+def tile_rows_for_image(
+    *,
+    state: JsonDict,
+    tiles: Sequence[JsonDict],
+    regions: dict[str, JsonDict],
+    controls: dict[str, JsonDict],
+    image_name: str,
+    salt: str,
+) -> list[JsonDict]:
+    """Resource, number, and inverse localization rows for one sampled tile.
+
+    Tiles are printed on every board, so these rows cost no extra rendering and
+    give the token-to-position direction a large, unambiguous target.
+    """
+
+    unique = [tile for tile in tiles if tile["description"]]
+    pool = unique if unique else list(tiles)
+    tile = pool[_stable_rank(state["sample_id"], salt, "tile") % len(pool)]
+    token = tile["token"]
+    metadata = {
+        "split": state["split"],
+        "state_id": state["sample_id"],
+        "entity_type": "tile",
+        "target_token": token,
+        "piece": "TILE",
+        "color": "none",
+        "color_heldout": False,
+    }
+    target = _spatial_target(regions[token], controls[token])
+    stem = f"{state['sample_id']}_{token[1:-1]}_{salt}"
+    rows = [
+        _row(
+            row_id=f"{stem}_tile_resource",
+            image_name=image_name,
+            prompt=f"{token} resource?",
+            answer=tile["resource"],
+            task_type="tile_resource",
+            category="tile.resource",
+            polarity="positive",
+            metadata=metadata,
+            spatial_target=target,
+        ),
+        _row(
+            row_id=f"{stem}_tile_number",
+            image_name=image_name,
+            prompt=f"{token} number?",
+            answer=tile["number"],
+            task_type="tile_number",
+            category="tile.number",
+            polarity="positive",
+            metadata=metadata,
+            spatial_target=target,
+        ),
+    ]
+    if tile["description"]:
+        rows.append(
+            _row(
+                row_id=f"{stem}_tile_to_token",
+                image_name=image_name,
+                prompt=f"Where is {tile['description']}?",
+                answer=token,
+                task_type="tile_to_token",
+                category="localization",
+                polarity="token_return",
+                metadata=metadata,
+                spatial_target=target,
+            )
+        )
+    return rows
 
 
 def color_words(color: str) -> str:
@@ -290,6 +385,7 @@ def build_board(
     images_per_entity: int,
     colors: Sequence[str],
     pool: ProcessPoolExecutor | None = None,
+    tile_rows: bool = False,
 ) -> list[JsonDict]:
     """Render every sampled single-piece board for one empty state."""
 
@@ -300,6 +396,7 @@ def build_board(
         view_padding_factor=style.view_padding_factor,
     )
     controls = _control_regions(regions)
+    tiles = tile_facts(contract) if tile_rows else []
     rows: list[JsonDict] = []
     for entity_type in ("node", "edge"):
         tokens = [token for token, region in regions.items() if region["entity_type"] == entity_type]
@@ -345,6 +442,17 @@ def build_board(
                     empty_token=empty_token,
                 )
             )
+            if tile_rows:
+                rows.extend(
+                    tile_rows_for_image(
+                        state=state,
+                        tiles=tiles,
+                        regions=regions,
+                        controls=controls,
+                        image_name=image_name,
+                        salt=f"{token[1:-1]}_{piece}_{color}",
+                    )
+                )
     return rows
 
 
@@ -357,6 +465,7 @@ def export_single_piece_curriculum(
     train_images_per_board_per_entity: int = TRAIN_IMAGES_PER_BOARD_PER_ENTITY,
     eval_images_per_board_per_entity: int = EVAL_IMAGES_PER_BOARD_PER_ENTITY,
     workers: int | None = None,
+    tile_rows: bool = False,
 ) -> JsonDict:
     dataset_root = Path(dataset_dir).resolve()
     output = (
@@ -410,6 +519,7 @@ def export_single_piece_curriculum(
                         ),
                         colors=train_colors if split == "train" else COLORS,
                         pool=pool,
+                        tile_rows=tile_rows,
                     )
                 )
             if split == "train":
@@ -433,7 +543,8 @@ def export_single_piece_curriculum(
         "edge_piece": EDGE_PIECE,
         "train_images_per_board_per_entity": train_images_per_board_per_entity,
         "eval_images_per_board_per_entity": eval_images_per_board_per_entity,
-        "rows_per_image": 4,
+        "rows_per_image": 4 + (TILE_ROWS_PER_IMAGE if tile_rows else 0),
+        "tile_rows": tile_rows,
         "train_row_order": "deterministic_shuffle",
         "files": files,
     }
@@ -448,6 +559,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--style-path", type=Path, default=DEFAULT_STYLE_PATH)
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--workers", type=int)
+    parser.add_argument(
+        "--tile-rows",
+        action="store_true",
+        help="Add tile resource, number, and inverse rows for one tile per image.",
+    )
     parser.add_argument(
         "--train-images-per-board-per-entity",
         type=int,
@@ -467,6 +583,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         train_images_per_board_per_entity=args.train_images_per_board_per_entity,
         eval_images_per_board_per_entity=args.eval_images_per_board_per_entity,
         workers=args.workers,
+        tile_rows=args.tile_rows,
     )
     print(json.dumps({key: value for key, value in result.items() if key != "files"}, indent=2, sort_keys=True))
     return 0

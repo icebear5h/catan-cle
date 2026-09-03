@@ -40,6 +40,39 @@
       }
     }
   },
+  "checkpoint_256_regression_panel": {
+    "gray_dot_probes_v1": {
+      "blank_location_only": 0.016,
+      "large": 0.976,
+      "location_only": 0.944,
+      "original_exact": 0.734,
+      "small": 0.913
+    },
+    "marker_validation_v1": {
+      "blank_exact": 0.064,
+      "location_only": 0.818,
+      "note": "down from 0.93 under the marker control; v2 carries no marker rows",
+      "original_exact": 0.705
+    },
+    "output_dir": "/runs/qwen-series-eval/regression-panel/single-piece-v2-ck256",
+    "replay_validation_v1": "pending",
+    "single_piece_tiles_v3_validation": {
+      "blank_exact": 0.153,
+      "by_task": {
+        "colored_piece_to_token": 1.0,
+        "occupancy_negative": 0.42,
+        "occupancy_positive": 0.696,
+        "piece_to_token": 1.0,
+        "tile_number": 0.0,
+        "tile_resource": 0.0,
+        "tile_to_token_location_only": 0.157
+      },
+      "location_only": 0.699,
+      "note": "occupancy flipped between 128 and 256: positives 0.16 -> 0.70, empties 0.86 -> 0.42; presence at a named token is still a guess",
+      "novel_teal_rows_exact": 0.95,
+      "original_exact": 0.421
+    }
+  },
   "comparison": {
     "marker_control_ck256_probe_candidate": 0.639,
     "marker_control_ck256_single_piece_zero_shot_candidate": 0.08
@@ -50,6 +83,11 @@
       "answer_row_exact": 0.7408,
       "answer_token_accuracy": 0.8037,
       "eval_loss": 0.209
+    },
+    "step_256": {
+      "answer_row_exact": 0.7542,
+      "answer_token_accuracy": 0.814,
+      "eval_loss": 0.1798
     }
   },
   "initial_bundle": "marker-only control checkpoint-256",
@@ -63,5 +101,16 @@
   "next": "spatial_localization_v3 adds one tile per image (resource, number, inverse); decision on patch loss pending the step-256 occupancy read",
   "patch_loss_weight": 0.0,
   "run_name": "catan-qwen38-sl-v2-single-piece-20260903",
-  "schema": "catan_qwen38_single_piece_v2/v1"
+  "schema": "catan_qwen38_single_piece_v2/v1",
+  "stopped": {
+    "at_step": 293,
+    "reason": "row exact flat 74.1 -> 75.4 between 128 and 256; v3 launched from checkpoint-256"
+  },
+  "v3_run": {
+    "dataset": "spatial_localization_v3 (tiles, all colors, novel teal/magenta probes)",
+    "function_call": "fc-01M1KAWD4WRF4EXN4DQ7MFM85P",
+    "initial_bundle": "v2 checkpoint-256",
+    "modal_app": "ap-J1J9PHV5MyWD3PJZ7jJwqy",
+    "run_name": "catan-qwen38-sl-v3-single-piece-tiles-novel-20260903"
+  }
 }

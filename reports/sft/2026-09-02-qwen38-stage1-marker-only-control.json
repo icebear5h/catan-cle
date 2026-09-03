@@ -24,6 +24,60 @@
     "token_rows": 0.0005,
     "vision": 5e-06
   },
+  "location_only_eval": {
+    "marker_validation_diamond_slice": {
+      "by_task_type": {
+        "marker_to_token": {
+          "candidate": 0.938,
+          "free": 0.894
+        },
+        "token_to_marker": {
+          "candidate": 0.975,
+          "free": 0.963
+        }
+      },
+      "candidate_exact": 0.9563,
+      "candidate_expected_rank_mean": 1.056,
+      "free_generation_exact": 0.9281,
+      "output_dir": "/runs/qwen-series-eval/stage1-marker-control-step256/marker-original-candidate",
+      "rows": 320
+    },
+    "method": "first-token log-probability argmax restricted to same-entity-type atlas tokens (candidate_score)",
+    "probe_gray_dot_validation": {
+      "by_entity_type": {
+        "edge": {
+          "candidate": 0.59,
+          "free": 0.465
+        },
+        "node": {
+          "candidate": 0.704,
+          "free": 0.546
+        }
+      },
+      "by_probe_style": {
+        "heldout_gray_dot_large": {
+          "candidate": 0.659,
+          "free": 0.5
+        },
+        "heldout_gray_dot_small": {
+          "candidate": 0.619,
+          "free": 0.5
+        }
+      },
+      "candidate_exact": 0.6389,
+      "candidate_expected_rank_mean": 2.15,
+      "candidate_rank_le3": 0.873,
+      "free_generation_exact": 0.5,
+      "output_dir": "/runs/qwen-series-eval/stage1-marker-control-step256/probe-gray-candidate",
+      "restricted_misses": {
+        "beyond_300px": 4,
+        "count": 91,
+        "median_distance_px": 129,
+        "within_140px": 58
+      },
+      "rows": 252
+    }
+  },
   "modal_app": "ap-soNGGKHXLygmhCwK3Phb4x",
   "modal_function_call": "fc-01M1J4QKJYB53CTXPCC1N2EGT2",
   "model_id": "Qwen/Qwen3.8-27B",

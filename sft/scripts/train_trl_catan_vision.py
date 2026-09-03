@@ -1771,7 +1771,18 @@ def run_training(config: TrainConfig) -> JsonDict:
         processing_class=processor,
     )
     train_result = trainer.train(resume_from_checkpoint=config.resume_from_checkpoint)
-    final_eval_metrics = trainer.evaluate() if eval_dataset is not None else None
+    # The periodic eval already ran on the last step whenever max_steps is a
+    # multiple of eval_steps; only evaluate again when it did not.
+    final_eval_metrics = None
+    if eval_dataset is not None:
+        last_eval = next(
+            (row for row in reversed(trainer.state.log_history) if "eval_loss" in row),
+            None,
+        )
+        if last_eval is not None and last_eval.get("step") == trainer.state.global_step:
+            final_eval_metrics = {key: value for key, value in last_eval.items() if key != "step"}
+        else:
+            final_eval_metrics = trainer.evaluate()
     trainer.save_model(str(final_dir))
     trainer.save_state()
     _write_model_card(final_dir, config)

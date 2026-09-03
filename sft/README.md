@@ -260,7 +260,19 @@ rank. Summaries carry `candidate_exact_accuracy` and
 `candidate_expected_rank_mean` overall and per dimension. Read this beside
 `exact_accuracy`: on the step-256 marker-only control, 78 of 126 free-generation
 probe misses were wrong-entity-type tokens, which the restricted score removes.
-Pass `--no-candidate-scoring` to skip it. Compare the
+Pass `--no-candidate-scoring` to skip it.
+
+Comma-separated `--eval-jsonl` and `--image-variant` values score every set
+and variant in one container with a single model load, nesting outputs under
+`<output-dir>/<set>/<variant>` with a `batch_summary.json`. The fixed
+regression panel (marker validation, gray-dot probes, single-piece and tile
+validation, and the replay production heads) runs against any checkpoint with:
+
+```bash
+uv run python -m sft.scripts.eval_regression_panel \
+  --adapter-dir /runs/catan-vision-sft/<run>/<identity>/checkpoints/checkpoint-256 \
+  --label <run>-ck256
+``` Compare the
 resulting summaries with the fail-closed gate checker:
 
 ```bash

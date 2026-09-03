@@ -225,6 +225,22 @@ Train from the marker-only control through `--initial-bundle` so the learned
 position-to-token mapping carries over; `spatial_localization_v1` stays as the
 gray-dot multiple-choice probe and the marker control comparison.
 
+`spatial_localization_v3` is the same build with `--tile-rows` and 40
+placements per entity per board: each image also carries `<T05> resource?`,
+`<T05> number?`, and `Where is the 8 wheat tile?`, so the token-to-position
+direction gets a large printed target on every image. All eleven colors are
+trained. Validation and test add a novel probe color that exists in no sprite
+set, a seeded hue from the gaps between the real colors applied by hue-rotating
+the red sprites into `<output>/assets/`; those images carry only rows whose
+answer does not name the color. Build it with:
+
+```bash
+uv run python -m data_pipeline.board_recognition.single_piece_localization \
+  artifacts/generated/board_recognition/replay_v1 \
+  --output-dir artifacts/generated/board_recognition/replay_v1/spatial_localization_v3 \
+  --tile-rows --train-images-per-board-per-entity 40 --overwrite
+```
+
 The active trainer can combine completion NLL with a normalized post-merger
 patch loss. It uses cosine similarity directly between Qwen's merged visual
 patches and the requested semantic-token embedding; no learnable localization

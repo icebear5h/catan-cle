@@ -592,6 +592,15 @@ def run_eval_job(
         row.pop("images", None)
     if args.limit is not None:
         rows = rows[: args.limit]
+    skipped_without_target = 0
+    if image_variant in ("target_occlusion", "control_occlusion"):
+        # Occlusion needs a box to cover; rows such as "empty" hard negatives
+        # carry no spatial target and are simply not part of that variant.
+        eligible = [row for row in rows if len(row.get("spatial_targets") or []) == 1]
+        skipped_without_target = len(rows) - len(eligible)
+        rows = eligible
+        if not rows:
+            raise ValueError(f"no rows with a spatial target for {image_variant}")
     shuffled_images = _shuffled_image_map(rows) if image_variant == "shuffle" else None
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -674,6 +683,7 @@ def run_eval_job(
             "image_variant": image_variant,
             "occlusion_margin": args.occlusion_margin,
             "candidate_scoring": bool(args.candidate_scoring),
+            "rows_skipped_without_spatial_target": skipped_without_target,
         }
     )
     (output_dir / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")

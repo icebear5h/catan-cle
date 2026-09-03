@@ -9,6 +9,14 @@
     "validation": "spatial_localization_v1/stage1/validation.jsonl",
     "validation_marker_style": "validation_diamond"
   },
+  "followup_run": {
+    "dataset": "spatial_localization_v2",
+    "function_call": "fc-01M1JZABNVKPDYXK2R75B9DWP5",
+    "initial_bundle": "checkpoint-256 of the marker-only control",
+    "modal_app": "ap-YT2dybLVHcEM9lLXjPQLzW",
+    "output_dir": "/runs/catan-vision-sft/catan-qwen38-sl-v2-single-piece-20260903/e40660318c33",
+    "run_name": "catan-qwen38-sl-v2-single-piece-20260903"
+  },
   "gradient_accumulation_steps": 2,
   "hardware": "H200",
   "hub_publish": {
@@ -129,5 +137,32 @@
     "eval_runtime_seconds": 381.0
   },
   "visual_master_weights": "fp32",
-  "warmup_ratio": 0.1
+  "warmup_ratio": 0.1,
+  "zero_shot_single_piece_v2": {
+    "by_entity_type": {
+      "edge": {
+        "candidate": 0.025
+      },
+      "node": {
+        "candidate": 0.117
+      }
+    },
+    "by_task_type": {
+      "colored_piece_to_token": {
+        "candidate": 0.11,
+        "rank_mean": 21.8
+      },
+      "piece_to_token": {
+        "candidate": 0.05,
+        "rank_mean": 27.7
+      }
+    },
+    "candidate_exact": 0.08,
+    "candidate_expected_rank_mean": 24.8,
+    "candidate_rank_le3": 0.125,
+    "eval": "spatial_localization_v2/stage1/validation.jsonl (first 400 rows)",
+    "free_generation_exact": 0.0,
+    "note": "Marker localization does not transfer to real pieces zero-shot; free generation reverts to chatty base-model output on unseen prompts.",
+    "output_dir": "/runs/qwen-series-eval/single-piece-v2/marker-control-step256-zeroshot"
+  }
 }

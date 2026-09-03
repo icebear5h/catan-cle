@@ -353,6 +353,87 @@ def summarize_dimension(
     return result
 
 
+NEIGHBOR_CONFUSION_CATEGORIES = ("node.occupancy", "edge.owner")
+NEIGHBOR_CONFUSION_BUCKETS = ("names_target", "names_partner", "answers_empty", "other")
+
+
+def piece_answer(color: Any, piece: Any) -> str | None:
+    """Render metadata color/piece as the answer string occupancy rows expect."""
+
+    if not color or not piece:
+        return None
+    return f"{str(color).replace('_', ' ')} {str(piece)}".lower()
+
+
+def is_neighbor_confusion_record(record: dict[str, Any]) -> bool:
+    metadata = record.get("metadata") or {}
+    if metadata.get("category") in NEIGHBOR_CONFUSION_CATEGORIES:
+        return True
+    return str(metadata.get("task_type") or "").startswith("occupancy_")
+
+
+def summarize_neighbor_confusion(records: list[dict[str, Any]]) -> dict[str, Any]:
+    """Bucket wrong occupancy/owner answers by what the model named instead.
+
+    Reads only row metadata (target and partner color/piece plus distances),
+    so it needs no board graph at eval time. Rows without partner fields land
+    in names_target / answers_empty / other; rows lacking any of the fields
+    simply skip the buckets they cannot support.
+    """
+
+    groups: dict[str, Counter] = defaultdict(Counter)
+    by_distance: dict[str, dict[str, Counter]] = {
+        "names_target": defaultdict(Counter),
+        "names_partner": defaultdict(Counter),
+    }
+    for record in records:
+        if not is_neighbor_confusion_record(record):
+            continue
+        metadata = record.get("metadata") or {}
+        score = record.get("score") or {}
+        group = str(metadata.get("task_type") or metadata.get("category") or "unknown")
+        groups[group]["total"] += 1
+        if score.get("correct"):
+            continue
+        groups[group]["total_wrong"] += 1
+
+        response = str(score.get("response_normalized") or "").strip().lower()
+        expected = str(score.get("expected_normalized") or "").strip().lower()
+        target = piece_answer(metadata.get("color"), metadata.get("piece"))
+        partner = piece_answer(metadata.get("partner_color"), metadata.get("partner_piece"))
+        if metadata.get("negative_distance") is not None:
+            distance = metadata.get("negative_distance")
+        else:
+            distance = metadata.get("partner_distance")
+
+        if target is not None and response == target:
+            bucket = "names_target"
+        elif partner is not None and response == partner:
+            bucket = "names_partner"
+        elif response == "empty" and expected != "empty":
+            bucket = "answers_empty"
+        else:
+            bucket = "other"
+        groups[group][bucket] += 1
+        if bucket in by_distance:
+            by_distance[bucket][group][str(distance)] += 1
+
+    result: dict[str, Any] = {}
+    for group, counts in sorted(groups.items()):
+        entry = {
+            "total": counts["total"],
+            "total_wrong": counts["total_wrong"],
+        }
+        for bucket in NEIGHBOR_CONFUSION_BUCKETS:
+            entry[bucket] = counts[bucket]
+        entry["by_distance"] = {
+            bucket: dict(sorted(by_distance[bucket][group].items()))
+            for bucket in by_distance
+        }
+        result[group] = entry
+    return result
+
+
 def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
     attempted = [record for record in records if record.get("response") is not None]
 
@@ -393,9 +474,12 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
         "color_heldout",
         "grounding_stage",
         "eval_variant",
+        "pair_kind",
+        "negative_distance",
     ):
         summary[f"by_{key}"] = summarize_dimension(attempted, key)
     summary["categories"] = summary["by_category"]
+    summary["neighbor_confusion"] = summarize_neighbor_confusion(attempted)
     return summary
 
 
@@ -419,6 +503,15 @@ def evaluation_metadata(row: dict[str, Any], *, image_variant: str) -> dict[str,
         "color",
         "color_heldout",
         "target_token",
+        "queried_token",
+        "pair_kind",
+        "partner_token",
+        "partner_piece",
+        "partner_color",
+        "partner_distance",
+        "same_color",
+        "negative_distance",
+        "negative_kind",
     ):
         if key in row:
             metadata[key] = row[key]

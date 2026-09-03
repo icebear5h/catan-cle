@@ -269,6 +269,42 @@ type: the negatives should climb from the v3 panel's 89.0%, while
 `occupancy_positive` (94.2%), the tile rows, and `piece_to_token` (100%) are
 the forgetting check.
 
+### Adjacent-pair localization (`spatial_localization_pairs_v1`)
+
+The v3 single-piece adapter scored zero-shot on the real-board production
+heads (`evals/validation_v1.jsonl`) reads tiles at 100% but node occupancy
+at 62.5% and edge owner at 60.2%. Of its 99 occupancy misses, 43 answer
+"empty" on an occupied spot next to other pieces, 40 name a piece that sits
+one or two hops away or the touching piece of the other type, and only 3
+are colour or type slips. One-piece images let the model answer "describe
+the piece I see"; two touching pieces do not.
+
+`data_pipeline/board_recognition/adjacent_pair_localization.py` renders two
+pieces on touching locations per image: `node_node` (edge endpoints; the
+distance rule is ignored on purpose), `edge_edge` (edges sharing a node), and
+`node_edge` (a building and a road that touch, same colour half the time).
+Each image emits `occupancy_positive` and `colored_piece_to_token` for both
+pieces, `piece_to_token` only when the piece type alone identifies one of
+them, one touching `occupancy_negative_adjacent`, one `occupancy_negative_far`,
+and the tile rows. Every row carries `pair_kind`, `partner_token`,
+`partner_piece`, `partner_color`, `partner_distance`, and `same_color`, and
+negatives carry `queried_token` and `negative_distance`, so the evaluator's
+`neighbor_confusion` block can tell "named the partner" from "named the
+target" without the board graph. Validation and test put the novel colour on
+one piece of a fifth of the pairs and drop only the rows that name it.
+
+```bash
+uv run python -m data_pipeline.board_recognition.adjacent_pair_localization \
+  artifacts/generated/board_recognition/replay_v1 \
+  --output-dir artifacts/generated/board_recognition/replay_v1/spatial_localization_pairs_v1 \
+  --tile-rows --train-images-per-board-per-kind 40 --eval-images-per-board-per-kind 15 --overwrite
+```
+
+Continue from the v3 single-piece `final` bundle through `--initial-bundle`.
+The gate before moving to sparse boards: occupancy positives and negatives
+both at or above 98% on the pair validation set with no hop-1 false
+positives, and no regression on the tile or localization rows.
+
 The active trainer can combine completion NLL with a normalized post-merger
 patch loss. It uses cosine similarity directly between Qwen's merged visual
 patches and the requested semantic-token embedding; no learnable localization

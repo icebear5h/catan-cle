@@ -2620,10 +2620,11 @@ Plan file: ~/.claude/plans/async-wandering-phoenix.md. Dense zero-shot table
 for the v3 adapter recorded in reports/sft/2026-09-03-qwen38-single-piece-v2.json.
 
 - [x] Step 0: commit today's exporter work and the zero-shot record.
-- [ ] Step 1: sft/scripts/analyze_occupancy_misses.py with a fixture test.
-- [ ] Step 2: adjacent_pair_localization.py exporter, render_contract and
-  _row refactor, tests, evaluator metadata and neighbor_confusion block,
-  panel entry, README; export pairs_v1; launch 256 steps from v3 final.
+- [x] Step 1: sft/scripts/analyze_occupancy_misses.py with a fixture test.
+- [x] Step 2a: adjacent_pair_localization.py exporter, render_contract and
+  _row refactor, 9 tests, panel entry, README.
+- [x] Step 2b: evaluator metadata and neighbor_confusion block.
+- [ ] Step 2c: export pairs_v1 (running); launch 256 steps from v3 final.
 - [ ] Step 3: after the pair gate (positives and negatives >= 98%, no hop-1
   false positives), run production_curriculum_v1 empty/setup + sparse from
   the pair bundle, then dense.

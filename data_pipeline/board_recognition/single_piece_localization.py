@@ -422,13 +422,16 @@ def _row(
     polarity: str,
     metadata: JsonDict,
     spatial_target: JsonDict | None,
+    schema: str = ROW_SCHEMA,
+    grounding_stage: str = "single_piece",
+    task_family: str = "single_piece_localization",
 ) -> JsonDict:
     row = {
-        "schema": ROW_SCHEMA,
+        "schema": schema,
         "row_id": row_id,
         "curriculum_stage": "spatial_grounding",
-        "grounding_stage": "single_piece",
-        "task_family": "single_piece_localization",
+        "grounding_stage": grounding_stage,
+        "task_family": task_family,
         "task_type": task_type,
         "category": category,
         "polarity": polarity,
@@ -532,6 +535,24 @@ def rows_for_placement(
     ]
 
 
+def render_contract(
+    contract: JsonDict,
+    image_size: int,
+    style: Any,
+    destination: Path,
+    asset_root: Path | None = None,
+) -> str:
+    """Render an already-populated contract to ``destination`` (runs in a worker)."""
+
+    if asset_root is not None:
+        board_render.ASSET_ROOT = Path(asset_root)
+    rendered = render_contract_image(contract, image_size=image_size, style=style)
+    if rendered.size != (image_size, image_size):
+        raise SpatialLocalizationError(f"renderer returned {rendered.size}")
+    rendered.convert("RGB").save(destination)
+    return destination.name
+
+
 def render_placement(
     contract: JsonDict,
     token: str,
@@ -544,17 +565,7 @@ def render_placement(
 ) -> str:
     """Render one single-piece board to ``destination`` (runs in a worker)."""
 
-    if asset_root is not None:
-        board_render.ASSET_ROOT = Path(asset_root)
-    rendered = render_contract_image(
-        place_piece(contract, token, piece, color),
-        image_size=image_size,
-        style=style,
-    )
-    if rendered.size != (image_size, image_size):
-        raise SpatialLocalizationError(f"renderer returned {rendered.size}")
-    rendered.convert("RGB").save(destination)
-    return destination.name
+    return render_contract(place_piece(contract, token, piece, color), image_size, style, destination, asset_root)
 
 
 def build_board(

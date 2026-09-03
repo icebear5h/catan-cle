@@ -110,5 +110,11 @@ def test_eval_jobs_keep_single_layout_and_nest_batches(tmp_path):
         str(tmp_path / "stage1-validation" / "original"),
         str(tmp_path / "stage1-validation" / "blank"),
     ]
+    clash = argparse.Namespace(
+        eval_jsonl=["v2/stage1/validation.jsonl", "v3/stage1/validation.jsonl"],
+        image_variant="original",
+        output_dir=str(tmp_path),
+    )
+    assert len({job["output_dir"] for job in eval_jobs(clash)}) == 2
     with pytest.raises(ValueError):
         eval_jobs(argparse.Namespace(eval_jsonl=["a.jsonl"], image_variant="sepia", output_dir="x"))

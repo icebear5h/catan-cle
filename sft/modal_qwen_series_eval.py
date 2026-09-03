@@ -323,7 +323,8 @@ def main(
         raise ValueError("--image-root must be one root or one root per eval set")
     for index, (local_eval, local_root) in enumerate(zip(local_sets, roots, strict=True)):
         local_path = Path(local_eval)
-        set_dir = remote_dir if index == 0 else f"{remote_dir}/{local_path.parent.name}-{local_path.stem}"
+        set_stem = "-".join(part for part in local_path.parts[-3:] if part).removesuffix(".jsonl")
+        set_dir = remote_dir if index == 0 else f"{remote_dir}/{set_stem}"
         remote_set, remote_inventory = upload_eval_jsonl(
             local_path,
             set_dir,

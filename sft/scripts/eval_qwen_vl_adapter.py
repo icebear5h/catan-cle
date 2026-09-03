@@ -714,7 +714,10 @@ def eval_jobs(args: argparse.Namespace) -> list[dict[str, str]]:
     single = len(eval_sets) == 1 and len(variants) == 1
     jobs = []
     for eval_jsonl in eval_sets:
-        stem = Path(eval_jsonl).parent.name + "-" + Path(eval_jsonl).stem
+        parts = Path(eval_jsonl).parts
+        # Three trailing path parts keep sets apart when several datasets share
+        # a stage1/validation.jsonl layout.
+        stem = "-".join(part for part in parts[-3:] if part).removesuffix(".jsonl")
         for variant in variants:
             output_dir = Path(args.output_dir)
             if not single:

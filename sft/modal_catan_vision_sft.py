@@ -339,6 +339,7 @@ def main(
     patch_loss_weight: float = 0.0,
     patch_temperature: float = 0.07,
     spatial_target_mode: str = "correct",
+    token_init: str = "mean_noise",
     require_curriculum: bool = True,
     publish_to_hub: bool = False,
     resume_latest: bool = False,
@@ -420,6 +421,7 @@ def main(
         patch_loss_weight=patch_loss_weight,
         patch_temperature=patch_temperature,
         spatial_target_mode=spatial_target_mode,
+        token_init=token_init,
     )
     config.validate()
     launch = {

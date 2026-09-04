@@ -18,7 +18,7 @@ import types
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Iterable, Iterator, Sequence
 
@@ -61,6 +61,11 @@ SPATIAL_TARGET_MODES = ("correct", "shuffled")
 # answer-only metrics so a plateau cannot hide behind end-of-turn accuracy.
 ANSWER_METRIC_TRIVIAL_TOKENS = ("<|im_end|>", "\n")
 SEMANTIC_ROW_NOISE_SCALE = 0.1
+TOKEN_INIT_MODES = ("mean_noise", "family_words")
+# Base-vocabulary words whose embeddings seed each atlas family under the
+# family_words initialization; the leading space matches how the words appear
+# mid-sentence in the training prompts.
+FAMILY_WORDS = {"N": " node", "E": " edge", "T": " tile", "P": " port"}
 IMAGE_HASH_WORKERS = 16
 
 
@@ -186,6 +191,7 @@ class TrainConfig:
     patch_loss_weight: float = 0.0
     patch_temperature: float = 0.07
     spatial_target_mode: str = "correct"
+    token_init: str = "mean_noise"
 
     def validate(self) -> None:
         for name in ("train_jsonl", "image_root", "token_inventory", "output_dir"):
@@ -229,6 +235,8 @@ class TrainConfig:
             raise ValueError("patch_loss_weight must be nonnegative")
         if self.patch_temperature <= 0:
             raise ValueError("patch_temperature must be positive")
+        if self.token_init not in TOKEN_INIT_MODES:
+            raise ValueError(f"token_init must be one of {TOKEN_INIT_MODES}; got {self.token_init!r}")
         if self.spatial_target_mode not in SPATIAL_TARGET_MODES:
             raise ValueError(
                 f"spatial_target_mode must be one of {SPATIAL_TARGET_MODES}; "
@@ -261,6 +269,7 @@ class TokenSetup:
     tokenizer_size: int
     model_vocab_size: int
     added_tokens: int
+    family_word_ids: dict[str, tuple[int, ...]] = field(default_factory=dict)
 
     def as_dict(self) -> JsonDict:
         payload = asdict(self)
@@ -826,12 +835,19 @@ def prepare_semantic_tokens(
     for token, token_id in zip(tokens, token_ids, strict=True):
         if tokenizer.encode(token, add_special_tokens=False) != [token_id]:
             raise ValueError(f"semantic token is not atomic: {token}")
+    family_word_ids = {
+        family: tuple(int(value) for value in tokenizer.encode(word, add_special_tokens=False))
+        for family, word in FAMILY_WORDS.items()
+    }
+    if any(not ids or max(ids) >= min(token_ids) for ids in family_word_ids.values()):
+        raise ValueError("family words must tokenize to base-vocabulary ids")
     setup = TokenSetup(
         tokens=tokens,
         token_ids=token_ids,
         tokenizer_size=len(tokenizer),
         model_vocab_size=components.vocab_size,
         added_tokens=added,
+        family_word_ids=family_word_ids,
     )
     return setup, components
 
@@ -842,22 +858,32 @@ def initialize_semantic_token_rows(
     setup: TokenSetup,
     *,
     seed: int,
+    mode: str = "mean_noise",
 ) -> JsonDict:
     """Seed the 154 atlas rows from the base vocabulary before PEFT copies them.
 
     Qwen's embedding matrix is already padded past the tokenizer, so
     ``resize_token_embeddings`` never touches the new ids and they would
-    otherwise start from the checkpoint's untrained padding rows. Each row
-    becomes the mean of the original vocabulary plus small seeded noise so the
-    rows are distinct from the first step.
+    otherwise start from the checkpoint's untrained padding rows. Under
+    ``mean_noise`` each row becomes the mean of the original vocabulary plus
+    small seeded noise so the rows are distinct from the first step. Under
+    ``family_words`` each row starts from the base embedding of its family
+    word (" node", " edge", " tile", " port") plus the same noise, so nodes,
+    edges, tiles, and ports carry a shared per-family direction from the
+    first step instead of one undifferentiated atlas direction.
     """
 
+    if mode not in TOKEN_INIT_MODES:
+        raise ValueError(f"unknown token init mode: {mode}")
     reference_rows = min(setup.token_ids)
     if reference_rows <= 0:
         raise ValueError("semantic token ids must follow the base vocabulary")
+    if mode == "family_words" and not setup.family_word_ids:
+        raise ValueError("family_words init needs family_word_ids on the token setup")
     ids = torch.tensor(setup.token_ids, dtype=torch.long)
+    families = [token[1] for token in setup.tokens]
     generator = torch.Generator().manual_seed(int(seed))
-    report: JsonDict = {"reference_rows": reference_rows, "noise_scale": SEMANTIC_ROW_NOISE_SCALE}
+    report: JsonDict = {"mode": mode, "reference_rows": reference_rows, "noise_scale": SEMANTIC_ROW_NOISE_SCALE}
     for name, path in (
         ("input_embedding", components.input_embedding),
         ("output_head", components.output_head),
@@ -873,7 +899,15 @@ def initialize_semantic_token_rows(
             del reference
             before = weight[ids].float().norm(dim=1)
             noise = torch.randn((len(setup.token_ids), weight.shape[1]), generator=generator)
-            rows = mean.unsqueeze(0) + noise.to(mean.device) * noise_std.unsqueeze(0)
+            if mode == "family_words":
+                family_base = {
+                    family: weight[torch.tensor(word_ids, device=weight.device)].float().mean(dim=0)
+                    for family, word_ids in setup.family_word_ids.items()
+                }
+                base = torch.stack([family_base[family] for family in families])
+            else:
+                base = mean.unsqueeze(0).expand(len(setup.token_ids), -1)
+            rows = base + noise.to(mean.device) * noise_std.unsqueeze(0)
             weight[ids] = rows.to(weight.dtype)
             after = weight[ids].float().norm(dim=1)
         report[name] = {
@@ -882,6 +916,8 @@ def initialize_semantic_token_rows(
             "row_norm_after": float(after.mean()),
             "row_norm_std_after": float(after.std()),
         }
+        if mode == "family_words":
+            report[name]["family_base_norms"] = {family: float(vec.norm()) for family, vec in family_base.items()}
     return report
 
 
@@ -1025,7 +1061,7 @@ def wrap_trainable_model(
     from peft import LoraConfig, TrainableTokensConfig, get_peft_model
 
     model.requires_grad_(False)
-    token_init = initialize_semantic_token_rows(model, components, setup, seed=config.seed)
+    token_init = initialize_semantic_token_rows(model, components, setup, seed=config.seed, mode=config.token_init)
     token_targets = {
         components.input_embedding: list(setup.token_ids),
         components.output_head: list(setup.token_ids),
@@ -1613,6 +1649,60 @@ def _load_base_model_and_processor(config: TrainConfig) -> tuple[Any, torch.nn.M
     return processor, model
 
 
+def build_sft_config(
+    config: TrainConfig,
+    output_dir: str | Path,
+    *,
+    has_eval_dataset: bool,
+) -> Any:
+    """Build the single authoritative TRL loss/data configuration."""
+
+    from trl import SFTConfig
+
+    return SFTConfig(
+        output_dir=str(output_dir),
+        max_steps=-1 if config.max_steps is None else config.max_steps,
+        num_train_epochs=config.num_train_epochs,
+        per_device_train_batch_size=config.per_device_train_batch_size,
+        per_device_eval_batch_size=config.per_device_eval_batch_size,
+        gradient_accumulation_steps=config.gradient_accumulation_steps,
+        learning_rate=config.learning_rate,
+        weight_decay=config.weight_decay,
+        # Transformers 5 expresses fractional warmup through warmup_steps.
+        warmup_steps=config.warmup_ratio,
+        lr_scheduler_type="cosine",
+        max_grad_norm=1.0,
+        bf16=True,
+        fp16=False,
+        tf32=True,
+        gradient_checkpointing=True,
+        gradient_checkpointing_kwargs={"use_reentrant": False},
+        logging_steps=1,
+        save_strategy="steps",
+        save_steps=config.save_steps,
+        save_total_limit=config.save_total_limit,
+        eval_strategy="steps" if has_eval_dataset else "no",
+        eval_steps=config.eval_steps,
+        report_to="none",
+        remove_unused_columns=False,
+        dataloader_num_workers=config.dataloader_num_workers,
+        dataloader_pin_memory=True,
+        seed=config.seed,
+        data_seed=config.seed,
+        max_length=None,
+        packing=False,
+        shuffle_dataset=False,
+        train_sampling_strategy="sequential",
+        completion_only_loss=True,
+        assistant_only_loss=False,
+        # TRL normally rejects a PEFT-wrapped lm_head because its chunked path
+        # reads the weight directly. CatanSFTTrainer exposes PEFT's exact,
+        # differentiable TrainableTokens weight while TRL installs the patch.
+        loss_type="chunked_nll",
+        dataset_kwargs={"skip_prepare_dataset": True},
+    )
+
+
 def validate_saved_bundle(
     config: TrainConfig,
     final_dir: Path,
@@ -1672,8 +1762,6 @@ def publish_bundle(config: TrainConfig, final_dir: Path) -> JsonDict:
 
 
 def run_training(config: TrainConfig) -> JsonDict:
-    from trl import SFTConfig
-
     config.validate()
     versions = assert_runtime_versions()
     inventory = load_token_inventory(config.token_inventory)
@@ -1719,49 +1807,11 @@ def run_training(config: TrainConfig) -> JsonDict:
         output_dir / TRAINABLE_SCOPE_FILE,
     )
 
-    sft_kwargs = dict(
-        output_dir=str(checkpoints_dir),
-        max_steps=-1 if config.max_steps is None else config.max_steps,
-        num_train_epochs=config.num_train_epochs,
-        per_device_train_batch_size=config.per_device_train_batch_size,
-        per_device_eval_batch_size=config.per_device_eval_batch_size,
-        gradient_accumulation_steps=config.gradient_accumulation_steps,
-        learning_rate=config.learning_rate,
-        weight_decay=config.weight_decay,
-        # Transformers 5 expresses fractional warmup through warmup_steps.
-        warmup_steps=config.warmup_ratio,
-        lr_scheduler_type="cosine",
-        max_grad_norm=1.0,
-        bf16=True,
-        fp16=False,
-        tf32=True,
-        gradient_checkpointing=True,
-        gradient_checkpointing_kwargs={"use_reentrant": False},
-        logging_steps=1,
-        save_strategy="steps",
-        save_steps=config.save_steps,
-        save_total_limit=config.save_total_limit,
-        eval_strategy="steps" if eval_dataset is not None else "no",
-        eval_steps=config.eval_steps,
-        report_to="none",
-        remove_unused_columns=False,
-        dataloader_num_workers=config.dataloader_num_workers,
-        dataloader_pin_memory=True,
-        seed=config.seed,
-        data_seed=config.seed,
-        max_length=None,
-        packing=False,
-        shuffle_dataset=False,
-        train_sampling_strategy="sequential",
-        completion_only_loss=True,
-        assistant_only_loss=False,
-        # TRL normally rejects a PEFT-wrapped lm_head because its chunked path
-        # reads the weight directly. CatanSFTTrainer exposes PEFT's exact,
-        # differentiable TrainableTokens weight while TRL installs the patch.
-        loss_type="chunked_nll",
-        dataset_kwargs={"skip_prepare_dataset": True},
+    args = build_sft_config(
+        config,
+        checkpoints_dir,
+        has_eval_dataset=eval_dataset is not None,
     )
-    args = SFTConfig(**sft_kwargs)
     trainer_type = _trainer_class(config, components, setup)
     trainer = trainer_type(
         model=model,
@@ -1858,6 +1908,7 @@ def parse_args(argv: Iterable[str] | None = None) -> TrainConfig:
         choices=SPATIAL_TARGET_MODES,
         default="correct",
     )
+    parser.add_argument("--token-init", choices=TOKEN_INIT_MODES, default="mean_noise")
     args = parser.parse_args(argv)
     return TrainConfig(
         train_jsonl=args.train_jsonl,
@@ -1897,6 +1948,7 @@ def parse_args(argv: Iterable[str] | None = None) -> TrainConfig:
         patch_loss_weight=args.patch_loss_weight,
         patch_temperature=args.patch_temperature,
         spatial_target_mode=args.spatial_target_mode,
+        token_init=args.token_init,
     )
 
 

@@ -488,6 +488,15 @@ sft/scripts/train_trl_catan_vision.py  model/data/training/save contract
 sft/modal_catan_vision_sft.py          Modal image, Volumes, upload, H200 boundary
 ```
 
+`--token-init` selects how the 154 atlas rows are seeded when no
+`--initial-bundle` is given: `mean_noise` (default, the base-vocabulary mean
+plus seeded noise) or `family_words`, which starts each row from the base
+embedding of " node", " edge", " tile", or " port" plus the same noise so
+every family carries its own shared direction from step one. Motivation: on
+the pair-stage bundles the tile row `<T10>` pointed away from the tile
+centroid while every other tile sat at +0.22 to +0.30, and a token's
+loading on its family direction predicted its accuracy at r = -0.49.
+
 The production-default `vision_tokens_lora` profile trains the full BF16 vision
 tower and merger, the 154 atlas rows on both the input embedding and untied
 output head, and rank-8 language LoRA. Original language weights stay frozen.

@@ -331,6 +331,53 @@ def test_semantic_rows_are_seeded_from_base_vocabulary_mean_and_are_distinct():
     assert report["input_embedding"]["row_norm_after"] < report["input_embedding"]["row_norm_before"]
 
 
+def test_family_words_init_seeds_each_family_from_its_word_row():
+    vocab, hidden = 512, 8
+    token_ids = tuple(range(vocab - 154 - 4, vocab - 4))
+    tokens = tuple([f"<N{i:02d}>" for i in range(54)] + [f"<E{i:02d}_{i + 1:02d}>" for i in range(72)] + [f"<T{i:02d}>" for i in range(19)] + [f"<P{i:02d}>" for i in range(9)])
+    family_word_ids = {"N": (10,), "E": (20, 21), "T": (30,), "P": (40,)}
+    setup = TokenSetup(
+        tokens=tokens,
+        token_ids=token_ids,
+        tokenizer_size=vocab - 4,
+        model_vocab_size=vocab,
+        added_tokens=154,
+        family_word_ids=family_word_ids,
+    )
+    components = ModelComponents(
+        input_embedding="model.language_model.embed_tokens",
+        output_head="lm_head",
+        language="model.language_model",
+        vision="model.visual",
+        merger="model.visual.merger",
+        vocab_size=vocab,
+        hidden_size=hidden,
+    )
+    torch.manual_seed(0)
+    model = _EmbeddingModel(vocab, hidden)
+    with torch.no_grad():
+        for family, ids in family_word_ids.items():
+            for module in (model.model.language_model.embed_tokens, model.lm_head):
+                module.weight[list(ids)] = float(ord(family)) / 10.0
+
+    report = initialize_semantic_token_rows(model, components, setup, seed=42, mode="family_words")
+
+    ids = torch.tensor(token_ids)
+    for module in (model.model.language_model.embed_tokens, model.lm_head):
+        rows = module.weight[ids]
+        for family, word_ids in family_word_ids.items():
+            members = torch.tensor([i for i, token in enumerate(tokens) if token[1] == family])
+            base = module.weight[list(word_ids)].mean(dim=0)
+            assert torch.allclose(rows[members].mean(dim=0), base, atol=0.2)
+        assert rows.unique(dim=0).shape[0] == 154
+        node_mean = rows[:54].mean(dim=0)
+        tile_mean = rows[126:145].mean(dim=0)
+        assert not torch.allclose(node_mean, tile_mean, atol=0.5)
+    assert report["mode"] == "family_words" and set(report["input_embedding"]["family_base_norms"]) == {"N", "E", "T", "P"}
+    with pytest.raises(ValueError):
+        initialize_semantic_token_rows(model, components, setup, seed=42, mode="sideways")
+
+
 def test_answer_token_metrics_ignore_prompt_and_trivial_completion_tokens():
     vocab, hidden = 6, 4
     weight = torch.eye(vocab, hidden)

@@ -2737,3 +2737,22 @@ during upload before any call spawned and is stopped.)
 - [ ] Step 3: after the pair gate (positives and negatives >= 98%, no hop-1
   false positives), run production_curriculum_v1 empty/setup + sparse from
   the pair bundle, then dense.
+
+# Overnight 2026-09-04: token-init experiment, stages skipped
+
+Two runs from the base model (no initial bundle) straight onto
+spatial_localization_v3 train (24,080 rows), 512 steps, batch 16 x 2, eval
+and save every 128 on v3 validation (1,980 rows):
+- `catan-qwen38-sl-v3-direct-familyinit-s512-20260904`, `--token-init
+  family_words`, app ap-K0OaRzUNteoi3apL3WG6EM, call
+  fc-01M1NTRHHHQZHYAJEHWNHGPXR5, output
+  `/runs/catan-vision-sft/catan-qwen38-sl-v3-direct-familyinit-s512-20260904/020dd5ad268f`.
+- `catan-qwen38-sl-v3-direct-meaninit-s512-20260904`, default init, app
+  ap-Ocnfz9zmNomkiQFMls8V90, call fc-01M1NTRXY4NEZ00HXV948G5PNW, output
+  `/runs/catan-vision-sft/catan-qwen38-sl-v3-direct-meaninit-s512-20260904/020dd5ad268f`.
+Reference: staged v3 run (from v2 ck256) had loss 0.226 / row exact 0.770 at
+128, 0.101 / 0.876 at 256, 0.037 / 0.949 at 512.
+Morning checks: side-by-side in-run curves; row geometry of both final
+bundles (tile rows vs tile centroid, T10 in particular); panel on the better
+bundle. The pairs_v2 final panel (ap-iKwx2e32A6pT3lzn851xJV) decides the
+rung a starting bundle.

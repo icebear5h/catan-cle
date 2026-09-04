@@ -254,9 +254,44 @@ class Scorer:
         }
 
 
-def discover_sets(panel_dir: Path) -> list[tuple[str, Path]]:
+FIRST_PANEL_SET = "spatial_localization_v1-stage1-validation"
+
+
+def set_id_for(records_path: Path, info: JsonDict, metadata: JsonDict, overrides: dict[str, Path]) -> str | None:
+    """Identify the eval set of one records file.
+
+    Newer summaries carry ``eval_set_id``. Older ones only carry the remote
+    ``eval_jsonl`` path, whose parent directory is the set name inside a
+    multi-set panel and the panel root for the panel's first set. Failing
+    both, a ``regression-panel-<set>-eval`` directory name is used, and a
+    flat single-set directory is resolved by a lone ``--set`` override.
+    """
+
+    set_id = info.get("eval_set_id") or metadata.get("eval_set_id")
+    if set_id:
+        return str(set_id)
+    remote = info.get("eval_jsonl")
+    if remote:
+        parent = Path(str(remote)).parent.name
+        if parent == "regression-panel":
+            return FIRST_PANEL_SET
+        if parent.count("-") >= 2 or parent in overrides:
+            return parent
+    for ancestor in records_path.parents:
+        name = ancestor.name
+        if name == "catan-qwen-series-eval-regression-panel-eval":
+            return FIRST_PANEL_SET
+        if name.startswith("regression-panel-") and name.endswith("-eval"):
+            return name[len("regression-panel-") : -len("-eval")]
+    if len(overrides) == 1:
+        return next(iter(overrides))
+    return None
+
+
+def discover_sets(panel_dir: Path, overrides: dict[str, Path] | None = None) -> list[tuple[str, Path]]:
     """Every original-variant records.jsonl under ``panel_dir`` with its eval set id."""
 
+    overrides = overrides or {}
     found = []
     for records_path in sorted(panel_dir.rglob("records.jsonl")):
         summary_path = records_path.with_name("summary.json")
@@ -265,10 +300,10 @@ def discover_sets(panel_dir: Path) -> list[tuple[str, Path]]:
             metadata = json.loads(next(handle, "{}")).get("metadata", {})
         if (info.get("image_variant") or metadata.get("eval_variant") or "original") != "original":
             continue
-        set_id = info.get("eval_set_id") or metadata.get("eval_set_id")
+        set_id = set_id_for(records_path, info, metadata, overrides)
         if not set_id:
-            raise ValueError(f"cannot tell which eval set {records_path} belongs to")
-        found.append((str(set_id), records_path))
+            raise ValueError(f"cannot tell which eval set {records_path} belongs to; pass --set NAME=PATH")
+        found.append((set_id, records_path))
     return found
 
 
@@ -342,7 +377,7 @@ def print_table(report: JsonDict) -> None:
 
 
 def build_scorecard(panel_dir: Path, contracts_dir: Path, overrides: dict[str, Path], adapter: Path | None, inventory: Path) -> JsonDict:
-    sets = discover_sets(panel_dir)
+    sets = discover_sets(panel_dir, overrides)
     if not sets:
         raise FileNotFoundError(f"no original-variant records.jsonl under {panel_dir}")
     scorer = Scorer(contracts_dir)

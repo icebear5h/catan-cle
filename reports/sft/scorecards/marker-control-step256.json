@@ -1,0 +1,886 @@
+{
+  "schema": "catan_failure_scorecard/v1",
+  "panel_dir": "/private/tmp/claude-504/-Users-henry-catan-learning/53f03b8e-da92-4cfb-93fe-10c65e1c4ff7/scratchpad/marker_control/stage1-marker-control-step256/marker-original",
+  "generated_at": "2026-09-04T19:35:12.757221+00:00",
+  "sets": {
+    "spatial_localization_v1-stage1-validation": {
+      "eval_jsonl": "artifacts/generated/board_recognition/replay_v1/spatial_localization_v1/stage1/validation.jsonl",
+      "records": "/private/tmp/claude-504/-Users-henry-catan-learning/53f03b8e-da92-4cfb-93fe-10c65e1c4ff7/scratchpad/marker_control/stage1-marker-control-step256/marker-original/records.jsonl",
+      "counts": {
+        "rows": 192,
+        "errors": 12,
+        "blindness": 0,
+        "neighbor_confusion": 0,
+        "far_false_positive": 0,
+        "other_occupancy_miss": 0,
+        "head_flip": 0,
+        "token_glitch": 0,
+        "orientation_ratio": null,
+        "colour_dropout_min_recall": null
+      },
+      "modes": {
+        "blindness": {
+          "count": 0,
+          "by_piece": {},
+          "by_color": {}
+        },
+        "neighbor_confusion": {
+          "count": 0,
+          "by_class": {}
+        },
+        "far_false_positive": {
+          "count": 0,
+          "by_class": {}
+        },
+        "other_occupancy_miss": {
+          "count": 0,
+          "by_class": {}
+        },
+        "head_flip": {
+          "count": 0,
+          "by_head": {},
+          "tokens_with_3plus": {}
+        },
+        "token_glitch": {
+          "count": 0,
+          "by_kind": {},
+          "tokens": {}
+        },
+        "orientation": {
+          "vertical": {
+            "errors": 0,
+            "n": 0,
+            "error_rate": null
+          },
+          "slanted": {
+            "errors": 0,
+            "n": 0,
+            "error_rate": null
+          },
+          "ratio": null
+        },
+        "colour_dropout": {
+          "recall_by_color": {},
+          "min_color": null,
+          "min_recall": null
+        }
+      },
+      "occupied_recall_by_piece": {},
+      "occupancy_classes": {},
+      "unjoined_records": 0,
+      "per_token": {
+        "<E00_01>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E00_05>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "<E03_04>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E00_20>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E01_02>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "<E11_32>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E01_06>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E02_03>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E02_09>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E03_04>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E03_12>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E04_05>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E04_15>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E05_16>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E06_07>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "P",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E06_23>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E07_08>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E07_24>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E08_09>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E08_27>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E09_10>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E10_11>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E10_29>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E11_12>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E11_32>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E12_13>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E13_14>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E13_34>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E14_15>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E14_37>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E15_17>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E16_18>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E16_21>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E17_18>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E17_39>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E18_40>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "P",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E19_20>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E20_22>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E22_23>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E27_28>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "<E26_27>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E36_37>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E37_38>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "P",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E38_39>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E39_41>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<N00>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N01>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N02>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N03>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N04>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N05>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N06>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N07>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "<E04_15>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N08>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N09>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "<E04_15>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N10>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N11>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N12>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N13>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N14>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N15>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N16>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N17>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N18>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N19>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N20>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N21>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N22>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N23>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N24>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N25>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N26>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N27>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N28>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "B",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N29>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N30>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N31>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N32>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N33>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N34>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "<E13_34>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N35>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N36>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N37>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N17>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N38>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N39>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N40>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N41>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N42>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N43>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N44>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N45>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N46>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N47>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N48>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N49>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N50>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N51>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N52>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N53>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        }
+      }
+    }
+  },
+  "row_entanglement": null
+}

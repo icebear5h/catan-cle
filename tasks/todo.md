@@ -2793,9 +2793,10 @@ rung a starting bundle.
 
 Plan file: ~/.claude/plans/async-wandering-phoenix.md. Gates are failure-mode
 scorecards, never loss.
-- [ ] Step 0: sft/scripts/inspect_token_rows.py and sft/scripts/failure_scorecard.py
-  with tests; backfill scorecards for the v3, pairs_v1, pairs_v2 panels and
-  the gaussian direct eval.
+- [x] Step 0: sft/scripts/inspect_token_rows.py and sft/scripts/failure_scorecard.py
+  with tests (11 passing); scorecards backfilled under reports/sft/scorecards/
+  for the marker control, v3 final, pairs_v1 final, pairs_v2 final, and the
+  gaussian direct eval.
 - [x] Step 1 launched: `catan-qwen38-gauss-s1-marker-20260904`, from the base
   model, `--token-init vocab_gaussian`, v1 marker stage-1 data (24,080 rows),
   256 steps, eval and save every 64, app ap-TTCqSzF68fAtxwbTIUpQdJ, call

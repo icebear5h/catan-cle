@@ -1,0 +1,2827 @@
+{
+  "schema": "catan_failure_scorecard/v1",
+  "panel_dir": "/private/tmp/claude-504/-Users-henry-catan-learning/53f03b8e-da92-4cfb-93fe-10c65e1c4ff7/scratchpad/gauss_final_eval/gaussinit-final",
+  "generated_at": "2026-09-04T19:31:25.285144+00:00",
+  "sets": {
+    "spatial_localization_v3-stage1-validation": {
+      "eval_jsonl": "artifacts/generated/board_recognition/replay_v1/spatial_localization_v3/stage1/validation.jsonl",
+      "records": "/private/tmp/claude-504/-Users-henry-catan-learning/53f03b8e-da92-4cfb-93fe-10c65e1c4ff7/scratchpad/gauss_final_eval/gaussinit-final/catan-qwen-series-eval-pairs-v2-eval/original/records.jsonl",
+      "counts": {
+        "rows": 1980,
+        "errors": 378,
+        "blindness": 95,
+        "neighbor_confusion": 17,
+        "far_false_positive": 124,
+        "other_occupancy_miss": 0,
+        "head_flip": 0,
+        "token_glitch": 0,
+        "orientation_ratio": 0.8155,
+        "colour_dropout_min_recall": 0.2083
+      },
+      "modes": {
+        "blindness": {
+          "count": 95,
+          "by_piece": {
+            "city": 26,
+            "road": 38,
+            "settlement": 31
+          },
+          "by_color": {
+            "black": 10,
+            "blue": 7,
+            "bronze": 5,
+            "gold": 7,
+            "green": 18,
+            "mystic blue": 1,
+            "orange": 9,
+            "red": 19,
+            "silver": 1,
+            "white": 18
+          }
+        },
+        "neighbor_confusion": {
+          "count": 17,
+          "by_class": {
+            "neighbor_false_positive_hop1": 4,
+            "neighbor_false_positive_hop2": 13
+          }
+        },
+        "far_false_positive": {
+          "count": 124,
+          "by_class": {
+            "false_positive_elsewhere": 121,
+            "false_positive_absent": 3
+          }
+        },
+        "other_occupancy_miss": {
+          "count": 0,
+          "by_class": {}
+        },
+        "head_flip": {
+          "count": 0,
+          "by_head": {},
+          "tokens_with_3plus": {}
+        },
+        "token_glitch": {
+          "count": 0,
+          "by_kind": {},
+          "tokens": {}
+        },
+        "orientation": {
+          "vertical": {
+            "errors": 34,
+            "n": 91,
+            "error_rate": 0.3736
+          },
+          "slanted": {
+            "errors": 82,
+            "n": 179,
+            "error_rate": 0.4581
+          },
+          "ratio": 0.8155
+        },
+        "colour_dropout": {
+          "recall_by_color": {
+            "black": {
+              "correct": 3,
+              "total": 13,
+              "recall": 0.2308
+            },
+            "blue": {
+              "correct": 13,
+              "total": 20,
+              "recall": 0.65
+            },
+            "bronze": {
+              "correct": 16,
+              "total": 21,
+              "recall": 0.7619
+            },
+            "gold": {
+              "correct": 20,
+              "total": 27,
+              "recall": 0.7407
+            },
+            "green": {
+              "correct": 7,
+              "total": 25,
+              "recall": 0.28
+            },
+            "mystic blue": {
+              "correct": 20,
+              "total": 21,
+              "recall": 0.9524
+            },
+            "orange": {
+              "correct": 10,
+              "total": 19,
+              "recall": 0.5263
+            },
+            "pink": {
+              "correct": 24,
+              "total": 24,
+              "recall": 1.0
+            },
+            "red": {
+              "correct": 5,
+              "total": 24,
+              "recall": 0.2083
+            },
+            "silver": {
+              "correct": 22,
+              "total": 23,
+              "recall": 0.9565
+            },
+            "white": {
+              "correct": 5,
+              "total": 23,
+              "recall": 0.2174
+            }
+          },
+          "min_color": "red",
+          "min_recall": 0.2083
+        }
+      },
+      "occupied_recall_by_piece": {
+        "city": {
+          "correct": 31,
+          "total": 57,
+          "recall": 0.5439
+        },
+        "road": {
+          "correct": 82,
+          "total": 120,
+          "recall": 0.6833
+        },
+        "settlement": {
+          "correct": 32,
+          "total": 63,
+          "recall": 0.5079
+        }
+      },
+      "occupancy_classes": {
+        "false_negative": 95,
+        "neighbor_false_positive_hop1": 4,
+        "neighbor_false_positive_hop2": 13,
+        "false_positive_elsewhere": 121,
+        "false_positive_absent": 3
+      },
+      "unjoined_records": 0,
+      "per_token": {
+        "<E00_01>": {
+          "n": 7,
+          "errors": 1,
+          "error_rate": 0.1429,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E00_05>": {
+          "n": 12,
+          "errors": 3,
+          "error_rate": 0.25,
+          "dominant_wrong": "silver road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E00_20>": {
+          "n": 5,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E01_02>": {
+          "n": 5,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E01_06>": {
+          "n": 3,
+          "errors": 1,
+          "error_rate": 0.3333,
+          "dominant_wrong": "bronze road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E02_03>": {
+          "n": 1,
+          "errors": 1,
+          "error_rate": 1.0,
+          "dominant_wrong": "pink road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E02_09>": {
+          "n": 1,
+          "errors": 1,
+          "error_rate": 1.0,
+          "dominant_wrong": "blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E03_04>": {
+          "n": 5,
+          "errors": 1,
+          "error_rate": 0.2,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E03_12>": {
+          "n": 1,
+          "errors": 1,
+          "error_rate": 1.0,
+          "dominant_wrong": "orange road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E04_05>": {
+          "n": 6,
+          "errors": 3,
+          "error_rate": 0.5,
+          "dominant_wrong": "bronze road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E04_15>": {
+          "n": 4,
+          "errors": 1,
+          "error_rate": 0.25,
+          "dominant_wrong": "gold road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E05_16>": {
+          "n": 12,
+          "errors": 2,
+          "error_rate": 0.1667,
+          "dominant_wrong": "bronze road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E06_07>": {
+          "n": 16,
+          "errors": 7,
+          "error_rate": 0.4375,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E06_23>": {
+          "n": 11,
+          "errors": 1,
+          "error_rate": 0.0909,
+          "dominant_wrong": "mystic blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E07_08>": {
+          "n": 4,
+          "errors": 1,
+          "error_rate": 0.25,
+          "dominant_wrong": "gold road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E07_24>": {
+          "n": 4,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E08_09>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "red road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E08_27>": {
+          "n": 15,
+          "errors": 5,
+          "error_rate": 0.3333,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E09_10>": {
+          "n": 7,
+          "errors": 1,
+          "error_rate": 0.1429,
+          "dominant_wrong": "pink road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E10_11>": {
+          "n": 12,
+          "errors": 1,
+          "error_rate": 0.0833,
+          "dominant_wrong": "mystic blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E10_29>": {
+          "n": 7,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E11_12>": {
+          "n": 1,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E11_32>": {
+          "n": 6,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E13_14>": {
+          "n": 9,
+          "errors": 2,
+          "error_rate": 0.2222,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E13_34>": {
+          "n": 15,
+          "errors": 2,
+          "error_rate": 0.1333,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E14_37>": {
+          "n": 9,
+          "errors": 2,
+          "error_rate": 0.2222,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E15_17>": {
+          "n": 1,
+          "errors": 1,
+          "error_rate": 1.0,
+          "dominant_wrong": "gold road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E16_18>": {
+          "n": 10,
+          "errors": 3,
+          "error_rate": 0.3,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E16_21>": {
+          "n": 7,
+          "errors": 2,
+          "error_rate": 0.2857,
+          "dominant_wrong": "silver road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E17_18>": {
+          "n": 6,
+          "errors": 2,
+          "error_rate": 0.3333,
+          "dominant_wrong": "silver road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E17_39>": {
+          "n": 12,
+          "errors": 4,
+          "error_rate": 0.3333,
+          "dominant_wrong": "blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E18_40>": {
+          "n": 7,
+          "errors": 2,
+          "error_rate": 0.2857,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E19_20>": {
+          "n": 9,
+          "errors": 2,
+          "error_rate": 0.2222,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E19_21>": {
+          "n": 8,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E19_46>": {
+          "n": 4,
+          "errors": 1,
+          "error_rate": 0.25,
+          "dominant_wrong": "gold road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E20_22>": {
+          "n": 3,
+          "errors": 2,
+          "error_rate": 0.6667,
+          "dominant_wrong": "silver road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E21_43>": {
+          "n": 5,
+          "errors": 3,
+          "error_rate": 0.6,
+          "dominant_wrong": "mystic blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E22_23>": {
+          "n": 7,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E22_49>": {
+          "n": 12,
+          "errors": 5,
+          "error_rate": 0.4167,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E23_52>": {
+          "n": 12,
+          "errors": 2,
+          "error_rate": 0.1667,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E24_25>": {
+          "n": 16,
+          "errors": 3,
+          "error_rate": 0.1875,
+          "dominant_wrong": "silver road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E24_53>": {
+          "n": 11,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E25_26>": {
+          "n": 9,
+          "errors": 2,
+          "error_rate": 0.2222,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E26_27>": {
+          "n": 8,
+          "errors": 2,
+          "error_rate": 0.25,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E27_28>": {
+          "n": 8,
+          "errors": 1,
+          "error_rate": 0.125,
+          "dominant_wrong": "orange road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E28_29>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "bronze road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E29_30>": {
+          "n": 12,
+          "errors": 1,
+          "error_rate": 0.0833,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E30_31>": {
+          "n": 8,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E31_32>": {
+          "n": 7,
+          "errors": 1,
+          "error_rate": 0.1429,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E32_33>": {
+          "n": 9,
+          "errors": 2,
+          "error_rate": 0.2222,
+          "dominant_wrong": "silver road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E33_34>": {
+          "n": 4,
+          "errors": 1,
+          "error_rate": 0.25,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E34_35>": {
+          "n": 3,
+          "errors": 3,
+          "error_rate": 1.0,
+          "dominant_wrong": "gold road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E35_36>": {
+          "n": 22,
+          "errors": 4,
+          "error_rate": 0.1818,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E36_37>": {
+          "n": 9,
+          "errors": 2,
+          "error_rate": 0.2222,
+          "dominant_wrong": "bronze road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E37_38>": {
+          "n": 6,
+          "errors": 2,
+          "error_rate": 0.3333,
+          "dominant_wrong": "blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E38_39>": {
+          "n": 7,
+          "errors": 3,
+          "error_rate": 0.4286,
+          "dominant_wrong": "blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E39_41>": {
+          "n": 11,
+          "errors": 3,
+          "error_rate": 0.2727,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E40_42>": {
+          "n": 1,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E40_44>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "bronze road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E41_42>": {
+          "n": 5,
+          "errors": 2,
+          "error_rate": 0.4,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E43_44>": {
+          "n": 10,
+          "errors": 2,
+          "error_rate": 0.2,
+          "dominant_wrong": "pink road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E43_47>": {
+          "n": 23,
+          "errors": 2,
+          "error_rate": 0.087,
+          "dominant_wrong": "green road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E45_46>": {
+          "n": 8,
+          "errors": 2,
+          "error_rate": 0.25,
+          "dominant_wrong": "white road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E45_47>": {
+          "n": 9,
+          "errors": 2,
+          "error_rate": 0.2222,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E46_48>": {
+          "n": 4,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E48_49>": {
+          "n": 6,
+          "errors": 1,
+          "error_rate": 0.1667,
+          "dominant_wrong": "white road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E49_50>": {
+          "n": 4,
+          "errors": 1,
+          "error_rate": 0.25,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E50_51>": {
+          "n": 8,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E51_52>": {
+          "n": 3,
+          "errors": 1,
+          "error_rate": 0.3333,
+          "dominant_wrong": "blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E52_53>": {
+          "n": 6,
+          "errors": 4,
+          "error_rate": 0.6667,
+          "dominant_wrong": "gold road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<N00>": {
+          "n": 9,
+          "errors": 2,
+          "error_rate": 0.2222,
+          "dominant_wrong": "pink city",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N01>": {
+          "n": 11,
+          "errors": 2,
+          "error_rate": 0.1818,
+          "dominant_wrong": "orange city",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N02>": {
+          "n": 16,
+          "errors": 1,
+          "error_rate": 0.0625,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N03>": {
+          "n": 5,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N04>": {
+          "n": 3,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N05>": {
+          "n": 9,
+          "errors": 2,
+          "error_rate": 0.2222,
+          "dominant_wrong": "silver settlement",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N06>": {
+          "n": 11,
+          "errors": 3,
+          "error_rate": 0.2727,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N07>": {
+          "n": 9,
+          "errors": 2,
+          "error_rate": 0.2222,
+          "dominant_wrong": "pink settlement",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N08>": {
+          "n": 3,
+          "errors": 1,
+          "error_rate": 0.3333,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N09>": {
+          "n": 13,
+          "errors": 4,
+          "error_rate": 0.3077,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N10>": {
+          "n": 8,
+          "errors": 2,
+          "error_rate": 0.25,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N11>": {
+          "n": 15,
+          "errors": 4,
+          "error_rate": 0.2667,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N12>": {
+          "n": 13,
+          "errors": 4,
+          "error_rate": 0.3077,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N13>": {
+          "n": 12,
+          "errors": 1,
+          "error_rate": 0.0833,
+          "dominant_wrong": "silver settlement",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N14>": {
+          "n": 19,
+          "errors": 7,
+          "error_rate": 0.3684,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N15>": {
+          "n": 6,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N16>": {
+          "n": 6,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N17>": {
+          "n": 18,
+          "errors": 2,
+          "error_rate": 0.1111,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N18>": {
+          "n": 6,
+          "errors": 2,
+          "error_rate": 0.3333,
+          "dominant_wrong": "pink settlement",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N19>": {
+          "n": 1,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N20>": {
+          "n": 14,
+          "errors": 5,
+          "error_rate": 0.3571,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N21>": {
+          "n": 19,
+          "errors": 5,
+          "error_rate": 0.2632,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N22>": {
+          "n": 10,
+          "errors": 6,
+          "error_rate": 0.6,
+          "dominant_wrong": "silver road",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N23>": {
+          "n": 7,
+          "errors": 2,
+          "error_rate": 0.2857,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N24>": {
+          "n": 14,
+          "errors": 4,
+          "error_rate": 0.2857,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N25>": {
+          "n": 1,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N26>": {
+          "n": 7,
+          "errors": 1,
+          "error_rate": 0.1429,
+          "dominant_wrong": "bronze city",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N27>": {
+          "n": 1,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N28>": {
+          "n": 6,
+          "errors": 3,
+          "error_rate": 0.5,
+          "dominant_wrong": "gold city",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N29>": {
+          "n": 16,
+          "errors": 6,
+          "error_rate": 0.375,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N30>": {
+          "n": 16,
+          "errors": 3,
+          "error_rate": 0.1875,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N31>": {
+          "n": 13,
+          "errors": 3,
+          "error_rate": 0.2308,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N32>": {
+          "n": 8,
+          "errors": 1,
+          "error_rate": 0.125,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N33>": {
+          "n": 9,
+          "errors": 1,
+          "error_rate": 0.1111,
+          "dominant_wrong": "gold city",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N34>": {
+          "n": 15,
+          "errors": 5,
+          "error_rate": 0.3333,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N35>": {
+          "n": 18,
+          "errors": 5,
+          "error_rate": 0.2778,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N36>": {
+          "n": 8,
+          "errors": 3,
+          "error_rate": 0.375,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N37>": {
+          "n": 17,
+          "errors": 5,
+          "error_rate": 0.2941,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N38>": {
+          "n": 14,
+          "errors": 6,
+          "error_rate": 0.4286,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N39>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "bronze settlement",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N40>": {
+          "n": 7,
+          "errors": 1,
+          "error_rate": 0.1429,
+          "dominant_wrong": "mystic blue settlement",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N41>": {
+          "n": 10,
+          "errors": 2,
+          "error_rate": 0.2,
+          "dominant_wrong": "blue settlement",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N42>": {
+          "n": 18,
+          "errors": 2,
+          "error_rate": 0.1111,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N43>": {
+          "n": 9,
+          "errors": 2,
+          "error_rate": 0.2222,
+          "dominant_wrong": "mystic blue settlement",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N44>": {
+          "n": 4,
+          "errors": 1,
+          "error_rate": 0.25,
+          "dominant_wrong": "silver city",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N45>": {
+          "n": 11,
+          "errors": 2,
+          "error_rate": 0.1818,
+          "dominant_wrong": "gold settlement",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N46>": {
+          "n": 4,
+          "errors": 1,
+          "error_rate": 0.25,
+          "dominant_wrong": "silver city",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N47>": {
+          "n": 14,
+          "errors": 1,
+          "error_rate": 0.0714,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N48>": {
+          "n": 12,
+          "errors": 2,
+          "error_rate": 0.1667,
+          "dominant_wrong": "silver city",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N49>": {
+          "n": 4,
+          "errors": 1,
+          "error_rate": 0.25,
+          "dominant_wrong": "mystic blue city",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N50>": {
+          "n": 8,
+          "errors": 1,
+          "error_rate": 0.125,
+          "dominant_wrong": "orange settlement",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N51>": {
+          "n": 5,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N52>": {
+          "n": 4,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N53>": {
+          "n": 14,
+          "errors": 1,
+          "error_rate": 0.0714,
+          "dominant_wrong": "pink city",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T00>": {
+          "n": 57,
+          "errors": 12,
+          "error_rate": 0.2105,
+          "dominant_wrong": "wheat",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T01>": {
+          "n": 42,
+          "errors": 6,
+          "error_rate": 0.1429,
+          "dominant_wrong": "sheep",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T02>": {
+          "n": 33,
+          "errors": 2,
+          "error_rate": 0.0606,
+          "dominant_wrong": "sheep",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T03>": {
+          "n": 24,
+          "errors": 3,
+          "error_rate": 0.125,
+          "dominant_wrong": "wheat",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T04>": {
+          "n": 63,
+          "errors": 23,
+          "error_rate": 0.3651,
+          "dominant_wrong": "8",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T05>": {
+          "n": 54,
+          "errors": 18,
+          "error_rate": 0.3333,
+          "dominant_wrong": "brick",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T06>": {
+          "n": 42,
+          "errors": 16,
+          "error_rate": 0.381,
+          "dominant_wrong": "ore",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T07>": {
+          "n": 57,
+          "errors": 9,
+          "error_rate": 0.1579,
+          "dominant_wrong": "ore",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T08>": {
+          "n": 30,
+          "errors": 4,
+          "error_rate": 0.1333,
+          "dominant_wrong": "sheep",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T09>": {
+          "n": 60,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T10>": {
+          "n": 33,
+          "errors": 15,
+          "error_rate": 0.4545,
+          "dominant_wrong": "none",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T11>": {
+          "n": 48,
+          "errors": 6,
+          "error_rate": 0.125,
+          "dominant_wrong": "<T01>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T12>": {
+          "n": 78,
+          "errors": 23,
+          "error_rate": 0.2949,
+          "dominant_wrong": "wheat",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T13>": {
+          "n": 48,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T14>": {
+          "n": 45,
+          "errors": 2,
+          "error_rate": 0.0444,
+          "dominant_wrong": "wheat",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T15>": {
+          "n": 33,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T16>": {
+          "n": 42,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T17>": {
+          "n": 54,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T18>": {
+          "n": 57,
+          "errors": 2,
+          "error_rate": 0.0351,
+          "dominant_wrong": "wheat",
+          "head_flips": 0,
+          "glitches": 0
+        }
+      }
+    },
+    "spatial_localization_pairs_v2-stage1-validation": {
+      "eval_jsonl": "artifacts/generated/board_recognition/replay_v1/spatial_localization_pairs_v2/stage1/validation.jsonl",
+      "records": "/private/tmp/claude-504/-Users-henry-catan-learning/53f03b8e-da92-4cfb-93fe-10c65e1c4ff7/scratchpad/gauss_final_eval/gaussinit-final/pairs-v2-spatial_localization_pairs_v2-stage1-validation-eval/original/records.jsonl",
+      "counts": {
+        "rows": 2133,
+        "errors": 655,
+        "blindness": 192,
+        "neighbor_confusion": 145,
+        "far_false_positive": 109,
+        "other_occupancy_miss": 3,
+        "head_flip": 1,
+        "token_glitch": 0,
+        "orientation_ratio": 1.01,
+        "colour_dropout_min_recall": 0.0588
+      },
+      "modes": {
+        "blindness": {
+          "count": 192,
+          "by_piece": {
+            "city": 44,
+            "road": 112,
+            "settlement": 36
+          },
+          "by_color": {
+            "black": 28,
+            "blue": 13,
+            "bronze": 17,
+            "gold": 11,
+            "green": 18,
+            "mystic blue": 15,
+            "orange": 32,
+            "pink": 5,
+            "red": 16,
+            "silver": 11,
+            "white": 26
+          }
+        },
+        "neighbor_confusion": {
+          "count": 145,
+          "by_class": {
+            "neighbor_false_positive_hop1": 61,
+            "neighbor_false_positive_hop2": 17,
+            "cross_type_false_positive": 10,
+            "wrong_piece_neighbor_hop1": 56,
+            "wrong_piece_cross_type": 1
+          }
+        },
+        "far_false_positive": {
+          "count": 109,
+          "by_class": {
+            "false_positive_elsewhere": 98,
+            "false_positive_absent": 11
+          }
+        },
+        "other_occupancy_miss": {
+          "count": 3,
+          "by_class": {
+            "right_type_wrong_color": 3
+          }
+        },
+        "head_flip": {
+          "count": 1,
+          "by_head": {
+            "building->resource": 1
+          },
+          "tokens_with_3plus": {}
+        },
+        "token_glitch": {
+          "count": 0,
+          "by_kind": {},
+          "tokens": {}
+        },
+        "orientation": {
+          "vertical": {
+            "errors": 85,
+            "n": 156,
+            "error_rate": 0.5449
+          },
+          "slanted": {
+            "errors": 198,
+            "n": 367,
+            "error_rate": 0.5395
+          },
+          "ratio": 1.01
+        },
+        "colour_dropout": {
+          "recall_by_color": {
+            "black": {
+              "correct": 2,
+              "total": 34,
+              "recall": 0.0588
+            },
+            "blue": {
+              "correct": 20,
+              "total": 34,
+              "recall": 0.5882
+            },
+            "bronze": {
+              "correct": 15,
+              "total": 38,
+              "recall": 0.3947
+            },
+            "gold": {
+              "correct": 20,
+              "total": 41,
+              "recall": 0.4878
+            },
+            "green": {
+              "correct": 2,
+              "total": 29,
+              "recall": 0.069
+            },
+            "mystic blue": {
+              "correct": 24,
+              "total": 43,
+              "recall": 0.5581
+            },
+            "orange": {
+              "correct": 4,
+              "total": 42,
+              "recall": 0.0952
+            },
+            "pink": {
+              "correct": 29,
+              "total": 37,
+              "recall": 0.7838
+            },
+            "red": {
+              "correct": 5,
+              "total": 25,
+              "recall": 0.2
+            },
+            "silver": {
+              "correct": 27,
+              "total": 42,
+              "recall": 0.6429
+            },
+            "white": {
+              "correct": 5,
+              "total": 40,
+              "recall": 0.125
+            }
+          },
+          "min_color": "black",
+          "min_recall": 0.0588
+        }
+      },
+      "occupied_recall_by_piece": {
+        "city": {
+          "correct": 25,
+          "total": 74,
+          "recall": 0.3378
+        },
+        "road": {
+          "correct": 95,
+          "total": 252,
+          "recall": 0.377
+        },
+        "settlement": {
+          "correct": 33,
+          "total": 79,
+          "recall": 0.4177
+        }
+      },
+      "occupancy_classes": {
+        "false_negative": 192,
+        "neighbor_false_positive_hop1": 61,
+        "neighbor_false_positive_hop2": 17,
+        "cross_type_false_positive": 10,
+        "false_positive_elsewhere": 98,
+        "false_positive_absent": 11,
+        "wrong_piece_neighbor_hop1": 56,
+        "wrong_piece_cross_type": 1,
+        "right_type_wrong_color": 3
+      },
+      "unjoined_records": 0,
+      "per_token": {
+        "<E00_01>": {
+          "n": 3,
+          "errors": 1,
+          "error_rate": 0.3333,
+          "dominant_wrong": "mystic blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E00_05>": {
+          "n": 15,
+          "errors": 7,
+          "error_rate": 0.4667,
+          "dominant_wrong": "<E03_04>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E00_20>": {
+          "n": 10,
+          "errors": 3,
+          "error_rate": 0.3,
+          "dominant_wrong": "blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E01_02>": {
+          "n": 12,
+          "errors": 3,
+          "error_rate": 0.25,
+          "dominant_wrong": "pink road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E01_06>": {
+          "n": 14,
+          "errors": 6,
+          "error_rate": 0.4286,
+          "dominant_wrong": "mystic blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E02_03>": {
+          "n": 7,
+          "errors": 4,
+          "error_rate": 0.5714,
+          "dominant_wrong": "blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E02_09>": {
+          "n": 11,
+          "errors": 3,
+          "error_rate": 0.2727,
+          "dominant_wrong": "pink road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E03_04>": {
+          "n": 14,
+          "errors": 7,
+          "error_rate": 0.5,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E03_12>": {
+          "n": 17,
+          "errors": 6,
+          "error_rate": 0.3529,
+          "dominant_wrong": "<N03>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E04_05>": {
+          "n": 9,
+          "errors": 3,
+          "error_rate": 0.3333,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E04_15>": {
+          "n": 10,
+          "errors": 7,
+          "error_rate": 0.7,
+          "dominant_wrong": "blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E05_16>": {
+          "n": 15,
+          "errors": 5,
+          "error_rate": 0.3333,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E06_07>": {
+          "n": 8,
+          "errors": 4,
+          "error_rate": 0.5,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E06_23>": {
+          "n": 8,
+          "errors": 2,
+          "error_rate": 0.25,
+          "dominant_wrong": "mystic blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E07_08>": {
+          "n": 9,
+          "errors": 4,
+          "error_rate": 0.4444,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E07_24>": {
+          "n": 18,
+          "errors": 4,
+          "error_rate": 0.2222,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E08_09>": {
+          "n": 18,
+          "errors": 5,
+          "error_rate": 0.2778,
+          "dominant_wrong": "<N09>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E08_27>": {
+          "n": 5,
+          "errors": 2,
+          "error_rate": 0.4,
+          "dominant_wrong": "green road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E09_10>": {
+          "n": 18,
+          "errors": 12,
+          "error_rate": 0.6667,
+          "dominant_wrong": "silver road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E10_11>": {
+          "n": 19,
+          "errors": 7,
+          "error_rate": 0.3684,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E10_29>": {
+          "n": 11,
+          "errors": 6,
+          "error_rate": 0.5455,
+          "dominant_wrong": "<N10>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E11_12>": {
+          "n": 17,
+          "errors": 5,
+          "error_rate": 0.2941,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E11_32>": {
+          "n": 11,
+          "errors": 6,
+          "error_rate": 0.5455,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E12_13>": {
+          "n": 16,
+          "errors": 6,
+          "error_rate": 0.375,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E13_14>": {
+          "n": 8,
+          "errors": 3,
+          "error_rate": 0.375,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E13_34>": {
+          "n": 8,
+          "errors": 3,
+          "error_rate": 0.375,
+          "dominant_wrong": "green road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E14_15>": {
+          "n": 7,
+          "errors": 2,
+          "error_rate": 0.2857,
+          "dominant_wrong": "blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E14_37>": {
+          "n": 15,
+          "errors": 4,
+          "error_rate": 0.2667,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E15_17>": {
+          "n": 11,
+          "errors": 3,
+          "error_rate": 0.2727,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E16_18>": {
+          "n": 20,
+          "errors": 10,
+          "error_rate": 0.5,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E16_21>": {
+          "n": 20,
+          "errors": 8,
+          "error_rate": 0.4,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E17_18>": {
+          "n": 5,
+          "errors": 2,
+          "error_rate": 0.4,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E17_39>": {
+          "n": 13,
+          "errors": 6,
+          "error_rate": 0.4615,
+          "dominant_wrong": "green road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E18_40>": {
+          "n": 13,
+          "errors": 5,
+          "error_rate": 0.3846,
+          "dominant_wrong": "silver road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E19_20>": {
+          "n": 13,
+          "errors": 8,
+          "error_rate": 0.6154,
+          "dominant_wrong": "<N19>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E19_21>": {
+          "n": 12,
+          "errors": 6,
+          "error_rate": 0.5,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E19_46>": {
+          "n": 10,
+          "errors": 4,
+          "error_rate": 0.4,
+          "dominant_wrong": "white city",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E20_22>": {
+          "n": 6,
+          "errors": 3,
+          "error_rate": 0.5,
+          "dominant_wrong": "blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E21_43>": {
+          "n": 18,
+          "errors": 12,
+          "error_rate": 0.6667,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E22_23>": {
+          "n": 4,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E22_49>": {
+          "n": 6,
+          "errors": 2,
+          "error_rate": 0.3333,
+          "dominant_wrong": "blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E23_52>": {
+          "n": 14,
+          "errors": 9,
+          "error_rate": 0.6429,
+          "dominant_wrong": "mystic blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E24_25>": {
+          "n": 11,
+          "errors": 7,
+          "error_rate": 0.6364,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E24_53>": {
+          "n": 13,
+          "errors": 7,
+          "error_rate": 0.5385,
+          "dominant_wrong": "gold road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E25_26>": {
+          "n": 7,
+          "errors": 3,
+          "error_rate": 0.4286,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E26_27>": {
+          "n": 15,
+          "errors": 6,
+          "error_rate": 0.4,
+          "dominant_wrong": "pink road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E27_28>": {
+          "n": 7,
+          "errors": 3,
+          "error_rate": 0.4286,
+          "dominant_wrong": "blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E28_29>": {
+          "n": 12,
+          "errors": 6,
+          "error_rate": 0.5,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E29_30>": {
+          "n": 5,
+          "errors": 3,
+          "error_rate": 0.6,
+          "dominant_wrong": "mystic blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E30_31>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "bronze road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E31_32>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E32_33>": {
+          "n": 11,
+          "errors": 2,
+          "error_rate": 0.1818,
+          "dominant_wrong": "mystic blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E33_34>": {
+          "n": 21,
+          "errors": 5,
+          "error_rate": 0.2381,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E34_35>": {
+          "n": 14,
+          "errors": 2,
+          "error_rate": 0.1429,
+          "dominant_wrong": "pink road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E35_36>": {
+          "n": 6,
+          "errors": 4,
+          "error_rate": 0.6667,
+          "dominant_wrong": "blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E36_37>": {
+          "n": 10,
+          "errors": 7,
+          "error_rate": 0.7,
+          "dominant_wrong": "<N37>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E37_38>": {
+          "n": 4,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E38_39>": {
+          "n": 10,
+          "errors": 2,
+          "error_rate": 0.2,
+          "dominant_wrong": "silver road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E39_41>": {
+          "n": 11,
+          "errors": 7,
+          "error_rate": 0.6364,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E40_42>": {
+          "n": 20,
+          "errors": 7,
+          "error_rate": 0.35,
+          "dominant_wrong": "silver road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E40_44>": {
+          "n": 18,
+          "errors": 4,
+          "error_rate": 0.2222,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E41_42>": {
+          "n": 9,
+          "errors": 5,
+          "error_rate": 0.5556,
+          "dominant_wrong": "pink road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E43_44>": {
+          "n": 17,
+          "errors": 7,
+          "error_rate": 0.4118,
+          "dominant_wrong": "blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E43_47>": {
+          "n": 11,
+          "errors": 2,
+          "error_rate": 0.1818,
+          "dominant_wrong": "pink road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E45_46>": {
+          "n": 9,
+          "errors": 3,
+          "error_rate": 0.3333,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E45_47>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "mystic blue road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E46_48>": {
+          "n": 9,
+          "errors": 5,
+          "error_rate": 0.5556,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E48_49>": {
+          "n": 17,
+          "errors": 4,
+          "error_rate": 0.2353,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E49_50>": {
+          "n": 16,
+          "errors": 4,
+          "error_rate": 0.25,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E50_51>": {
+          "n": 20,
+          "errors": 12,
+          "error_rate": 0.6,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E51_52>": {
+          "n": 14,
+          "errors": 7,
+          "error_rate": 0.5,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E52_53>": {
+          "n": 13,
+          "errors": 5,
+          "error_rate": 0.3846,
+          "dominant_wrong": "pink road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<N00>": {
+          "n": 13,
+          "errors": 7,
+          "error_rate": 0.5385,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N01>": {
+          "n": 18,
+          "errors": 5,
+          "error_rate": 0.2778,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N02>": {
+          "n": 16,
+          "errors": 3,
+          "error_rate": 0.1875,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N03>": {
+          "n": 13,
+          "errors": 4,
+          "error_rate": 0.3077,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N04>": {
+          "n": 12,
+          "errors": 4,
+          "error_rate": 0.3333,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N05>": {
+          "n": 15,
+          "errors": 6,
+          "error_rate": 0.4,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N06>": {
+          "n": 7,
+          "errors": 5,
+          "error_rate": 0.7143,
+          "dominant_wrong": "pink settlement",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N07>": {
+          "n": 13,
+          "errors": 2,
+          "error_rate": 0.1538,
+          "dominant_wrong": "pink settlement",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N08>": {
+          "n": 7,
+          "errors": 4,
+          "error_rate": 0.5714,
+          "dominant_wrong": "bronze city",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N09>": {
+          "n": 17,
+          "errors": 5,
+          "error_rate": 0.2941,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N10>": {
+          "n": 23,
+          "errors": 9,
+          "error_rate": 0.3913,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N11>": {
+          "n": 21,
+          "errors": 6,
+          "error_rate": 0.2857,
+          "dominant_wrong": "<N10>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N12>": {
+          "n": 18,
+          "errors": 7,
+          "error_rate": 0.3889,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N13>": {
+          "n": 15,
+          "errors": 5,
+          "error_rate": 0.3333,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N14>": {
+          "n": 12,
+          "errors": 4,
+          "error_rate": 0.3333,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N15>": {
+          "n": 9,
+          "errors": 4,
+          "error_rate": 0.4444,
+          "dominant_wrong": "<N17>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N16>": {
+          "n": 9,
+          "errors": 3,
+          "error_rate": 0.3333,
+          "dominant_wrong": "pink settlement",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N17>": {
+          "n": 4,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N18>": {
+          "n": 14,
+          "errors": 3,
+          "error_rate": 0.2143,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N19>": {
+          "n": 13,
+          "errors": 1,
+          "error_rate": 0.0769,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N20>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "blue city",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N21>": {
+          "n": 6,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N22>": {
+          "n": 8,
+          "errors": 2,
+          "error_rate": 0.25,
+          "dominant_wrong": "pink road, blue road",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N23>": {
+          "n": 8,
+          "errors": 3,
+          "error_rate": 0.375,
+          "dominant_wrong": "empty",
+          "head_flips": 1,
+          "glitches": 0
+        },
+        "<N24>": {
+          "n": 17,
+          "errors": 5,
+          "error_rate": 0.2941,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N25>": {
+          "n": 8,
+          "errors": 5,
+          "error_rate": 0.625,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N26>": {
+          "n": 17,
+          "errors": 5,
+          "error_rate": 0.2941,
+          "dominant_wrong": "mystic blue city",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N27>": {
+          "n": 12,
+          "errors": 3,
+          "error_rate": 0.25,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N28>": {
+          "n": 9,
+          "errors": 5,
+          "error_rate": 0.5556,
+          "dominant_wrong": "<N27>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N29>": {
+          "n": 13,
+          "errors": 8,
+          "error_rate": 0.6154,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N30>": {
+          "n": 9,
+          "errors": 2,
+          "error_rate": 0.2222,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N31>": {
+          "n": 6,
+          "errors": 2,
+          "error_rate": 0.3333,
+          "dominant_wrong": "pink road",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N32>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N33>": {
+          "n": 8,
+          "errors": 4,
+          "error_rate": 0.5,
+          "dominant_wrong": "blue settlement",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N34>": {
+          "n": 17,
+          "errors": 4,
+          "error_rate": 0.2353,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N35>": {
+          "n": 6,
+          "errors": 1,
+          "error_rate": 0.1667,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N36>": {
+          "n": 5,
+          "errors": 3,
+          "error_rate": 0.6,
+          "dominant_wrong": "gold settlement",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N37>": {
+          "n": 19,
+          "errors": 2,
+          "error_rate": 0.1053,
+          "dominant_wrong": "pink settlement",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N38>": {
+          "n": 9,
+          "errors": 6,
+          "error_rate": 0.6667,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N39>": {
+          "n": 21,
+          "errors": 7,
+          "error_rate": 0.3333,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N40>": {
+          "n": 24,
+          "errors": 10,
+          "error_rate": 0.4167,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N41>": {
+          "n": 12,
+          "errors": 4,
+          "error_rate": 0.3333,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N42>": {
+          "n": 6,
+          "errors": 3,
+          "error_rate": 0.5,
+          "dominant_wrong": "blue city",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N43>": {
+          "n": 15,
+          "errors": 2,
+          "error_rate": 0.1333,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N44>": {
+          "n": 8,
+          "errors": 4,
+          "error_rate": 0.5,
+          "dominant_wrong": "silver road",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N45>": {
+          "n": 4,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N46>": {
+          "n": 6,
+          "errors": 2,
+          "error_rate": 0.3333,
+          "dominant_wrong": "silver settlement",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N47>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N48>": {
+          "n": 7,
+          "errors": 3,
+          "error_rate": 0.4286,
+          "dominant_wrong": "bronze road",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N49>": {
+          "n": 7,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N50>": {
+          "n": 11,
+          "errors": 2,
+          "error_rate": 0.1818,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N51>": {
+          "n": 7,
+          "errors": 1,
+          "error_rate": 0.1429,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N52>": {
+          "n": 12,
+          "errors": 5,
+          "error_rate": 0.4167,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N53>": {
+          "n": 16,
+          "errors": 8,
+          "error_rate": 0.5,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T00>": {
+          "n": 39,
+          "errors": 7,
+          "error_rate": 0.1795,
+          "dominant_wrong": "wheat",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T01>": {
+          "n": 36,
+          "errors": 6,
+          "error_rate": 0.1667,
+          "dominant_wrong": "sheep",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T02>": {
+          "n": 21,
+          "errors": 2,
+          "error_rate": 0.0952,
+          "dominant_wrong": "sheep",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T03>": {
+          "n": 15,
+          "errors": 1,
+          "error_rate": 0.0667,
+          "dominant_wrong": "wheat",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T04>": {
+          "n": 48,
+          "errors": 19,
+          "error_rate": 0.3958,
+          "dominant_wrong": "8",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T05>": {
+          "n": 33,
+          "errors": 13,
+          "error_rate": 0.3939,
+          "dominant_wrong": "brick",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T06>": {
+          "n": 24,
+          "errors": 10,
+          "error_rate": 0.4167,
+          "dominant_wrong": "sheep",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T07>": {
+          "n": 42,
+          "errors": 6,
+          "error_rate": 0.1429,
+          "dominant_wrong": "ore",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T08>": {
+          "n": 24,
+          "errors": 3,
+          "error_rate": 0.125,
+          "dominant_wrong": "sheep",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T09>": {
+          "n": 33,
+          "errors": 1,
+          "error_rate": 0.0303,
+          "dominant_wrong": "<T04>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T10>": {
+          "n": 54,
+          "errors": 18,
+          "error_rate": 0.3333,
+          "dominant_wrong": "none",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T11>": {
+          "n": 18,
+          "errors": 6,
+          "error_rate": 0.3333,
+          "dominant_wrong": "wheat",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T12>": {
+          "n": 39,
+          "errors": 11,
+          "error_rate": 0.2821,
+          "dominant_wrong": "wheat",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T13>": {
+          "n": 24,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T14>": {
+          "n": 39,
+          "errors": 4,
+          "error_rate": 0.1026,
+          "dominant_wrong": "wheat",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T15>": {
+          "n": 54,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T16>": {
+          "n": 36,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T17>": {
+          "n": 45,
+          "errors": 1,
+          "error_rate": 0.0222,
+          "dominant_wrong": "11",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T18>": {
+          "n": 51,
+          "errors": 4,
+          "error_rate": 0.0784,
+          "dominant_wrong": "ore",
+          "head_flips": 0,
+          "glitches": 0
+        }
+      }
+    }
+  },
+  "row_entanglement": null,
+  "baseline": "/private/tmp/claude-504/-Users-henry-catan-learning/53f03b8e-da92-4cfb-93fe-10c65e1c4ff7/scratchpad/scorecard_pairs_v2_final.json",
+  "deltas": {
+    "spatial_localization_v3-stage1-validation": {
+      "rows": 0,
+      "errors": 357,
+      "blindness": 86,
+      "neighbor_confusion": 15,
+      "far_false_positive": 114,
+      "other_occupancy_miss": 0,
+      "head_flip": 0,
+      "token_glitch": 0,
+      "orientation_ratio": 0.8155,
+      "colour_dropout_min_recall": -0.5812
+    },
+    "spatial_localization_pairs_v2-stage1-validation": {
+      "rows": 0,
+      "errors": 596,
+      "blindness": 168,
+      "neighbor_confusion": 122,
+      "far_false_positive": 102,
+      "other_occupancy_miss": 2,
+      "head_flip": 1,
+      "token_glitch": 0,
+      "orientation_ratio": 0.7629,
+      "colour_dropout_min_recall": -0.8236
+    }
+  }
+}

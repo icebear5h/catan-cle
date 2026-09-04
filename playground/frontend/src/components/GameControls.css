@@ -1,8 +1,8 @@
 .game-controls {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 0;
-  padding: 1rem;
+  background: rgba(8, 13, 20, 0.76);
+  border: 1px solid rgba(135, 159, 190, 0.22);
+  border-radius: 0.85rem;
+  padding: 0.85rem;
 }
 
 .game-controls h3 {
@@ -21,11 +21,27 @@
   margin-bottom: 0.75rem;
 }
 
+.control-section:last-child {
+  margin-bottom: 0;
+}
+
+.control-section > h4 {
+  color: var(--text);
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.session-status-section,
+.replay-tools-section {
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--line);
+}
+
 .btn {
   padding: 0.5rem 1rem;
   border: 1px solid var(--line);
-  border-radius: 0;
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  border-radius: 0.55rem;
+  font-family: var(--font-ui);
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
@@ -113,7 +129,7 @@
 
 .replay-llm-controls h4 {
   color: var(--cyan);
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-family: var(--font-ui);
   font-size: 0.76rem;
   text-transform: uppercase;
 }
@@ -121,10 +137,10 @@
 .replay-model-select {
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: 0;
+  border-radius: 0.55rem;
   background: #05070a;
   color: var(--text);
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-family: var(--font-mono);
   font-size: 0.72rem;
   padding: 0.5rem 0.6rem;
   margin-bottom: 0.4rem;
@@ -138,10 +154,10 @@
 .replay-model-input {
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: 0;
+  border-radius: 0.55rem;
   background: #05070a;
   color: var(--text);
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-family: var(--font-mono);
   font-size: 0.72rem;
   padding: 0.55rem 0.6rem;
 }

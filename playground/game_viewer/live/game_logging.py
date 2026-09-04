@@ -1,8 +1,286 @@
 """Game event logging and resource analysis functions."""
 
 import time
+from typing import Any, Mapping, Sequence
 
+from cle.game_engine.models.enums import ActionType
+from cle.game_engine.trading import RESOURCE_NAMES, TradeCandidate, TradeOffer
 from cle.replay.colonist.constants import RESOURCE_EMOJIS
+
+
+TRADE_ACTION_TYPES = frozenset(
+    {
+        ActionType.MARITIME_TRADE.value,
+        ActionType.OFFER_TRADE.value,
+        ActionType.ACCEPT_TRADE.value,
+        ActionType.REJECT_TRADE.value,
+        ActionType.COUNTER_OFFER.value,
+        ActionType.CONFIRM_TRADE.value,
+        ActionType.CANCEL_TRADE.value,
+    }
+)
+
+
+def _enum_value(value: Any) -> Any:
+    return value.value if hasattr(value, "value") else value
+
+
+def _format_named_resources(value: Any, any_count: Any = 0) -> str:
+    if not isinstance(value, Mapping):
+        return "unspecified resources"
+    parts = [
+        f"{value[resource]} {resource}"
+        for resource in RESOURCE_NAMES
+        if isinstance(value.get(resource), int) and value[resource] > 0
+    ]
+    if isinstance(any_count, int) and any_count > 0:
+        parts.append(f"{any_count} ANY")
+    return ", ".join(parts) if parts else "no resources"
+
+
+def trade_action_payload(action) -> dict[str, Any] | None:
+    """Return the semantic wire representation for one trade action."""
+    action_type = _enum_value(getattr(action, "action_type", None))
+    if action_type not in TRADE_ACTION_TYPES:
+        return None
+
+    value = getattr(action, "value", None)
+    if isinstance(value, TradeOffer):
+        payload: Any = value.to_payload()
+    elif isinstance(value, TradeCandidate):
+        payload = value.to_payload()
+    elif action_type == ActionType.MARITIME_TRADE.value and isinstance(
+        value,
+        (list, tuple),
+    ):
+        payload = [_enum_value(item) for item in value]
+    else:
+        payload = _enum_value(value)
+    return {"action_type": action_type, "payload": payload}
+
+
+def format_trade_event(action_type: Any, payload: Any) -> str | None:
+    """Format a semantic trade event without leaking Python object reprs."""
+    action_type = _enum_value(action_type)
+    if action_type not in TRADE_ACTION_TYPES:
+        return None
+
+    if action_type in {
+        ActionType.OFFER_TRADE.value,
+        ActionType.COUNTER_OFFER.value,
+    }:
+        if not isinstance(payload, Mapping):
+            return "Offered a trade" if action_type == ActionType.OFFER_TRADE.value else "Counter-offered a trade"
+        give = _format_named_resources(payload.get("give"), payload.get("give_any"))
+        receive = _format_named_resources(
+            payload.get("receive"),
+            payload.get("receive_any"),
+        )
+        verb = "Offered" if action_type == ActionType.OFFER_TRADE.value else "Counter-offered"
+        audience = payload.get("audience")
+        audience_names = sorted(
+            str(_enum_value(color))
+            for color in audience
+        ) if isinstance(audience, (list, tuple, set, frozenset)) else []
+        audience_suffix = (
+            f" to {', '.join(audience_names)}" if audience_names else ""
+        )
+        parent = payload.get("parent_offer_id")
+        parent_suffix = f" (counter to {parent})" if parent else ""
+        return (
+            f"{verb} {give} for {receive}"
+            f"{audience_suffix}{parent_suffix}"
+        )
+
+    if action_type == ActionType.ACCEPT_TRADE.value:
+        return f"Signaled willingness for offer {payload}"
+    if action_type == ActionType.REJECT_TRADE.value:
+        return f"Declined offer {payload}"
+    if action_type == ActionType.CANCEL_TRADE.value:
+        return f"Withdrew offer {payload}"
+
+    if action_type == ActionType.CONFIRM_TRADE.value:
+        if isinstance(payload, Mapping):
+            offer_id = payload.get("offer_id", "unknown")
+            counterparty = payload.get("counterparty")
+            partner_suffix = f" with {counterparty}" if counterparty else ""
+            return f"Confirmed offer {offer_id}{partner_suffix}"
+        return f"Confirmed trade {payload}"
+
+    if action_type == ActionType.MARITIME_TRADE.value:
+        if isinstance(payload, Sequence) and not isinstance(payload, (str, bytes)):
+            values = list(payload)
+            if len(values) >= 2:
+                offered = [value for value in values[:-1] if value is not None]
+                received = values[-1]
+                if offered and received is not None:
+                    offered_name = str(_enum_value(offered[0]))
+                    received_name = str(_enum_value(received))
+                    return (
+                        f"Traded {len(offered)} {offered_name} for "
+                        f"1 {received_name} with the bank"
+                    )
+        return "Traded with the bank"
+
+    return None
+
+
+def format_action_for_display(action, *, include_actor: bool = False) -> str:
+    """Format trade actions semantically and preserve legacy text otherwise."""
+    details = trade_action_payload(action)
+    if details is None:
+        return str(action)
+    message = format_trade_event(details["action_type"], details["payload"])
+    if message is None:
+        return str(action)
+    if not include_actor:
+        return message
+    actor = _enum_value(getattr(action, "color", "UNKNOWN"))
+    return f"{actor}: {message}"
+
+
+def _canonical_trade_log_entry(event: Mapping[str, Any], timestamp: Any) -> dict[str, Any] | None:
+    message = format_trade_event(
+        event.get("event_type"),
+        event.get("payload"),
+    )
+    if message is None:
+        return None
+    return {
+        "type": "trade",
+        "timestamp": timestamp,
+        "message": message,
+        "color": event.get("actor"),
+        "details": {
+            "action_type": event.get("event_type"),
+            "payload": event.get("payload"),
+            "sequence": event.get("sequence"),
+        },
+    }
+
+
+def normalize_game_log_entries(entries: Any, events: Any) -> list[Any]:
+    """Project legacy or omitted trade rows from structured public events."""
+    if not isinstance(entries, list):
+        return []
+    normalized = [
+        dict(entry) if isinstance(entry, Mapping) else entry
+        for entry in entries
+    ]
+    if not isinstance(events, list):
+        return normalized
+
+    trade_entry_indexes = [
+        index
+        for index, entry in enumerate(normalized)
+        if isinstance(entry, Mapping) and entry.get("type") == "trade"
+    ]
+    trade_events = [
+        event
+        for event in events
+        if isinstance(event, Mapping)
+        and event.get("event_type") in TRADE_ACTION_TYPES
+        and isinstance(event.get("sequence"), int)
+    ]
+    if not trade_entry_indexes or not trade_events:
+        return normalized
+
+    claimed_events: set[int] = set()
+    matches: dict[int, int] = {}
+    for entry_index in trade_entry_indexes:
+        entry = normalized[entry_index]
+        details = entry.get("details")
+        expected_sequence = (
+            details.get("sequence")
+            if isinstance(details, Mapping)
+            else None
+        )
+        expected_type = (
+            details.get("action_type")
+            if isinstance(details, Mapping)
+            else None
+        )
+        entry_color = entry.get("color")
+        for event_index, event in enumerate(trade_events):
+            if event_index in claimed_events:
+                continue
+            if (
+                isinstance(expected_sequence, int)
+                and event.get("sequence") != expected_sequence
+            ):
+                continue
+            if expected_type and event.get("event_type") != expected_type:
+                continue
+            if entry_color and event.get("actor") != entry_color:
+                continue
+            matches[entry_index] = event_index
+            claimed_events.add(event_index)
+            break
+
+    if not matches:
+        return normalized
+
+    matched_sequences = [
+        trade_events[event_index]["sequence"]
+        for event_index in matches.values()
+    ]
+    first_sequence = min(matched_sequences)
+    last_sequence = max(matched_sequences)
+    missing_event_indexes = [
+        event_index
+        for event_index, event in enumerate(trade_events)
+        if event_index not in claimed_events
+        and first_sequence <= event["sequence"] <= last_sequence
+    ]
+
+    insert_before: dict[int, list[int]] = {}
+    for event_index in missing_event_indexes:
+        sequence = trade_events[event_index]["sequence"]
+        later_matches = [
+            (trade_events[match_event_index]["sequence"], entry_index)
+            for entry_index, match_event_index in matches.items()
+            if trade_events[match_event_index]["sequence"] > sequence
+        ]
+        if not later_matches:
+            continue
+        _, target_entry_index = min(later_matches)
+        insert_before.setdefault(target_entry_index, []).append(event_index)
+
+    result: list[Any] = []
+    for entry_index, entry in enumerate(normalized):
+        for event_index in sorted(
+            insert_before.get(entry_index, []),
+            key=lambda index: trade_events[index]["sequence"],
+        ):
+            inserted = _canonical_trade_log_entry(
+                trade_events[event_index],
+                entry.get("timestamp") if isinstance(entry, Mapping) else None,
+            )
+            if inserted is not None:
+                result.append(inserted)
+
+        event_index = matches.get(entry_index)
+        if event_index is None:
+            result.append(entry)
+            continue
+        projected = _canonical_trade_log_entry(
+            trade_events[event_index],
+            entry.get("timestamp"),
+        )
+        result.append(projected if projected is not None else entry)
+    return result
+
+
+def normalize_public_state_game_log(public_state: Any) -> Any:
+    """Return a public-state copy with semantic trade log messages."""
+    if not isinstance(public_state, Mapping):
+        return public_state
+    normalized = dict(public_state)
+    normalized["game_log"] = normalize_game_log_entries(
+        public_state.get("game_log"),
+        public_state.get("events"),
+    )
+    return normalized
 
 
 def log_game_event(state, event_type, message, color=None, details=None):
@@ -111,7 +389,13 @@ def analyze_action(state, action, game_state):
             log_game_event(state, "building", "Built a road", action.color.value if hasattr(action, 'color') else None)
 
     elif "TRADE" in action_type or "MARITIME" in action_type:
-        log_game_event(state, "trade", action_str, action.color.value if hasattr(action, 'color') else None)
+        log_game_event(
+            state,
+            "trade",
+            format_action_for_display(action),
+            action.color.value if hasattr(action, "color") else None,
+            trade_action_payload(action),
+        )
 
     elif "MOVE_ROBBER" in action_type:
         log_game_event(state, "robber", "Moved the robber", action.color.value if hasattr(action, 'color') else None)
@@ -138,3 +422,41 @@ def post_analyze_action(state, pre_state, game_state):
 
             resources_after = get_player_resources(game_state)
             compare_and_log_resources(state, pre_state["resources_before"], resources_after, roll_sum)
+
+
+def analyze_transitions(state, transitions, game_state_before, game_state_after):
+    """Log every engine transition represented by one sandbox Step."""
+    for transition in transitions:
+        previous_log_length = len(state.game_log)
+        pre_state = analyze_action(
+            state,
+            transition.requested_action,
+            game_state_before,
+        )
+        post_analyze_action(state, pre_state, game_state_after)
+
+        if len(state.game_log) <= previous_log_length:
+            continue
+        entry = state.game_log[-1]
+        if entry.get("type") != "trade":
+            continue
+        action_type = transition.requested_action.action_type.value
+        event = next(
+            (
+                item
+                for item in transition.events
+                if item.event_type == action_type
+            ),
+            None,
+        )
+        if event is None:
+            continue
+        message = format_trade_event(event.event_type, event.public_payload)
+        if message is None:
+            continue
+        entry["message"] = message
+        entry["details"] = {
+            "action_type": event.event_type,
+            "payload": event.public_payload,
+            "sequence": event.sequence,
+        }

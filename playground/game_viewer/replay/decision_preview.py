@@ -135,7 +135,7 @@ def serialize_decision_preview(
     )
 
     return {
-        "schema": "agent-decision-preview-v1",
+        "schema": "agent-decision-preview-v2",
         "context_version": f"{suite_id}@{suite_version}",
         "context_id": context.context_id,
         "game_id": game_id,
@@ -147,7 +147,6 @@ def serialize_decision_preview(
         "model": response.model or model if response is not None else model,
         "generation_max_tokens": max_tokens,
         "game_plan": choice.game_plan if choice is not None else "",
-        "rationale": choice.rationale if choice is not None else "",
         "action_index": action_index,
         "action": str(selected_action) if selected_action is not None else None,
         "action_description": (

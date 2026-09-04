@@ -1,4 +1,5 @@
 import type { LiveReasoningTrace as LiveReasoningTraceRecord } from '../types';
+import TraceGamePlan from './TraceGamePlan';
 import './LiveReasoningTrace.css';
 
 interface LiveReasoningTraceProps {
@@ -11,8 +12,11 @@ export default function LiveReasoningTrace({ traces }: LiveReasoningTraceProps) 
   }
 
   return (
-    <section className="live-reasoning-panel" aria-label="Live model reasoning trace">
-      <h3>Accepted model reasoning</h3>
+    <section
+      className="live-reasoning-panel"
+      aria-label="Live model reasoning and game plans"
+    >
+      <h3>Accepted model reasoning and game plans</h3>
       {traces.map((trace) => (
         <article className="live-reasoning-card" key={trace.context_id}>
           <div className="live-reasoning-heading">
@@ -23,10 +27,7 @@ export default function LiveReasoningTrace({ traces }: LiveReasoningTraceProps) 
             <span>{trace.model || 'unknown model'}</span>
           </div>
 
-          <div className="live-reasoning-section">
-            <h4>Model-authored rationale</h4>
-            <p>{trace.rationale || 'No rationale returned.'}</p>
-          </div>
+          <TraceGamePlan gamePlan={trace.game_plan} committed />
 
           <div className="live-reasoning-section">
             <h4>
@@ -49,17 +50,9 @@ export default function LiveReasoningTrace({ traces }: LiveReasoningTraceProps) 
             )}
           </div>
 
-          {trace.game_plan && (
-            <details>
-              <summary>Game plan</summary>
-              <p>{trace.game_plan}</p>
-            </details>
-          )}
-
           <details>
             <summary>Reasoning provenance</summary>
             <pre>{JSON.stringify({
-              rationale_source: trace.rationale_source,
               native_reasoning_source: trace.native_reasoning_source,
               native_reasoning_requested: trace.native_reasoning_requested,
               reasoning_request: trace.reasoning_request,

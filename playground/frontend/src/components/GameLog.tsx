@@ -11,9 +11,10 @@ interface LogEntry {
 
 interface GameLogProps {
   entries: LogEntry[];
+  showHeading?: boolean;
 }
 
-export default function GameLog({ entries }: GameLogProps) {
+export default function GameLog({ entries, showHeading = true }: GameLogProps) {
   const logEntriesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -52,7 +53,7 @@ export default function GameLog({ entries }: GameLogProps) {
 
   return (
     <div className="game-log">
-      <h3>Game Log</h3>
+      {showHeading && <h3>Game Log</h3>}
       <div ref={logEntriesRef} className="log-entries">
         {entries.map((entry, idx) => (
           <div key={idx} className={`log-entry ${entry.type}`}>

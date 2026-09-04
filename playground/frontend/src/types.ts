@@ -3,9 +3,28 @@
  * Copy this into your v0 project
  */
 
-export type Color = "RED" | "BLUE" | "WHITE" | "ORANGE";
+export type Color =
+  | "RED"
+  | "BLUE"
+  | "ORANGE"
+  | "WHITE"
+  | "BLACK"
+  | "GREEN"
+  | "BRONZE"
+  | "SILVER"
+  | "GOLD"
+  | "PINK"
+  | "MYSTIC_BLUE";
+
+export type LiveColorPalette = "random_all" | "canonical_four";
 
 export type Resource = "WOOD" | "BRICK" | "SHEEP" | "WHEAT" | "ORE";
+
+export type PlayerResourceCounts = Partial<Record<Resource, number>> & {
+  TOTAL?: number;
+};
+
+export type AllPlayerResources = Partial<Record<Color, PlayerResourceCounts>>;
 
 export type Building = "SETTLEMENT" | "CITY";
 
@@ -197,11 +216,11 @@ export interface GameState {
 export interface GameStateMessage {
   game: GameState;
   running: boolean;
-  all_player_resources?: Record<Color, Record<Resource, number>>;
+  all_player_resources?: AllPlayerResources;
 }
 
 export interface LiveReasoningTrace {
-  schema: 'live-reasoning-trace-v1';
+  schema: 'live-reasoning-trace-v2';
   context_id: string;
   player_color: Color;
   turn_number: number;
@@ -210,8 +229,6 @@ export interface LiveReasoningTrace {
   action_index: number;
   action_type: string;
   game_plan: string;
-  rationale: string;
-  rationale_source: 'model_response_xml';
   native_reasoning: string;
   native_reasoning_details: unknown[];
   native_reasoning_source: 'provider_response' | null;
@@ -453,7 +470,7 @@ export interface TableTalkEntry {
 }
 
 export interface ReplayLLMResponse {
-  schema: 'agent-decision-preview-v1';
+  schema: 'agent-decision-preview-v2';
   context_version: string;
   context_id: string;
   game_id: string;
@@ -465,7 +482,6 @@ export interface ReplayLLMResponse {
   model: string;
   generation_max_tokens: number;
   game_plan: string;
-  rationale: string;
   action_index: number | null;
   action: string | null;
   action_description: string | null;
@@ -512,6 +528,13 @@ export const PLAYER_COLORS: Record<Color, string> = {
   BLUE: "#3498db",
   WHITE: "#ecf0f1",
   ORANGE: "#e67e22",
+  BLACK: "#2c3e50",
+  GREEN: "#27ae60",
+  BRONZE: "#cd7f32",
+  SILVER: "#c0c0c0",
+  GOLD: "#ffd700",
+  PINK: "#ec4899",
+  MYSTIC_BLUE: "#c7e5fd",
 };
 
 export const BUILDING_COSTS = {

@@ -40,8 +40,13 @@ def reset_game():
         socketio.emit('game_state', {
             "game": None,
             "running": False,
+            "live_trace_game_id": None,
+            "live_inference": None,
+            "last_live_step_error": None,
             "game_log": [],
-            "all_player_resources": None
+            "all_player_resources": None,
+            "replay_mode": False,
+            "replay": None,
         })
 
     return jsonify({"status": "reset", "message": "Game cleared"})
@@ -59,9 +64,20 @@ def _get_state_snapshot(state):
     result = {
         "game": json.loads(json.dumps(engine, cls=GameEncoder)),
         "running": state.game_running,
+        "live_trace_game_id": (
+            None if state.replay_mode else state.live_trace_game_id
+        ),
         "game_log": state.game_log[-50:],
         "all_player_resources": all_resources,
         "all_player_dev_cards": all_dev_cards,
+        "live_inference": (
+            None if state.replay_mode else getattr(state, "live_inference", None)
+        ),
+        "last_live_step_error": (
+            None
+            if state.replay_mode
+            else getattr(state, "last_live_step_error", None)
+        ),
         "replay_mode": state.replay_mode,
     }
 

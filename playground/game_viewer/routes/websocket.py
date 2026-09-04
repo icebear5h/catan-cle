@@ -83,11 +83,22 @@ def build_game_state_snapshot(state):
         "game": game_payload,
         "events": public_events,
         "running": state.game_running,
+        "live_trace_game_id": (
+            None if state.replay_mode else state.live_trace_game_id
+        ),
         "game_log": state.game_log[-50:] if state.game_log else [],
         "all_player_resources": all_resources,
         "all_player_dev_cards": all_dev_cards,
         "player_types": player_types,
         "sandbox_players": player_statuses,
+        "live_inference": (
+            None if state.replay_mode else getattr(state, "live_inference", None)
+        ),
+        "last_live_step_error": (
+            None
+            if state.replay_mode
+            else getattr(state, "last_live_step_error", None)
+        ),
         "trade_state": trade_state,
         "replay_mode": state.replay_mode,
         "last_dice_roll": getattr(game.state, 'last_dice_roll', None),

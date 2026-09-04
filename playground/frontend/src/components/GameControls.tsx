@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import type { NativeReasoningEffort } from '../types';
+import type { LiveColorPalette, NativeReasoningEffort } from '../types';
 import './GameControls.css';
 
-const REPLAY_MODEL_PRESETS: Array<{ id: string; label: string }> = [
+const MODEL_PRESETS: Array<{ id: string; label: string }> = [
   // Teacher tier (large / frontier)
   { id: 'thinkingmachines/inkling-small', label: 'Inkling-Small · 276B/12B · VL' },
   { id: 'deepseek/deepseek-v4-flash-0731', label: 'DeepSeek V4 Flash · 284B/13B · cheap' },
@@ -28,18 +28,18 @@ const REPLAY_MODEL_PRESETS: Array<{ id: string; label: string }> = [
 
 interface GameControlsProps {
   onStartGame: (mode: string) => void;
-  onStep: () => void;
   onReset: () => void;
   onLoadReplay: (gameId: string) => void;
-  onReplayStep: () => void;
-  onReplayUndo: () => void;
-  onSetReplayStep?: (step: number) => void;
   onRunUntilDrift?: () => void;
   onGenerateReplayResponse: () => void;
+  liveModel: string;
+  onLiveModelChange: (model: string) => void;
   replayModel: string;
   onReplayModelChange: (model: string) => void;
   nativeReasoningEffort: NativeReasoningEffort;
   onNativeReasoningEffortChange: (effort: NativeReasoningEffort) => void;
+  liveColorPalette: LiveColorPalette;
+  onLiveColorPaletteChange: (palette: LiveColorPalette) => void;
   isReplayLlmProcessing?: boolean;
   replayLlmError?: string | null;
   isRunning: boolean;
@@ -48,25 +48,24 @@ interface GameControlsProps {
   liveError?: string | null;
   liveTraceGameId?: string | null;
   liveTraceDatabase?: string | null;
-  isTraceBrowsing?: boolean;
+  isPlaybackProcessing?: boolean;
   replayMode?: boolean;
-  replayProgress?: string;
 }
 
 export default function GameControls({
   onStartGame,
-  onStep,
   onReset,
   onLoadReplay,
-  onReplayStep,
-  onReplayUndo,
-  onSetReplayStep,
   onRunUntilDrift,
   onGenerateReplayResponse,
+  liveModel,
+  onLiveModelChange,
   replayModel,
   onReplayModelChange,
   nativeReasoningEffort,
   onNativeReasoningEffortChange,
+  liveColorPalette,
+  onLiveColorPaletteChange,
   isReplayLlmProcessing = false,
   replayLlmError = null,
   isRunning,
@@ -75,12 +74,10 @@ export default function GameControls({
   liveError = null,
   liveTraceGameId = null,
   liveTraceDatabase = null,
-  isTraceBrowsing = false,
+  isPlaybackProcessing = false,
   replayMode = false,
-  replayProgress = '',
 }: GameControlsProps) {
   const [replayGameId, setReplayGameId] = useState('242781000');
-  const [gotoStep, setGotoStep] = useState('');
   return (
     <div className="game-controls">
       <h3>Controls</h3>
@@ -91,28 +88,78 @@ export default function GameControls({
         </div>
       )}
 
-      <div className="control-section">
-        <button
-          className="btn btn-primary"
-          onClick={() => onStartGame('random')}
-        >
-          Start Game (Random)
-        </button>
+      {!hasGame && (
+        <div className="control-section">
+          <label className="field-label" htmlFor="live-color-palette">
+            Player colors
+          </label>
+          <select
+            id="live-color-palette"
+            className="replay-model-select"
+            value={liveColorPalette}
+            onChange={(event) => onLiveColorPaletteChange(
+              event.target.value as LiveColorPalette,
+            )}
+            disabled={isRunning || isLlmProcessing}
+          >
+            <option value="random_all">Random four of all 11</option>
+            <option value="canonical_four">RED / BLUE / WHITE / ORANGE</option>
+          </select>
 
-        <button
-          className="btn btn-secondary"
-          onClick={() => onStartGame('llm_vs_random')}
-        >
-          LLM vs Random
-        </button>
+          <label className="field-label" htmlFor="live-model-id">
+            Live LLM model
+          </label>
+          <select
+            className="replay-model-select"
+            aria-label="Live model presets"
+            value={MODEL_PRESETS.some((preset) => preset.id === liveModel) ? liveModel : ''}
+            onChange={(event) => {
+              if (event.target.value) {
+                onLiveModelChange(event.target.value);
+              }
+            }}
+            disabled={isRunning || isLlmProcessing}
+          >
+            <option value="">Presets…</option>
+            {MODEL_PRESETS.map((preset) => (
+              <option key={preset.id} value={preset.id}>
+                {preset.label} — {preset.id}
+              </option>
+            ))}
+          </select>
+          <input
+            id="live-model-id"
+            className="replay-model-input"
+            type="text"
+            value={liveModel}
+            onChange={(event) => onLiveModelChange(event.target.value)}
+            placeholder="provider/model"
+            spellCheck={false}
+            disabled={isRunning || isLlmProcessing}
+          />
 
-        <button
-          className="btn btn-secondary"
-          onClick={() => onStartGame('llm')}
-        >
-          Start Game (LLM)
-        </button>
-      </div>
+          <button
+            className="btn btn-primary"
+            onClick={() => onStartGame('random')}
+          >
+            Start Game (Random)
+          </button>
+
+          <button
+            className="btn btn-secondary"
+            onClick={() => onStartGame('llm_vs_random')}
+          >
+            LLM vs Random
+          </button>
+
+          <button
+            className="btn btn-secondary"
+            onClick={() => onStartGame('llm')}
+          >
+            Start Game (LLM)
+          </button>
+        </div>
+      )}
 
       <div className="control-section">
         <h4>Native reasoning</h4>
@@ -126,19 +173,19 @@ export default function GameControls({
           onChange={(event) => onNativeReasoningEffortChange(
             event.target.value as NativeReasoningEffort,
           )}
-          disabled={isReplayLlmProcessing || isLlmProcessing}
+          disabled={isReplayLlmProcessing || isLlmProcessing || isPlaybackProcessing}
         >
           <option value="off">Off — explicit no reasoning</option>
           <option value="minimal">Minimal</option>
           <option value="low">Low</option>
           <option value="medium">Medium</option>
-          <option value="high">High</option>
-          <option value="xhigh">XHigh — exploratory default</option>
+          <option value="high">High — validated default</option>
+          <option value="xhigh">XHigh</option>
           <option value="max">Max</option>
         </select>
         <p className="replay-context-hint">
-          Sent explicitly to supported providers. Provider-native reasoning is
-          kept separate from the model-authored &lt;rationale&gt; response.
+          Sent explicitly to supported providers. Reasoning is read only from
+          the provider-native channel and is not requested in the action XML.
         </p>
       </div>
 
@@ -165,17 +212,28 @@ export default function GameControls({
         <button
           className="btn btn-action"
           onClick={() => onLoadReplay(replayGameId)}
-          disabled={!replayGameId.trim()}
+          disabled={!replayGameId.trim() || isPlaybackProcessing || isLlmProcessing}
         >
           Load Replay
         </button>
       </div>
 
-      {hasGame && (
-        <div className="control-section">
+      {hasGame && !replayMode && (
+        <div className="control-section session-status-section">
+          <h4>Live session</h4>
+          <div className="status">
+            <span className={`status-indicator ${isRunning ? 'running' : 'stopped'}`} />
+            {isRunning ? 'Game Running' : 'Game Stopped'}
+          </div>
+          {liveTraceGameId && (
+            <p className="replay-context-hint" title={liveTraceDatabase || undefined}>
+              Local trace: {liveTraceGameId}
+            </p>
+          )}
           <button
             className="btn btn-danger"
             onClick={onReset}
+            disabled={isLlmProcessing || isPlaybackProcessing}
           >
             Clear Game
           </button>
@@ -183,73 +241,18 @@ export default function GameControls({
       )}
 
       {replayMode && (
-        <div className="control-section">
-          <div style={{
-            background: '#21262d',
-            border: '2px solid #58a6ff',
-            borderRadius: '8px',
-            padding: '12px',
-            marginBottom: '12px',
-            textAlign: 'center',
-          }}>
-            <div style={{ color: '#8b949e', fontSize: '0.75rem', marginBottom: '4px' }}>
-              REPLAY STEP
-            </div>
-            <div style={{ color: '#58a6ff', fontSize: '1.8rem', fontWeight: 'bold', fontFamily: 'monospace' }}>
-              {replayProgress}
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-            <button
-              className="btn btn-secondary"
-              onClick={onReplayUndo}
-            >
-              Undo
-            </button>
-            <button
-              className="btn btn-action"
-              onClick={onReplayStep}
-              disabled={!isRunning}
-            >
-              Step
-            </button>
-          </div>
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-            <input
-              type="number"
-              value={gotoStep}
-              onChange={(e) => setGotoStep(e.target.value)}
-              placeholder="Step #"
-              style={{
-                width: '80px',
-                padding: '6px 8px',
-                borderRadius: '4px',
-                border: '1px solid #444',
-                background: '#1a1a2e',
-                color: '#fff',
-              }}
-            />
-            <button
-              className="btn btn-secondary"
-              onClick={() => {
-                const step = parseInt(gotoStep, 10);
-                if (!isNaN(step) && onSetReplayStep) {
-                  onSetReplayStep(step);
-                  setGotoStep('');
-                }
-              }}
-              disabled={!gotoStep.trim() || !onSetReplayStep}
-            >
-              Go to Step
-            </button>
-          </div>
+        <div className="control-section replay-tools-section">
+          <h4>Replay tools</h4>
+          <p className="replay-context-hint">
+            Previous, Step, and direct timeline navigation stay pinned beneath the board.
+          </p>
           {onRunUntilDrift && (
             <button
               className="btn btn-action"
               onClick={onRunUntilDrift}
-              style={{ marginBottom: '8px', width: '100%' }}
+              disabled={isPlaybackProcessing || isReplayLlmProcessing}
             >
-              Run Until Drift
+              {isPlaybackProcessing ? 'Working…' : 'Run Until Drift'}
             </button>
           )}
 
@@ -261,16 +264,16 @@ export default function GameControls({
             <select
               className="replay-model-select"
               aria-label="Model presets"
-              value={REPLAY_MODEL_PRESETS.some((preset) => preset.id === replayModel) ? replayModel : ''}
+              value={MODEL_PRESETS.some((preset) => preset.id === replayModel) ? replayModel : ''}
               onChange={(event) => {
                 if (event.target.value) {
                   onReplayModelChange(event.target.value);
                 }
               }}
-              disabled={isReplayLlmProcessing}
+              disabled={isReplayLlmProcessing || isPlaybackProcessing}
             >
               <option value="">Presets…</option>
-              {REPLAY_MODEL_PRESETS.map((preset) => (
+              {MODEL_PRESETS.map((preset) => (
                 <option key={preset.id} value={preset.id}>
                   {preset.label} — {preset.id}
                 </option>
@@ -284,7 +287,7 @@ export default function GameControls({
               onChange={(event) => onReplayModelChange(event.target.value)}
               placeholder="provider/model"
               spellCheck={false}
-              disabled={isReplayLlmProcessing}
+              disabled={isReplayLlmProcessing || isPlaybackProcessing}
             />
             <p className="replay-context-hint">
               Context: shared game plan + complete visible events + current observation.
@@ -292,7 +295,11 @@ export default function GameControls({
             <button
               className="btn btn-primary"
               onClick={onGenerateReplayResponse}
-              disabled={!replayModel.trim() || isReplayLlmProcessing}
+              disabled={
+                !replayModel.trim()
+                || isReplayLlmProcessing
+                || isPlaybackProcessing
+              }
             >
               {isReplayLlmProcessing ? 'Generating...' : 'Generate Response'}
             </button>
@@ -306,46 +313,11 @@ export default function GameControls({
           <button
             className="btn btn-danger"
             onClick={onReset}
+            disabled={isPlaybackProcessing || isReplayLlmProcessing}
           >
             Exit Replay
           </button>
         </div>
-      )}
-
-      {hasGame && !replayMode && (
-        <>
-          <div className="control-section">
-            <button
-              className="btn btn-action"
-              onClick={onStep}
-              disabled={!isRunning || isLlmProcessing || isTraceBrowsing}
-            >
-              {isLlmProcessing
-                ? 'Stepping sandbox...'
-                : isTraceBrowsing
-                  ? 'Browsing saved step'
-                  : 'Step'}
-            </button>
-            <p className="replay-context-hint">
-              {isTraceBrowsing
-                ? 'Browse-only checkpoint: load the latest checkpoint to resume gameplay.'
-                : (
-                  'Advances one complete CatanSandbox step, including any required '
-                  + 'deterministic response barrier.'
-                )}
-            </p>
-            {liveTraceGameId && (
-              <p className="replay-context-hint" title={liveTraceDatabase || undefined}>
-                Local trace: {liveTraceGameId}
-              </p>
-            )}
-          </div>
-
-          <div className="status">
-            <span className={`status-indicator ${isRunning ? 'running' : 'stopped'}`} />
-            {isRunning ? 'Game Running' : 'Game Stopped'}
-          </div>
-        </>
       )}
     </div>
   );

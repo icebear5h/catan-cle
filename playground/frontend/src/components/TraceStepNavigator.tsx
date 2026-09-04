@@ -1,4 +1,5 @@
 import type { SavedLiveGameSummary } from './SavedLiveGamesBar';
+import { hasRecordedModelInference } from './traceModelCalls';
 import './TraceStepNavigator.css';
 
 interface TraceMessage {
@@ -68,14 +69,6 @@ interface TraceStepNavigatorProps {
   onLoadLatest: (gameId: string) => void;
 }
 
-function json(value: unknown): string {
-  return JSON.stringify(value, null, 2);
-}
-
-function visibleText(value: unknown): string | null {
-  return typeof value === 'string' && value.trim() ? value : null;
-}
-
 export default function TraceStepNavigator({
   game,
   detail,
@@ -85,11 +78,13 @@ export default function TraceStepNavigator({
   onNavigate,
   onLoadLatest,
 }: TraceStepNavigatorProps) {
-  const stepCount = game?.step_count || 0;
-  const latestIndex = stepCount - 1;
   const currentDetail = detail?.game_id === game?.game_id ? detail : null;
+  const stepCount = currentDetail?.step_count ?? game?.step_count ?? 0;
+  const latestIndex = stepCount - 1;
   const currentIndex = currentDetail?.step.step_index ?? latestIndex;
-  const rationaleCalls = currentDetail?.model_calls || [];
+  const modelCalls = (
+    currentDetail?.model_calls.filter(hasRecordedModelInference) || []
+  );
 
   if (!game) {
     return null;
@@ -97,12 +92,31 @@ export default function TraceStepNavigator({
 
   return (
     <section className="trace-step-navigator" aria-label="Saved trace step navigator">
-      <div className="trace-step-toolbar">
-        <div className="trace-step-title">
-          <span>Checkpoint navigator</span>
-          <strong>Browse only</strong>
-        </div>
+      <header className="trace-step-title">
+        <span>Checkpoint</span>
+        <strong>Browse only</strong>
+      </header>
 
+      <label className="trace-step-picker">
+        <span>Saved step</span>
+        <select
+          value={stepCount === 0 ? '' : currentIndex}
+          onChange={(event) => onNavigate(game.game_id, Number(event.target.value))}
+          disabled={busy || stepCount === 0}
+          aria-label="Saved checkpoint step"
+        >
+          {stepCount === 0 && <option value="">No checkpoints</option>}
+          {Array.from({ length: stepCount }, (_, offset) => latestIndex - offset).map(
+            (stepIndex) => (
+              <option key={stepIndex} value={stepIndex}>
+                Step {stepIndex + 1}{stepIndex === latestIndex ? ' — latest' : ''}
+              </option>
+            ),
+          )}
+        </select>
+      </label>
+
+      <div className="trace-step-actions">
         <button
           type="button"
           onClick={() => onNavigate(game.game_id, Math.max(0, currentIndex - 1))}
@@ -111,26 +125,6 @@ export default function TraceStepNavigator({
         >
           Previous
         </button>
-
-        <label>
-          <span>Saved step</span>
-          <select
-            value={stepCount === 0 ? '' : currentIndex}
-            onChange={(event) => onNavigate(game.game_id, Number(event.target.value))}
-            disabled={busy || stepCount === 0}
-            aria-label="Saved checkpoint step"
-          >
-            {stepCount === 0 && <option value="">No checkpoints</option>}
-            {Array.from({ length: stepCount }, (_, offset) => latestIndex - offset).map(
-              (stepIndex) => (
-                <option key={stepIndex} value={stepIndex}>
-                  Step {stepIndex + 1}{stepIndex === latestIndex ? ' — latest' : ''}
-                </option>
-              ),
-            )}
-          </select>
-        </label>
-
         <button
           type="button"
           onClick={() => onNavigate(game.game_id, currentIndex + 1)}
@@ -156,110 +150,27 @@ export default function TraceStepNavigator({
           onClick={() => onLoadLatest(game.game_id)}
           disabled={busy}
         >
-          {game.game_id === activeGameId ? 'Return to live' : 'Load latest'}
+          {game.game_id === activeGameId ? 'Return live' : 'Load latest'}
         </button>
-
-        <div className="trace-step-summary" aria-live="polite">
-          {busy && <span>Loading checkpoint…</span>}
-          {!busy && currentDetail && (
-            <>
-              <span>
-                Step {currentDetail.step.step_index + 1}/{currentDetail.step_count}
-              </span>
-              <span>
-                revision {currentDetail.step.before_revision} → {currentDetail.step.after_revision}
-              </span>
-              <span>{rationaleCalls.length} model calls</span>
-            </>
-          )}
-          {!busy && !currentDetail && stepCount > 0 && (
-            <span>Select a checkpoint to browse its board and traces.</span>
-          )}
-          {stepCount === 0 && <span>This game has no completed steps yet.</span>}
-          {error && <span className="trace-step-error">{error}</span>}
-        </div>
       </div>
 
-      {currentDetail && (
-        <div className="trace-call-strip">
-          {rationaleCalls.length === 0 && (
-            <p className="trace-empty-call">
-              No LLM call was recorded for this step; it was a random/baseline decision.
-            </p>
-          )}
-          {rationaleCalls.map((call) => {
-            const rationale = visibleText(call.choice?.rationale);
-            const nativeReasoning = visibleText(call.response?.native_reasoning);
-            return (
-              <article
-                className={`trace-call-card ${call.accepted ? 'accepted' : 'rejected'}`}
-                key={`${call.step_index}:${call.call_index}`}
-              >
-                <div className="trace-call-header">
-                  <span>{call.call_kind}</span>
-                  <strong>{call.actor || 'unknown actor'}</strong>
-                  <span>{call.accepted ? 'accepted' : 'rejected'}</span>
-                  <code>{call.context_id}</code>
-                </div>
-
-                {call.validation_error && (
-                  <p className="trace-validation-error">{call.validation_error}</p>
-                )}
-                {rationale && (
-                  <div className="trace-reasoning-block rationale">
-                    <span>Model-authored rationale</span>
-                    <p>{rationale}</p>
-                  </div>
-                )}
-                {nativeReasoning && (
-                  <div className="trace-reasoning-block native">
-                    <span>Provider-native reasoning</span>
-                    <p>{nativeReasoning}</p>
-                  </div>
-                )}
-                {!rationale && !nativeReasoning && call.response?.content && (
-                  <div className="trace-reasoning-block">
-                    <span>Model output</span>
-                    <p>{call.response.content}</p>
-                  </div>
-                )}
-
-                <div className="trace-provider-meta">
-                  <span>{call.response?.model || 'unknown model'}</span>
-                  {call.response?.finish_reason && (
-                    <span>finish: {call.response.finish_reason}</span>
-                  )}
-                  {call.response?.provider_native_finish_reason && (
-                    <span>native: {call.response.provider_native_finish_reason}</span>
-                  )}
-                  {call.response?.provider_response_id && (
-                    <span>response: {call.response.provider_response_id}</span>
-                  )}
-                  {call.response?.provider_request_id && (
-                    <span>request: {call.response.provider_request_id}</span>
-                  )}
-                </div>
-
-                <details>
-                  <summary>Exact request messages ({call.request?.messages.length || 0})</summary>
-                  <div className="trace-message-list">
-                    {(call.request?.messages || []).map((message, index) => (
-                      <div className="trace-message" key={`${message.role}:${index}`}>
-                        <strong>{message.role}</strong>
-                        <pre>{message.content}</pre>
-                      </div>
-                    ))}
-                  </div>
-                </details>
-                <details>
-                  <summary>Parsed choice, usage, and provider payloads</summary>
-                  <pre>{json({ choice: call.choice, response: call.response })}</pre>
-                </details>
-              </article>
-            );
-          })}
-        </div>
-      )}
+      <div className="trace-step-summary" aria-live="polite">
+        {busy && <span>Loading checkpoint…</span>}
+        {!busy && currentDetail && (
+          <>
+            <span>
+              Step {currentDetail.step.step_index + 1}/{currentDetail.step_count}
+              {' · '}revision {currentDetail.step.before_revision} → {currentDetail.step.after_revision}
+            </span>
+            <span>{modelCalls.length} model calls with reasoning history</span>
+          </>
+        )}
+        {!busy && !currentDetail && stepCount > 0 && (
+          <span>Select a checkpoint to browse its board and traces.</span>
+        )}
+        {stepCount === 0 && <span>This game has no completed steps yet.</span>}
+        {error && <span className="trace-step-error">{error}</span>}
+      </div>
     </section>
   );
 }

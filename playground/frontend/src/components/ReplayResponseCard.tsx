@@ -64,14 +64,9 @@ export default function ReplayResponseCard({ response }: ReplayResponseCardProps
         <p>{response.game_plan || 'No updated game plan returned.'}</p>
       </div>
 
-      <div className="replay-response-section">
-        <h4>Rationale</h4>
-        <p>{response.rationale || 'No concise rationale returned.'}</p>
-      </div>
-
       <details className="replay-response-details" open>
         <summary>
-          Native model reasoning
+          Reasoning
           {response.reasoning_tokens === null
             ? ''
             : ` (${response.reasoning_tokens} tokens)`}

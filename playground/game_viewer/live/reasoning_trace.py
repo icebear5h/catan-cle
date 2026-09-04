@@ -59,7 +59,7 @@ def build_live_reasoning_traces(
         )
 
         traces.append({
-            "schema": "live-reasoning-trace-v1",
+            "schema": "live-reasoning-trace-v2",
             "context_id": context.context_id,
             "player_color": context.actor.value,
             "turn_number": context.turn_number,
@@ -68,8 +68,6 @@ def build_live_reasoning_traces(
             "action_index": choice.action_index,
             "action_type": transition.requested_action.action_type.value,
             "game_plan": choice.game_plan,
-            "rationale": choice.rationale,
-            "rationale_source": "model_response_xml",
             "native_reasoning": native_reasoning,
             "native_reasoning_details": list(native_details),
             "native_reasoning_source": (

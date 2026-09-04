@@ -40,13 +40,34 @@ def create_app():
 app, socketio = create_app()
 
 
+def _environment_flag(name: str) -> bool:
+    return os.getenv(name, "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def server_run_options() -> dict[str, bool]:
+    """Return safe defaults for the stateful viewer development server."""
+    return {
+        "debug": _environment_flag("CATAN_VIEWER_DEBUG"),
+        "use_reloader": _environment_flag("CATAN_VIEWER_RELOAD"),
+    }
+
+
+def run_server() -> None:
+    socketio.run(
+        app,
+        port=5001,
+        allow_unsafe_werkzeug=True,
+        **server_run_options(),
+    )
+
+
 if __name__ == '__main__':
     print("=" * 60)
     print("Catan Game Viewer Server")
     print("=" * 60)
     print()
     print("Server starting on http://localhost:5001")
-    print("UI should connect from http://localhost:3000")
+    print("UI should connect from http://localhost:5173")
     print()
     print("Endpoints:")
     print("  POST /api/start-game - Start one sandbox")
@@ -54,4 +75,4 @@ if __name__ == '__main__':
     print("  GET  /api/state - Get current projected state")
     print()
 
-    socketio.run(app, debug=True, port=5001, use_reloader=True, allow_unsafe_werkzeug=True)
+    run_server()

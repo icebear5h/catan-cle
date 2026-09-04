@@ -4,7 +4,7 @@ Usage:
     python -m playground.game_viewer_server
 """
 
-from playground.game_viewer.app import app, socketio
+from playground.game_viewer.app import run_server
 
 if __name__ == '__main__':
     print("=" * 60)
@@ -12,6 +12,6 @@ if __name__ == '__main__':
     print("=" * 60)
     print()
     print("Server starting on http://localhost:5001")
-    print("UI should connect from http://localhost:3000")
+    print("UI should connect from http://localhost:5173")
     print()
-    socketio.run(app, debug=True, port=5001, use_reloader=True, allow_unsafe_werkzeug=True)
+    run_server()

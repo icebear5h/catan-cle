@@ -262,7 +262,7 @@ export default function HexBoard({
   const height = maxY - minY;
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div className="hex-board-shell">
       {showControls && (
       <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 10, display: 'flex', gap: '4px' }}>
         <button

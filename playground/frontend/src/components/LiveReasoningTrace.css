@@ -54,6 +54,14 @@
   text-transform: uppercase;
 }
 
+.live-game-plan-section h4 {
+  color: var(--amber);
+}
+
+.live-game-plan-section pre {
+  border-left: 2px solid rgba(255, 209, 102, 0.6);
+}
+
 .live-reasoning-section p,
 .live-reasoning-card details p {
   color: #d7e2ee;

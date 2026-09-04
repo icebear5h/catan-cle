@@ -1,21 +1,23 @@
-import type { GameState, Color, Resource, ReplayInfo } from '../types';
+import type { CSSProperties } from 'react';
+import { PLAYER_COLORS } from '../types';
+import type { AllPlayerResources, GameState, Color, ReplayInfo } from '../types';
+import { hasDevCardBreakdown } from '../playerDevCards';
+import type { AllPlayerDevCards } from '../playerDevCards';
+import {
+  hasResourceBreakdown,
+  resourceHandSize,
+  RESOURCE_ORDER,
+} from '../playerResources';
 import './PlayerInfo.css';
-
-interface DevCardCounts {
-  in_hand: Record<string, number>;
-  played: Record<string, number>;
-  total_in_hand: number;
-}
 
 interface PlayerInfoProps {
   gameState: GameState;
-  allPlayerResources: Record<Color, Record<Resource, number>> | null;
-  allPlayerDevCards: Record<string, DevCardCounts> | null;
+  allPlayerResources: AllPlayerResources | null;
+  allPlayerDevCards: AllPlayerDevCards | null;
   playerTypes: Record<string, string> | null;
   replayInfo: ReplayInfo | null;
+  variant?: 'detailed' | 'overlay';
 }
-
-const RESOURCES = ['WOOD', 'BRICK', 'SHEEP', 'WHEAT', 'ORE'];
 
 // Map Colonist color names to CSS colors
 const COLONIST_COLOR_CSS: Record<string, string> = {
@@ -55,6 +57,7 @@ export default function PlayerInfo({
   allPlayerDevCards,
   playerTypes,
   replayInfo,
+  variant = 'detailed',
 }: PlayerInfoProps) {
   const getPlayerValue = (prefix: string, key: string): number => {
     if (!prefix) return 0;
@@ -69,6 +72,68 @@ export default function PlayerInfo({
     return replayInfo.colonist_players[colonistIndex] || null;
   };
 
+  const getHandSize = (color: Color, index: number): number => {
+    const visibleResources = allPlayerResources?.[color];
+    if (visibleResources) return resourceHandSize(visibleResources);
+    if (index === 0) {
+      return RESOURCE_ORDER.reduce(
+        (total, resource) => total + getPlayerValue('P0', `${resource}_IN_HAND`),
+        0,
+      );
+    }
+    return getPlayerValue(`P${index}`, 'NUM_RESOURCES_IN_HAND');
+  };
+
+  const getDevCardSize = (color: Color, index: number): number => {
+    const visibleCards = allPlayerDevCards?.[color];
+    if (visibleCards) return visibleCards.total_in_hand;
+    if (index === 0) {
+      return Object.keys(DEV_CARD_LABELS).reduce(
+        (total, card) => total + getPlayerValue('P0', `${card}_IN_HAND`),
+        0,
+      );
+    }
+    return getPlayerValue(`P${index}`, 'NUM_DEVS_IN_HAND');
+  };
+
+  if (variant === 'overlay') {
+    return (
+      <section className="player-state-overlay" aria-label="Player game state">
+        {gameState.colors.map((color: Color, index: number) => {
+          const prefix = `P${index}`;
+          const isCurrent = gameState.current_color === color;
+          const colonistPlayer = getColonistPlayer(index);
+          const displayName = colonistPlayer?.username || color.replace(/_/g, ' ');
+          const accent = colonistPlayer
+            ? COLONIST_COLOR_CSS[colonistPlayer.color] || PLAYER_COLORS[color]
+            : PLAYER_COLORS[color];
+          const style = { '--player-accent': accent } as CSSProperties;
+
+          return (
+            <article
+              key={color}
+              className={`player-state-chip ${isCurrent ? 'current' : ''}`}
+              style={style}
+              title={`${displayName}: ${getHandSize(color, index)} cards in hand, ${getDevCardSize(color, index)} development cards, ${gameState.played_knights_by_player[color] || 0} knights played`}
+            >
+              <div className="player-chip-identity">
+                <span className="player-chip-turn" aria-hidden="true" />
+                <strong>{displayName}</strong>
+                {isCurrent && <span className="player-chip-current">Turn</span>}
+              </div>
+              <div className="player-chip-stats">
+                <span><b>{getPlayerValue(prefix, 'VICTORY_POINTS')}</b> VP</span>
+                <span><b>{getHandSize(color, index)}</b> Hand</span>
+                <span><b>{getDevCardSize(color, index)}</b> Dev</span>
+                <span><b>{gameState.played_knights_by_player[color] || 0}</b> Knights</span>
+              </div>
+            </article>
+          );
+        })}
+      </section>
+    );
+  }
+
   return (
     <div className="player-info">
       <h3>Players</h3>
@@ -80,6 +145,8 @@ export default function PlayerInfo({
           const isWinner = gameState.winning_color === color;
           const vp = getPlayerValue(prefix, 'VICTORY_POINTS');
           const colonistPlayer = getColonistPlayer(index);
+          const visibleResources = allPlayerResources?.[color];
+          const visibleDevCards = allPlayerDevCards?.[color];
 
 	          return (
             <div
@@ -117,29 +184,42 @@ export default function PlayerInfo({
                 <span className="player-vp">{vp} VP</span>
               </div>
 
-              {allPlayerResources && allPlayerResources[color as Color] && (
+              {visibleResources && (
                 <div className="player-resources">
-                  {RESOURCES.map((resource) => {
-                    const count = allPlayerResources[color as Color][resource as Resource];
-                    return count > 0 ? (
-                      <span key={resource} className="resource-badge">
-                        {RESOURCE_EMOJIS[resource]}{count}
-                      </span>
-                    ) : null;
-                  })}
+                  {hasResourceBreakdown(visibleResources) ? (
+                    RESOURCE_ORDER.map((resource) => {
+                      const count = visibleResources[resource] || 0;
+                      return count > 0 ? (
+                        <span key={resource} className="resource-badge">
+                          {RESOURCE_EMOJIS[resource]}{count}
+                        </span>
+                      ) : null;
+                    })
+                  ) : (
+                    <span className="resource-badge">
+                      {resourceHandSize(visibleResources)} cards
+                    </span>
+                  )}
                 </div>
               )}
 
-              {allPlayerDevCards && allPlayerDevCards[color] && allPlayerDevCards[color].total_in_hand > 0 && (
+              {visibleDevCards && visibleDevCards.total_in_hand > 0 && (
                 <div className="player-dev-cards">
-                  {Object.entries(allPlayerDevCards[color].in_hand).map(([cardType, count]) => {
-                    if (count === 0) return null;
-                    return (
-                      <span key={cardType} className="dev-card-badge" title={cardType.replace(/_/g, ' ')}>
-                        {DEV_CARD_LABELS[cardType] || cardType}: {count}
-                      </span>
-                    );
-                  })}
+                  {hasDevCardBreakdown(visibleDevCards) ? (
+                    Object.entries(visibleDevCards.in_hand).map(([cardType, count]) => {
+                      if (count === 0) return null;
+                      return (
+                        <span key={cardType} className="dev-card-badge" title={cardType.replace(/_/g, ' ')}>
+                          {DEV_CARD_LABELS[cardType] || cardType}: {count}
+                        </span>
+                      );
+                    })
+                  ) : (
+                    <span className="dev-card-badge">
+                      {visibleDevCards.total_in_hand} development card
+                      {visibleDevCards.total_in_hand === 1 ? '' : 's'}
+                    </span>
+                  )}
                 </div>
               )}
 

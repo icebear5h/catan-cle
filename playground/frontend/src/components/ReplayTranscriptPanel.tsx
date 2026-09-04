@@ -412,7 +412,7 @@ export default function ReplayTranscriptPanel({
                   <span>strategic setup refresh</span>
                 )}
                 {trace.reasoning_source === 'qwen_self_review' && (
-                  <span>Qwen self-reviewed rationale</span>
+                  <span>Qwen self-review</span>
                 )}
                 <span>{trace.forced ? 'forced choice' : `${trace.legal_action_count} legal actions`}</span>
                 <span>{formatLatency(trace.latency_ms)}</span>

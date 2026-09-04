@@ -19,6 +19,8 @@ class ServerState:
         self.step_processing = False
         self.live_trace_store = None
         self.live_trace_game_id = None
+        self.live_inference = None
+        self.last_live_step_error = None
 
         # Replay mode state
         self.replay_data = None
@@ -70,6 +72,8 @@ class ServerState:
         self.game_log = []
         self.step_processing = False
         self.live_trace_game_id = None
+        self.live_inference = None
+        self.last_live_step_error = None
         self.replay_data = None
         self.replay_index = 0
         self.replay_mode = False

@@ -2788,3 +2788,21 @@ Morning checks: side-by-side in-run curves; row geometry of both final
 bundles (tile rows vs tile centroid, T10 in particular); panel on the better
 bundle. The pairs_v2 final panel (ap-iKwx2e32A6pT3lzn851xJV) decides the
 rung a starting bundle.
+
+# Gaussian-init ladder with failure-mode gates (approved plan, 2026-09-04)
+
+Plan file: ~/.claude/plans/async-wandering-phoenix.md. Gates are failure-mode
+scorecards, never loss.
+- [ ] Step 0: sft/scripts/inspect_token_rows.py and sft/scripts/failure_scorecard.py
+  with tests; backfill scorecards for the v3, pairs_v1, pairs_v2 panels and
+  the gaussian direct eval.
+- [x] Step 1 launched: `catan-qwen38-gauss-s1-marker-20260904`, from the base
+  model, `--token-init vocab_gaussian`, v1 marker stage-1 data (24,080 rows),
+  256 steps, eval and save every 64, app ap-TTCqSzF68fAtxwbTIUpQdJ, call
+  fc-01M1PXB6MBB8HDRGGEE63RGEYE, output
+  `/runs/catan-vision-sft/catan-qwen38-gauss-s1-marker-20260904/334d305b1c43`.
+- [ ] Step 1 gate: marker set scorecard vs the old marker control (wrong-entity
+  answers, glitches, row entanglement zero).
+- [ ] Step 2: v3 data from the stage-1 final, 512 steps; gate vs the old v3 adapter.
+- [ ] Step 3: pairs_v2 data from the stage-2 final, 512 steps; gate vs pairs_v2.
+- [ ] Step 4: rungs a, b, c from the winner.

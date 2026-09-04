@@ -1,6 +1,7 @@
-"""Modal launcher for the upstream Qwen-VL-Series-Finetune trainer.
+"""LEGACY Modal launcher for the upstream Qwen-VL-Series-Finetune trainer.
 
-This is the preferred Catan VLM SFT path. It converts our local JSONL data into
+The active path is ``sft/modal_catan_vision_sft.py``. This file is retained for
+historical smoke evidence. It converts local JSONL data into
 the Qwen repo's conversation JSON format, uploads images to a Modal Volume, and
 runs the pinned upstream trainer through a small Catan-token wrapper.
 """
@@ -16,7 +17,7 @@ from pathlib import Path
 
 import modal
 
-from sft.paths import resolve_dataset_asset
+from sft.paths import resolve_dataset_asset, resolve_dataset_image
 from sft.scripts.convert_to_qwen_series_sft import convert_row, iter_jsonl
 
 
@@ -70,14 +71,19 @@ qwen_series_image = (
             "PYTHONPATH": f"{REMOTE_QWEN_DIR}/src:{REMOTE_WORKDIR}",
         }
     )
+    .add_local_python_source("cle")
     .add_local_python_source("data_pipeline")
-    .add_local_python_source("engine")
     .add_local_python_source("sft")
 )
 
 
-def upload_qwen_series_json(train_jsonl: Path, remote_dir: str) -> tuple[str, str]:
-    """Upload converted Qwen conversation JSON plus referenced images."""
+def upload_qwen_series_json(
+    train_jsonl: Path,
+    remote_dir: str,
+    *,
+    image_root: Path | None = None,
+) -> tuple[str, str]:
+    """Upload converted Qwen conversations from an optional explicit image root."""
 
     train_jsonl = train_jsonl.resolve()
     remote_dir = "/" + remote_dir.strip("/")
@@ -91,7 +97,11 @@ def upload_qwen_series_json(train_jsonl: Path, remote_dir: str) -> tuple[str, st
         for _, row in iter_jsonl(train_jsonl):
             image_name = None
             if row.get("image"):
-                local_image = resolve_dataset_asset(train_jsonl, row["image"])
+                local_image = (
+                    resolve_dataset_image(image_root, row["image"])
+                    if image_root is not None
+                    else resolve_dataset_asset(train_jsonl, row["image"])
+                )
                 if not local_image.exists():
                     raise FileNotFoundError(local_image)
                 image_name = image_map.get(str(local_image))

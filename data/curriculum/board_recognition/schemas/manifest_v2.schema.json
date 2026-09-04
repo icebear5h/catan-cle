@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://catan-learning.local/schemas/board_recognition/manifest_v2.schema.json",
+  "title": "Engine-backed Catan board-recognition manifest row",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "sample_id",
+    "split",
+    "view",
+    "contract_path",
+    "label_path",
+    "image_path",
+    "image_size",
+    "source",
+    "board_fact_sha256",
+    "board_map_sha256",
+    "building_count",
+    "road_count",
+    "density_bin",
+    "color_palette",
+    "visible_piece_colors",
+    "render",
+    "sha256"
+  ],
+  "properties": {
+    "schema": {"const": "catan_board_recognition_sample/v2"},
+    "sample_id": {"type": "string", "minLength": 1},
+    "split": {"enum": ["train", "validation", "test", "color_diagnostic"]},
+    "view": {"const": "raw_full_board"},
+    "contract_path": {"type": "string", "pattern": "^contracts/.+\\.json$"},
+    "label_path": {"type": "string", "pattern": "^dense_labels/.+\\.json$"},
+    "image_path": {"type": "string", "pattern": "^images/.+\\.png$"},
+    "image_size": {
+      "type": "array",
+      "prefixItems": [
+        {"type": "integer", "minimum": 64},
+        {"type": "integer", "minimum": 64}
+      ],
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "source": {
+      "oneOf": [
+        {"$ref": "#/$defs/replaySource"},
+        {"$ref": "#/$defs/engineSource"}
+      ]
+    },
+    "board_fact_sha256": {"$ref": "#/$defs/sha256"},
+    "board_map_sha256": {"$ref": "#/$defs/sha256"},
+    "building_count": {"type": "integer", "minimum": 0, "maximum": 54},
+    "road_count": {"type": "integer", "minimum": 0, "maximum": 72},
+    "density_bin": {"enum": ["empty", "setup", "sparse", "dense"]},
+    "color_palette": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/color"},
+      "minItems": 4,
+      "maxItems": 4,
+      "uniqueItems": true
+    },
+    "visible_piece_colors": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/color"},
+      "uniqueItems": true
+    },
+    "render": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["renderer", "style_config", "image_annotation"],
+      "properties": {
+        "renderer": {
+          "enum": [
+            "evals.catan_board_bench.render",
+            "data_pipeline.catan_board_bench.render"
+          ]
+        },
+        "style_config": {"const": "configs/sft/renderer_style.json"},
+        "image_annotation": {"type": "null"}
+      }
+    },
+    "sha256": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "labels", "image"],
+      "properties": {
+        "contract": {"$ref": "#/$defs/sha256"},
+        "labels": {"$ref": "#/$defs/sha256"},
+        "image": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "color": {
+      "enum": [
+        "RED", "BLUE", "ORANGE", "WHITE", "BLACK", "GREEN",
+        "BRONZE", "SILVER", "GOLD", "PINK", "MYSTIC_BLUE"
+      ]
+    },
+    "replaySource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind", "game_id", "trajectory_id", "replay_path", "replay_step",
+        "source_sha256", "engine_action_count", "diagnostic_count", "split"
+      ],
+      "properties": {
+        "kind": {"const": "colonist_replay"},
+        "game_id": {"type": "string", "pattern": "^[0-9]+$"},
+        "trajectory_id": {"type": "string", "pattern": "^replay:[0-9]+$"},
+        "replay_path": {"type": "string", "pattern": "^artifacts/raw/colonist/replays/.+\\.json$"},
+        "replay_step": {"type": "integer", "minimum": 0},
+        "source_sha256": {"$ref": "#/$defs/sha256"},
+        "engine_action_count": {"type": "integer", "minimum": 0},
+        "diagnostic_count": {"type": "integer", "minimum": 0},
+        "split": {"enum": ["train", "validation", "test"]}
+      }
+    },
+    "engineSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind", "game_id", "trajectory_id", "replay_path", "replay_step",
+        "source_sha256", "engine_action_count", "engine_seed", "policy_seed",
+        "last_action_type", "legal_actions_only", "trajectory_action_limit", "split"
+      ],
+      "properties": {
+        "kind": {"const": "engine_rollout"},
+        "game_id": {"type": "null"},
+        "trajectory_id": {"type": "string", "pattern": "^engine:(train|color_diagnostic):[0-9]+$"},
+        "replay_path": {"type": "null"},
+        "replay_step": {"type": "null"},
+        "source_sha256": {"$ref": "#/$defs/sha256"},
+        "engine_action_count": {"type": "integer", "minimum": 0},
+        "engine_seed": {"type": "integer", "minimum": 0},
+        "policy_seed": {"type": "integer", "minimum": 0},
+        "last_action_type": {"type": ["string", "null"]},
+        "legal_actions_only": {"const": true},
+        "trajectory_action_limit": {"type": "integer", "minimum": 1},
+        "split": {"enum": ["train", "color_diagnostic"]}
+      }
+    }
+  }
+}

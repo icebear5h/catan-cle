@@ -1,0 +1,1188 @@
+{
+  "accepted": [
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 565,
+      "diagnostic_count": 112,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 9,
+        "info:replayed_trade_closure:CLOSE_TRADE": 55,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 3,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 15,
+        "warning:forced_replay_overlay:CLOSE_TRADE": 1,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 13,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 7,
+        "warning:forced_replay_overlay:REJECT_TRADE": 9
+      },
+      "engine_action_count": 527,
+      "game_id": "157348754",
+      "parsed_action_count": 565,
+      "path": "artifacts/raw/colonist/replays/157348754.json",
+      "sha256": "67f52848103a9de6fe6cb9333aac96f5c6c7252588bac7b07f0e25e8cdc850f7",
+      "status": "accepted",
+      "unique_board_states": 68
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 513,
+      "diagnostic_count": 79,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 3,
+        "info:replayed_trade_closure:CLOSE_TRADE": 51,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 1,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 8,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 9,
+        "warning:forced_replay_overlay:REJECT_TRADE": 7
+      },
+      "engine_action_count": 493,
+      "game_id": "178964322",
+      "parsed_action_count": 513,
+      "path": "artifacts/raw/colonist/replays/178964322.json",
+      "sha256": "60242330ae2c538ea2c06e2725c276479df5469a10d8a3c95b3187ad3c0cb2a4",
+      "status": "accepted",
+      "unique_board_states": 71
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 396,
+      "diagnostic_count": 46,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 5,
+        "info:replayed_trade_closure:CLOSE_TRADE": 31,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 6,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 2,
+        "warning:forced_replay_overlay:REJECT_TRADE": 2
+      },
+      "engine_action_count": 391,
+      "game_id": "186086820",
+      "parsed_action_count": 396,
+      "path": "artifacts/raw/colonist/replays/186086820.json",
+      "sha256": "65401871cda7afd9ed1e2d373043191d354df443f9082c36e3eebe6e48deb393",
+      "status": "accepted",
+      "unique_board_states": 66
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 495,
+      "diagnostic_count": 80,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 5,
+        "info:replayed_trade_closure:CLOSE_TRADE": 50,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 1,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 12,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 8,
+        "warning:forced_replay_overlay:REJECT_TRADE": 4
+      },
+      "engine_action_count": 481,
+      "game_id": "186549889",
+      "parsed_action_count": 495,
+      "path": "artifacts/raw/colonist/replays/186549889.json",
+      "sha256": "e138ec81f2808dfc1263ff0e06319f591737af4de8ac1425fbaacc4399225c94",
+      "status": "accepted",
+      "unique_board_states": 75
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 423,
+      "diagnostic_count": 62,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 6,
+        "info:replayed_trade_closure:CLOSE_TRADE": 34,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 2,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 2,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 9,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 5,
+        "warning:forced_replay_overlay:REJECT_TRADE": 4
+      },
+      "engine_action_count": 409,
+      "game_id": "187315228",
+      "parsed_action_count": 423,
+      "path": "artifacts/raw/colonist/replays/187315228.json",
+      "sha256": "11c62dca8697ffa3d1fb9d754031ae86ccff7aa2d1ba9c4ee043520616863ea2",
+      "status": "accepted",
+      "unique_board_states": 64
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 340,
+      "diagnostic_count": 32,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 4,
+        "info:replayed_trade_closure:CLOSE_TRADE": 15,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 2,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 3,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 3,
+        "warning:forced_replay_overlay:REJECT_TRADE": 5
+      },
+      "engine_action_count": 327,
+      "game_id": "187949640",
+      "parsed_action_count": 340,
+      "path": "artifacts/raw/colonist/replays/187949640.json",
+      "sha256": "cbd1b386bc7fdcb31144c0b0b0d3fac0ef3812143400116409b4953c32f2d4fd",
+      "status": "accepted",
+      "unique_board_states": 64
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 483,
+      "diagnostic_count": 63,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 2,
+        "info:replayed_trade_closure:CLOSE_TRADE": 37,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 2,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 2,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 5,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 8,
+        "warning:forced_replay_overlay:REJECT_TRADE": 7
+      },
+      "engine_action_count": 460,
+      "game_id": "189131938",
+      "parsed_action_count": 483,
+      "path": "artifacts/raw/colonist/replays/189131938.json",
+      "sha256": "348d2926671bb4f6b842e9e65b7687c007d7d3b66ef80ce092320a82dce9229b",
+      "status": "accepted",
+      "unique_board_states": 78
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 429,
+      "diagnostic_count": 78,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 8,
+        "info:replayed_trade_closure:CLOSE_TRADE": 43,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 1,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 6,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 12,
+        "warning:forced_replay_overlay:REJECT_TRADE": 8
+      },
+      "engine_action_count": 407,
+      "game_id": "189649315",
+      "parsed_action_count": 429,
+      "path": "artifacts/raw/colonist/replays/189649315.json",
+      "sha256": "b2ed037d19abf3e79b910d641a54859dd3bc7c6b396e3a359b86c9818c65bbb6",
+      "status": "accepted",
+      "unique_board_states": 53
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 497,
+      "diagnostic_count": 88,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 6,
+        "info:replayed_trade_closure:CLOSE_TRADE": 55,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 4,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 3,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 12,
+        "warning:forced_replay_overlay:REJECT_TRADE": 8
+      },
+      "engine_action_count": 470,
+      "game_id": "189933021",
+      "parsed_action_count": 497,
+      "path": "artifacts/raw/colonist/replays/189933021.json",
+      "sha256": "9ccbfebce5c2b43c5a592c9f1543b09933747c1e01699adc78b4e6e8b1f0d057",
+      "status": "accepted",
+      "unique_board_states": 68
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 528,
+      "diagnostic_count": 106,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 5,
+        "info:replayed_trade_closure:CLOSE_TRADE": 58,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 2,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 1,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 5,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 19,
+        "warning:forced_replay_overlay:REJECT_TRADE": 16
+      },
+      "engine_action_count": 487,
+      "game_id": "190066582",
+      "parsed_action_count": 528,
+      "path": "artifacts/raw/colonist/replays/190066582.json",
+      "sha256": "175e528f9a66c791f994d7742c7a0e6dcb1db0d5be72ed49b52c8f0032ab0841",
+      "status": "accepted",
+      "unique_board_states": 73
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 369,
+      "diagnostic_count": 24,
+      "diagnostic_counts": {
+        "info:replayed_trade_closure:CLOSE_TRADE": 21,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 3
+      },
+      "engine_action_count": 369,
+      "game_id": "191006009",
+      "parsed_action_count": 369,
+      "path": "artifacts/raw/colonist/replays/191006009.json",
+      "sha256": "1056013382db002bfcfbd7122b073738ae2c2017c6c4549fd27c2495051cf61a",
+      "status": "accepted",
+      "unique_board_states": 77
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 561,
+      "diagnostic_count": 82,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 6,
+        "info:replayed_trade_closure:CLOSE_TRADE": 52,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 1,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 3,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 7,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 7,
+        "warning:forced_replay_overlay:REJECT_TRADE": 6
+      },
+      "engine_action_count": 542,
+      "game_id": "191010650",
+      "parsed_action_count": 561,
+      "path": "artifacts/raw/colonist/replays/191010650.json",
+      "sha256": "f6537e21b5112cccdecf8fee57dc8bb0a67d5a4304328a025e3566e3a7dc0fa6",
+      "status": "accepted",
+      "unique_board_states": 86
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 561,
+      "diagnostic_count": 93,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 1,
+        "info:replayed_trade_closure:CLOSE_TRADE": 67,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 7,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 10,
+        "warning:forced_replay_overlay:REJECT_TRADE": 8
+      },
+      "engine_action_count": 540,
+      "game_id": "191170335",
+      "parsed_action_count": 561,
+      "path": "artifacts/raw/colonist/replays/191170335.json",
+      "sha256": "c440ab489dd53360c02c8d84f5afbdfbfd6110f8de96db07ad5092be77ab93cd",
+      "status": "accepted",
+      "unique_board_states": 69
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 433,
+      "diagnostic_count": 62,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 4,
+        "info:replayed_trade_closure:CLOSE_TRADE": 32,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 3,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 4,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 4,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 10,
+        "warning:forced_replay_overlay:REJECT_TRADE": 5
+      },
+      "engine_action_count": 407,
+      "game_id": "191397826",
+      "parsed_action_count": 433,
+      "path": "artifacts/raw/colonist/replays/191397826.json",
+      "sha256": "6a9c0d69cb9b8b997ba1f89e4b4dfcaf39d56941af77d205ae395ee2942315ee",
+      "status": "accepted",
+      "unique_board_states": 71
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 414,
+      "diagnostic_count": 55,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 4,
+        "info:replayed_trade_closure:CLOSE_TRADE": 33,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 5,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 2,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 6,
+        "warning:forced_replay_overlay:REJECT_TRADE": 5
+      },
+      "engine_action_count": 395,
+      "game_id": "191409287",
+      "parsed_action_count": 414,
+      "path": "artifacts/raw/colonist/replays/191409287.json",
+      "sha256": "94492f0f39de51fe67ff5009c8c00412f171d1b2fd4526a1c0cacfc0b56e9621",
+      "status": "accepted",
+      "unique_board_states": 66
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 408,
+      "diagnostic_count": 44,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 6,
+        "info:replayed_trade_closure:CLOSE_TRADE": 23,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 8,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 3,
+        "warning:forced_replay_overlay:REJECT_TRADE": 4
+      },
+      "engine_action_count": 398,
+      "game_id": "191493206",
+      "parsed_action_count": 408,
+      "path": "artifacts/raw/colonist/replays/191493206.json",
+      "sha256": "1ca56ff91fee9b05dc9c41faadf1482178efcc92d8c6649683b07e1a7517cf25",
+      "status": "accepted",
+      "unique_board_states": 65
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 577,
+      "diagnostic_count": 112,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 1,
+        "info:replayed_trade_closure:CLOSE_TRADE": 67,
+        "warning:forced_final_state_sync:None": 1,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 5,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 19,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 9,
+        "warning:forced_replay_overlay:OFFER_TRADE": 2,
+        "warning:forced_replay_overlay:REJECT_TRADE": 8
+      },
+      "engine_action_count": 552,
+      "game_id": "191622286",
+      "parsed_action_count": 577,
+      "path": "artifacts/raw/colonist/replays/191622286.json",
+      "sha256": "711332de3136fa753898d7ed61ed6193d133e659ac691bde0632b3e0e7f0f582",
+      "status": "accepted",
+      "unique_board_states": 85
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 418,
+      "diagnostic_count": 59,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 10,
+        "info:replayed_trade_closure:CLOSE_TRADE": 29,
+        "warning:forced_final_state_sync:None": 7,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 1,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 2,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 5,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 3,
+        "warning:forced_replay_overlay:REJECT_TRADE": 2
+      },
+      "engine_action_count": 409,
+      "game_id": "191831087",
+      "parsed_action_count": 418,
+      "path": "artifacts/raw/colonist/replays/191831087.json",
+      "sha256": "501520e9ea96761a3a909fd287e5ce49beb098a4185a57bd3d740a5af6d62e1a",
+      "status": "accepted",
+      "unique_board_states": 63
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 661,
+      "diagnostic_count": 116,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 8,
+        "info:replayed_trade_closure:CLOSE_TRADE": 79,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 1,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 1,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 9,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 11,
+        "warning:forced_replay_overlay:REJECT_TRADE": 7
+      },
+      "engine_action_count": 640,
+      "game_id": "191834170",
+      "parsed_action_count": 661,
+      "path": "artifacts/raw/colonist/replays/191834170.json",
+      "sha256": "7e60c66b6fe9e27de42eaca18840ad0567c3613088fa3b7fb899a65733983c57",
+      "status": "accepted",
+      "unique_board_states": 74
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 546,
+      "diagnostic_count": 97,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 5,
+        "info:replayed_trade_closure:CLOSE_TRADE": 58,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 2,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 2,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 6,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 8,
+        "warning:forced_replay_overlay:OFFER_TRADE": 3,
+        "warning:forced_replay_overlay:REJECT_TRADE": 13
+      },
+      "engine_action_count": 516,
+      "game_id": "191981351",
+      "parsed_action_count": 546,
+      "path": "artifacts/raw/colonist/replays/191981351.json",
+      "sha256": "e61e7faa49e5b8a94b3ddde75f8d68e61ea16d283440642f0d5e9fae51f87322",
+      "status": "accepted",
+      "unique_board_states": 66
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 476,
+      "diagnostic_count": 68,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 9,
+        "info:replayed_trade_closure:CLOSE_TRADE": 42,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 1,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 7,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 5,
+        "warning:forced_replay_overlay:OFFER_TRADE": 1,
+        "warning:forced_replay_overlay:REJECT_TRADE": 3
+      },
+      "engine_action_count": 462,
+      "game_id": "192058835",
+      "parsed_action_count": 476,
+      "path": "artifacts/raw/colonist/replays/192058835.json",
+      "sha256": "3f3c0e0066920d8bd689ca110153cb9c230eb2c822a3d03b8d012b453c7d5069",
+      "status": "accepted",
+      "unique_board_states": 59
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 528,
+      "diagnostic_count": 94,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 7,
+        "info:replayed_trade_closure:CLOSE_TRADE": 57,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 1,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 2,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 8,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 9,
+        "warning:forced_replay_overlay:REJECT_TRADE": 10
+      },
+      "engine_action_count": 504,
+      "game_id": "192193520",
+      "parsed_action_count": 528,
+      "path": "artifacts/raw/colonist/replays/192193520.json",
+      "sha256": "115178e0fe779e74c9f7b03808c3d175ac8df46eeac5e73bcc6ed3676edccff8",
+      "status": "accepted",
+      "unique_board_states": 72
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 489,
+      "diagnostic_count": 79,
+      "diagnostic_counts": {
+        "info:replayed_trade_closure:CLOSE_TRADE": 49,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 1,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 10,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 10,
+        "warning:forced_replay_overlay:REJECT_TRADE": 9
+      },
+      "engine_action_count": 467,
+      "game_id": "192302493",
+      "parsed_action_count": 489,
+      "path": "artifacts/raw/colonist/replays/192302493.json",
+      "sha256": "28a71871732a95a6d828ace184136ed0f44237ce181e5893df001b9f04efc0ab",
+      "status": "accepted",
+      "unique_board_states": 65
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 453,
+      "diagnostic_count": 66,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 3,
+        "info:replayed_trade_closure:CLOSE_TRADE": 38,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 7,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 6,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 6,
+        "warning:forced_replay_overlay:REJECT_TRADE": 6
+      },
+      "engine_action_count": 432,
+      "game_id": "192385820",
+      "parsed_action_count": 453,
+      "path": "artifacts/raw/colonist/replays/192385820.json",
+      "sha256": "0bb4570b00eced635e19062a406a82eff7f111289ff2e978aa55c070c1c7f0b7",
+      "status": "accepted",
+      "unique_board_states": 66
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 531,
+      "diagnostic_count": 99,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 10,
+        "info:replayed_trade_closure:CLOSE_TRADE": 60,
+        "warning:forced_final_state_sync:None": 1,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 4,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 2,
+        "warning:forced_replay_overlay:CLOSE_TRADE": 1,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 8,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 9,
+        "warning:forced_replay_overlay:REJECT_TRADE": 4
+      },
+      "engine_action_count": 510,
+      "game_id": "192514349",
+      "parsed_action_count": 531,
+      "path": "artifacts/raw/colonist/replays/192514349.json",
+      "sha256": "93d2204c06df3800f0fb95f03d2a7c33e144eea80e5747d18794d4e59954f8e4",
+      "status": "accepted",
+      "unique_board_states": 65
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 472,
+      "diagnostic_count": 73,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 2,
+        "info:replayed_trade_closure:CLOSE_TRADE": 45,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 4,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 5,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 10,
+        "warning:forced_replay_overlay:REJECT_TRADE": 7
+      },
+      "engine_action_count": 448,
+      "game_id": "192669054",
+      "parsed_action_count": 472,
+      "path": "artifacts/raw/colonist/replays/192669054.json",
+      "sha256": "8dee46e03724a175fc5faee739330d48b625b5b99a450c0f08bab491358d9cba",
+      "status": "accepted",
+      "unique_board_states": 73
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 367,
+      "diagnostic_count": 49,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 10,
+        "info:replayed_trade_closure:CLOSE_TRADE": 25,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 1,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 6,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 6,
+        "warning:forced_replay_overlay:REJECT_TRADE": 1
+      },
+      "engine_action_count": 356,
+      "game_id": "192754858",
+      "parsed_action_count": 367,
+      "path": "artifacts/raw/colonist/replays/192754858.json",
+      "sha256": "85610109e23c559d1e71ba70f14a81da2fcb5b857436fdca2c58d8b5fb26129d",
+      "status": "accepted",
+      "unique_board_states": 67
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 635,
+      "diagnostic_count": 138,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 7,
+        "info:replayed_trade_closure:CLOSE_TRADE": 75,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 3,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 12,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 20,
+        "warning:forced_replay_overlay:REJECT_TRADE": 21
+      },
+      "engine_action_count": 588,
+      "game_id": "192900367",
+      "parsed_action_count": 635,
+      "path": "artifacts/raw/colonist/replays/192900367.json",
+      "sha256": "1444e5ff7de21ce4dca527105a1f77f2ca6cb921f126de0c0b499bd93254285b",
+      "status": "accepted",
+      "unique_board_states": 69
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 458,
+      "diagnostic_count": 73,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 5,
+        "info:replayed_trade_closure:CLOSE_TRADE": 42,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 1,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 1,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 9,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 9,
+        "warning:forced_replay_overlay:OFFER_TRADE": 1,
+        "warning:forced_replay_overlay:REJECT_TRADE": 5
+      },
+      "engine_action_count": 437,
+      "game_id": "192998713",
+      "parsed_action_count": 458,
+      "path": "artifacts/raw/colonist/replays/192998713.json",
+      "sha256": "66817deacd777b65ca0c4ccf15d7a5d9ea88a286b9d13f336e6484ba43d75340",
+      "status": "accepted",
+      "unique_board_states": 65
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 410,
+      "diagnostic_count": 48,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 7,
+        "info:replayed_trade_closure:CLOSE_TRADE": 31,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 1,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 2,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 4,
+        "warning:forced_replay_overlay:REJECT_TRADE": 3
+      },
+      "engine_action_count": 399,
+      "game_id": "193008240",
+      "parsed_action_count": 410,
+      "path": "artifacts/raw/colonist/replays/193008240.json",
+      "sha256": "fbe0f79a40bcf2c995fed62bc59b24682db710c48994a67da9eb19d0448414b9",
+      "status": "accepted",
+      "unique_board_states": 63
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 403,
+      "diagnostic_count": 56,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 7,
+        "info:replayed_trade_closure:CLOSE_TRADE": 35,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 2,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 7,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 3,
+        "warning:forced_replay_overlay:REJECT_TRADE": 2
+      },
+      "engine_action_count": 395,
+      "game_id": "193062324",
+      "parsed_action_count": 403,
+      "path": "artifacts/raw/colonist/replays/193062324.json",
+      "sha256": "b7ed25d344b14b60fce34201d1a52650a8a8be8ee134b79a74a160fd1d6feab8",
+      "status": "accepted",
+      "unique_board_states": 70
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 446,
+      "diagnostic_count": 86,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 11,
+        "info:replayed_trade_closure:CLOSE_TRADE": 43,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 1,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 6,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 9,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 7,
+        "warning:forced_replay_overlay:REJECT_TRADE": 9
+      },
+      "engine_action_count": 420,
+      "game_id": "193299252",
+      "parsed_action_count": 446,
+      "path": "artifacts/raw/colonist/replays/193299252.json",
+      "sha256": "b4c19dce8cd2fb11b99d44a0ccaf22039f8608f810bb802af49f4a55395c1276",
+      "status": "accepted",
+      "unique_board_states": 58
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 550,
+      "diagnostic_count": 110,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 4,
+        "info:replayed_trade_closure:CLOSE_TRADE": 65,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 2,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 2,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 7,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 18,
+        "warning:forced_replay_overlay:REJECT_TRADE": 12
+      },
+      "engine_action_count": 513,
+      "game_id": "193379094",
+      "parsed_action_count": 550,
+      "path": "artifacts/raw/colonist/replays/193379094.json",
+      "sha256": "729d173aec20b4f8746be85fa93fd58e109a76149c1594068fe1389eccd9d872",
+      "status": "accepted",
+      "unique_board_states": 60
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 422,
+      "diagnostic_count": 53,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 7,
+        "info:replayed_trade_closure:CLOSE_TRADE": 34,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 6,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 4,
+        "warning:forced_replay_overlay:OFFER_TRADE": 1,
+        "warning:forced_replay_overlay:REJECT_TRADE": 1
+      },
+      "engine_action_count": 414,
+      "game_id": "193426507",
+      "parsed_action_count": 422,
+      "path": "artifacts/raw/colonist/replays/193426507.json",
+      "sha256": "1f485a8cd68369a576768cdab5fb6657a06e9cd04088e7d11d40ad9635bb8a1a",
+      "status": "accepted",
+      "unique_board_states": 75
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 536,
+      "diagnostic_count": 95,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 6,
+        "info:replayed_trade_closure:CLOSE_TRADE": 53,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 1,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 4,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 11,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 11,
+        "warning:forced_replay_overlay:REJECT_TRADE": 9
+      },
+      "engine_action_count": 507,
+      "game_id": "193497471",
+      "parsed_action_count": 536,
+      "path": "artifacts/raw/colonist/replays/193497471.json",
+      "sha256": "b6172d024e76f313a48886881862e8cdb0deeaab4866139b1eaf68fdf6c0337a",
+      "status": "accepted",
+      "unique_board_states": 81
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 369,
+      "diagnostic_count": 55,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 4,
+        "info:replayed_trade_closure:CLOSE_TRADE": 30,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 1,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 1,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 7,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 9,
+        "warning:forced_replay_overlay:REJECT_TRADE": 3
+      },
+      "engine_action_count": 352,
+      "game_id": "193538901",
+      "parsed_action_count": 369,
+      "path": "artifacts/raw/colonist/replays/193538901.json",
+      "sha256": "244e08549ac8f92834a19ad01078a30444c9660d5ce572cd0d50f54523bb6f38",
+      "status": "accepted",
+      "unique_board_states": 65
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 402,
+      "diagnostic_count": 49,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 1,
+        "info:replayed_trade_closure:CLOSE_TRADE": 29,
+        "warning:forced_final_state_sync:None": 1,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 1,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 1,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 8,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 4,
+        "warning:forced_replay_overlay:REJECT_TRADE": 4
+      },
+      "engine_action_count": 390,
+      "game_id": "193899417",
+      "parsed_action_count": 402,
+      "path": "artifacts/raw/colonist/replays/193899417.json",
+      "sha256": "fee615b1d4ee48519965135ca17aa5256b708e202edbe0878fb11cf5791d7aff",
+      "status": "accepted",
+      "unique_board_states": 72
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 537,
+      "diagnostic_count": 101,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 4,
+        "info:replayed_trade_closure:CLOSE_TRADE": 67,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 3,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 5,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 4,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 15,
+        "warning:forced_replay_overlay:REJECT_TRADE": 3
+      },
+      "engine_action_count": 509,
+      "game_id": "193905959",
+      "parsed_action_count": 537,
+      "path": "artifacts/raw/colonist/replays/193905959.json",
+      "sha256": "b8c196d4130b64e4eda2e67d3fe8be61840d093b08008c4c4aa729c963f8b1a8",
+      "status": "accepted",
+      "unique_board_states": 64
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 373,
+      "diagnostic_count": 50,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 7,
+        "info:replayed_trade_closure:CLOSE_TRADE": 27,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 1,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 2,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 7,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 3,
+        "warning:forced_replay_overlay:REJECT_TRADE": 3
+      },
+      "engine_action_count": 363,
+      "game_id": "193960562",
+      "parsed_action_count": 373,
+      "path": "artifacts/raw/colonist/replays/193960562.json",
+      "sha256": "6a275661eb32addd130a1e4c630872879efd9e2b5b39b0baa2ae5b44aa0d41ca",
+      "status": "accepted",
+      "unique_board_states": 64
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 479,
+      "diagnostic_count": 90,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 2,
+        "info:replayed_trade_closure:CLOSE_TRADE": 55,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 1,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 2,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 15,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 12,
+        "warning:forced_replay_overlay:OFFER_TRADE": 1,
+        "warning:forced_replay_overlay:REJECT_TRADE": 2
+      },
+      "engine_action_count": 460,
+      "game_id": "193963991",
+      "parsed_action_count": 479,
+      "path": "artifacts/raw/colonist/replays/193963991.json",
+      "sha256": "9bb8f4fbbd47f7b2e4f588008fcf85759a479bbafbefc3dcdba22970b9d66df4",
+      "status": "accepted",
+      "unique_board_states": 67
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 483,
+      "diagnostic_count": 82,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 9,
+        "info:replayed_trade_closure:CLOSE_TRADE": 50,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 5,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 10,
+        "warning:forced_replay_overlay:REJECT_TRADE": 8
+      },
+      "engine_action_count": 464,
+      "game_id": "194050989",
+      "parsed_action_count": 483,
+      "path": "artifacts/raw/colonist/replays/194050989.json",
+      "sha256": "9fce9ba687ccc6b9a78cb1c2fc4101a96e71d9b92ecf77cb926aaf456a5a7949",
+      "status": "accepted",
+      "unique_board_states": 61
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 530,
+      "diagnostic_count": 80,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 11,
+        "info:replayed_trade_closure:CLOSE_TRADE": 50,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 1,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 1,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 7,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 7,
+        "warning:forced_replay_overlay:REJECT_TRADE": 3
+      },
+      "engine_action_count": 516,
+      "game_id": "194134632",
+      "parsed_action_count": 530,
+      "path": "artifacts/raw/colonist/replays/194134632.json",
+      "sha256": "e36aaed08827a9079b4c25a52f298304937b4e942b142c3b7d356485ebcc70ce",
+      "status": "accepted",
+      "unique_board_states": 66
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 414,
+      "diagnostic_count": 53,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 4,
+        "info:replayed_trade_closure:CLOSE_TRADE": 32,
+        "warning:forced_final_state_sync:None": 1,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 1,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 3,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 6,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 4,
+        "warning:forced_replay_overlay:REJECT_TRADE": 2
+      },
+      "engine_action_count": 402,
+      "game_id": "194158047",
+      "parsed_action_count": 414,
+      "path": "artifacts/raw/colonist/replays/194158047.json",
+      "sha256": "fe5c8d4ee8f261f2d919fa1227ea14998c960331c4bab04383fd098f7ae84ed9",
+      "status": "accepted",
+      "unique_board_states": 77
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 467,
+      "diagnostic_count": 64,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 9,
+        "info:replayed_trade_closure:CLOSE_TRADE": 46,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 1,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 5,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 3
+      },
+      "engine_action_count": 462,
+      "game_id": "194198328",
+      "parsed_action_count": 467,
+      "path": "artifacts/raw/colonist/replays/194198328.json",
+      "sha256": "8aca8ace5b649a47ee516a5eaf77a648be5408a479a86c0cb05d32bb986366e3",
+      "status": "accepted",
+      "unique_board_states": 66
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 448,
+      "diagnostic_count": 81,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 6,
+        "info:replayed_trade_closure:CLOSE_TRADE": 50,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 4,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 9,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 9,
+        "warning:forced_replay_overlay:REJECT_TRADE": 3
+      },
+      "engine_action_count": 431,
+      "game_id": "194209320",
+      "parsed_action_count": 448,
+      "path": "artifacts/raw/colonist/replays/194209320.json",
+      "sha256": "20083f5c36e60bffa1073e450931c728e743e73985a5f3968a6f44f784cc36b7",
+      "status": "accepted",
+      "unique_board_states": 58
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 588,
+      "diagnostic_count": 148,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 3,
+        "info:replayed_trade_closure:CLOSE_TRADE": 81,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 3,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 2,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 11,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 27,
+        "warning:forced_replay_overlay:REJECT_TRADE": 21
+      },
+      "engine_action_count": 535,
+      "game_id": "194372526",
+      "parsed_action_count": 588,
+      "path": "artifacts/raw/colonist/replays/194372526.json",
+      "sha256": "296e07f0b03ec67a2707f44cba582c81839872b0f5692436b30b3faa5807a21c",
+      "status": "accepted",
+      "unique_board_states": 67
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 464,
+      "diagnostic_count": 84,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 4,
+        "info:replayed_trade_closure:CLOSE_TRADE": 54,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 1,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 9,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 11,
+        "warning:forced_replay_overlay:REJECT_TRADE": 5
+      },
+      "engine_action_count": 447,
+      "game_id": "194507661",
+      "parsed_action_count": 464,
+      "path": "artifacts/raw/colonist/replays/194507661.json",
+      "sha256": "85af3c6d0522e6434b21577ac16c54f9c3648dadf8dbecf2cb88fae1669b8d2a",
+      "status": "accepted",
+      "unique_board_states": 66
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 499,
+      "diagnostic_count": 78,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 6,
+        "info:replayed_trade_closure:CLOSE_TRADE": 47,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 1,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 1,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 9,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 7,
+        "warning:forced_replay_overlay:REJECT_TRADE": 7
+      },
+      "engine_action_count": 481,
+      "game_id": "194560883",
+      "parsed_action_count": 499,
+      "path": "artifacts/raw/colonist/replays/194560883.json",
+      "sha256": "ed1f344eb4bf0e1bcdcd3d53863e4edc527bb3bd62a6bb8969edff200dd5002f",
+      "status": "accepted",
+      "unique_board_states": 70
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 408,
+      "diagnostic_count": 49,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 4,
+        "info:replayed_trade_closure:CLOSE_TRADE": 31,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 1,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 9,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 4
+      },
+      "engine_action_count": 401,
+      "game_id": "194864812",
+      "parsed_action_count": 408,
+      "path": "artifacts/raw/colonist/replays/194864812.json",
+      "sha256": "1f7370d49805900b477081236df41eb397e44a6c4c671067858a3afc74701771",
+      "status": "accepted",
+      "unique_board_states": 75
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 461,
+      "diagnostic_count": 88,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 7,
+        "info:replayed_trade_closure:CLOSE_TRADE": 45,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 1,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 5,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 11,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 10,
+        "warning:forced_replay_overlay:REJECT_TRADE": 9
+      },
+      "engine_action_count": 434,
+      "game_id": "195196260",
+      "parsed_action_count": 461,
+      "path": "artifacts/raw/colonist/replays/195196260.json",
+      "sha256": "f1181a42f9e59512309660c746e58a6d26ce28f5669f8f4c9490a9646a3929d7",
+      "status": "accepted",
+      "unique_board_states": 67
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 431,
+      "diagnostic_count": 57,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 6,
+        "info:replayed_trade_closure:CLOSE_TRADE": 37,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 2,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 12
+      },
+      "engine_action_count": 428,
+      "game_id": "195220811",
+      "parsed_action_count": 431,
+      "path": "artifacts/raw/colonist/replays/195220811.json",
+      "sha256": "c50ffb5c5759f7625851ec4831ff770be0a55b005c46ba0400c5449a986212ce",
+      "status": "accepted",
+      "unique_board_states": 66
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 444,
+      "diagnostic_count": 75,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 2,
+        "info:replayed_trade_closure:CLOSE_TRADE": 46,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 1,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 7,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 10,
+        "warning:forced_replay_overlay:REJECT_TRADE": 9
+      },
+      "engine_action_count": 421,
+      "game_id": "195231359",
+      "parsed_action_count": 444,
+      "path": "artifacts/raw/colonist/replays/195231359.json",
+      "sha256": "f941b1c84dcf9c4ea3bc570a79047c37420a634a5025f2c1dd10744be2b74060",
+      "status": "accepted",
+      "unique_board_states": 61
+    },
+    {
+      "blocking_diagnostic_count": 0,
+      "completed_replay_steps": 402,
+      "diagnostic_count": 59,
+      "diagnostic_counts": {
+        "info:observed_replay_state:MOVE_ROBBER": 3,
+        "info:replayed_trade_closure:CLOSE_TRADE": 34,
+        "warning:forced_replay_overlay:ACCEPT_TRADE": 2,
+        "warning:forced_replay_overlay:CLEAR_TRADE_RESPONSE": 1,
+        "warning:forced_replay_overlay:CLOSE_TRADE": 1,
+        "warning:forced_replay_overlay:CONFIRM_TRADE": 7,
+        "warning:forced_replay_overlay:COUNTER_OFFER": 5,
+        "warning:forced_replay_overlay:REJECT_TRADE": 6
+      },
+      "engine_action_count": 386,
+      "game_id": "195313419",
+      "parsed_action_count": 402,
+      "path": "artifacts/raw/colonist/replays/195313419.json",
+      "sha256": "17182075c6035631ee1c5878fe717f9ed9e8fc34797befac9453cb94d15598bc",
+      "status": "accepted",
+      "unique_board_states": 63
+    }
+  ],
+  "counts": {
+    "accepted": 53,
+    "excluded_benchmark": 13,
+    "raw_payloads": 66,
+    "rejected": 0
+  },
+  "excluded_benchmark": [
+    {
+      "game_id": "191035308",
+      "path": "artifacts/raw/colonist/replays/191035308.json",
+      "sha256": "0363e95c7dada01c0ade1c78f17a239636763539d369440c7c5132bf87d12e5e"
+    },
+    {
+      "game_id": "191046136",
+      "path": "artifacts/raw/colonist/replays/191046136.json",
+      "sha256": "05b8bdf91096aaa9666846e5db92a8c5a70f4b6f0919193c431bb661bc8e5f4a"
+    },
+    {
+      "game_id": "191057036",
+      "path": "artifacts/raw/colonist/replays/191057036.json",
+      "sha256": "13cdd2e058dfc1bc5cd79bb72e9b3ae32bff5353ee70ef0d5671918d8a82451c"
+    },
+    {
+      "game_id": "191196714",
+      "path": "artifacts/raw/colonist/replays/191196714.json",
+      "sha256": "f4f0ba12337deda37f8db54918c4a8f2cd9be2f97a552eb21ac5bf97854e2b31"
+    },
+    {
+      "game_id": "191208779",
+      "path": "artifacts/raw/colonist/replays/191208779.json",
+      "sha256": "cb27a5dc00b2e03053be2205cf26d23467af2fdb1e9fe98b58cc31b36b75eaef"
+    },
+    {
+      "game_id": "192244603",
+      "path": "artifacts/raw/colonist/replays/192244603.json",
+      "sha256": "f51e25886029f9b2898615c2d050afd0f7c581a90d3e590160b4f5b8a03a786e"
+    },
+    {
+      "game_id": "192261074",
+      "path": "artifacts/raw/colonist/replays/192261074.json",
+      "sha256": "928de03b9fdb531d1310d41580feeb730491622776cc28acb2c7c00299d3cf3c"
+    },
+    {
+      "game_id": "192281207",
+      "path": "artifacts/raw/colonist/replays/192281207.json",
+      "sha256": "c6d1757e6705b189702dcae0cf79716f1c66ae279c888fb306ac6a599d38bdfa"
+    },
+    {
+      "game_id": "192284486",
+      "path": "artifacts/raw/colonist/replays/192284486.json",
+      "sha256": "4254688323ad71eab5e2fe69cf83a4a09afa56b0438d2779d98af92f51a96ff3"
+    },
+    {
+      "game_id": "192289925",
+      "path": "artifacts/raw/colonist/replays/192289925.json",
+      "sha256": "6d8a68a93f89127d5517f5e9de8ea2dd3fab67ad1aa7ab935921320890c40f53"
+    },
+    {
+      "game_id": "192294329",
+      "path": "artifacts/raw/colonist/replays/192294329.json",
+      "sha256": "d87509406683cdbe8b48cab51012696bfd4ef46c30f0cda8c6f5591a8f243806"
+    },
+    {
+      "game_id": "192418134",
+      "path": "artifacts/raw/colonist/replays/192418134_sample.json",
+      "sha256": "f64c2c5285f8e353d93af3dd84114608a5ef8a0454dfe1e86ada4a04aa7ca0d6"
+    },
+    {
+      "game_id": "194335024",
+      "path": "artifacts/raw/colonist/replays/194335024.json",
+      "sha256": "6914c718eadaa1e72a3d72ac87ebdd2341d7314db0543a25f3c6f5a1b445d92c"
+    }
+  ],
+  "leakage": {
+    "benchmark": "CatanBoardBench-100",
+    "excluded_game_ids": [
+      "191035308",
+      "191046136",
+      "191057036",
+      "191196714",
+      "191208779",
+      "192244603",
+      "192261074",
+      "192281207",
+      "192284486",
+      "192289925",
+      "192294329",
+      "192418134",
+      "194335024"
+    ],
+    "ledger_path": "evals/catan_board_bench/datasets/catan_board_bench_100/leakage/benchmark_game_ids.json",
+    "ledger_sha256": "af4f740ca2b95b38712d318e9809f3d1f91513a590da3ea2da7aafd67db2a837"
+  },
+  "lock_sha256": "0e5733845b4dc0c6c4023cf738249a98d5ab89952730072edc742ae17b930b68",
+  "minimum_accepted": 40,
+  "rejected": [],
+  "schema": "catan_board_recognition_replay_sources/v1",
+  "source_root": "artifacts/raw/colonist/replays"
+}

@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://catan-learning.local/schemas/board_recognition/dense_labels_v2.schema.json",
+  "title": "Engine-backed Catan board-recognition dense labels",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "sample_id", "entities"],
+  "properties": {
+    "schema": {"const": "catan_board_recognition_dense_labels/v2"},
+    "sample_id": {"type": "string", "minLength": 1},
+    "entities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tiles", "nodes", "edges", "ports"],
+      "properties": {
+        "tiles": {
+          "type": "array",
+          "minItems": 19,
+          "maxItems": 19,
+          "items": {"$ref": "#/$defs/tile"}
+        },
+        "nodes": {
+          "type": "array",
+          "minItems": 54,
+          "maxItems": 54,
+          "items": {"$ref": "#/$defs/node"}
+        },
+        "edges": {
+          "type": "array",
+          "minItems": 72,
+          "maxItems": 72,
+          "items": {"$ref": "#/$defs/edge"}
+        },
+        "ports": {
+          "type": "array",
+          "minItems": 9,
+          "maxItems": 9,
+          "items": {"$ref": "#/$defs/port"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "color": {
+      "enum": [
+        "RED", "BLUE", "ORANGE", "WHITE", "BLACK", "GREEN",
+        "BRONZE", "SILVER", "GOLD", "PINK", "MYSTIC_BLUE"
+      ]
+    },
+    "tile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "resource", "number", "robber"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^<T(0[0-9]|1[0-8])>$"},
+        "resource": {"enum": ["DESERT", "WOOD", "BRICK", "SHEEP", "WHEAT", "ORE"]},
+        "number": {"type": ["integer", "null"], "enum": [null, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12]},
+        "robber": {"type": "boolean"}
+      }
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "occupancy"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^<N([0-4][0-9]|5[0-3])>$"},
+        "occupancy": {
+          "oneOf": [
+            {"const": "EMPTY"},
+            {
+              "type": "string",
+              "pattern": "^(RED|BLUE|ORANGE|WHITE|BLACK|GREEN|BRONZE|SILVER|GOLD|PINK|MYSTIC_BLUE)_(SETTLEMENT|CITY)$"
+            }
+          ]
+        }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "owner"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^<E[0-9]{2}_[0-9]{2}>$"},
+        "owner": {
+          "oneOf": [
+            {"const": "EMPTY"},
+            {"$ref": "#/$defs/color"}
+          ]
+        }
+      }
+    },
+    "port": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "port_type"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^<P0[0-8]>$"},
+        "port_type": {
+          "enum": [
+            "THREE_TO_ONE", "TWO_TO_ONE_WOOD", "TWO_TO_ONE_BRICK",
+            "TWO_TO_ONE_SHEEP", "TWO_TO_ONE_WHEAT", "TWO_TO_ONE_ORE"
+          ]
+        }
+      }
+    }
+  }
+}

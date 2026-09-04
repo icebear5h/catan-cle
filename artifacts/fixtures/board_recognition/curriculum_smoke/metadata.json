@@ -61,7 +61,7 @@
   },
   "curriculum_path": "data/curriculum/board_recognition/curriculum.json",
   "curriculum_schema": "catan_board_recognition_curriculum/v1",
-  "curriculum_sha256": "bd7001269870f165a24a6a986ec3d1660354c5f1aaecbf3e6d769b728493ed2a",
+  "curriculum_sha256": "fd40ba5c5fa9d253d0729a66ef6e6615275dd4ad41287857f263f83f251095e8",
   "files": {
     "contracts_dir": "contracts",
     "images_dir": "images",
@@ -69,7 +69,7 @@
     "manifest": "manifest.jsonl",
     "splits_dir": "splits"
   },
-  "generated_at": "2026-08-26T07:27:50.090658+00:00",
+  "generated_at": "2026-08-26T18:31:47.684772+00:00",
   "image_size": [
     64,
     64
@@ -106,15 +106,16 @@
         "robber"
       ]
     },
+    "balance_available_classes": true,
     "entity_type_order": [
       "tile",
       "node",
       "edge",
       "port"
     ],
-    "method": "hierarchical_uniform",
-    "procedure": "Choose entity type uniformly, then attribute uniformly, then canonical slot uniformly. Read the target class from the dense label payload.",
-    "require_uniform_at_each_level": true
+    "method": "hierarchical_class_balanced",
+    "procedure": "Choose entity type uniformly, reserve one query for that state's declared counterfactual target, then choose attribute uniformly, choose among classes present in the state, and choose a canonical slot within that class. Read the target class from the dense label payload.",
+    "require_uniform_entity_types": true
   },
   "schema": "catan_board_recognition_dataset/v1",
   "seed": 381427,

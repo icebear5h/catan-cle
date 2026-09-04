@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://catan-learning.local/schemas/board_recognition/qwen_sft_v2.schema.json",
+  "title": "Atomic Qwen board-recognition SFT row",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["image", "conversations"],
+  "properties": {
+    "image": {
+      "type": "string",
+      "pattern": "^[^/]+\\.png$"
+    },
+    "conversations": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "prefixItems": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["from", "value"],
+          "properties": {
+            "from": {"const": "human"},
+            "value": {
+              "type": "string",
+              "pattern": "^<image>\\n<(T|N|E|P)[0-9_]+><Q_[A-Z_]+>$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["from", "value"],
+          "properties": {
+            "from": {"const": "gpt"},
+            "value": {
+              "type": "string",
+              "pattern": "^<A_[A-Z0-9_]+>$"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

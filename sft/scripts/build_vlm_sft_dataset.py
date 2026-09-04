@@ -27,7 +27,7 @@ from sft.paths import repository_relative_path
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_EXCLUDE = (
-    ROOT / "data_pipeline/catan_board_bench/datasets/catan_board_bench_100/leakage/benchmark_game_ids.json"
+    ROOT / "evals/catan_board_bench/datasets/catan_board_bench_100/leakage/benchmark_game_ids.json"
 )
 DEFAULT_PROMPT_PREFIX = "Answer exactly using the Catan tokens requested. Do not explain."
 

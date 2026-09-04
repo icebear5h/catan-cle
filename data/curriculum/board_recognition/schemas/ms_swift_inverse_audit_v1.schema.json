@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://catan-learning.local/schemas/board_recognition/ms_swift_inverse_audit_v1.schema.json",
+  "title": "Inverse atlas-grounding audit row",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "query_id", "state_id", "state_index", "split", "image_name",
+    "image_sha256", "contract_path", "contract_sha256", "source_kind",
+    "game_id", "trajectory_id", "density_bin", "building_count", "road_count",
+    "piece_count", "entity_type", "target_token", "description",
+    "description_style", "visual_qualifier", "semantic_prompt",
+    "semantic_answer", "prompt_sha256", "answer_sha256"
+  ],
+  "properties": {
+    "schema": {"const": "catan_board_recognition_ms_swift_inverse_audit/v1"},
+    "query_id": {"type": "string", "pattern": "^.+_inverse_(tile|node|edge|port)$"},
+    "state_id": {"type": "string", "minLength": 1},
+    "state_index": {"type": "integer", "minimum": 0},
+    "split": {"enum": ["train", "validation", "test", "color_diagnostic"]},
+    "image_name": {"type": "string", "pattern": "^[^/]+\\.png$"},
+    "image_sha256": {"$ref": "#/$defs/sha256"},
+    "contract_path": {"type": "string", "pattern": "^contracts/.+\\.json$"},
+    "contract_sha256": {"$ref": "#/$defs/sha256"},
+    "source_kind": {"enum": ["colonist_replay", "engine_rollout"]},
+    "game_id": {"type": ["string", "null"]},
+    "trajectory_id": {"type": "string", "minLength": 1},
+    "density_bin": {"enum": ["empty", "setup", "sparse", "dense"]},
+    "building_count": {"type": "integer", "minimum": 0, "maximum": 54},
+    "road_count": {"type": "integer", "minimum": 0, "maximum": 72},
+    "piece_count": {"type": "integer", "minimum": 0, "maximum": 126},
+    "entity_type": {"enum": ["tile", "node", "edge", "port"]},
+    "target_token": {
+      "type": "string",
+      "pattern": "^<(T[0-9]{2}|N[0-9]{2}|E[0-9]{2}_[0-9]{2}|P[0-9]{2})>$"
+    },
+    "description": {"type": "string", "minLength": 1, "pattern": "^[^<>\\n]+$"},
+    "description_style": {
+      "type": "string",
+      "pattern": "^(piece_)?(node_compact_resource_number|node_words_resource_number|node_compact_resources|node_words_resources|node_directional_anchor|edge_compact_endpoints|edge_words_endpoints|edge_directional_anchor)$|^(tile_fact|port_directional_anchor)$"
+    },
+    "visual_qualifier": {"type": ["string", "null"]},
+    "semantic_prompt": {"type": "string", "pattern": "^<image>\\nWhere is [^<>\\n]+\\?$"},
+    "semantic_answer": {
+      "type": "string",
+      "pattern": "^<(T[0-9]{2}|N[0-9]{2}|E[0-9]{2}_[0-9]{2}|P[0-9]{2})>$"
+    },
+    "prompt_sha256": {"$ref": "#/$defs/sha256"},
+    "answer_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

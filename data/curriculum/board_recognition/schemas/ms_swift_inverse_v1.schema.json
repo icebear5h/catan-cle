@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://catan-learning.local/schemas/board_recognition/ms_swift_inverse_v1.schema.json",
+  "title": "Inverse atlas-grounding ms-swift row",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["messages", "images"],
+  "properties": {
+    "messages": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "prefixItems": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["role", "content"],
+          "properties": {
+            "role": {"const": "user"},
+            "content": {
+              "type": "string",
+              "pattern": "^<image>\\nWhere is [^<>\\n]+\\?$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["role", "content"],
+          "properties": {
+            "role": {"const": "assistant"},
+            "content": {
+              "type": "string",
+              "pattern": "^<(T[0-9]{2}|N[0-9]{2}|E[0-9]{2}_[0-9]{2}|P[0-9]{2})>$"
+            }
+          }
+        }
+      ]
+    },
+    "images": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "prefixItems": [
+        {"type": "string", "pattern": "^[^/]+\\.png$"}
+      ]
+    }
+  }
+}

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 import tempfile
@@ -87,12 +88,15 @@ def upload_eval_jsonl(
     eval_jsonl: Path,
     remote_dir: str,
     *,
+    eval_set_id: str,
     image_root: Path | None = None,
     token_inventory: Path | None = None,
 ) -> tuple[str, str | None]:
     """Upload eval rows, explicit-root images, and optional token inventory."""
 
     eval_jsonl = eval_jsonl.resolve()
+    with eval_jsonl.open("rb") as handle:
+        source_digest = hashlib.file_digest(handle, "sha256").hexdigest()
     remote_dir = "/" + remote_dir.strip("/")
     remote_images_dir = f"{remote_dir}/images"
     remote_jsonl = f"{remote_dir}/eval.jsonl"
@@ -118,6 +122,12 @@ def upload_eval_jsonl(
                 batch.put_file(local_image, remote_image)
 
             row = dict(row)
+            metadata = dict(row.get("metadata") or {})
+            metadata.update(
+                eval_set_id=eval_set_id,
+                eval_source_sha256=source_digest,
+            )
+            row["metadata"] = metadata
             row["image"] = f"{REMOTE_DATA_MOUNT}{remote_image}"
             row.pop("images", None)
             rows.append(row)
@@ -328,6 +338,7 @@ def main(
         remote_set, remote_inventory = upload_eval_jsonl(
             local_path,
             set_dir,
+            eval_set_id=set_stem,
             image_root=Path(local_root) if local_root else None,
             token_inventory=Path(token_inventory) if token_inventory else None,
         )

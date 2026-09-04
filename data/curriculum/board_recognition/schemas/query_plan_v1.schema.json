@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://catan-learning.local/schemas/board_recognition/query_plan_v1.schema.json",
+  "title": "Deterministic board-recognition query plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "state_id", "split", "epoch", "queries", "source"],
+  "properties": {
+    "schema": {"const": "catan_board_recognition_query_plan/v1"},
+    "state_id": {"type": "string", "minLength": 1},
+    "split": {"enum": ["train", "validation", "test", "color_diagnostic"]},
+    "epoch": {"type": "integer", "minimum": 0},
+    "queries": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "items": {"$ref": "#/$defs/query"}
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "image_path", "label_path", "source_kind", "game_id",
+        "trajectory_id", "density_bin"
+      ],
+      "properties": {
+        "image_path": {"type": "string", "pattern": "^images/.+\\.png$"},
+        "label_path": {"type": "string", "pattern": "^dense_labels/.+\\.json$"},
+        "source_kind": {"enum": ["colonist_replay", "engine_rollout"]},
+        "game_id": {"type": ["string", "null"]},
+        "trajectory_id": {"type": "string", "minLength": 1},
+        "density_bin": {"enum": ["empty", "setup", "sparse", "dense"]}
+      }
+    }
+  },
+  "$defs": {
+    "query": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "query_id", "entity_type", "entity_type_id", "attribute",
+        "attribute_id", "head", "slot", "slot_index", "class_name",
+        "class_index", "class_vocabulary", "query_token", "answer_token"
+      ],
+      "properties": {
+        "query_id": {"type": "string", "pattern": "^.+_e[0-9]{3}_q[0-9]{3}$"},
+        "entity_type": {"enum": ["tile", "node", "edge", "port"]},
+        "entity_type_id": {"type": "integer", "minimum": 0, "maximum": 3},
+        "attribute": {"enum": ["resource", "number", "robber", "occupancy", "owner", "port_type"]},
+        "attribute_id": {"type": "integer", "minimum": 0, "maximum": 5},
+        "head": {"enum": ["tile.resource", "tile.number", "tile.robber", "node.occupancy", "edge.owner", "port.port_type"]},
+        "slot": {"type": "string", "pattern": "^<(T|N|E|P)[0-9_]+>$"},
+        "slot_index": {"type": "integer", "minimum": 0, "maximum": 71},
+        "class_name": {"type": "string", "minLength": 1},
+        "class_index": {"type": "integer", "minimum": 0, "maximum": 22},
+        "class_vocabulary": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 2,
+          "maxItems": 23,
+          "uniqueItems": true
+        },
+        "query_token": {"type": "string", "pattern": "^<Q_[A-Z_]+>$"},
+        "answer_token": {"type": "string", "pattern": "^<A_[A-Z0-9_]+>$"}
+      }
+    }
+  }
+}

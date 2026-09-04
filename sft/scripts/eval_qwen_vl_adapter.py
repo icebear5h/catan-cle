@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from sft.behavior_diagnostics import summarize_behaviors
 from sft.paths import resolve_dataset_asset, resolve_dataset_image
 from sft.scripts.train_trl_catan_vision import (
     VISUAL_STATE_FILE,
@@ -480,6 +481,7 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
         summary[f"by_{key}"] = summarize_dimension(attempted, key)
     summary["categories"] = summary["by_category"]
     summary["neighbor_confusion"] = summarize_neighbor_confusion(attempted)
+    summary["by_behavior"] = summarize_behaviors(attempted)
     return summary
 
 
@@ -512,6 +514,8 @@ def evaluation_metadata(row: dict[str, Any], *, image_variant: str) -> dict[str,
         "same_color",
         "negative_distance",
         "negative_kind",
+        "eval_set_id",
+        "eval_source_sha256",
     ):
         if key in row:
             metadata[key] = row[key]
@@ -767,6 +771,18 @@ def run_eval_job(
             handle.flush()
 
     summary = summarize(records)
+    eval_set_ids = {
+        str(record["metadata"]["eval_set_id"])
+        for record in records
+        if record.get("metadata", {}).get("eval_set_id")
+    }
+    eval_source_hashes = {
+        str(record["metadata"]["eval_source_sha256"])
+        for record in records
+        if record.get("metadata", {}).get("eval_source_sha256")
+    }
+    if len(eval_set_ids) > 1 or len(eval_source_hashes) > 1:
+        raise ValueError("one eval job must contain exactly one immutable eval-set identity")
     summary.update(
         {
             "model_id": args.model_id,
@@ -784,6 +800,8 @@ def run_eval_job(
             "occlusion_margin": args.occlusion_margin,
             "candidate_scoring": bool(args.candidate_scoring),
             "rows_skipped_without_spatial_target": skipped_without_target,
+            "eval_set_id": next(iter(eval_set_ids), None),
+            "eval_source_sha256": next(iter(eval_source_hashes), None),
         }
     )
     (output_dir / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
@@ -848,6 +866,8 @@ def run_eval(args: argparse.Namespace) -> dict[str, Any]:
                 "exact_accuracy": summary["exact_accuracy"],
                 "candidate_exact_accuracy": summary.get("candidate_exact_accuracy"),
                 "candidate_expected_rank_mean": summary.get("candidate_expected_rank_mean"),
+                "eval_set_id": summary.get("eval_set_id"),
+                "eval_source_sha256": summary.get("eval_source_sha256"),
             }
         )
     if len(jobs) == 1:

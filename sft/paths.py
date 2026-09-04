@@ -40,6 +40,21 @@ def resolve_dataset_asset(dataset_path: Path, asset: str | Path) -> Path:
     return dataset_candidate
 
 
+def resolve_dataset_image(image_root: Path, asset: str | Path) -> Path:
+    """Resolve one relative image strictly under an explicit image root."""
+
+    root = image_root.expanduser().resolve()
+    asset_path = Path(asset)
+    if asset_path.is_absolute():
+        raise ValueError(f"dataset image reference must be relative to image_root: {asset}")
+    candidate = (root / asset_path).resolve()
+    if not candidate.is_relative_to(root):
+        raise ValueError(f"dataset image reference escapes image_root: {asset}")
+    if not candidate.is_file():
+        raise FileNotFoundError(candidate)
+    return candidate
+
+
 def repository_relative_path(path: Path) -> str:
     """Return a portable repository-relative path when possible."""
 

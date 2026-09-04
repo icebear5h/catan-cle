@@ -1,0 +1,92 @@
+{
+  "schema": "catan_board_recognition_generation_receipt/v1",
+  "generated_at": "2026-08-26T18:33:40.590869+00:00",
+  "dataset": {
+    "path": "artifacts/generated/board_recognition/curriculum",
+    "bytes": 349287540,
+    "image_bytes": 282443761,
+    "image_size": [
+      1024,
+      1024
+    ],
+    "states": 640,
+    "counterfactual_groups": 320,
+    "splits": {
+      "train": 512,
+      "validation": 64,
+      "test": 64
+    },
+    "stages": {
+      "empty_setup": 160,
+      "initial_placements": 160,
+      "sparse_midgame": 160,
+      "dense_endgame": 160
+    },
+    "counterfactual_targets": {
+      "tile": 80,
+      "node": 80,
+      "edge": 80,
+      "port": 80
+    },
+    "curriculum_sha256": "fd40ba5c5fa9d253d0729a66ef6e6615275dd4ad41287857f263f83f251095e8",
+    "metadata_sha256": "876f50d042e3b9b54e59e07101dc6fd1dbe43359620f0899ac8a6b7d2fce5fe3",
+    "manifest_sha256": "4a9cfe82acd36b4fbb024a99211e2875803f013f29156f076d7c36f41b98b864"
+  },
+  "qwen_sft": {
+    "path": "artifacts/generated/board_recognition/curriculum/qwen_sft",
+    "format": "official image/conversations JSONL",
+    "queries_per_state": 16,
+    "rows": 10240,
+    "splits": {
+      "train": 8192,
+      "validation": 1024,
+      "test": 1024
+    },
+    "entity_type_counts": {
+      "tile": 2560,
+      "node": 2560,
+      "edge": 2560,
+      "port": 2560
+    },
+    "attribute_counts": {
+      "tile.resource": 974,
+      "tile.number": 796,
+      "tile.robber": 790,
+      "node.occupancy": 2560,
+      "edge.owner": 2560,
+      "port.port_type": 2560
+    },
+    "metadata_sha256": "b16f1e41bbcbd85de89b1070b7e2f3f7846f3779ef8511da20a7b10659a18d46",
+    "files": {
+      "train": {
+        "annotations_sha256": "187d79f0da38c4127423f4dc74e674241cfaf1a2a1a0272d9563528541636054",
+        "audit_sha256": "b828d43a4ec783c8d7711970636e1d41c96118c09e6a8dc9d2b32be880326ee1"
+      },
+      "validation": {
+        "annotations_sha256": "e2edb19c8a9daaf084e58554ae16255c4f7939524e6c9a5a4753687ca0b8aef3",
+        "audit_sha256": "98f8b5b06a9b1b12a64e09d819c5859e7833f03ce945af7392ed8dc305533fbe"
+      },
+      "test": {
+        "annotations_sha256": "42860ba7718916ec001c3a6505addf34bc0560de2f90ace24b3192cf588eebdb",
+        "audit_sha256": "efaafe10cd37525cbf79363491ef6dbeca437e5e087d824346687c07560c0f30"
+      }
+    }
+  },
+  "commands": [
+    "uv run python scripts/build_catan_board_recognition_curriculum.py --pairs-per-entity-type 20 --image-size 1024 --seed 381427 --overwrite",
+    "uv run python scripts/export_catan_board_recognition_sft.py --queries-per-state 16 --seed 381427 --overwrite"
+  ],
+  "resolution_decision": {
+    "selected": 1024,
+    "strict_60_exact": {
+      "1024": 11,
+      "1536": 10
+    },
+    "image_tokens_per_request": {
+      "1024": 1026,
+      "1536": 2306,
+      "2048_hosted_cap": 2502
+    },
+    "note": "1536px did not improve strict exact accuracy; 2048px was provider-capped and its run was stopped when work shifted to training data."
+  }
+}

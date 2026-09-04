@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://catan-learning.local/schemas/board_recognition/density_curriculum_v1.schema.json",
+  "title": "Three-stage board-recognition curriculum manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "strategy", "source_semantic_export",
+    "source_semantic_metadata_sha256", "source_uniform_annotations",
+    "source_uniform_annotations_sha256", "source_uniform_audit",
+    "source_uniform_audit_sha256", "total_rows", "unique_query_ids",
+    "stages", "files", "identity"
+  ],
+  "properties": {
+    "schema": {"const": "catan_board_recognition_density_curriculum/v1"},
+    "strategy": {"const": "sequential_three_stage_without_replacement"},
+    "source_semantic_export": {"type": "string", "minLength": 1},
+    "source_semantic_metadata_sha256": {"$ref": "#/$defs/sha256"},
+    "source_uniform_annotations": {"const": "train.jsonl"},
+    "source_uniform_annotations_sha256": {"$ref": "#/$defs/sha256"},
+    "source_uniform_audit": {"const": "audit/train.jsonl"},
+    "source_uniform_audit_sha256": {"$ref": "#/$defs/sha256"},
+    "total_rows": {"const": 8192},
+    "unique_query_ids": {"const": 8192},
+    "stages": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "prefixItems": [
+        {"$ref": "#/$defs/early"},
+        {"$ref": "#/$defs/mid"},
+        {"$ref": "#/$defs/late"}
+      ]
+    },
+    "files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "annotations", "annotations_sha256", "audit", "audit_sha256",
+        "index", "index_sha256"
+      ],
+      "properties": {
+        "annotations": {"const": "train_three_stage.jsonl"},
+        "annotations_sha256": {"$ref": "#/$defs/sha256"},
+        "audit": {"const": "audit_three_stage.jsonl"},
+        "audit_sha256": {"$ref": "#/$defs/sha256"},
+        "index": {"const": "index_three_stage.jsonl"},
+        "index_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "identity": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "stageBase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stage", "stage_index", "density_bins", "minimum_piece_count",
+        "maximum_piece_count", "start_index", "end_index_exclusive",
+        "row_count", "state_count", "head_counts", "class_counts"
+      ],
+      "properties": {
+        "stage": {"enum": ["early", "mid", "late"]},
+        "stage_index": {"type": "integer", "minimum": 0, "maximum": 2},
+        "density_bins": {"type": "array", "minItems": 1, "uniqueItems": true},
+        "minimum_piece_count": {"type": "integer", "minimum": 0},
+        "maximum_piece_count": {"type": "integer", "maximum": 126},
+        "start_index": {"type": "integer", "minimum": 0},
+        "end_index_exclusive": {"type": "integer", "minimum": 1, "maximum": 8192},
+        "row_count": {"type": "integer", "minimum": 1},
+        "state_count": {"type": "integer", "minimum": 1, "maximum": 1024},
+        "head_counts": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 1}},
+        "class_counts": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 1}}
+      }
+    },
+    "early": {
+      "allOf": [
+        {"$ref": "#/$defs/stageBase"},
+        {"properties": {"stage": {"const": "early"}, "stage_index": {"const": 0}, "density_bins": {"const": ["empty", "setup"]}, "minimum_piece_count": {"const": 0}, "maximum_piece_count": {"const": 16}, "start_index": {"const": 0}}}
+      ]
+    },
+    "mid": {
+      "allOf": [
+        {"$ref": "#/$defs/stageBase"},
+        {"properties": {"stage": {"const": "mid"}, "stage_index": {"const": 1}, "density_bins": {"const": ["sparse"]}, "minimum_piece_count": {"const": 17}, "maximum_piece_count": {"const": 31}}}
+      ]
+    },
+    "late": {
+      "allOf": [
+        {"$ref": "#/$defs/stageBase"},
+        {"properties": {"stage": {"const": "late"}, "stage_index": {"const": 2}, "density_bins": {"const": ["dense"]}, "minimum_piece_count": {"const": 32}, "maximum_piece_count": {"const": 126}, "end_index_exclusive": {"const": 8192}}}
+      ]
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://catan-learning.local/schemas/board_recognition/density_curriculum_index_v1.schema.json",
+  "title": "Three-stage board-recognition curriculum index row",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "curriculum_index", "original_index", "query_id", "state_id",
+    "stage", "stage_index", "density_bin", "piece_count", "head",
+    "class_name", "annotation_sha256", "audit_sha256"
+  ],
+  "properties": {
+    "schema": {"const": "catan_board_recognition_density_curriculum_index/v1"},
+    "curriculum_index": {"type": "integer", "minimum": 0, "maximum": 8191},
+    "original_index": {"type": "integer", "minimum": 0, "maximum": 8191},
+    "query_id": {"type": "string", "pattern": "^.+_e[0-9]{3}_q[0-9]{3}$"},
+    "state_id": {"type": "string", "minLength": 1},
+    "stage": {"enum": ["early", "mid", "late"]},
+    "stage_index": {"type": "integer", "minimum": 0, "maximum": 2},
+    "density_bin": {"enum": ["empty", "setup", "sparse", "dense"]},
+    "piece_count": {"type": "integer", "minimum": 0, "maximum": 126},
+    "head": {"enum": ["tile.resource", "tile.number", "tile.robber", "node.occupancy", "edge.owner", "port.port_type"]},
+    "class_name": {"type": "string", "minLength": 1},
+    "annotation_sha256": {"$ref": "#/$defs/sha256"},
+    "audit_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

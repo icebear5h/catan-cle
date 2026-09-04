@@ -1,7 +1,7 @@
 """Render Catan contract datasets with the Python HexBoard-compatible renderer.
 
 This is the fast path after contracts exist. It does not use Playwright; it
-uses ``data_pipeline.catan_board_bench.render`` to mirror frontend geometry/assets.
+uses ``evals.catan_board_bench.render`` to mirror frontend geometry/assets.
 
 For safety, it writes image-backed copies of QA/message files instead of
 mutating the original contract-only rows.

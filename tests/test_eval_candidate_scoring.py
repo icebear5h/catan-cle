@@ -227,6 +227,8 @@ def test_evaluation_metadata_copies_pair_fields_from_row():
         "negative_kind": "empty_neighbor",
         "piece": "Settlement",
         "color": "dark_blue",
+        "eval_set_id": "pairs-v2-validation",
+        "eval_source_sha256": "abc123",
     }
 
     metadata = evaluation_metadata(row, image_variant="original")
@@ -237,4 +239,25 @@ def test_evaluation_metadata_copies_pair_fields_from_row():
     assert metadata["pair_kind"] == "adjacent"
     assert metadata["same_color"] is False
     assert metadata["negative_kind"] == "empty_neighbor"
+    assert metadata["eval_set_id"] == "pairs-v2-validation"
+    assert metadata["eval_source_sha256"] == "abc123"
     assert metadata["eval_variant"] == "original"
+
+
+def test_summary_exposes_curated_behavior_metrics():
+    record = {
+        "response": "red road",
+        "metadata": {
+            "task_family": "adjacent_pair_localization",
+            "task_type": "occupancy_positive",
+            "piece": "ROAD",
+            "pair_kind": "edge_edge",
+        },
+        "score": {"correct": True, "expected_normalized": "red road"},
+        "candidate_score": None,
+    }
+
+    summary = summarize([record])
+
+    assert summary["by_behavior"]["pair.positive"]["exact_accuracy"] == 1.0
+    assert summary["by_behavior"]["pair.road_positive"]["total"] == 1

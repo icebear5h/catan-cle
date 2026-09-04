@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://catan-learning.local/schemas/board_recognition/ms_swift_semantic_audit_v1.schema.json",
+  "title": "Semantic ms-swift board-recognition audit row",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "query_id", "state_id", "split", "epoch", "image_name",
+    "image_sha256", "label_path", "source_kind", "game_id", "trajectory_id",
+    "density_bin", "building_count", "road_count", "piece_count",
+    "entity_type", "entity_type_id", "attribute", "attribute_id", "head",
+    "slot", "slot_index", "class_name", "class_index", "semantic_prompt",
+    "semantic_answer", "candidate_answers", "source_query_token",
+    "source_answer_token", "prompt_sha256", "answer_sha256",
+    "candidates_sha256"
+  ],
+  "properties": {
+    "schema": {"const": "catan_board_recognition_ms_swift_semantic_audit/v1"},
+    "query_id": {"type": "string", "pattern": "^.+_e[0-9]{3}_q[0-9]{3}$"},
+    "state_id": {"type": "string", "minLength": 1},
+    "split": {"enum": ["train", "validation", "test", "color_diagnostic"]},
+    "epoch": {"const": 0},
+    "image_name": {"type": "string", "pattern": "^[^/]+\\.png$"},
+    "image_sha256": {"$ref": "#/$defs/sha256"},
+    "label_path": {"type": "string", "pattern": "^dense_labels/.+\\.json$"},
+    "source_kind": {"enum": ["colonist_replay", "engine_rollout"]},
+    "game_id": {"type": ["string", "null"]},
+    "trajectory_id": {"type": "string", "minLength": 1},
+    "density_bin": {"enum": ["empty", "setup", "sparse", "dense"]},
+    "building_count": {"type": "integer", "minimum": 0, "maximum": 54},
+    "road_count": {"type": "integer", "minimum": 0, "maximum": 72},
+    "piece_count": {"type": "integer", "minimum": 0, "maximum": 126},
+    "entity_type": {"enum": ["tile", "node", "edge", "port"]},
+    "entity_type_id": {"type": "integer", "minimum": 0, "maximum": 3},
+    "attribute": {"enum": ["resource", "number", "robber", "occupancy", "owner", "port_type"]},
+    "attribute_id": {"type": "integer", "minimum": 0, "maximum": 5},
+    "head": {"enum": ["tile.resource", "tile.number", "tile.robber", "node.occupancy", "edge.owner", "port.port_type"]},
+    "slot": {"type": "string", "pattern": "^<(T[0-9]{2}|N[0-9]{2}|E[0-9]{2}_[0-9]{2}|P[0-9]{2})>$"},
+    "slot_index": {"type": "integer", "minimum": 0, "maximum": 71},
+    "class_name": {"type": "string", "minLength": 1},
+    "class_index": {"type": "integer", "minimum": 0, "maximum": 22},
+    "semantic_prompt": {"type": "string", "pattern": "^<image>\\n<.+> .+\\?$"},
+    "semantic_answer": {"type": "string", "pattern": "^[a-z0-9:]+( [a-z0-9:]+){0,2}$"},
+    "candidate_answers": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 23,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[a-z0-9:]+( [a-z0-9:]+){0,2}$"}
+    },
+    "source_query_token": {"type": "string", "pattern": "^<Q_[A-Z_]+>$"},
+    "source_answer_token": {"type": "string", "pattern": "^<A_[A-Z0-9_]+>$"},
+    "prompt_sha256": {"$ref": "#/$defs/sha256"},
+    "answer_sha256": {"$ref": "#/$defs/sha256"},
+    "candidates_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

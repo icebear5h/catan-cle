@@ -95,7 +95,12 @@
       "additionalProperties": false,
       "required": ["renderer", "style_config", "image_annotation"],
       "properties": {
-        "renderer": {"const": "data_pipeline.catan_board_bench.render"},
+        "renderer": {
+          "enum": [
+            "evals.catan_board_bench.render",
+            "data_pipeline.catan_board_bench.render"
+          ]
+        },
         "style_config": {"const": "configs/sft/renderer_style.json"},
         "image_annotation": {"type": "null"}
       }

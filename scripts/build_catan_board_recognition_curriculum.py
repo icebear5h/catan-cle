@@ -16,6 +16,7 @@ from typing import Any, Sequence
 
 from PIL import Image
 
+from evals.catan_board_bench.paths import DATASETS_DIR
 from evals.catan_board_bench.render import RenderStyle, render_contract_image
 from evals.catan_board_bench.tokens import (
     atlas_metadata,
@@ -41,13 +42,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SPEC_PATH = PROJECT_ROOT / "data" / "curriculum" / "board_recognition" / "curriculum.json"
 DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "artifacts" / "generated" / "board_recognition" / "curriculum"
 DEFAULT_LEAKAGE_LEDGER = (
-    PROJECT_ROOT
-    / "data_pipeline"
-    / "catan_board_bench"
-    / "datasets"
-    / "catan_board_bench_100"
-    / "leakage"
-    / "benchmark_game_ids.json"
+    DATASETS_DIR / "catan_board_bench_100" / "leakage" / "benchmark_game_ids.json"
 )
 DEFAULT_STYLE_PATH = PROJECT_ROOT / "configs" / "sft" / "renderer_style.json"
 DATASET_SCHEMA = "catan_board_recognition_dataset/v1"
@@ -212,7 +207,7 @@ def build_dataset(
                             "source": contract["source"],
                             "counterfactual": pair_descriptor,
                             "render": {
-                                "renderer": "data_pipeline.catan_board_bench.render",
+                                "renderer": "evals.catan_board_bench.render",
                                 "style_config": repository_relative(style_path),
                                 "image_annotation": None,
                             },
@@ -612,7 +607,7 @@ def build_metadata(
         "counterfactual_target_counts": dict(sorted(target_counts.items())),
         "class_counts": class_counts,
         "renderer": {
-            "implementation": "data_pipeline.catan_board_bench.render",
+            "implementation": "evals.catan_board_bench.render",
             "style_config": repository_relative(style_path),
             "style_sha256": file_sha256(style_path),
             "image_annotation": None,
@@ -711,7 +706,7 @@ def validate_dataset(output_dir: Path, *, spec_path: Path = DEFAULT_SPEC_PATH) -
         ):
             raise ValueError(f"state provenance/group mismatch: {row['sample_id']}")
         if row["render"] != {
-            "renderer": "data_pipeline.catan_board_bench.render",
+            "renderer": "evals.catan_board_bench.render",
             "style_config": repository_relative(style_path),
             "image_annotation": None,
         }:

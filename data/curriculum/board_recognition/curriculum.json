@@ -129,7 +129,7 @@
     }
   ],
   "sampling": {
-    "method": "hierarchical_uniform",
+    "method": "hierarchical_class_balanced",
     "entity_type_order": [
       "tile",
       "node",
@@ -152,8 +152,9 @@
         "port_type"
       ]
     },
-    "procedure": "Choose entity type uniformly, then attribute uniformly, then canonical slot uniformly. Read the target class from the dense label payload.",
-    "require_uniform_at_each_level": true
+    "procedure": "Choose entity type uniformly, reserve one query for that state's declared counterfactual target, then choose attribute uniformly, choose among classes present in the state, and choose a canonical slot within that class. Read the target class from the dense label payload.",
+    "require_uniform_entity_types": true,
+    "balance_available_classes": true
   },
   "counterfactuals": {
     "pair_size": 2,
@@ -180,7 +181,7 @@
     "test": [
       9
     ],
-    "benchmark_game_ids": "data_pipeline/catan_board_bench/datasets/catan_board_bench_100/leakage/benchmark_game_ids.json",
+    "benchmark_game_ids": "evals/catan_board_bench/datasets/catan_board_bench_100/leakage/benchmark_game_ids.json",
     "on_missing_or_unreadable": "fail_closed"
   },
   "provenance": {

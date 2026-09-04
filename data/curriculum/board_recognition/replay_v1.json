@@ -1,0 +1,134 @@
+{
+  "schema": "catan_board_recognition_spec/v2",
+  "name": "catan_board_recognition_replay_v1",
+  "purpose": "Minimal atomic slot classification from ordinary full-board images reconstructed from legal Catan states.",
+  "generated_output": "artifacts/generated/board_recognition/replay_v1",
+  "source_lock": "data/curriculum/board_recognition/replay_sources_v1.json",
+  "legacy_spec": "data/curriculum/board_recognition/curriculum.json",
+  "render": {
+    "image_size": 1024,
+    "style_config": "configs/sft/renderer_style.json",
+    "view": "raw_full_board",
+    "image_annotation": null,
+    "allow_crops": false,
+    "allow_overlays": false,
+    "allow_answer_leakage": false
+  },
+  "topology": {
+    "tiles": 19,
+    "nodes": 54,
+    "edges": 72,
+    "ports": 9
+  },
+  "state_counts": {
+    "train": {
+      "colonist_replay": 688,
+      "engine_rollout": 336,
+      "total": 1024
+    },
+    "validation": {
+      "colonist_replay": 64,
+      "engine_rollout": 0,
+      "total": 64
+    },
+    "test": {
+      "colonist_replay": 64,
+      "engine_rollout": 0,
+      "total": 64
+    },
+    "color_diagnostic": {
+      "colonist_replay": 0,
+      "engine_rollout": 64,
+      "total": 64
+    }
+  },
+  "source_policy": {
+    "split_group": "game_or_engine_trajectory",
+    "replay_state_cap_per_game": 16,
+    "retain_only_board_fact_changes": true,
+    "global_board_fact_deduplication": true,
+    "engine_actions_must_be_playable": true,
+    "allow_forced_resources": false,
+    "allow_forced_board_mutation": false,
+    "density_is_model_input": false,
+    "counterfactual_pairs": false,
+    "stage_curriculum": false
+  },
+  "density_bins": {
+    "empty": {"minimum_total_pieces": 0, "maximum_total_pieces": 0},
+    "setup": {"minimum_total_pieces": 1, "maximum_total_pieces": 16},
+    "sparse": {"minimum_total_pieces": 17, "maximum_total_pieces": 31},
+    "dense": {"minimum_total_pieces": 32, "maximum_total_pieces": 126}
+  },
+  "query_schedule": {
+    "epoch": 0,
+    "training_rows_per_epoch": 8192,
+    "queries_per_state": 8,
+    "entity_queries_per_state": {
+      "tile": 2,
+      "node": 2,
+      "edge": 2,
+      "port": 2
+    },
+    "without_replacement_within_state": true,
+    "balance_priority": [
+      "head_class_count",
+      "head_slot_count",
+      "stable_hash"
+    ],
+    "node_edge_positive_fraction": [0.45, 0.55],
+    "train_positive_class_max_min_ratio": 1.25
+  },
+  "class_vocabularies": {
+    "colors": [
+      "RED",
+      "BLUE",
+      "ORANGE",
+      "WHITE",
+      "BLACK",
+      "GREEN",
+      "BRONZE",
+      "SILVER",
+      "GOLD",
+      "PINK",
+      "MYSTIC_BLUE"
+    ],
+    "tile_resource": ["DESERT", "WOOD", "BRICK", "SHEEP", "WHEAT", "ORE"],
+    "tile_number": ["NONE", "2", "3", "4", "5", "6", "8", "9", "10", "11", "12"],
+    "tile_robber": ["ABSENT", "PRESENT"],
+    "node_occupancy": [
+      "EMPTY",
+      "RED_SETTLEMENT", "RED_CITY",
+      "BLUE_SETTLEMENT", "BLUE_CITY",
+      "ORANGE_SETTLEMENT", "ORANGE_CITY",
+      "WHITE_SETTLEMENT", "WHITE_CITY",
+      "BLACK_SETTLEMENT", "BLACK_CITY",
+      "GREEN_SETTLEMENT", "GREEN_CITY",
+      "BRONZE_SETTLEMENT", "BRONZE_CITY",
+      "SILVER_SETTLEMENT", "SILVER_CITY",
+      "GOLD_SETTLEMENT", "GOLD_CITY",
+      "PINK_SETTLEMENT", "PINK_CITY",
+      "MYSTIC_BLUE_SETTLEMENT", "MYSTIC_BLUE_CITY"
+    ],
+    "edge_owner": [
+      "EMPTY", "RED", "BLUE", "ORANGE", "WHITE", "BLACK", "GREEN",
+      "BRONZE", "SILVER", "GOLD", "PINK", "MYSTIC_BLUE"
+    ],
+    "port_type": [
+      "THREE_TO_ONE",
+      "TWO_TO_ONE_WOOD",
+      "TWO_TO_ONE_BRICK",
+      "TWO_TO_ONE_SHEEP",
+      "TWO_TO_ONE_WHEAT",
+      "TWO_TO_ONE_ORE"
+    ]
+  },
+  "atomic_supervision": {
+    "query_tokens": 6,
+    "answer_tokens": 60,
+    "atlas_tokens": 154,
+    "trainable_tokens": 220,
+    "text_query_tokens_after_image": 2,
+    "assistant_target_tokens": 1
+  }
+}

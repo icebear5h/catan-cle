@@ -300,6 +300,16 @@ uv run python -m data_pipeline.board_recognition.adjacent_pair_localization \
   --tile-rows --train-images-per-board-per-kind 40 --eval-images-per-board-per-kind 15 --overwrite
 ```
 
+`--train-images-per-board-per-kind` and `--eval-images-per-board-per-kind`
+take one count or a per-kind list such as
+`node_node=30,edge_edge=80,node_edge=50`; `spatial_localization_pairs_v2` is
+that road-heavy mix (roads are two thirds of the occupancy positives) after
+the 256-step pairs_v1 run left roads as the weakest forward head (77.5% on
+single-piece roads versus 84% settlements and 91% cities, every miss
+"empty"). Its in-run eval was still improving at step 256 (loss 0.176,
+0.089, 0.068, 0.059 at steps 64, 128, 192, 256), so pair-stage runs use
+512 steps.
+
 Continue from the v3 single-piece `final` bundle through `--initial-bundle`.
 The gate before moving to sparse boards: occupancy positives and negatives
 both at or above 98% on the pair validation set with no hop-1 false

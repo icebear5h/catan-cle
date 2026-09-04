@@ -2636,6 +2636,36 @@ Gate before sparse: occupancy positives and negatives >= 98% on pair
 validation, no hop-1 false positives in the neighbor_confusion block, tile
 and localization rows unchanged. Then run the regression panel on the final
 bundle and `sft/scripts/analyze_occupancy_misses.py` on its replay set.
+Checkpoint-64 on pair validation (app ap-FxCTlNirGsvjLXJWmHx0w6, output
+/runs/qwen-series-eval/pairs-v1/ck64): exact 0.826, candidate 0.950.
+Negatives learned (adjacent 0.849, far 0.982; adjacent misses name the
+target 22 and the partner 10). Positives collapsed: occupancy_positive
+0.336 with 248 of 269 misses answering "empty", uniform across pair kinds
+(30-39%), colors (19-51%), and pieces. Tiles and localization held (0.93 to
+1.00). Same shape as the v2 step-128 collapse that recovered by step 256;
+decision deferred to the step-128 eval.
+
+Checkpoint-128 on pair validation (/runs/qwen-series-eval/pairs-v1/ck128):
+exact 0.883, candidate 0.992; positives 0.728 (64 "empty", 44 name the
+partner), adjacent negatives fell to 0.529 (58 name the target, 39 the
+partner), far 0.938, localization 0.99, tiles 0.94 to 1.00. The prior
+swung from "empty" to "nearby piece"; piece-to-token is solved, token-to-
+piece next to a second piece is the residual.
+
+In-run eval: step 64 loss 0.176 / row exact 0.829; 128 0.089 / 0.885;
+192 0.068 / 0.918; 256 0.059 / 0.930. Still improving at a quarter of peak
+LR, so the next stage launch uses 512 steps. Final bundle at
+`.../82b9664c0c46/final`; regression panel (7 sets, label pairs-v1-final,
+app ap-spno9s5TpSQ668zloZT3FB) launched on it.
+
+Panel (pairs-v1-final) single-piece v3 set: negatives 0.950 (up from
+0.890), positives 0.825 (down from 0.942, all 42 misses "empty", roads
+77.5% / settlements 84% / cities 91%), localization 1.00, tiles 0.99.
+User asked for more road data and a longer run: exporter gained per-kind
+image counts; pairs_v2 = node_node=30, edge_edge=80, node_edge=50 per
+board (eval 10/20/15), 1 adjacent + 1 far negative, tiles. Panel entry
+swapped to pairs_v2. Next launch: 512 steps from the pairs_v1 final bundle.
+
 (An earlier launch at 13:47, app ap-XmbzzSYHOxaU5ZLDzFskw8, was interrupted
 during upload before any call spawned and is stopped.)
 - [ ] Step 3: after the pair gate (positives and negatives >= 98%, no hop-1

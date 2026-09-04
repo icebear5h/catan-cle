@@ -8,6 +8,7 @@ from data_pipeline.board_recognition.adjacent_pair_localization import (
     build_pair_board,
     cross_touching,
     location_pairs,
+    parse_kind_counts,
     place_pair,
     rows_for_pair,
     sample_pair_empty_tokens,
@@ -224,6 +225,27 @@ def test_build_pair_board_renders_one_image_per_pair(tmp_path):
         queried, target, partner = row["queried_token"], row["target_token"], row["partner_token"]
         touches = queried in neighbors[target] or queried in touching[target] or queried in neighbors[partner] or queried in touching[partner]
         assert touches is (row["negative_kind"] == "adjacent")
+
+
+def test_per_kind_image_counts(tmp_path):
+    assert parse_kind_counts("40", 0) == {"node_node": 40, "edge_edge": 40, "node_edge": 40}
+    assert parse_kind_counts(7, 0) == {"node_node": 7, "edge_edge": 7, "node_edge": 7}
+    assert parse_kind_counts("edge_edge=80,node_edge=50", 40) == {"node_node": 40, "edge_edge": 80, "node_edge": 50}
+    with pytest.raises(SpatialLocalizationError):
+        parse_kind_counts("tile_tile=3", 40)
+    state, contract = _fixture_contract()
+    style = load_render_style(Path(DEFAULT_STYLE_PATH))
+    rows = build_pair_board(
+        state={**state, "split": "test", "sample_id": "fixture_empty", "image_size": [256, 256]},
+        contract=contract,
+        output_images=tmp_path,
+        style=style,
+        images_per_kind={"node_node": 0, "edge_edge": 2, "node_edge": 1},
+        colors=COLORS,
+    )
+    assert len(list(tmp_path.glob("test_fixture_empty_*.png"))) == 3
+    assert {row["pair_kind"] for row in rows} == {"edge_edge", "node_edge"}
+    assert sum(row["task_type"] == "occupancy_positive" and row["piece"] == "ROAD" for row in rows) == 5
 
 
 def test_render_placement_matches_render_contract(tmp_path):

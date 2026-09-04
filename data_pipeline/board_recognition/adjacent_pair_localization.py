@@ -94,6 +94,20 @@ SAME_COLOR_FRACTION = 0.5
 NAMED_ROWS_PER_IMAGE = {"node_node": 6, "edge_edge": 4, "node_edge": 6}
 
 
+def parse_kind_counts(spec: str | int, default: int) -> dict[str, int]:
+    """Images per board per pair kind from ``40`` or ``node_node=30,edge_edge=80``."""
+
+    counts = {kind: int(default) for kind in PAIR_KINDS}
+    if isinstance(spec, int) or str(spec).isdigit():
+        return {kind: int(spec) for kind in PAIR_KINDS}
+    for part in filter(None, (piece.strip() for piece in str(spec).split(","))):
+        kind, _, value = part.partition("=")
+        if kind not in PAIR_KINDS or not value.isdigit():
+            raise SpatialLocalizationError(f"bad pair-kind count {part!r}; kinds are {PAIR_KINDS}")
+        counts[kind] = int(value)
+    return counts
+
+
 def entity_of(token: str) -> str:
     return "node" if token.startswith("<N") else "edge"
 
@@ -335,7 +349,7 @@ def build_pair_board(
     contract: JsonDict,
     output_images: Path,
     style: Any,
-    images_per_kind: int,
+    images_per_kind: int | dict[str, int],
     colors: Sequence[str],
     pool: ProcessPoolExecutor | None = None,
     tile_rows: bool = False,
@@ -352,17 +366,21 @@ def build_pair_board(
     touching = cross_touching(contract)
     tokens = [token for token, region in regions.items() if region["entity_type"] in ("node", "edge")]
     counts = dict(DEFAULT_NEGATIVES if negatives is None else negatives)
+    kind_counts = parse_kind_counts(images_per_kind, 0) if not isinstance(images_per_kind, dict) else images_per_kind
     tiles = tile_facts(contract) if tile_rows else []
     rows: list[JsonDict] = []
     for pair_kind in PAIR_KINDS:
+        wanted = kind_counts[pair_kind]
+        if wanted <= 0:
+            continue
         pairs = location_pairs(contract, pair_kind)
-        novel_count = round(images_per_kind * NOVEL_COLOR_FRACTION) if novel_color else 0
+        novel_count = round(wanted * NOVEL_COLOR_FRACTION) if novel_color else 0
         placements = sample_pairs(
             sample_id=state["sample_id"],
             pair_kind=pair_kind,
             pairs=pairs,
             colors=colors,
-            count=images_per_kind - novel_count,
+            count=wanted - novel_count,
         )
         if novel_count:
             placements += sample_pairs(
@@ -432,13 +450,23 @@ def export_adjacent_pair_curriculum(
     output_dir: str | Path | None = None,
     style_path: str | Path = DEFAULT_STYLE_PATH,
     overwrite: bool = False,
-    train_images_per_board_per_kind: int = TRAIN_IMAGES_PER_BOARD_PER_KIND,
-    eval_images_per_board_per_kind: int = EVAL_IMAGES_PER_BOARD_PER_KIND,
+    train_images_per_board_per_kind: int | str | dict[str, int] = TRAIN_IMAGES_PER_BOARD_PER_KIND,
+    eval_images_per_board_per_kind: int | str | dict[str, int] = EVAL_IMAGES_PER_BOARD_PER_KIND,
     workers: int | None = None,
     tile_rows: bool = False,
     negatives: dict[str, int] | None = None,
 ) -> JsonDict:
     negative_counts = dict(DEFAULT_NEGATIVES if negatives is None else negatives)
+    train_counts = (
+        dict(train_images_per_board_per_kind)
+        if isinstance(train_images_per_board_per_kind, dict)
+        else parse_kind_counts(train_images_per_board_per_kind, TRAIN_IMAGES_PER_BOARD_PER_KIND)
+    )
+    eval_counts = (
+        dict(eval_images_per_board_per_kind)
+        if isinstance(eval_images_per_board_per_kind, dict)
+        else parse_kind_counts(eval_images_per_board_per_kind, EVAL_IMAGES_PER_BOARD_PER_KIND)
+    )
     dataset_root = Path(dataset_dir).resolve()
     output = Path(output_dir).resolve() if output_dir is not None else (dataset_root / DEFAULT_OUTPUT_NAME).resolve()
     validate_replay_v1_dataset(dataset_root, rerender=False)
@@ -479,7 +507,7 @@ def export_adjacent_pair_curriculum(
                         contract=json.loads(contract_path.read_text()),
                         output_images=images_dir,
                         style=style,
-                        images_per_kind=train_images_per_board_per_kind if split == "train" else eval_images_per_board_per_kind,
+                        images_per_kind=train_counts if split == "train" else eval_counts,
                         colors=COLORS,
                         pool=pool,
                         tile_rows=tile_rows,
@@ -509,8 +537,8 @@ def export_adjacent_pair_curriculum(
         "asset_root": str(asset_root),
         "pair_kinds": list(PAIR_KINDS),
         "same_color_fraction_node_edge": SAME_COLOR_FRACTION,
-        "train_images_per_board_per_kind": train_images_per_board_per_kind,
-        "eval_images_per_board_per_kind": eval_images_per_board_per_kind,
+        "train_images_per_board_per_kind": train_counts,
+        "eval_images_per_board_per_kind": eval_counts,
         "negatives_per_image": negative_counts,
         "named_rows_per_image": NAMED_ROWS_PER_IMAGE,
         "tile_rows_per_image": TILE_ROWS_PER_IMAGE if tile_rows else 0,
@@ -535,8 +563,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         default=",".join(f"{kind}={count}" for kind, count in DEFAULT_NEGATIVES.items()),
         help="Empty negatives per image by kind, e.g. adjacent=1,far=1.",
     )
-    parser.add_argument("--train-images-per-board-per-kind", type=int, default=TRAIN_IMAGES_PER_BOARD_PER_KIND)
-    parser.add_argument("--eval-images-per-board-per-kind", type=int, default=EVAL_IMAGES_PER_BOARD_PER_KIND)
+    parser.add_argument(
+        "--train-images-per-board-per-kind",
+        default=str(TRAIN_IMAGES_PER_BOARD_PER_KIND),
+        help="One count for every kind, or per kind such as node_node=30,edge_edge=80,node_edge=50.",
+    )
+    parser.add_argument("--eval-images-per-board-per-kind", default=str(EVAL_IMAGES_PER_BOARD_PER_KIND))
     args = parser.parse_args(argv)
     result = export_adjacent_pair_curriculum(
         args.dataset_dir,

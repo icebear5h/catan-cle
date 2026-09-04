@@ -2806,7 +2806,10 @@ scorecards, never loss.
   exporter draws edge markers as bars along the edge at its true angle and
   tile markers as tile-scale hexagons; exported as spatial_localization_v1e.
   The diamond-marker stage-1 run (ap-TTCqSzF68fAtxwbTIUpQdJ) was stopped at
-  about step 60 and stage 1 relaunched on v1e with the eval only at the end.
+  about step 60 and stage 1 relaunched on v1e with the eval only at the end:
+  `catan-qwen38-gauss-s1-markers-entity-20260904`, app ap-kO4nZVjPpdt6jiPIqzjp8A,
+  call fc-01M1PZJJ9YHDSFB7EZAK7MT0M0, 256 steps, save at 128 and 256, output
+  `/runs/catan-vision-sft/catan-qwen38-gauss-s1-markers-entity-20260904/<identity>`.
 - [ ] Step 1 gate: marker set scorecard vs the old marker control (wrong-entity
   answers, glitches, row entanglement zero).
 - [ ] Step 2: v3 data from the stage-1 final, 512 steps; gate vs the old v3 adapter.

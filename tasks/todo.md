@@ -2770,7 +2770,7 @@ app ap-cJCHyYUTNRNuK3jD9H3jTf, call fc-01M1NVCS7ZSY07Y4MZHXC8F467, output
 Step 128: meaninit loss 0.445 / row exact 0.476; gaussinit loss 0.543 /
 row exact 0.497 (staged v3 reference 0.226 / 0.770).
 Step 256: meaninit 0.267 / 0.625; gaussinit 0.265 / 0.637 (staged v3 reference 0.101 / 0.876).
-Step 384: meaninit 0.234 / 0.646; gaussinit 0.128 / 0.811.
+Step 384: meaninit 0.234 / 0.646; gaussinit 0.181 / 0.727 (earlier note of 0.128 / 0.811 at 384 was the 512 line caught early).
 Step 512 (final): meaninit 0.204 / 0.686; gaussinit 0.128 / 0.811 (staged
 v3 reference 0.037 / 0.949). Row geometry of the finals: meaninit rows are
 still nearly all entangled (149/154 with a partner >0.25, pairwise cos

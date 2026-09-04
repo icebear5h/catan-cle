@@ -2701,6 +2701,16 @@ to 1.00; in-run loss 0.055 / row exact 0.945. Single-piece v3 positives
 0.892 (roads 0.85), negatives 0.930, tiles 0.96 to 1.00. Both heads rising
 together for the first time; pair kinds edge_edge 0.927, node_edge 0.951,
 node_node 0.902.
+Checkpoint-256 failure geometry (both eval sets, 126 tokens with n>=4):
+error vs distance to a 32 px patch boundary r=0.09, vs training frequency
+r=-0.01 (every token gets 140-277 forward queries). Slanted edges fail 4x
+more than vertical ones (0.128 vs 0.032); coastal tokens slightly worse.
+Worst tokens fail on several validation boards, so it is geometry not one
+background. Token glitches: <T10> number? answered with a resource 28/58,
+<N16> answered with numbers 7/8, <E11_32> emitted twice as an answer 5/8.
+Run complete: step 384 loss 0.047 / row exact 0.960; step 512 loss 0.030 /
+row exact 0.972. Final bundle at `.../d430f310de8a/final`; eight-set panel
+(label pairs-v2-final, app ap-iKwx2e32A6pT3lzn851xJV) launched on it.
 
 (An earlier launch at 13:47, app ap-XmbzzSYHOxaU5ZLDzFskw8, was interrupted
 during upload before any call spawned and is stopped.)

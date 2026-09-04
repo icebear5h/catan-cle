@@ -231,6 +231,107 @@
     },
     "steps": 256
   },
+  "pairs_v2_run": {
+    "ck128": {
+      "pairs_v2": {
+        "adjacent": 0.68,
+        "far": 0.951,
+        "occupancy_positive": 0.805
+      },
+      "single_piece_v3": {
+        "occupancy_negative": 0.853,
+        "occupancy_positive": 0.908,
+        "roads": 0.892
+      }
+    },
+    "ck256": {
+      "pairs_v2": {
+        "adjacent": 0.849,
+        "far": 0.956,
+        "localization": 0.99,
+        "occupancy_positive": 0.872,
+        "roads": 0.9
+      },
+      "single_piece_v3": {
+        "occupancy_negative": 0.93,
+        "occupancy_positive": 0.892,
+        "roads": 0.85
+      }
+    },
+    "data": "spatial_localization_pairs_v2: node_node=30, edge_edge=80, node_edge=50 per board, roads 66% of positives, 20.4% empty, 67,478 rows",
+    "decision": "no further pair stages; rung a (setup + grounding) starts from v3 final unless the pairs_v2 panel shows >=5 points on real-board node/edge heads",
+    "failure_geometry_ck256": {
+      "coastal_edge_error": 0.108,
+      "corr_error_vs_patch_boundary_distance": 0.09,
+      "corr_error_vs_train_frequency": -0.01,
+      "interior_edge_error": 0.079,
+      "slanted_edge_error": 0.128,
+      "tokens_with_n_ge_4": 126,
+      "vertical_edge_error": 0.032,
+      "worst_tokens": [
+        "<N16>",
+        "<E10_29>",
+        "<E07_24>",
+        "<E16_18>",
+        "<E45_46>",
+        "<N19>",
+        "<N26>",
+        "<E08_27>",
+        "<N29>",
+        "<E19_21>",
+        "<T10>"
+      ]
+    },
+    "in_run_eval": {
+      "128": {
+        "eval_loss": 0.116,
+        "row_exact": 0.902
+      },
+      "256": {
+        "eval_loss": 0.055,
+        "row_exact": 0.945
+      },
+      "384": {
+        "eval_loss": 0.047,
+        "row_exact": 0.96
+      },
+      "512": {
+        "eval_loss": 0.03,
+        "row_exact": 0.972
+      }
+    },
+    "initial_bundle": "pairs_v1 final",
+    "modal_app": "ap-5628OGxpUM5CLarPop9j7r",
+    "run_name": "catan-qwen38-sl-pairs-v2-roads-s512-20260903",
+    "steps": 512,
+    "token_entanglement": {
+      "already_elevated_in_v3": [
+        "T10~N26 0.27",
+        "T10~E08_27 0.24"
+      ],
+      "case_study": "https://claude.ai/code/artifact/3d4c4395-e27f-4000-aa13-35f50ca6fd08",
+      "distribution_by_phase": "no phase over- or under-samples the six beyond ~2 sd; co-occurrence within pair images at chance; every pair of the six is >6 hops apart",
+      "input_row_cosine_baseline": "0.03 +/- 0.06",
+      "pairwise_after_pairs": "0.12 to 0.33",
+      "row_swap_test": {
+        "E11_32_doubling": "fixed (4/4 both sets)",
+        "N16": "1/3->2/3 single, 0/5->2/5 pairs",
+        "T10": "unchanged rate, flips direction: numbers to resource queries instead of resources to number queries",
+        "bundle": "/runs/qwen-series-eval/experiments/pairs-v2-final-rowswap6",
+        "output": "/runs/qwen-series-eval/pairs-v2/final-rowswap6",
+        "reading": "output-row drift explains E11_32; T10 head confusion lives outside the token rows; aggregate lift confounded with final-vs-ck256"
+      },
+      "six": [
+        "<T10>",
+        "<N16>",
+        "<N26>",
+        "<E08_27>",
+        "<E37_38>",
+        "<E45_46>"
+      ],
+      "tokens_with_partner_gt_0.25": "8 of 154"
+    }
+  },
   "patch_loss_weight": 0.0,
   "run_name": "catan-qwen38-sl-v2-single-piece-20260903",
   "schema": "catan_qwen38_single_piece_v2/v1",

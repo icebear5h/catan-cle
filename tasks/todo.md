@@ -2738,6 +2738,15 @@ during upload before any call spawned and is stopped.)
   false positives), run production_curriculum_v1 empty/setup + sparse from
   the pair bundle, then dense.
 
+Panel pairs-v2-final (recorded under pairs_v2_run.panel_final in the report):
+real boards node.occupancy 0.797 / edge.owner 0.789 (v3 0.625 / 0.602,
+pairs_v1 0.75 / 0.65), 53 misses (v3 99): false negatives 24, neighbor
+confusions 12, elsewhere 15; roads 45/64, bronze 7/8; tiles unchanged;
+robber/ports still 0 (untrained). pairs_v2 validation positives 0.928,
+adjacent 0.911; far-pair control scores like touching pairs; single-piece
+v3 positives 0.963 / negatives 0.960. Decision: rung a starts from the
+pairs_v2 final bundle (`.../d430f310de8a/final`). Launch awaits the user.
+
 # Overnight 2026-09-04: token-init experiment, stages skipped
 
 Two runs from the base model (no initial bundle) straight onto

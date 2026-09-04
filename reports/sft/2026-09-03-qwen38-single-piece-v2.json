@@ -302,6 +302,92 @@
     },
     "initial_bundle": "pairs_v1 final",
     "modal_app": "ap-5628OGxpUM5CLarPop9j7r",
+    "panel_final": {
+      "comparison_real_boards": {
+        "pairs_v1": {
+          "edge": 0.65,
+          "misses": 77,
+          "node": 0.75
+        },
+        "pairs_v2": {
+          "edge": 0.789,
+          "misses": 53,
+          "node": 0.797
+        },
+        "v3": {
+          "edge": 0.602,
+          "misses": 99,
+          "node": 0.625
+        }
+      },
+      "decision": "rung a starts from the pairs_v2 final bundle: +17 points on real-board node and edge heads over v3, no tile regression, bronze recall 0/8 -> 7/8",
+      "far_pair_control": {
+        "exact": 0.976,
+        "far_kinds": "0.942 to 0.982",
+        "reading": "touching and far pairs now score alike; neighbor discrimination is no longer the residual",
+        "touching_kinds": "0.954 to 0.973"
+      },
+      "label": "pairs-v2-final",
+      "modal_app": "ap-iKwx2e32A6pT3lzn851xJV",
+      "output": "/runs/qwen-series-eval/regression-panel/pairs-v2-final",
+      "pairs_v2_validation": {
+        "adjacent": 0.911,
+        "by_pair_kind": {
+          "edge_edge": 0.97,
+          "node_edge": 0.963,
+          "node_node": 0.939
+        },
+        "exact": 0.972,
+        "far": 0.973,
+        "occupancy_positive": 0.928
+      },
+      "real_boards": {
+        "edge.owner": 0.789,
+        "inverse.edge": 0.109,
+        "inverse.node": 0.172,
+        "inverse.tile": 0.984,
+        "node.occupancy": 0.797,
+        "occupancy_owner_misses_53": {
+          "false_negative": 24,
+          "false_positive_elsewhere": 15,
+          "neighbor_false_positive_hop1": 6,
+          "neighbor_false_positive_hop2": 5,
+          "right_type_wrong_color": 2,
+          "wrong_piece_neighbor_hop2": 1
+        },
+        "occupied_recall_by_color": {
+          "BLACK": "24/28",
+          "BLUE": "21/29",
+          "BRONZE": "7/8",
+          "GREEN": "5/7",
+          "MYSTIC_BLUE": "10/11",
+          "ORANGE": "16/21",
+          "RED": "18/24"
+        },
+        "occupied_recall_by_piece": {
+          "CITY": "18/18",
+          "ROAD": "45/64",
+          "SETTLEMENT": "38/46"
+        },
+        "overall_exact": 0.381,
+        "port.port_type": 0.0,
+        "robber": 0.0,
+        "spatial_grounding": 0.358,
+        "tile.number": 0.976,
+        "tile.resource": 1.0
+      },
+      "single_piece_v3": {
+        "exact": 0.989,
+        "occupancy_negative": 0.96,
+        "occupancy_positive": 0.963
+      },
+      "single_piece_v7": {
+        "adjacent": 0.847,
+        "exact": 0.969,
+        "far": 0.95,
+        "occupancy_positive": 0.963
+      }
+    },
     "run_name": "catan-qwen38-sl-pairs-v2-roads-s512-20260903",
     "steps": 512,
     "token_entanglement": {

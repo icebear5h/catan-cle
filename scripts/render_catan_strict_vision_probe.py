@@ -13,18 +13,22 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Sequence
 
-from catan_board_bench.render import DEFAULT_RENDER_STYLE, render_contract_image
-from data_pipeline.catan_board_bench.ascii_variations import (
+from evals.catan_board_bench.paths import (
+    canonical_benchmark_reference,
+    resolve_benchmark_reference,
+)
+from evals.catan_board_bench.render import DEFAULT_RENDER_STYLE, render_contract_image
+from evals.catan_board_bench.ascii_variations import (
     STRICT_SCORER_VERSION,
     full_fact_digest,
     full_public_graph_facts,
     strict_scorer_digest,
 )
-from data_pipeline.catan_board_bench.text_format_optimization import DATASET_SCHEMA
+from evals.catan_board_bench.text_format_optimization import DATASET_SCHEMA
 
 
 JsonDict = dict[str, Any]
-DEFAULT_SOURCE_DIR = Path("data_pipeline/catan_board_bench/datasets/text_format_optimization_probe")
+DEFAULT_SOURCE_DIR = Path("evals/catan_board_bench/datasets/text_format_optimization_probe")
 DEFAULT_OUTPUT_DIR = Path(
     "artifacts/generated/catan_board_bench/strict_vision_probe_60_1024_board90"
 )
@@ -101,7 +105,8 @@ def render_strict_vision_probe(
 
     for row in source_manifest:
         sample_id = row["sample_id"]
-        source_contract_path = Path(row["source_contract"])
+        source_contract_reference = canonical_benchmark_reference(row["source_contract"])
+        source_contract_path = resolve_benchmark_reference(source_contract_reference)
         alias_path = source_dir / "aliases" / f"{sample_id}.json"
         fact_path = source_dir / "facts" / f"{sample_id}.json"
         contract = json.loads(source_contract_path.read_text())
@@ -113,7 +118,7 @@ def render_strict_vision_probe(
         image_path = image_dir / f"{sample_id}.png"
         render_contract_image(contract, image_size=image_size, style=style).save(image_path)
 
-        source_locks[str(source_contract_path)] = file_sha256(source_contract_path)
+        source_locks[str(source_contract_reference)] = file_sha256(source_contract_path)
         source_locks[f"aliases/{sample_id}.json"] = file_sha256(alias_path)
         source_locks[f"facts/{sample_id}.json"] = file_sha256(fact_path)
         visual_manifest.append(
@@ -121,7 +126,7 @@ def render_strict_vision_probe(
                 "sample_id": sample_id,
                 "original_sample_id": row.get("original_sample_id"),
                 "source_fact_digest": row["fact_digest"],
-                "source_contract": str(source_contract_path),
+                "source_contract": str(source_contract_reference),
                 "source_contract_sha256": file_sha256(source_contract_path),
                 "contract_path": str(contract_path.relative_to(output_dir)),
                 "contract_sha256": file_sha256(contract_path),
@@ -160,7 +165,7 @@ def render_strict_vision_probe(
         "image_size": [image_size, image_size],
         "rendered_images": len(visual_manifest),
         "render_variant": {
-            "renderer": "data_pipeline.catan_board_bench.render",
+            "renderer": "evals.catan_board_bench.render",
             "style": asdict(style),
             "view_padding_factor": view_padding_factor,
             "target_board_canvas_fraction": target_board_canvas_fraction,
@@ -244,7 +249,7 @@ def validate_source_dataset(
 
     for row in manifest:
         sample_id = row["sample_id"]
-        contract_path = Path(row["source_contract"])
+        contract_path = resolve_benchmark_reference(row["source_contract"])
         if not contract_path.is_file():
             raise FileNotFoundError(contract_path)
         contract = json.loads(contract_path.read_text())
@@ -309,7 +314,7 @@ def canonicalize_question(
         "source_answer_text": question["answer_text"],
         "source_fact_digest": question["fact_digest"],
         "engine_state_sha256": json_digest(
-            json.loads(Path(manifest_row["source_contract"]).read_text())
+            json.loads(resolve_benchmark_reference(manifest_row["source_contract"]).read_text())
         ),
         "identity_projection": "canonical_engine_ids",
     }

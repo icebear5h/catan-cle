@@ -19,21 +19,23 @@ from typing import Any, Dict, Sequence
 import httpx
 from dotenv import load_dotenv
 
-from data_pipeline.catan_board_bench.ascii_variations import (
+from evals.catan_board_bench.ascii_variations import (
     STRICT_SCORER_VERSION,
     full_fact_digest,
     score_strict_json_answer,
     strict_scorer_digest,
 )
-from data_pipeline.catan_board_bench.full_graph_format_probe import (
+from evals.catan_board_bench.full_graph_format_probe import (
     DATASET_SCHEMA,
     DEFAULT_OUTPUT_DIR as DEFAULT_DATASET_DIR,
 )
-from data_pipeline.catan_board_bench.full_graph_formats import (
+from evals.catan_board_bench.full_graph_formats import (
     FORMAT_EXTENSIONS,
     FORMAT_NAMES,
     parse_full_graph_format,
 )
+from evals.catan_board_bench.paths import resolve_benchmark_reference
+from evals.catan_board_bench.presentation import load_text_board_presentation
 
 
 load_dotenv()
@@ -251,7 +253,7 @@ def validate_dataset_integrity(
     if _json_digest(source_lock) != metadata.get("source_lock_sha256"):
         raise SystemExit("Dataset source-lock digest mismatch")
 
-    source_dir = Path(metadata["source_dataset"])
+    source_dir = resolve_benchmark_reference(metadata["source_dataset"])
     for relative_path, expected_sha256 in source_lock.items():
         source_path = source_dir / relative_path
         if not source_path.is_file():
@@ -390,8 +392,19 @@ def build_jobs(
                 dataset_dir / "representations" / qa["sample_id"] / f"{format_name}{extension}"
             )
             representation_bytes = representation_path.read_bytes()
-            board_text = representation_bytes.decode().rstrip("\n")
-            prompt = build_prompt(format_name, board_text, qa)
+            presentation = load_text_board_presentation(
+                representation_path,
+                source_id=qa["sample_id"],
+                board_sha256=qa["fact_digest"],
+                aliases_path=(
+                    dataset_dir / "aliases" / f"{qa['sample_id']}.json"
+                ),
+                format=format_name,
+                renderer_version=(
+                    "3" if format_name == "indexed_tile_rows" else "1"
+                ),
+            )
+            prompt = build_prompt(format_name, presentation.content, qa)
             if qa["answer_text"] in prompt:
                 raise ValueError(f"expected answer leaked into prompt for {format_name}/{qa['id']}")
             jobs.append(
@@ -400,6 +413,7 @@ def build_jobs(
                     "qa": qa,
                     "representation_path": str(representation_path),
                     "representation_sha256": hashlib.sha256(representation_bytes).hexdigest(),
+                    "board_presentation": presentation,
                     "prompt": prompt,
                 }
             )

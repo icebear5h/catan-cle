@@ -9,6 +9,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from evals.catan_board_bench.paths import DATASETS_DIR
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = (
@@ -156,13 +158,7 @@ def verify_layout(manifest_path: Path = DEFAULT_MANIFEST) -> dict[str, int]:
         errors.append(f"redundant rendered answer key exists: {duplicate_answer_key}")
 
     ledger = (
-        PROJECT_ROOT
-        / "data_pipeline"
-        / "catan_board_bench"
-        / "datasets"
-        / "catan_board_bench_100"
-        / "leakage"
-        / "benchmark_game_ids.json"
+        DATASETS_DIR / "catan_board_bench_100" / "leakage" / "benchmark_game_ids.json"
     )
     if not ledger.is_file():
         errors.append(f"held-out game-ID ledger missing: {ledger}")

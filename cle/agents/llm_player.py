@@ -22,9 +22,9 @@ from PIL import Image
 from groq import Groq
 from playwright.sync_api import sync_playwright
 
-from game_engine.models.player import Color
+from cle.game_engine.models.player import Color
 from cle.players.legacy import Player
-from game_engine.models.enums import Action, ActionType
+from cle.game_engine.models.enums import Action, ActionType
 from cle.env.observation_formatter import (
     CatanObservationFormatter,
     create_observation_from_state,

@@ -16,8 +16,8 @@ from typing import Any, Sequence
 
 from PIL import Image
 
-from catan_board_bench.render import RenderStyle, render_contract_image
-from catan_board_bench.tokens import (
+from evals.catan_board_bench.render import RenderStyle, render_contract_image
+from evals.catan_board_bench.tokens import (
     atlas_metadata,
     building_token,
     color_token,
@@ -27,7 +27,7 @@ from catan_board_bench.tokens import (
     resource_token,
     tile_token,
 )
-from game_engine.models.enums import CITY, SETTLEMENT
+from cle.game_engine.models.enums import CITY, SETTLEMENT
 from sft.scripts.build_node_factor_dataset import (
     build_contract,
     build_indices,

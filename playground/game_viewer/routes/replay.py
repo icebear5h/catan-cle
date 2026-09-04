@@ -19,8 +19,8 @@ from cle.replay.colonist.coordinates import create_map_from_colonist
 from cle.replay.colonist.event_parser import parse_colonist_events_to_actions
 from cle.replay.runtime.revision import bump_replay_revision
 from cle.sandbox.replay import ReplaySandbox
-from game_engine.game import GameEngine
-from game_engine.models.player import Color
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.player import Color
 
 from ..async_runtime import sandbox_async_runtime
 from ..replay.decision_preview import generate_decision_preview

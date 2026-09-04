@@ -7,11 +7,11 @@ from types import SimpleNamespace
 
 import pytest
 
-from data_pipeline.catan_board_bench.ascii_variations import full_fact_digest
-from data_pipeline.catan_board_bench.full_graph_format_probe import (
+from evals.catan_board_bench.ascii_variations import full_fact_digest
+from evals.catan_board_bench.full_graph_format_probe import (
     build_full_graph_format_probe,
 )
-from data_pipeline.catan_board_bench.full_graph_formats import (
+from evals.catan_board_bench.full_graph_formats import (
     FORMAT_EXTENSIONS,
     FORMAT_NAMES,
     parse_full_graph_format,
@@ -30,7 +30,7 @@ from scripts.eval_catan_board_bench_full_graph_formats import (
 )
 
 
-SOURCE_DIR = Path("data_pipeline/catan_board_bench/datasets/ascii_variation_probe")
+SOURCE_DIR = Path("evals/catan_board_bench/datasets/ascii_variation_probe")
 
 
 def test_all_six_formats_round_trip_all_twelve_boards() -> None:
@@ -202,6 +202,16 @@ def test_format_evaluator_builds_360_leak_free_jobs(tmp_path: Path) -> None:
     assert all(job["qa"]["answer_text"] not in job["prompt"] for job in jobs)
     assert all("Required JSON shape:" in job["prompt"] for job in jobs)
     assert all(job["representation_sha256"] for job in jobs)
+    assert all(job["board_presentation"].kind == "text" for job in jobs)
+    assert all(
+        job["board_presentation"].provenance.identity_space
+        == "opaque_board_local_ids"
+        for job in jobs
+    )
+    assert all(
+        job["board_presentation"].content in job["prompt"]
+        for job in jobs
+    )
     with pytest.raises(ValueError, match="duplicate formats"):
         build_jobs(
             dataset_dir,

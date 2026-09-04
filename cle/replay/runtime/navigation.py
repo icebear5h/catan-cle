@@ -3,7 +3,7 @@
 from cle.replay.runtime.access import get_game_engine, set_game_engine
 import time
 
-from game_engine.game import GameEngine
+from cle.game_engine.game import GameEngine
 
 from cle.replay.colonist.helpers import validate_resources_match
 from cle.replay.runtime.revision import bump_replay_revision

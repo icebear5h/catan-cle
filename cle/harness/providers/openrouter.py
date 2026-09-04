@@ -11,6 +11,10 @@ from typing import Any, Mapping
 
 import httpx
 
+from cle.harness.board_surface import (
+    openai_messages_with_board,
+    sanitize_provider_payload,
+)
 from cle.harness.models import ModelRequest, ModelResponse
 from cle.harness.reasoning import validate_native_reasoning_request
 
@@ -19,10 +23,11 @@ from cle.harness.reasoning import validate_native_reasoning_request
 class OpenRouterConfig:
     model: str
     temperature: float = 0.3
-    max_tokens: int = 2048
+    max_tokens: int | None = 2048
     timeout_seconds: float = 120.0
     max_retries: int = 2
     reasoning: Mapping[str, Any] | None = None
+    allow_image_input: bool = False
     endpoint: str = "https://openrouter.ai/api/v1/chat/completions"
     extra_headers: Mapping[str, str] = field(
         default_factory=lambda: {
@@ -59,14 +64,16 @@ class OpenRouterTransport:
         }
         payload: dict[str, Any] = {
             "model": self.config.model,
-            "messages": [
-                {"role": message.role, "content": message.content}
-                for message in request.messages
-            ],
+            "messages": openai_messages_with_board(
+                request.messages,
+                request.board_presentation,
+                allow_image_input=self.config.allow_image_input,
+            ),
             "temperature": self.config.temperature,
-            "max_tokens": self.config.max_tokens,
             "reasoning": dict(self.reasoning_request),
         }
+        if self.config.max_tokens is not None:
+            payload["max_tokens"] = self.config.max_tokens
 
         started_at = time.monotonic()
         response = None
@@ -137,8 +144,14 @@ class OpenRouterTransport:
             provider_response_id=provider_response_id,
             provider_request_id=provider_request_id,
             provider_native_finish_reason=provider_native_finish_reason,
-            provider_request_payload=payload,
-            provider_response_payload=data,
+            provider_request_payload=sanitize_provider_payload(
+                payload,
+                request.board_presentation,
+            ),
+            provider_response_payload=sanitize_provider_payload(
+                data,
+                request.board_presentation,
+            ),
         )
 
     async def aclose(self) -> None:

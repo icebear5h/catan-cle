@@ -497,7 +497,7 @@ def render_text_report(report: dict[str, Any], top_n: int) -> str:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--bench-dir", type=Path, default=Path("data_pipeline/catan_board_bench/datasets/catan_board_bench_100")
+        "--bench-dir", type=Path, default=Path("evals/catan_board_bench/datasets/catan_board_bench_100")
     )
     parser.add_argument("--sample-id", type=str, default=None)
     parser.add_argument(
@@ -509,7 +509,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--qa",
         type=Path,
-        default=Path("data_pipeline/catan_board_bench/datasets/catan_board_bench_100/questions/qa.jsonl"),
+        default=Path("evals/catan_board_bench/datasets/catan_board_bench_100/questions/qa.jsonl"),
         help="QA rows JSONL (usually questions/qa.jsonl)",
     )
     parser.add_argument(

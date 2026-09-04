@@ -10,8 +10,8 @@ from evals.decision_buckets import (
     default_bucket_suite_path,
     load_decision_bucket_suite,
 )
-from game_engine.game import GameEngine
-from game_engine.models.player import Color
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.player import Color
 
 
 def _features(

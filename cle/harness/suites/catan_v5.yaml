@@ -43,11 +43,11 @@ sections:
 
 phase_guidance:
   initial_settlement_1: |-
-    This is the first initial settlement. It grants no starting resources.
+    This first settlement grants no starting resources. The second settlement is independently placed at any legal vertex.
   initial_settlement_2: |-
-    This is the second initial settlement. It grants one resource from each adjacent non-desert tile.
+    This independently placed second settlement need not connect to the first road. It grants one resource from each adjacent non-desert tile.
   initial_road: |-
-    This is the road placement paired with the initial settlement just placed.
+    This road touches the settlement just placed. It does not constrain or enable the second settlement; it only seeds post-setup expansion.
   initial_placement: |-
     This is an initial-placement decision. Only the second initial settlement grants starting resources.
   discarding: |-

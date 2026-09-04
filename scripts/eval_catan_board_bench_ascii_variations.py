@@ -19,7 +19,7 @@ from typing import Any, Dict, Sequence
 import httpx
 from dotenv import load_dotenv
 
-from data_pipeline.catan_board_bench.ascii_variations import (
+from evals.catan_board_bench.ascii_variations import (
     ASCII_VARIANTS,
     STRICT_SCORER_VERSION,
     score_strict_json_answer,
@@ -30,7 +30,7 @@ from data_pipeline.catan_board_bench.ascii_variations import (
 load_dotenv()
 
 JsonDict = Dict[str, Any]
-DEFAULT_DATASET_DIR = Path("data_pipeline/catan_board_bench/datasets/ascii_variation_probe")
+DEFAULT_DATASET_DIR = Path("evals/catan_board_bench/datasets/ascii_variation_probe")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 SYSTEM_PROMPT = """You are answering strict engine-scored questions about an authoritative public Catan board graph encoded as ASCII text.
 

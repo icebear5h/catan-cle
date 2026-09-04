@@ -2,8 +2,8 @@
 
 import json
 
-from game_engine.json import GameEncoder
-from game_engine.game import GameEngine
+from cle.game_engine.json import GameEncoder
+from cle.game_engine.game import GameEngine
 from .live.game_logging import get_player_resources, get_player_dev_cards
 
 

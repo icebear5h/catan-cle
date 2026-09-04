@@ -1,18 +1,24 @@
 # Evals
 
-This directory now only contains compatibility wrappers for older OpenBench
-entry points. Canonical CatanBoardBench code and data live under:
+Evaluation code and frozen evaluation inputs live under this package.
 
-- `data_pipeline/catan_board_bench/eval/`: OpenBench/Inspect task code.
-- `data_pipeline/catan_board_bench/datasets/catan_board_bench_100/`: contracts, images,
-  questions, leakage ledger, annotations, reports, and provider run logs.
-- `data_pipeline/catan_board_bench/datasets/resolution_sweep/`: resolution-sweep
-  variants and run logs.
+- `catan_board_bench/`: CatanBoardBench implementation, OpenBench/Inspect entry
+  point, and frozen public-board datasets.
+- `catan_board_bench_ui/`: standalone board-perception and agent-decision UI.
+- Root modules: replay-policy comparisons, decision spot checks, and transcript
+  evaluations.
 
-Prefer the registered benchmark or the canonical file:
+Run CatanBoardBench through its registered name or canonical module:
 
 ```bash
 uv run --extra eval bench eval catan_board_bench
-uv run --extra eval bench eval data_pipeline/catan_board_bench/eval/benchmark.py
+uv run --extra eval bench eval evals/catan_board_bench/benchmark.py
 ```
 
+Run the standalone eval UI:
+
+```bash
+cd evals/catan_board_bench_ui
+npm ci
+npm run dev
+```

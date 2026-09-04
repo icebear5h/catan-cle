@@ -5,9 +5,9 @@ from __future__ import annotations
 from typing import Any
 
 from cle.players.contracts import PlayerContext
-from game_engine.game import GameEngine
-from game_engine.models.enums import Action, ActionType
-from game_engine.models.player import Color
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.enums import Action, ActionType
+from cle.game_engine.models.player import Color
 
 
 def build_decision_context(
@@ -48,7 +48,11 @@ def decision_prompt_key(observation: Any, legal_actions: tuple[Action, ...]) -> 
                 else "initial_settlement_2"
             )
         if ActionType.BUILD_ROAD in action_types:
-            return "initial_road"
+            return (
+                "initial_road_1"
+                if len(observation.my_roads) == 0
+                else "initial_road_2"
+            )
         return "initial_placement"
     if observation.current_phase == "discarding" or ActionType.DISCARD in action_types:
         return "discarding"

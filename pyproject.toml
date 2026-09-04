@@ -29,8 +29,9 @@ dependencies = [
 [project.optional-dependencies]
 modal = ["modal>=0.68.0"]
 eval = [
-    "openbench>=0.5.0",
-    "inspect-ai>=0.3.0",
+    "openbench==0.5.2",
+    "inspect-ai==0.3.125",
+    "inspect-viz==0.4.1",
     "openai>=1.0.0",
     "jupyter>=1.0.0",
     "plotly>=5.14.0",
@@ -67,14 +68,15 @@ dev = ["pytest-cov>=4.1.0", "black>=23.3.0", "ruff>=0.0.270"]
 cle = "cle.run:main"
 
 [project.entry-points."openbench.benchmarks"]
-catan_board_bench = "catan_board_bench.eval.metadata:get_benchmark_metadata"
+catan_board_bench = "evals.catan_board_bench.metadata:get_benchmark_metadata"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["cle", "game_engine", "data_pipeline", "evals", "catan_board_bench", "sft"]
+packages = ["cle", "data_pipeline", "evals", "sft"]
+exclude = ["evals/catan_board_bench_ui/**"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

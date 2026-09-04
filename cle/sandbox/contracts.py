@@ -6,10 +6,10 @@ from dataclasses import dataclass
 from typing import Any
 
 from cle.players.contracts import PlayerAttempt, PlayerContext
-from game_engine.events import EngineTransition, GameEngineSnapshot, GameEvent, PlayerEvent
-from game_engine.models.enums import Action
-from game_engine.models.player import Color
-from game_engine.observation import PlayerObservation
+from cle.game_engine.events import EngineTransition, GameEngineSnapshot, GameEvent, PlayerEvent
+from cle.game_engine.models.enums import Action
+from cle.game_engine.models.player import Color
+from cle.game_engine.observation import PlayerObservation
 
 
 @dataclass(frozen=True, slots=True)

@@ -7,7 +7,7 @@ import argparse
 import json
 from pathlib import Path
 
-from catan_board_bench.builder import (
+from evals.catan_board_bench.builder import (
     DEFAULT_OUTPUT_DIR,
     DEFAULT_QUESTION_DIR,
     CatanObservationSuite,

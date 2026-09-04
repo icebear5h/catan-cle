@@ -1,8 +1,8 @@
-from game_engine.events import event_from_action, project_event
-from game_engine.game import GameEngine
-from game_engine.models.enums import Action, ActionType
-from game_engine.models.player import Color
-from game_engine.trading import TradeCandidate, TradeOffer
+from cle.game_engine.events import event_from_action, project_event
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.enums import Action, ActionType
+from cle.game_engine.models.player import Color
+from cle.game_engine.trading import TradeCandidate, TradeOffer
 
 
 COLORS = (Color.RED, Color.BLUE, Color.WHITE, Color.ORANGE)

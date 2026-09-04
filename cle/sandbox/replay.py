@@ -15,8 +15,8 @@ from cle.replay.runtime.step_executor import replay_step_logic
 from cle.players.contracts import PlayerContext, SandboxPlayer
 from cle.sandbox.contracts import SandboxView
 from cle.sandbox.decision import build_decision_context
-from game_engine.game import GameEngine
-from game_engine.models.player import Color
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.player import Color
 
 
 class ReplaySandbox:

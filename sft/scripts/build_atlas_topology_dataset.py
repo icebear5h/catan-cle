@@ -17,7 +17,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-from catan_board_bench.tokens import atlas_metadata
+from evals.catan_board_bench.tokens import atlas_metadata
 
 
 DEFAULT_PROMPT_PREFIX = "Answer exactly using Catan atlas tokens. Do not explain."

@@ -7,18 +7,21 @@ import re
 from typing import Any
 
 from cle.env.observation_formatter import CatanObservationFormatter
+from cle.harness.board_surface import BoardPresenter
+from cle.harness.catan_board_surface import IndexedTileRowsBoardPresenter
 from cle.harness.models import (
     ModelMessage,
     ModelRequest,
     ModelResponse,
     PlayerSession,
+    PromptComponent,
 )
 from cle.harness.suite import ContextSuite
 from cle.players.contracts import PlayerChoice, PlayerContext
-from game_engine.events import PlayerEvent
-from game_engine.models.enums import ActionType
-from game_engine.models.player import Color
-from game_engine.trading import RESOURCE_NAMES, TradeOffer
+from cle.game_engine.events import PlayerEvent
+from cle.game_engine.models.enums import ActionType
+from cle.game_engine.models.player import Color
+from cle.game_engine.trading import RESOURCE_NAMES, TradeOffer
 
 
 _TEMPLATE_VARIABLE = re.compile(r"{{\s*([A-Za-z_][A-Za-z0-9_]*)\s*}}")
@@ -27,8 +30,14 @@ _TEMPLATE_VARIABLE = re.compile(r"{{\s*([A-Za-z_][A-Za-z0-9_]*)\s*}}")
 class ContextAssembler:
     """Render one complete active model context from typed authoritative inputs."""
 
-    def __init__(self, suite: ContextSuite) -> None:
+    def __init__(
+        self,
+        suite: ContextSuite,
+        *,
+        board_presenter: BoardPresenter | None = None,
+    ) -> None:
         self.suite = suite
+        self.board_presenter = board_presenter or IndexedTileRowsBoardPresenter()
 
     def assemble(
         self,
@@ -36,39 +45,117 @@ class ContextAssembler:
         session: PlayerSession,
         feedback: str | None = None,
     ) -> ModelRequest:
+        components = self.render_components(context, session, feedback)
+        board_presentation = self.board_presenter.present(context)
+        system = components[0].rendered
+        environment = "\n\n".join(
+            component.rendered
+            for component in components
+            if component.channel == "environment" and component.rendered
+        )
+        return ModelRequest(
+            decision_id=context.context_id,
+            session_id=session.session_id,
+            messages=(
+                ModelMessage(role="system", content=system),
+                *self._history(session),
+                ModelMessage(role="user", content=environment),
+            ),
+            components=components,
+            board_presentation=board_presentation,
+        )
+
+    def render_components(
+        self,
+        context: PlayerContext,
+        session: PlayerSession,
+        feedback: str | None = None,
+    ) -> tuple[PromptComponent, ...]:
+        """Render typed system/environment strings from one private perspective."""
         if context.actor != session.color:
             raise ValueError(
                 f"Context actor {context.actor} does not match player {session.color}"
             )
 
         guidance = self.suite.phase_guidance.get(context.prompt_key)
+        # Historical suites used one shared setup-road key. Restored games
+        # retain their recorded source while current routing uses road ordinals.
+        if guidance is None and context.prompt_key in {
+            "initial_road_1",
+            "initial_road_2",
+        }:
+            guidance = self.suite.phase_guidance.get("initial_road")
         if guidance is None:
             raise ValueError(
                 f"Suite {self.suite.id}@{self.suite.version} has no guidance "
                 f"for {context.prompt_key!r}"
             )
 
-        system = self._render_template(
-            self.suite.system.template,
-            {
-                "color": self._color_name(session.color),
-                "phase_guidance": guidance,
-                "response_instruction": self.suite.response.instruction,
-            },
+        system_values = {
+            "color": self._color_name(session.color),
+            "phase_guidance": guidance,
+            "response_instruction": self.suite.response.instruction,
+        }
+        referenced_system_values = tuple(
+            (name, system_values[name])
+            for name in sorted(set(_TEMPLATE_VARIABLE.findall(self.suite.system.template)))
         )
-        history = self._history(session)
-        user = self._render_user_message(context, session, guidance)
-        if feedback:
-            user = f"{user}\n\nCORRECTION FROM THE SANDBOX:\n{feedback}"
-        return ModelRequest(
-            decision_id=context.context_id,
-            session_id=session.session_id,
-            messages=(
-                ModelMessage(role="system", content=system),
-                *history,
-                ModelMessage(role="user", content=user),
-            ),
-        )
+        components = [
+            PromptComponent(
+                id="system.identity",
+                channel="system",
+                template=self.suite.system.template,
+                value=system_values["color"],
+                rendered=self._render_template(
+                    self.suite.system.template,
+                    system_values,
+                ),
+                variables=referenced_system_values,
+            )
+        ]
+        content = self._environment_values(context, session, guidance, feedback)
+        for section_name in self.suite.context.order:
+            if section_name == "trajectory":
+                continue
+            section = self.suite.sections[section_name]
+            value = content.get(section_name, "")
+            if not value:
+                if section.empty == "omit":
+                    continue
+                value = section.empty_text
+            template = section.template or self._legacy_section_template(
+                section.heading
+            )
+            referenced = set(_TEMPLATE_VARIABLE.findall(template))
+            variables = (("value", value),) if "value" in referenced else ()
+            rendered = self._render_template(template, {"value": value})
+            components.append(
+                PromptComponent(
+                    id=f"environment.{section_name}",
+                    channel="environment",
+                    template=template,
+                    value=value,
+                    rendered=rendered,
+                    variables=variables,
+                )
+            )
+
+        if feedback and "decision_request" not in self.suite.context.order:
+            correction_template = "CORRECTION FROM THE SANDBOX:\n{{ value }}"
+            components.append(
+                PromptComponent(
+                    id="environment.correction",
+                    channel="environment",
+                    template=correction_template,
+                    value=feedback,
+                    rendered=self._render_template(
+                        correction_template,
+                        {"value": feedback},
+                    ),
+                    variables=(("value", feedback),),
+                )
+            )
+        return tuple(components)
 
     def _history(self, session: PlayerSession) -> tuple[ModelMessage, ...]:
         messages = tuple(session.messages)
@@ -81,47 +168,56 @@ class ContextAssembler:
             messages = messages[1:]
         return messages
 
-    def _render_user_message(
+    def _environment_values(
         self,
         context: PlayerContext,
         session: PlayerSession,
         guidance: str,
-    ) -> str:
+        feedback: str | None,
+    ) -> dict[str, str]:
         formatter = CatanObservationFormatter()
-        observation_text = formatter.format(
+        formatted = formatter.format(
             context.observation,
             include_legal_actions=False,
-        ).raw_str
+            include_initial_placement_order=(
+                self.suite.context.initial_placement_order == "both_rounds"
+            ),
+        )
         action_descriptions = (
             formatter._format_single_action(action, context.observation)
             for action in context.legal_actions
         )
-        content = {
+        decision_request = "Choose exactly one zero-based index from VALID ACTIONS."
+        if feedback:
+            decision_request = (
+                f"{decision_request}\n\nCORRECTION FROM THE SANDBOX:\n{feedback}"
+            )
+        visible_events = self._format_events(context.events)
+        legal_actions = "\n".join(
+            f"{index}. {description}"
+            for index, description in enumerate(action_descriptions)
+        )
+        return {
             "strategic_memory": session.strategic_memory,
-            "game_events": self._format_events(context.events),
-            "observation": observation_text,
+            "game_events": visible_events,
+            "visible_events": visible_events,
+            "observation": formatted.raw_str,
+            "phase_info": formatted.strategic_context,
+            "board_state": formatted.board_state,
+            "resources": formatted.resources,
+            "opponents": formatted.opponents,
+            "trade_window": formatted.trade_context,
             "phase_guidance": guidance,
-            "legal_actions": "\n".join(
-                f"{index}. {description}"
-                for index, description in enumerate(action_descriptions)
-            ),
+            "legal_actions": legal_actions,
+            "decision_request": decision_request,
+            "response_schema": self.suite.response.instruction,
         }
 
-        blocks = []
-        for section_name in self.suite.context.order:
-            if section_name == "trajectory":
-                continue
-            section = self.suite.sections[section_name]
-            value = content.get(section_name, "")
-            if not value:
-                if section.empty == "omit":
-                    continue
-                value = section.empty_text
-            block = value
-            if section.heading:
-                block = f"{section.heading}:\n{value}"
-            blocks.append(block.rstrip())
-        return "\n\n".join(blocks).strip()
+    @staticmethod
+    def _legacy_section_template(heading: str) -> str:
+        if heading:
+            return f"{heading}:\n{{{{ value }}}}"
+        return "{{ value }}"
 
     @staticmethod
     def _format_events(events: tuple[PlayerEvent, ...]) -> str:
@@ -189,7 +285,6 @@ class PlayerResponseParser:
     ) -> PlayerChoice:
         text = response.content or ""
         game_plan = self._tag(text, "game_plan")
-        rationale = self._tag(text, "rationale")
         action_text = self._tag(text, "action")
         warning = None
 
@@ -226,7 +321,6 @@ class PlayerResponseParser:
             action_index=index,
             trade_offer=trade_offer,
             game_plan=game_plan,
-            rationale=rationale,
             raw_response=text,
             model=response.model,
             usage=response.usage,

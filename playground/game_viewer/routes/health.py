@@ -4,7 +4,7 @@ import json
 
 from flask import Blueprint, jsonify, current_app
 
-from game_engine.json import GameEncoder
+from cle.game_engine.json import GameEncoder
 from ..live.game_logging import get_player_resources, get_player_dev_cards
 from ..replay.model_traces import build_paired_model_trace_window
 from ..replay.narrator_reasoning import build_paired_narrator_reasoning_window

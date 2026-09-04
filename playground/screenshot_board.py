@@ -33,8 +33,8 @@ import httpx
 from PIL import Image
 from playwright.async_api import async_playwright
 
-from game_engine.game import GameEngine
-from game_engine.json import GameEncoder
+from cle.game_engine.game import GameEngine
+from cle.game_engine.json import GameEncoder
 from playground.game_viewer.serialize import serialize_game_for_inject
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent

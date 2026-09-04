@@ -4,8 +4,8 @@ from types import SimpleNamespace
 from cle.harness import ContextAssembler, PlayerSession, load_context_suite
 from cle.sandbox.decision import build_decision_context
 from cle.sandbox.replay import ReplaySandbox
-from game_engine.game import GameEngine
-from game_engine.models.player import Color
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.player import Color
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -27,13 +27,15 @@ def test_replay_context_uses_the_same_general_suite_as_live_games():
 
     request = ContextAssembler(suite).assemble(context, session)
 
-    assert request.messages[0].content.startswith(
-        "Select the next action for RED."
+    assert request.messages[0].content == (
+        "You are playing a game of Catan. You are playing as RED."
     )
-    assert "You are" not in request.messages[0].content
     assert "YOUR CURRENT GAME PLAN:\nBuild a city." in request.messages[-1].content
     assert "VALID ACTIONS:" in request.messages[-1].content
-    assert "<rationale>" in request.messages[0].content
+    assert "<rationale>" not in request.messages[-1].content
+    assert "<action>" in request.messages[-1].content
+    assert request.components[0].id == "system.identity"
+    assert request.components[-1].id == "environment.response_schema"
 
 
 def test_replay_view_reports_replay_revision_not_engine_action_count():

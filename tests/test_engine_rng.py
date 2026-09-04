@@ -1,8 +1,8 @@
 import random
 
-from game_engine.game import GameEngine
-from game_engine.models.enums import ActionType
-from game_engine.models.player import Color
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.enums import ActionType
+from cle.game_engine.models.player import Color
 
 
 COLORS = (Color.RED, Color.BLUE, Color.WHITE, Color.ORANGE)

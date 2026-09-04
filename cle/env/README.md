@@ -1,7 +1,7 @@
 # Observation compatibility module
 
 `cle/env/` no longer defines the game environment. The active runtime is
-`cle.sandbox.CatanSandbox`, which composes one `game_engine.GameEngine` with
+`cle.sandbox.CatanSandbox`, which composes one `cle.game_engine.GameEngine` with
 one `SandboxPlayer` per seat.
 
 The remaining `observation_formatter.py` module is a presentation adapter used

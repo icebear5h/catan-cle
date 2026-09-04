@@ -9,7 +9,7 @@ Manifest:
 
 Source code:
 
-- `data_pipeline/catan_board_bench/tokens.py`
+- `evals/catan_board_bench/tokens.py`
 - `scripts/export_catan_tokens.py`
 
 ## Counts
@@ -31,7 +31,7 @@ The manifest currently contains 197 tokens:
 ```python
 from transformers import AutoProcessor, AutoModelForImageTextToText
 
-from data_pipeline.catan_board_bench.tokens import added_tokens
+from evals.catan_board_bench.tokens import added_tokens
 
 processor = AutoProcessor.from_pretrained(model_name)
 num_added = processor.tokenizer.add_tokens(added_tokens())
@@ -43,7 +43,7 @@ model.resize_token_embeddings(len(processor.tokenizer))
 Equivalent helper:
 
 ```python
-from data_pipeline.catan_board_bench.tokens import add_tokens_to_tokenizer
+from evals.catan_board_bench.tokens import add_tokens_to_tokenizer
 
 num_added = add_tokens_to_tokenizer(processor.tokenizer)
 ```

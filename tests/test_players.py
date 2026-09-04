@@ -11,10 +11,10 @@ from cle.players import (
 )
 from cle.players.contracts import TalkContext
 from cle.players.agent import AgentPlayer
-from game_engine.game import GameEngine
-from game_engine.models.enums import Action, ActionType
-from game_engine.models.player import Color
-from game_engine.trading import TradeOffer
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.enums import Action, ActionType
+from cle.game_engine.models.player import Color
+from cle.game_engine.trading import TradeOffer
 
 
 COLORS = (Color.RED, Color.BLUE, Color.WHITE, Color.ORANGE)
@@ -47,7 +47,9 @@ def _context(engine, prompt_key="initial_settlement_1"):
 def test_default_player_suite_uses_single_trade_offer_surface():
     suite = load_context_suite()
 
-    assert suite.version == "5.0.0"
+    assert suite.version == "9.0.0"
+    assert "rationale" not in suite.response.tags
+    assert "<rationale>" not in suite.response.instruction
     assert "trade_offer" in suite.response.tags
     assert "trade_terms" not in suite.response.tags
 
@@ -59,7 +61,6 @@ async def test_agent_player_assembles_full_context_and_records_only_accepted_att
         ModelResponse(
             content=(
                 "<game_plan>expand toward wheat</game_plan>"
-                "<rationale>take the first legal action</rationale>"
                 "<action>0</action>"
             ),
             model="test/model",
@@ -117,7 +118,6 @@ async def test_agent_player_parses_parameterized_trade_choice():
             ModelResponse(
                 content=(
                     "<game_plan>trade</game_plan>"
-                    "<rationale>offer wood for ore</rationale>"
                     "<action>0</action>"
                     '<trade_offer>{"give":{"WOOD":1},'
                     '"receive":{"ORE":1}}</trade_offer>'
@@ -237,9 +237,12 @@ async def test_agent_player_communication_uses_bounded_structured_contract():
     assert choice.mode == CommunicationMode.SAY
     assert choice.audience == (Color.RED,)
     assert choice.commitment.promise == "BLUE offers ORE"
-    assert "You are" not in transport.requests[0].messages[0].content
-    assert "PLAYER:\nBLUE" in transport.requests[0].messages[-1].content
+    assert transport.requests[0].messages[0].content == (
+        "You are playing a game of Catan. You are playing as BLUE."
+    )
+    assert "COMMUNICATION POLICY" in transport.requests[0].messages[-1].content
     assert "COMPLETE VISIBLE GAME EVENTS" in transport.requests[0].messages[-1].content
+    assert transport.requests[0].components[1].channel == "environment"
 
 
 def test_player_session_snapshot_restores_identity_and_continuity():

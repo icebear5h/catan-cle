@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 
-from catan_board_bench.tokens import (
+from evals.catan_board_bench.tokens import (
     atlas_metadata,
     canonical_edge,
     color_token,

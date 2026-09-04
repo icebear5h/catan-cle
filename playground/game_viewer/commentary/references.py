@@ -9,7 +9,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional, Sequence, Tuple
 
-from game_engine.models.enums import ActionType
+from cle.game_engine.models.enums import ActionType
 
 
 _DICE_NUMBERS = frozenset({2, 3, 4, 5, 6, 8, 9, 10, 11, 12})

@@ -50,14 +50,17 @@ asyncio.run(main())
 ## Structure
 
 ```text
-game_engine/          # Rules, state, events, privacy, trades, snapshots
 cle/
+  |- game_engine/     # Rules, state, events, privacy, trades, snapshots
   |- sandbox/         # Async composition root and multi-game pool
   |- players/         # Agent, human, scripted, and baseline policies
   |- harness/         # Context suites, parsing, providers, continuity
   |- replay/          # Colonist decoding and deterministic replay runtime
   `- env/             # Shared observation presentation compatibility
-playground/game_viewer/ # Flask/WebSocket presentation adapter
+evals/
+  |- catan_board_bench/    # Benchmark code and frozen evaluation inputs
+  `- catan_board_bench_ui/ # Standalone evaluation frontend
+playground/game_viewer/   # Flask/WebSocket presentation adapter
 ```
 
 ## Game Viewer UI
@@ -94,7 +97,7 @@ The standalone eval suite exposes bucketed agent-decision spot checks and the
 CatanBoardBench board-perception verifier against the same backend:
 
 ```bash
-cd catan-board-bench-ui
+cd evals/catan_board_bench_ui
 npm install
 npm run dev
 # Eval UI runs on http://localhost:5174
@@ -119,7 +122,7 @@ turn. Counteroffers target only root offers and only the turn player; counters
 cannot themselves be countered. Both hands are revalidated before the final
 atomic exchange.
 
-See [`game_engine/trading.py`](game_engine/trading.py) and the
+See [`cle/game_engine/trading.py`](cle/game_engine/trading.py) and the
 [sandbox guide](cle/sandbox/README.md).
 
 ## Data pipelines
@@ -147,13 +150,13 @@ decision packets.
 
 CatanBoardBench measures engine-scored public-board perception and grounded
 reasoning across image and text representations. Frozen benchmark inputs remain
-under `data_pipeline/catan_board_bench/datasets/`.
+under `evals/catan_board_bench/datasets/`.
 Provider plans, responses, and summaries live under
 `artifacts/runs/catan_board_bench/`; reviewed findings live under
 `reports/catan_board_bench/`.
 
-See [data_pipeline/README.md](data_pipeline/README.md) for the complete ownership
-and artifact policy.
+See [evals/catan_board_bench/README.md](evals/catan_board_bench/README.md) for
+benchmark ownership and artifact policy.
 
 ## V0: VLM Agent with GLM-4.6V-Flash
 

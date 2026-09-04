@@ -16,7 +16,7 @@ from dataclasses import asdict
 from functools import lru_cache
 from pathlib import Path
 
-from catan_board_bench.render import DEFAULT_RENDER_STYLE, RenderStyle, render_contract_image
+from evals.catan_board_bench.render import DEFAULT_RENDER_STYLE, RenderStyle, render_contract_image
 from flask import Flask, Response, abort, request, send_file
 
 from sft.paths import (

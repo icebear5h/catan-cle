@@ -7,10 +7,10 @@ import os
 # Add catanatron to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../catanatron/catanatron"))
 
-from game_engine.game import GameEngine
-from game_engine.models.player import Color
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.player import Color
 from cle.players.legacy import Player
-from game_engine.models.enums import Action
+from cle.game_engine.models.enums import Action
 
 from ..agents.llm_agent_impl import StrategicLLMAgent
 

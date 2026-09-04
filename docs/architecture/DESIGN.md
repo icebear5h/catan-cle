@@ -46,7 +46,7 @@
 
 ### What the Engine Provides
 
-The Catan engine (`game_engine/`) is a complete implementation of base game rules:
+The Catan engine (`cle/game_engine/`) is a complete implementation of base game rules:
 
 | Feature | Status | Notes |
 |---------|--------|-------|

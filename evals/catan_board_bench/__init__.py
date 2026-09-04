@@ -1,1 +1,1 @@
-"""CatanBoardBench OpenBench integration."""
+"""CatanBoardBench data generation, scoring, and evaluation helpers."""

@@ -5,8 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Literal, Protocol
 
+from cle.harness.board_surface import BoardPresentation
 from cle.players.contracts import PlayerChoice
-from game_engine.models.player import Color
+from cle.game_engine.models.player import Color
 
 
 @dataclass(frozen=True)
@@ -16,10 +17,24 @@ class ModelMessage:
 
 
 @dataclass(frozen=True)
+class PromptComponent:
+    """One authored prompt string plus its authoritative rendered value."""
+
+    id: str
+    channel: Literal["system", "environment"]
+    template: str
+    value: str
+    rendered: str
+    variables: tuple[tuple[str, str], ...] = ()
+
+
+@dataclass(frozen=True)
 class ModelRequest:
     decision_id: str
     session_id: str
     messages: tuple[ModelMessage, ...]
+    components: tuple[PromptComponent, ...] = ()
+    board_presentation: BoardPresentation | None = None
 
 
 @dataclass(frozen=True)

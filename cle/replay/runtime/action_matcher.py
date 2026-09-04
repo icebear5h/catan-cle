@@ -1,9 +1,9 @@
 """Find matching engine action from playable actions based on Colonist action hint."""
 
 from cle.replay.runtime.access import get_game_engine
-from game_engine.models.actions import Action
-from game_engine.models.enums import ActionType
-from game_engine.trading import TradeOffer
+from cle.game_engine.models.actions import Action
+from cle.game_engine.models.enums import ActionType
+from cle.game_engine.trading import TradeOffer
 
 from cle.replay.colonist.constants import COLONIST_RESOURCE, ENGINE_RESOURCES
 from cle.replay.colonist.coordinates import reflect_x, rotate_60_cw

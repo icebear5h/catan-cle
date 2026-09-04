@@ -7,11 +7,11 @@ from pathlib import Path
 
 import pytest
 
-from game_engine.game import GameEngine
-from game_engine.models.actions import generate_playable_actions
-from game_engine.models.enums import Action, ActionPrompt, ActionType
-from game_engine.models.player import Color
-from game_engine.trading import TradeOffer, TradeWindow
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.actions import generate_playable_actions
+from cle.game_engine.models.enums import Action, ActionPrompt, ActionType
+from cle.game_engine.models.player import Color
+from cle.game_engine.trading import TradeOffer, TradeWindow
 from playground.game_viewer.app import app
 from cle.replay.colonist.event_parser import parse_colonist_events_to_actions
 from cle.replay.colonist.helpers import validate_resources_match

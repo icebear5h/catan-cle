@@ -5,10 +5,10 @@ from threading import Event, Thread
 
 import pytest
 
-from game_engine.game import GameEngine
-from game_engine.models.actions import generate_playable_actions
-from game_engine.models.enums import ActionPrompt
-from game_engine.models.player import Color
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.actions import generate_playable_actions
+from cle.game_engine.models.enums import ActionPrompt
+from cle.game_engine.models.player import Color
 from playground.game_viewer.app import app
 from playground.game_viewer.commentary.contextualizer import (
     CausalCommentarySession,

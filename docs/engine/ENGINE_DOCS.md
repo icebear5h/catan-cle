@@ -1,10 +1,10 @@
 # Game engine
 
-`game_engine/` contains deterministic Catan rules only. It has no player-policy,
+`cle/game_engine/` contains deterministic Catan rules only. It has no player-policy,
 provider, sandbox, viewer, Flask, or Playwright dependencies.
 
 ```python
-from game_engine import Color, GameEngine
+from cle.game_engine import Color, GameEngine
 
 engine = GameEngine(
     [Color.RED, Color.BLUE, Color.WHITE, Color.ORANGE],

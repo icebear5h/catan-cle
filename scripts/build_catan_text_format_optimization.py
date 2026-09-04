@@ -7,7 +7,7 @@ import argparse
 import json
 from pathlib import Path
 
-from data_pipeline.catan_board_bench.text_format_optimization import (
+from evals.catan_board_bench.text_format_optimization import (
     DEFAULT_OUTPUT_DIR,
     DEFAULT_SOURCE_DIR,
     build_text_format_optimization_probe,

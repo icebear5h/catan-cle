@@ -14,11 +14,11 @@ from typing import Dict, List, Optional, Tuple
 
 from PIL import Image, ImageDraw, ImageFont
 
-from game_engine.models.board import Board
-from game_engine.models.coordinate_system import cube_to_axial
-from game_engine.models.enums import NodeRef, SETTLEMENT, CITY
-from game_engine.models.map import CatanMap, LandTile, Port
-from game_engine.models.player import Color
+from cle.game_engine.models.board import Board
+from cle.game_engine.models.coordinate_system import cube_to_axial
+from cle.game_engine.models.enums import NodeRef, SETTLEMENT, CITY
+from cle.game_engine.models.map import CatanMap, LandTile, Port
+from cle.game_engine.models.player import Color
 
 # --- Colors ---
 

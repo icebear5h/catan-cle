@@ -7,7 +7,7 @@ import argparse
 import json
 from pathlib import Path
 
-from data_pipeline.catan_board_bench.full_graph_format_probe import (
+from evals.catan_board_bench.full_graph_format_probe import (
     DEFAULT_OUTPUT_DIR,
     DEFAULT_SOURCE_DIR,
     build_full_graph_format_probe,

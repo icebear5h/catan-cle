@@ -20,7 +20,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_EXCLUDE_IDS = (
-    ROOT / "data_pipeline/catan_board_bench/datasets/catan_board_bench_100/leakage/benchmark_game_ids.json"
+    ROOT / "evals/catan_board_bench/datasets/catan_board_bench_100/leakage/benchmark_game_ids.json"
 )
 DEFAULT_RAW_REPLAY_DIR = ROOT / "artifacts" / "raw" / "colonist" / "replays"
 DEFAULT_OUTPUT_DIR = ROOT / "artifacts" / "manifests" / "colonist" / "splits"

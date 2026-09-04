@@ -5,8 +5,8 @@ from __future__ import annotations
 import builtins
 from typing import Callable, Iterable
 
-from game_engine.models.enums import Action
-from game_engine.models.player import Color
+from cle.game_engine.models.enums import Action
+from cle.game_engine.models.player import Color
 
 
 class Player:

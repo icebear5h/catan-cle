@@ -11,9 +11,9 @@ from cle.players.contracts import CommunicationChoice, CommunicationMode
 from cle.sandbox import CatanSandbox
 from cle.sandbox.communication import CommunicationOpportunity, ReactionReason
 from cle.traces import SQLiteLiveTraceStore
-from game_engine.events import PlayerEvent
-from game_engine.game import GameEngine
-from game_engine.models.player import Color
+from cle.game_engine.events import PlayerEvent
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.player import Color
 from playground.game_viewer.routes.websocket import build_game_state_snapshot
 from playground.game_viewer.state import ServerState
 

@@ -9,5 +9,5 @@ This directory holds model-training data builders and outputs.
   while a separate harness/UI change owns their paths.
 
 Scrapers and importers live in `data_pipeline/ingestion/`; benchmark code and
-frozen benchmark inputs live in `data_pipeline/catan_board_bench/`. Generated outputs
+frozen benchmark inputs live in `evals/catan_board_bench/`. Generated outputs
 belong under the repository-level `artifacts/` tree.

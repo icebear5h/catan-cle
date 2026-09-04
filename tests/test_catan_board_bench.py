@@ -1,30 +1,30 @@
 import json
 from pathlib import Path
 
-from catan_board_bench.builder import CatanObservationSuite
-from catan_board_bench.hex_direction_probe import (
+from evals.catan_board_bench.builder import CatanObservationSuite
+from evals.catan_board_bench.hex_direction_probe import (
     DIRECTION_ORDER,
     SCREEN_DIRECTIONS,
     UNIT_VECTORS,
     build_probe,
     cube_to_pixel,
 )
-from catan_board_bench.scoring import (
+from evals.catan_board_bench.scoring import (
     PROBE_CATEGORIES,
     normalize_text,
     score_answer,
     select_questions,
 )
-from catan_board_bench.text_representations import (
+from evals.catan_board_bench.text_representations import (
     REPRESENTATION_NAMES,
     fact_digest,
     parse_representation,
     public_board_facts,
     render_representation,
 )
-from game_engine.game import GameEngine
-from game_engine.models.map import NUM_EDGES, NUM_NODES, NUM_TILES
-from game_engine.models.player import Color
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.map import NUM_EDGES, NUM_NODES, NUM_TILES
+from cle.game_engine.models.player import Color
 
 
 def test_public_board_contract_has_complete_atlas_and_no_hidden_hands():
@@ -110,7 +110,7 @@ def test_public_board_qa_rows_are_engine_scored_and_promptable():
 
 
 def test_text_representations_round_trip_one_target_neutral_fact_set():
-    contract_dir = Path("data_pipeline/catan_board_bench/datasets/catan_board_bench_100/contracts")
+    contract_dir = Path("evals/catan_board_bench/datasets/catan_board_bench_100/contracts")
     for sample_index in range(10):
         contract = json.loads((contract_dir / f"sample_{sample_index:03d}.json").read_text())
         facts = public_board_facts(contract)

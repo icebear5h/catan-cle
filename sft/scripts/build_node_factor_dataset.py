@@ -23,8 +23,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from catan_board_bench.annotations import annotation_payload_for_contract
-from catan_board_bench.tokens import (
+from evals.catan_board_bench.annotations import annotation_payload_for_contract
+from evals.catan_board_bench.tokens import (
     atlas_metadata,
     building_token,
     canonical_edge,
@@ -36,8 +36,8 @@ from catan_board_bench.tokens import (
     resource_token,
     tile_token,
 )
-from game_engine.models.enums import CITY, SETTLEMENT
-from game_engine.models.player import Color
+from cle.game_engine.models.enums import CITY, SETTLEMENT
+from cle.game_engine.models.player import Color
 from sft.paths import GENERATED_SFT_ROOT
 
 

@@ -4,11 +4,11 @@ from cle.replay.runtime.access import get_game_engine
 import time
 import traceback
 
-from game_engine.models.actions import Action, generate_playable_actions
-from game_engine.models.enums import ActionType, ActionPrompt, ROAD
-from game_engine.state import ensure_trade_window
-from game_engine.models.decks import ROAD_COST_FREQDECK, freqdeck_add
-from game_engine.trading import TradeCandidate, TradeOffer, TradeOfferStatus
+from cle.game_engine.models.actions import Action, generate_playable_actions
+from cle.game_engine.models.enums import ActionType, ActionPrompt, ROAD
+from cle.game_engine.state import ensure_trade_window
+from cle.game_engine.models.decks import ROAD_COST_FREQDECK, freqdeck_add
+from cle.game_engine.trading import TradeCandidate, TradeOffer, TradeOfferStatus
 
 from cle.replay.colonist.helpers import (
     format_resources, format_trade, get_player_color_name,

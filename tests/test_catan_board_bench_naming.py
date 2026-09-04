@@ -1,3 +1,4 @@
+import importlib.util
 import json
 import subprocess
 import sys
@@ -6,38 +7,48 @@ from types import ModuleType, SimpleNamespace
 
 from flask import Flask
 
-from data_pipeline.catan_board_bench.eval.benchmark import (
+from evals.catan_board_bench.benchmark import (
     DEFAULT_BENCH_DIR,
     DEFAULT_PROBE_DIR,
 )
-from data_pipeline.catan_board_bench.eval.metadata import get_benchmark_metadata
+from evals.catan_board_bench.metadata import get_benchmark_metadata
+from evals.catan_board_bench.paths import (
+    canonical_benchmark_reference,
+    resolve_benchmark_reference,
+)
 from playground.game_viewer.routes.bench import bench_bp
-from scripts.verify_catan_board_bench_rename import DEFAULT_MANIFEST, verify_rename
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_catan_board_bench_rename_receipt():
-    assert verify_rename(DEFAULT_MANIFEST) == {
-        "groups": 9,
-        "files": 993,
-        "bytes": 60_104_444,
-        "raw_payloads": 60,
-        "content_changed_files": 205,
-    }
-
-
 def test_canonical_benchmark_paths_use_new_namespace():
     assert DEFAULT_BENCH_DIR == (
-        PROJECT_ROOT / "data_pipeline" / "catan_board_bench" / "datasets" / "catan_board_bench_100"
+        PROJECT_ROOT / "evals" / "catan_board_bench" / "datasets" / "catan_board_bench_100"
     )
     assert DEFAULT_PROBE_DIR == (
         PROJECT_ROOT / "artifacts" / "generated" / "catan_board_bench" / "piece_recognition"
     )
-    old_slug = "catan" + "bench"
-    assert not (PROJECT_ROOT / old_slug).exists()
-    assert not (PROJECT_ROOT / "data_pipeline" / old_slug).exists()
+    assert not (PROJECT_ROOT / "catan_board_bench").exists()
+    assert not (PROJECT_ROOT / "data_pipeline" / "catan_board_bench").exists()
+    assert not (PROJECT_ROOT / "catan-board-bench-ui").exists()
+    assert (PROJECT_ROOT / "evals" / "catan_board_bench_ui" / "package.json").is_file()
+    assert importlib.util.find_spec("catan_board_bench") is None
+    assert importlib.util.find_spec("data_pipeline.catan_board_bench") is None
+
+
+def test_frozen_paths_resolve_without_a_compatibility_package():
+    historical = Path(
+        "data_pipeline/catan_board_bench/datasets/"
+        "catan_board_bench_100/contracts/sample_000.json"
+    )
+    canonical = Path(
+        "evals/catan_board_bench/datasets/"
+        "catan_board_bench_100/contracts/sample_000.json"
+    )
+
+    assert canonical_benchmark_reference(historical) == canonical
+    assert resolve_benchmark_reference(historical) == PROJECT_ROOT / canonical
 
 
 def test_openbench_metadata_uses_public_name(monkeypatch):
@@ -54,7 +65,7 @@ def test_openbench_metadata_uses_public_name(monkeypatch):
     metadata = get_benchmark_metadata()
 
     assert metadata.name == "CatanBoardBench"
-    assert metadata.module_path == "catan_board_bench.eval.benchmark"
+    assert metadata.module_path == "evals.catan_board_bench.benchmark"
     assert metadata.function_name == "catan_board_bench"
     assert "visual-grounding" in metadata.tags
 

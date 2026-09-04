@@ -11,7 +11,7 @@ from cle.harness.reasoning import (
     reasoning_token_count,
 )
 from cle.sandbox.contracts import SandboxStepResult
-from game_engine.json import GameEncoder
+from cle.game_engine.json import GameEncoder
 
 
 def build_live_reasoning_traces(

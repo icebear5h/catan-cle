@@ -1,7 +1,7 @@
 from types import SimpleNamespace
 
-from game_engine.models.enums import Action, ActionType
-from game_engine.models.player import Color
+from cle.game_engine.models.enums import Action, ActionType
+from cle.game_engine.models.player import Color
 from evals.replay_action_diff import (
     build_comparisons,
     canonicalize_policy_action_order,

@@ -4,8 +4,8 @@ import pytest
 
 from cle.players.baseline import FirstLegalPlayer
 from cle.sandbox import CatanSandbox, SandboxPool
-from game_engine.game import GameEngine
-from game_engine.models.player import Color
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.player import Color
 
 
 COLORS = (Color.RED, Color.BLUE, Color.WHITE, Color.ORANGE)

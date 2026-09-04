@@ -10,6 +10,10 @@ from typing import Any
 
 from groq import AsyncGroq
 
+from cle.harness.board_surface import (
+    openai_messages_with_board,
+    sanitize_provider_payload,
+)
 from cle.harness.models import ModelRequest, ModelResponse
 
 
@@ -20,6 +24,7 @@ class GroqConfig:
     max_tokens: int = 2048
     timeout_seconds: float = 120.0
     max_retries: int = 2
+    allow_image_input: bool = False
 
 
 class GroqTransport:
@@ -46,10 +51,11 @@ class GroqTransport:
             "model": self.config.model,
             "max_tokens": self.config.max_tokens,
             "temperature": self.config.temperature,
-            "messages": [
-                {"role": message.role, "content": message.content}
-                for message in request.messages
-            ],
+            "messages": openai_messages_with_board(
+                request.messages,
+                request.board_presentation,
+                allow_image_input=self.config.allow_image_input,
+            ),
         }
         response = await self.client.chat.completions.create(**payload)
         usage = response.usage
@@ -85,6 +91,12 @@ class GroqTransport:
                 "native_finish_reason",
                 None,
             ),
-            provider_request_payload=payload,
-            provider_response_payload=provider_payload,
+            provider_request_payload=sanitize_provider_payload(
+                payload,
+                request.board_presentation,
+            ),
+            provider_response_payload=sanitize_provider_payload(
+                provider_payload,
+                request.board_presentation,
+            ),
         )

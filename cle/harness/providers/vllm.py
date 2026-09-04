@@ -10,6 +10,10 @@ from typing import Any
 
 import httpx
 
+from cle.harness.board_surface import (
+    openai_messages_with_board,
+    sanitize_provider_payload,
+)
 from cle.harness.models import ModelRequest, ModelResponse
 
 
@@ -19,9 +23,10 @@ class VLLMConfig:
     base_url: str = "http://127.0.0.1:8000/v1"
     api_key: str = "EMPTY"
     temperature: float = 0.3
-    max_tokens: int = 2048
+    max_tokens: int | None = 2048
     timeout_seconds: float = 120.0
     max_retries: int = 2
+    allow_image_input: bool = False
 
 
 class VLLMTransport:
@@ -36,13 +41,15 @@ class VLLMTransport:
         started_at = time.monotonic()
         payload = {
             "model": self.config.model,
-            "messages": [
-                {"role": message.role, "content": message.content}
-                for message in request.messages
-            ],
+            "messages": openai_messages_with_board(
+                request.messages,
+                request.board_presentation,
+                allow_image_input=self.config.allow_image_input,
+            ),
             "temperature": self.config.temperature,
-            "max_tokens": self.config.max_tokens,
         }
+        if self.config.max_tokens is not None:
+            payload["max_tokens"] = self.config.max_tokens
         response = None
         for attempt in range(self.config.max_retries + 1):
             try:
@@ -106,8 +113,14 @@ class VLLMTransport:
             provider_response_id=provider_response_id,
             provider_request_id=provider_request_id,
             provider_native_finish_reason=provider_native_finish_reason,
-            provider_request_payload=payload,
-            provider_response_payload=data,
+            provider_request_payload=sanitize_provider_payload(
+                payload,
+                request.board_presentation,
+            ),
+            provider_response_payload=sanitize_provider_payload(
+                data,
+                request.board_presentation,
+            ),
         )
 
     async def aclose(self) -> None:

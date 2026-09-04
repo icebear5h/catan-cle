@@ -56,6 +56,7 @@ phase_guidance:
   initial_settlement_1: |-
     Phase: INITIAL PLACEMENT - 1st Settlement
     - You do NOT gain starting resources from the 1st settlement.
+    - Your 2nd initial settlement is chosen independently from any legal vertex; the 1st road does not connect to or enable it.
     - Prioritize high total pips, strong dice numbers (6/8 best), and resource diversity.
     - Avoid over-committing to a single resource unless a port plan is obvious.
 
@@ -84,8 +85,9 @@ phase_guidance:
     <rationale>: just state which node you chose. No elaboration needed.
   initial_road: |-
     Phase: INITIAL PLACEMENT - Road
-    - Place the road to preserve future settlement spots and flexibility.
-    - Prefer roads that lead to multiple viable expansion nodes.
+    - This road does not constrain, connect to, reserve, or enable your 2nd initial settlement; that settlement is independently placed at any legal vertex.
+    - Place this road for possible expansion after setup.
+    - Prefer roads that lead to multiple viable future expansion nodes.
 
     <rationale>: just state which road you chose. No elaboration needed.
   initial_placement: |-

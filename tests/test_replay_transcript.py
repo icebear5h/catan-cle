@@ -304,6 +304,7 @@ def test_load_route_preserves_raw_loader_and_adds_curated_pair():
         assert "replay_staging/242781000.json" in paired_payload["file"]
 
         state_payload = client.get("/api/state").get_json()
+        assert state_payload["live_trace_game_id"] is None
         transcript = state_payload["replay"]["paired_transcript"]
         assert transcript["replay_index"] == 0
         assert transcript["window_end_s"] == 94.0

@@ -25,9 +25,9 @@ is adding the controls used by the stronger VLM benchmarks:
 
 Current implementation:
 
-- OpenBench/Inspect task: `data_pipeline/catan_board_bench/eval/benchmark.py`
-- Questions: `data_pipeline/catan_board_bench/datasets/catan_board_bench_100/questions/`
-- Rendered contracts/images: `data_pipeline/catan_board_bench/datasets/catan_board_bench_100/`
+- OpenBench/Inspect task: `evals/catan_board_bench/eval/benchmark.py`
+- Questions: `evals/catan_board_bench/datasets/catan_board_bench_100/questions/`
+- Rendered contracts/images: `evals/catan_board_bench/datasets/catan_board_bench_100/`
 - Main result table: `reports/catan_board_bench/2026-05-13-small-vlm-visual-smoke.md`
 
 Current suites:

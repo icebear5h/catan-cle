@@ -21,11 +21,11 @@ from cle.sandbox.contracts import (
     SandboxView,
 )
 from cle.sandbox.decision import build_decision_context
-from game_engine.events import GameEvent
-from game_engine.game import GameEngine
-from game_engine.models.actions import trade_response_actions
-from game_engine.models.enums import Action, ActionType
-from game_engine.models.player import Color
+from cle.game_engine.events import GameEvent
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.actions import trade_response_actions
+from cle.game_engine.models.enums import Action, ActionType
+from cle.game_engine.models.player import Color
 
 
 class SandboxError(RuntimeError):
@@ -41,7 +41,19 @@ class TerminalSandboxError(SandboxError):
 
 
 class PlayerResponseError(SandboxError):
-    pass
+    def __init__(
+        self,
+        player: Color,
+        attempts: tuple[PlayerAttempt, ...],
+        validation_error: str,
+    ) -> None:
+        self.player = player
+        self.attempts = attempts
+        self.validation_error = validation_error
+        super().__init__(
+            f"Player {player} failed to choose a valid action after "
+            f"{len(attempts)} attempts"
+        )
 
 
 class CatanSandbox:
@@ -132,16 +144,29 @@ class CatanSandbox:
         if barrier_contexts:
             return await self._step_barrier(barrier_contexts)
 
-        pre_messages = await self._run_communication(
-            self.communication_policy.pre_action(self.game_engine),
-            max_rounds=1,
+        playable_actions = tuple(self.game_engine.state.playable_actions)
+        forced_roll = (
+            len(playable_actions) == 1
+            and playable_actions[0].action_type == ActionType.ROLL
         )
+        pre_messages = ()
+        if not forced_roll:
+            pre_messages = await self._run_communication(
+                self.communication_policy.pre_action(self.game_engine),
+                max_rounds=1,
+            )
+
         context = self.decision_context(self.current_actor())
         player = self.players.get(context.actor)
         if player is None:
             raise MissingPlayerError(f"No player is registered for {context.actor}")
 
-        action, attempt = await self._get_action_from_player(player, context)
+        if forced_roll:
+            action = context.legal_actions[0]
+            attempt = None
+        else:
+            action, attempt = await self._get_action_from_player(player, context)
+
         transition = self.game_engine.step(action)
         post_messages = await self._run_communication(
             self.communication_policy.after_events(
@@ -152,12 +177,13 @@ class CatanSandbox:
             max_rounds=self.game_engine.communication_limits.max_general_reaction_rounds,
         )
         result = SandboxStepResult(
-            contexts=(context,),
-            attempts=(attempt,),
+            contexts=() if attempt is None else (context,),
+            attempts=() if attempt is None else (attempt,),
             transitions=(transition,),
             messages=(*pre_messages, *post_messages),
         )
-        player.accept(attempt, result)
+        if attempt is not None:
+            player.accept(attempt, result)
         return result
 
     async def _step_barrier(
@@ -315,16 +341,19 @@ class CatanSandbox:
         context: PlayerContext,
     ) -> tuple[Action, PlayerAttempt]:
         feedback = None
+        failed_attempts = []
         for _ in range(self.retry_policy.max_decision_attempts):
             attempt = await self._prompt_player(player, context, feedback)
             if attempt.choice is None:
                 self.decision_trace.append(attempt)
+                failed_attempts.append(attempt)
                 feedback = attempt.validation_error or "Return one valid action index."
                 continue
             try:
                 action = context.action_at(attempt.choice.action_index)
             except IndexError as exc:
                 self.decision_trace.append(attempt)
+                failed_attempts.append(attempt)
                 feedback = str(exc)
                 continue
             if (
@@ -334,6 +363,7 @@ class CatanSandbox:
             ):
                 if attempt.choice.trade_offer is None:
                     self.decision_trace.append(attempt)
+                    failed_attempts.append(attempt)
                     feedback = "Selected trade action requires an exact trade_offer."
                     continue
                 action = Action(
@@ -343,6 +373,7 @@ class CatanSandbox:
                 )
             if not self.game_engine.is_action_valid(action):
                 self.decision_trace.append(attempt)
+                failed_attempts.append(attempt)
                 feedback = (
                     "The selected action parameters are no longer legal or "
                     "affordable. Choose again from the current context."
@@ -350,8 +381,9 @@ class CatanSandbox:
                 continue
             return action, attempt
         raise PlayerResponseError(
-            f"Player {player.color} failed to choose a valid action after "
-            f"{self.retry_policy.max_decision_attempts} attempts"
+            player.color,
+            tuple(failed_attempts),
+            feedback or "Return one valid action index.",
         )
 
     def snapshot(self) -> SandboxSnapshot:

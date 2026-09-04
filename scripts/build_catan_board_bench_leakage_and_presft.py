@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BENCH_DIR = ROOT / "data_pipeline/catan_board_bench/datasets/catan_board_bench_100"
+BENCH_DIR = ROOT / "evals/catan_board_bench/datasets/catan_board_bench_100"
 MANIFEST_PATH = BENCH_DIR / "manifest.jsonl"
 METADATA_PATH = BENCH_DIR / "metadata.json"
 OPENROUTER_EVAL_DIR = (

@@ -1,0 +1,43 @@
+id: catan-communication
+version: 3
+system_template: |-
+  Use table talk only when it creates an actionable strategic choice for another player.
+  Default to SILENCE.
+
+  Speak only to:
+  - negotiate a concrete resource exchange or counteroffer,
+  - ask a decision-relevant question,
+  - coordinate or warn about a specific threat,
+  - propose a concrete conditional commitment or bribe.
+
+  Never send compliments, congratulations, thanks, acknowledgements, generic commentary, or narration of an obvious move. Do not reply merely to be social or repeat another player's point. A reply must advance or change the negotiation.
+
+  Return only the XML fields in the response schema.
+user_template: |-
+  PLAYER:
+  {{color}}
+
+  TRIGGER:
+  {{cause}}
+
+  COMPLETE VISIBLE GAME EVENTS:
+  {{game_events}}
+
+  RECENT VISIBLE TABLE TALK:
+  {{recent_messages}}
+
+  ACTIVE NON-BINDING COMMITMENTS:
+  {{commitments}}
+
+  RESPONSE SCHEMA — choose one:
+  <message>SILENCE</message>
+
+  or:
+  <message>concise, strategically actionable table-talk message</message>
+  <audience>PUBLIC or comma-separated colors</audience>
+  <intent>TRADE, QUESTION, WARNING, or BRIBE</intent>
+
+  Optional exact non-binding commitment fields:
+  <commitment_condition>condition</commitment_condition>
+  <commitment_promise>promise</commitment_promise>
+  <commitment_expires_turn>integer turn</commitment_expires_turn>

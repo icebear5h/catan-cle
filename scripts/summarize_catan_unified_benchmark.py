@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Sequence
 
-from data_pipeline.catan_board_bench.ascii_variations import score_strict_json_answer
+from evals.catan_board_bench.ascii_variations import score_strict_json_answer
 from scripts.render_catan_strict_vision_probe import json_digest, read_jsonl, write_json
 from scripts.summarize_catan_board_bench_runs import (
     load_run,

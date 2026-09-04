@@ -5,7 +5,7 @@ from collections import Counter
 from pathlib import Path
 from types import SimpleNamespace
 
-from data_pipeline.catan_board_bench.ascii_variations import (
+from evals.catan_board_bench.ascii_variations import (
     ASCII_VARIANTS,
     build_ascii_variation_dataset,
     full_fact_digest,
@@ -23,7 +23,7 @@ from scripts.eval_catan_board_bench_ascii_variations import (
 )
 
 
-CONTRACT_DIR = Path("data_pipeline/catan_board_bench/datasets/catan_board_bench_100/contracts")
+CONTRACT_DIR = Path("evals/catan_board_bench/datasets/catan_board_bench_100/contracts")
 
 
 def test_full_graph_variants_round_trip_one_information_set() -> None:

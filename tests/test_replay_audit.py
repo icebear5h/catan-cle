@@ -1,7 +1,7 @@
 from types import SimpleNamespace
 
-from game_engine.game import GameEngine
-from game_engine.models.player import Color
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.player import Color
 from cle.replay.runtime.audit import (
     colonist_victory_points,
     expected_final_state_by_engine_index,

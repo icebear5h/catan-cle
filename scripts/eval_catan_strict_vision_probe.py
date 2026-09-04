@@ -19,12 +19,12 @@ from typing import Any, Sequence
 
 from dotenv import load_dotenv
 
-from data_pipeline.catan_board_bench.ascii_variations import (
+from evals.catan_board_bench.ascii_variations import (
     STRICT_SCORER_VERSION,
     score_strict_json_answer,
     strict_scorer_digest,
 )
-from data_pipeline.catan_board_bench.tokens import atlas_metadata
+from evals.catan_board_bench.tokens import atlas_metadata
 from scripts.eval_catan_board_bench_openrouter import call_novita
 from scripts.render_catan_strict_vision_probe import (
     DEFAULT_OUTPUT_DIR as DEFAULT_DATASET_DIR,

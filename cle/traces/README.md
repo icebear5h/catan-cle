@@ -16,9 +16,11 @@ Every completed live step records:
 - complete perspective-projected player contexts and exact legal menus;
 - canonical transitions, public/private event overlays, and table messages;
 - accepted and rejected attempts with validation errors;
-- exact assembled model messages and parsed choices;
+- exact assembled model messages, typed board-presentation provenance, and
+  parsed choices;
 - normalized reasoning, usage, finish reasons, and provider IDs;
-- provider request/response bodies, excluding authorization headers/secrets;
+- provider request/response bodies, excluding authorization headers/secrets and
+  replacing inline board-image data with content-addressed metadata;
 - the JSON-safe public viewer state and a restorable sandbox snapshot.
 
 Inspection and live-resume endpoints:
@@ -34,7 +36,7 @@ POST  /api/live-traces/<game_id>/load
 The saved-games bar lists optional names alongside stable game IDs. The
 browse-only checkpoint navigator renders a selected historical public board and
 all model calls for that step—including rejected decisions, communication,
-exact messages, rationale, and provider-native reasoning—without mutating the
+exact messages, selected actions, and provider-native reasoning—without mutating the
 live sandbox. Loading restores the latest durable engine/player checkpoint,
 including model-session continuity, and subsequent steps append to the same
 trace. The live Start and Step responses also return `trace_game_id`; Step

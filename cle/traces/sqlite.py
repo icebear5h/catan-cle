@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import io
 import json
 import pickle
 import sqlite3
@@ -11,9 +12,13 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
-from cle.players.contracts import PlayerAttempt, PlayerContext
+from cle.harness.board_surface import (
+    board_presentation_payload,
+    sanitize_provider_payload,
+)
+from cle.players.contracts import PlayerAttempt, PlayerChoice, PlayerContext
 from cle.sandbox.contracts import SandboxSnapshot, SandboxStepResult
-from game_engine.json import GameEncoder
+from cle.game_engine.json import GameEncoder
 
 SCHEMA_VERSION = 3
 DEFAULT_TRACE_PATH = Path(".cle/live_traces.sqlite3")
@@ -65,6 +70,7 @@ def _jsonable(value: Any) -> Any:
         return {
             field.name: _jsonable(getattr(value, field.name))
             for field in fields(value)
+            if not isinstance(value, PlayerChoice) or field.name != "rationale"
         }
     try:
         encoded = GameEncoder().default(value)
@@ -84,8 +90,17 @@ def _json_text(value: Any) -> str:
     )
 
 
+class _SnapshotUnpickler(pickle.Unpickler):
+    """Load trusted local snapshots written before the engine namespace move."""
+
+    def find_class(self, module: str, name: str) -> Any:
+        if module == "game_engine" or module.startswith("game_engine."):
+            module = f"cle.{module}"
+        return super().find_class(module, name)
+
+
 def _decode_snapshot(payload: bytes) -> SandboxSnapshot:
-    snapshot = pickle.loads(payload)
+    snapshot = _SnapshotUnpickler(io.BytesIO(payload)).load()
     if not isinstance(snapshot, SandboxSnapshot):
         raise TypeError("Stored live trace snapshot has an invalid type")
     return snapshot
@@ -137,10 +152,28 @@ def _request_payload(request: Any) -> dict[str, Any] | None:
             {"role": message.role, "content": message.content}
             for message in request.messages
         ],
+        "components": [
+            {
+                "id": component.id,
+                "channel": component.channel,
+                "template": component.template,
+                "value": component.value,
+                "rendered": component.rendered,
+                "variables": dict(component.variables),
+            }
+            for component in getattr(request, "components", ())
+        ],
+        "board_presentation": board_presentation_payload(
+            getattr(request, "board_presentation", None),
+            include_text_content=True,
+        ),
     }
 
 
-def _response_payload(response: Any) -> dict[str, Any] | None:
+def _response_payload(
+    response: Any,
+    board_presentation: Any = None,
+) -> dict[str, Any] | None:
     if response is None:
         return None
     return {
@@ -155,8 +188,14 @@ def _response_payload(response: Any) -> dict[str, Any] | None:
         "provider_response_id": response.provider_response_id,
         "provider_request_id": response.provider_request_id,
         "provider_native_finish_reason": response.provider_native_finish_reason,
-        "provider_request_payload": response.provider_request_payload,
-        "provider_response_payload": response.provider_response_payload,
+        "provider_request_payload": sanitize_provider_payload(
+            response.provider_request_payload,
+            board_presentation,
+        ),
+        "provider_response_payload": sanitize_provider_payload(
+            response.provider_response_payload,
+            board_presentation,
+        ),
     }
 
 
@@ -172,7 +211,10 @@ def _attempt_payload(
         "validation_error": attempt.validation_error,
         "choice": attempt.choice,
         "model_request": _request_payload(attempt.model_request),
-        "model_response": _response_payload(attempt.model_response),
+        "model_response": _response_payload(
+            attempt.model_response,
+            getattr(attempt.model_request, "board_presentation", None),
+        ),
     }
 
 
@@ -198,7 +240,10 @@ def _communication_payload(record: Any) -> dict[str, Any]:
             "commitment": choice.commitment,
         },
         "model_request": _request_payload(request),
-        "model_response": _response_payload(choice.model_response),
+        "model_response": _response_payload(
+            choice.model_response,
+            getattr(request, "board_presentation", None),
+        ),
         "opportunity": opportunity,
     }
 

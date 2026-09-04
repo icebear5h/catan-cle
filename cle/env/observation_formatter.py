@@ -7,7 +7,7 @@ following the FLE (Factorio Learning Environment) pattern.
 
 from dataclasses import dataclass
 from typing import List, Dict, Any, Optional
-from game_engine.state_functions import (
+from cle.game_engine.state_functions import (
     get_player_freqdeck,
     get_player_buildings,
     get_visible_victory_points,
@@ -15,7 +15,7 @@ from game_engine.state_functions import (
     player_key,
     get_longest_road_length,
 )
-from game_engine.models.enums import (
+from cle.game_engine.models.enums import (
     RESOURCES,
     SETTLEMENT,
     CITY,
@@ -23,8 +23,8 @@ from game_engine.models.enums import (
     Action,
     ActionType,
 )
-from game_engine.models.player import Color
-from game_engine.trading import TradeCandidate, TradeOffer
+from cle.game_engine.models.player import Color
+from cle.game_engine.trading import TradeCandidate, TradeOffer
 
 
 @dataclass
@@ -56,6 +56,7 @@ class CatanObservation:
     # Game state
     current_turn: int
     current_phase: str  # initial_placement, main_game, discarding, moving_robber
+    turn_order: tuple[Color, ...]
     last_dice_roll: Optional[int]
     robber_position: Any  # coordinate
 
@@ -118,6 +119,7 @@ class CatanObservationFormatter:
         obs: CatanObservation,
         *,
         include_legal_actions: bool = True,
+        include_initial_placement_order: bool = True,
     ) -> FormattedObservation:
         """
         Convert structured observation to semantic text.
@@ -137,7 +139,10 @@ class CatanObservationFormatter:
         valid_actions = (
             self._format_valid_actions(obs) if include_legal_actions else ""
         )
-        strategic_context = self._format_strategic_context(obs)
+        strategic_context = self._format_strategic_context(
+            obs,
+            include_initial_placement_order=include_initial_placement_order,
+        )
         trade_context = self._format_trade_context(obs)
         events_section = self._format_events(obs)
 
@@ -246,33 +251,11 @@ class CatanObservationFormatter:
 
         return " | ".join(parts) if parts else "no production"
 
-    def _check_nearby_opponents(self, node_id: int, obs: CatanObservation) -> str:
-        """Check if any opponent settlements/cities are near this node."""
-        nearby = []
-
-        # Check opponent settlements
-        for color, settlements in obs.opponent_settlements.items():
-            for settlement_node in settlements:
-                # In Catan, settlements must be at least 2 edges apart
-                # For simplicity, we'll check if they're in the same local area
-                if abs(settlement_node - node_id) <= 5:  # Rough proximity check
-                    color_str = color.name if hasattr(color, 'name') else str(color)
-                    nearby.append(f"{color_str} settlement")
-
-        # Check opponent cities
-        for color, cities in obs.opponent_cities.items():
-            for city_node in cities:
-                if abs(city_node - node_id) <= 5:
-                    color_str = color.name if hasattr(color, 'name') else str(color)
-                    nearby.append(f"{color_str} city")
-
-        return ", ".join(nearby) if nearby else ""
-
     def _number_to_pips(self, number: int) -> int:
-        """Convert dice number to pips (dots showing probability)."""
+        """Convert a production number to its two-dice probability dots."""
         pips_map = {
             2: 1, 3: 2, 4: 3, 5: 4, 6: 5,
-            8: 5, 9: 4, 10: 3, 11: 2, 12: 1
+            8: 5, 9: 4, 10: 3, 11: 2, 12: 1,
         }
         return pips_map.get(number, 0)
 
@@ -398,7 +381,7 @@ class CatanObservationFormatter:
         return "\n".join(lines)
 
     def _describe_node(self, node_id: int, obs: CatanObservation) -> str:
-        """Describe a node by its surrounding tiles with dice numbers AND pips."""
+        """Describe a node with both dice numbers and production pips."""
         if node_id not in obs.board_map.adjacent_tiles:
             return f"node {node_id}"
 
@@ -435,9 +418,6 @@ class CatanObservationFormatter:
 
         if at == ActionType.BUILD_SETTLEMENT:
             desc = self._describe_node(action.value, obs)
-            nearby = self._check_nearby_opponents(action.value, obs)
-            if nearby:
-                return f"Build settlement at {desc} | Near: {nearby}"
             return f"Build settlement at {desc}"
 
         if at == ActionType.BUILD_CITY:
@@ -805,7 +785,12 @@ class CatanObservationFormatter:
 
         return "\n".join(lines)
 
-    def _format_strategic_context(self, obs: CatanObservation) -> str:
+    def _format_strategic_context(
+        self,
+        obs: CatanObservation,
+        *,
+        include_initial_placement_order: bool,
+    ) -> str:
         """Format phase and score info."""
         lines = []
         lines.append(f"Phase: {obs.current_phase}")
@@ -813,6 +798,32 @@ class CatanObservationFormatter:
         if obs.current_phase == "initial_placement":
             placed = len(obs.my_settlements)
             lines.append(f"Settlements placed: {placed}/2")
+
+            if include_initial_placement_order:
+                first_round = tuple(obs.turn_order)
+                if not first_round or obs.my_color not in first_round:
+                    raise ValueError(
+                        "Initial-placement observation has an invalid turn order"
+                    )
+                second_round = tuple(reversed(first_round))
+                first_names = " -> ".join(
+                    self._color_name(color) for color in first_round
+                )
+                second_names = " -> ".join(
+                    self._color_name(color) for color in second_round
+                )
+                player_count = len(first_round)
+                lines.extend(
+                    (
+                        "Initial placement order (each settlement is immediately "
+                        "followed by that player's road):",
+                        f"  Round 1 (first settlement + road): {first_names}",
+                        f"  Round 2 (second settlement + road): {second_names}",
+                        "  Your positions: "
+                        f"round 1 = {first_round.index(obs.my_color) + 1}/{player_count}; "
+                        f"round 2 = {second_round.index(obs.my_color) + 1}/{player_count}.",
+                    )
+                )
 
         lines.append(f"Your VP: {obs.my_vp}/10")
 
@@ -922,6 +933,7 @@ def create_observation_from_state(
         opponent_dev_card_counts=opponent_dev_card_counts,
         current_turn=game_state.num_turns,
         current_phase=phase,
+        turn_order=tuple(game_state.colors),
         last_dice_roll=None,  # TODO: Track last dice roll
         robber_position=game_state.board.robber_coordinate,
         my_vp=get_visible_victory_points(game_state, player_color),

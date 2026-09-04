@@ -35,8 +35,8 @@ from evals.decision_buckets import (
     decision_state_features,
     load_decision_bucket_suite,
 )
-from game_engine.models.actions import generate_playable_actions
-from game_engine.models.enums import RESOURCES
+from cle.game_engine.models.actions import generate_playable_actions
+from cle.game_engine.models.enums import RESOURCES
 from playground.game_viewer.app import app
 from cle.replay.runtime.action_matcher import _colonist_xy_to_engine_coord
 from cle.replay.runtime.step_executor import (

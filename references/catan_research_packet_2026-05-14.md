@@ -914,7 +914,7 @@ Evaluation:
 
 1. Read the five VLM eval papers and update CatanBoardBench categories into a formal
    capability taxonomy.
-2. Add no-image and atlas-only controls to `data_pipeline/catan_board_bench/eval`.
+2. Add no-image and atlas-only controls to `evals/catan_board_bench/eval`.
 3. Generate a fresh non-benchmark game split for SFT and save game IDs.
 4. Build Phase 0 topology data at 2k and 10k rows.
 5. Run embeddings+lm_head vs LoRA smoke on Phase 0.

@@ -247,7 +247,7 @@ const RESOURCE_EMOJIS = {
 - Full docs: [GAME_STATE_DOCS.md](../engine/GAME_STATE_DOCS.md)
 - Example JSON: [example_game_state.json](../../example_game_state.json)
 - Flask server: `cle/eval/game_viewer_server.py`
-- Game engine: `game_engine/`
+- Game engine: `cle/game_engine/`
 
 ## Test the Server
 

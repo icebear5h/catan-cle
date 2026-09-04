@@ -5,17 +5,16 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 
-from game_engine.events import GameEvent, PlayerEvent, project_event
-from game_engine.game import GameEngine
-from game_engine.models.enums import ActionType
-from game_engine.models.player import Color
+from cle.game_engine.events import GameEvent, PlayerEvent, project_event
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.enums import ActionType
+from cle.game_engine.models.player import Color
 
 
 class ReactionReason(str, Enum):
     PRE_ACTION = "pre_action"
     TRADE = "trade"
     ROBBER = "robber"
-    DIRECT_MESSAGE = "direct_message"
     MAJOR_BUILD = "major_build"
     TURN_CHANGE = "turn_change"
 
@@ -103,8 +102,6 @@ class CommunicationPolicy:
         return tuple(opportunities)
 
     def _reason(self, event: GameEvent) -> ReactionReason | None:
-        if event.event_type == "MESSAGE_SENT":
-            return ReactionReason.DIRECT_MESSAGE
         if event.event_type in self._TRADE_TYPES:
             return ReactionReason.TRADE
         if event.event_type in self._ROBBER_TYPES:
@@ -122,10 +119,4 @@ class CommunicationPolicy:
 
     @staticmethod
     def _recipients(engine: GameEngine, event: GameEvent) -> tuple[Color, ...]:
-        if event.event_type == "MESSAGE_SENT":
-            payload = event.public_payload
-            if payload is None and event.private_overlays:
-                payload = event.private_overlays[0][1]
-            audience = tuple((payload or {}).get("audience", ()))
-            return tuple(color for color in audience if color != event.actor)
         return tuple(color for color in engine.state.colors if color != event.actor)

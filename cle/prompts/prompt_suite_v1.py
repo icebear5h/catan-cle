@@ -11,7 +11,7 @@ This version focuses on:
 
 import re
 from .base import PromptSuite, PromptContext
-from game_engine.models.enums import ActionType
+from cle.game_engine.models.enums import ActionType
 
 
 class PromptSuiteV1(PromptSuite):

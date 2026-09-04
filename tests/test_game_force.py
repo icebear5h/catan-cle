@@ -1,9 +1,9 @@
 import pytest
 
-from game_engine.game import GameEngine
-from game_engine.models.enums import WOOD, Action, ActionType
-from game_engine.models.player import Color
-from game_engine.state import apply_action
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.enums import WOOD, Action, ActionType
+from cle.game_engine.models.player import Color
+from cle.game_engine.state import apply_action
 
 
 def make_game():

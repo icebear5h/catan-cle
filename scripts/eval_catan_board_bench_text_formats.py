@@ -17,13 +17,13 @@ from typing import Any, Dict, Sequence
 import httpx
 from dotenv import load_dotenv
 
-from catan_board_bench.scoring import (
+from evals.catan_board_bench.scoring import (
     VISUAL_CATEGORIES,
     score_answer,
     select_questions,
     sentinel_hint,
 )
-from catan_board_bench.text_representations import (
+from evals.catan_board_bench.text_representations import (
     REPRESENTATION_NAMES,
     fact_digest,
     public_board_facts,
@@ -33,7 +33,7 @@ from catan_board_bench.text_representations import (
 
 load_dotenv()
 
-BENCH_DIR = Path("data_pipeline/catan_board_bench/datasets/catan_board_bench_100")
+BENCH_DIR = Path("evals/catan_board_bench/datasets/catan_board_bench_100")
 QUESTION_DIR = BENCH_DIR / "questions"
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 SYSTEM_PROMPT = """You are answering engine-scored questions about an authoritative public Catan board state encoded as text.

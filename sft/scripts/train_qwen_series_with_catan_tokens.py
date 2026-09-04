@@ -12,7 +12,7 @@ import importlib
 import sys
 from typing import Any
 
-from data_pipeline.catan_board_bench.tokens import add_tokens_to_tokenizer, added_tokens
+from evals.catan_board_bench.tokens import add_tokens_to_tokenizer, added_tokens
 
 
 def _arg_value(name: str, default: str | None = None) -> str | None:

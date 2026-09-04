@@ -42,7 +42,7 @@ once:
 
 ## What is fixed and what varies in this repository
 
-The base topology in `game_engine/models/map.py` contains:
+The base topology in `cle/game_engine/models/map.py` contains:
 
 - 19 land tile slots;
 - 54 playable corner/node slots;
@@ -94,9 +94,9 @@ rule that is absent from generation.
 
 Relevant files:
 
-- `game_engine/models/map.py`
-- `game_engine/models/board.py`
-- `game_engine/models/coordinate_system.py`
+- `cle/game_engine/models/map.py`
+- `cle/game_engine/models/board.py`
+- `cle/game_engine/models/coordinate_system.py`
 
 The engine already has the right semantic decomposition: land faces, graph
 vertices, graph edges, ports, cube coordinates, and cached incidence lookups.
@@ -122,7 +122,7 @@ Hazards:
 
 Relevant files:
 
-- `game_game_engine/features.py`
+- `cle/game_engine/features.py`
 - upstream Catanatron `features.py` and `gym/board_tensor_features.py`
 
 The current feature vector creates fixed slots such as `TILE3_IS_WOOD`,
@@ -163,9 +163,9 @@ Weaknesses:
 
 Relevant files:
 
-- `data_pipeline/catan_board_bench/tokens.py`
-- `data_pipeline/catan_board_bench/builder.py`
-- `data_pipeline/catan_board_bench/annotations.py`
+- `evals/catan_board_bench/tokens.py`
+- `evals/catan_board_bench/builder.py`
+- `evals/catan_board_bench/annotations.py`
 
 CatanBoardBench already provides the best starting boundary:
 
@@ -520,8 +520,8 @@ this under the tested operational settings:
 
 Reports:
 
-- `data_pipeline/catan_board_bench/datasets/catan_board_bench_100/reports/2026-08-10-qwen3-vl-32b-visual.md`
-- `data_pipeline/catan_board_bench/datasets/catan_board_bench_100/reports/2026-08-10-claude-fable-5-visual.md`
+- `evals/catan_board_bench/datasets/catan_board_bench_100/reports/2026-08-10-qwen3-vl-32b-visual.md`
+- `evals/catan_board_bench/datasets/catan_board_bench_100/reports/2026-08-10-claude-fable-5-visual.md`
 
 These are operational results under the tested prompt/budget, not model ceilings.
 They are still far below the reliability required for an authoritative state
@@ -798,7 +798,7 @@ action. The policy never gets a “free-form geometry” escape hatch.
 
 One representative setup state was used:
 
-- contract: `data_pipeline/catan_board_bench/datasets/catan_board_bench_100/contracts/sample_000.json`;
+- contract: `evals/catan_board_bench/datasets/catan_board_bench_100/contracts/sample_000.json`;
 - replay game `191035308`, step 8;
 - BLUE's second-settlement decision;
 - 40 legal settlement actions;

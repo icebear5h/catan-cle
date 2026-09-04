@@ -6,11 +6,11 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Mapping, Protocol, runtime_checkable
 
-from game_engine.events import PlayerEvent
-from game_engine.models.enums import Action
-from game_engine.models.player import Color
-from game_engine.observation import PlayerObservation
-from game_engine.trading import TradeOffer
+from cle.game_engine.events import PlayerEvent
+from cle.game_engine.models.enums import Action
+from cle.game_engine.models.player import Color
+from cle.game_engine.observation import PlayerObservation
+from cle.game_engine.trading import TradeOffer
 
 
 @dataclass(frozen=True, slots=True)
@@ -41,6 +41,7 @@ class PlayerChoice:
     action_index: int
     trade_offer: TradeOffer | None = None
     game_plan: str = ""
+    # Snapshot compatibility only; new parsers never populate or render this field.
     rationale: str = ""
     raw_response: str = ""
     model: str | None = None

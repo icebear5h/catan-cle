@@ -18,8 +18,8 @@ from typing import Any, Sequence
 import httpx
 from dotenv import load_dotenv
 
-from data_pipeline.catan_board_bench import text_format_optimization as optimization
-from data_pipeline.catan_board_bench.ascii_variations import (
+from evals.catan_board_bench import text_format_optimization as optimization
+from evals.catan_board_bench.ascii_variations import (
     STRICT_SCORER_VERSION,
     score_strict_json_answer,
     strict_scorer_digest,

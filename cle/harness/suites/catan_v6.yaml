@@ -1,0 +1,143 @@
+id: catan-agent
+version: 6.2.1
+
+system:
+  template: |-
+    You are playing a game of Catan. You are playing as {{ color }}.
+
+context:
+  mode: components
+  order:
+    - trajectory
+    - strategic_memory
+    - visible_events
+    - phase_info
+    - board_state
+    - resources
+    - opponents
+    - trade_window
+    - phase_guidance
+    - legal_actions
+    - decision_request
+    - response_schema
+  trajectory:
+    mode: full
+    max_messages: null
+
+sections:
+  strategic_memory:
+    template: |-
+      YOUR CURRENT GAME PLAN:
+      {{ value }}
+    empty: include
+    empty_text: No plan has been recorded yet.
+  visible_events:
+    template: |-
+      COMPLETE VISIBLE GAME EVENT HISTORY:
+      {{ value }}
+    empty: include
+    empty_text: No visible game events have occurred yet.
+  phase_info:
+    template: |-
+      CURRENT PHASE:
+      {{ value }}
+    empty: include
+    empty_text: No phase information is available.
+  board_state:
+    template: |-
+      BOARD STATE:
+      {{ value }}
+    empty: include
+    empty_text: No board state is available.
+  resources:
+    template: |-
+      YOUR RESOURCES:
+      {{ value }}
+    empty: include
+    empty_text: No resource information is available.
+  opponents:
+    template: |-
+      VISIBLE OPPONENT STATE:
+      {{ value }}
+    empty: include
+    empty_text: No opponent information is available.
+  trade_window:
+    template: |-
+      ACTIVE TRADE WINDOW:
+      {{ value }}
+    empty: include
+    empty_text: No trade window is active.
+  phase_guidance:
+    template: |-
+      DECISION FACTS:
+      {{ value }}
+    empty: include
+    empty_text: No phase-specific facts are available.
+  legal_actions:
+    template: |-
+      VALID ACTIONS:
+      {{ value }}
+    empty: include
+    empty_text: No legal actions are available.
+  decision_request:
+    template: |-
+      DECISION REQUEST:
+      {{ value }}
+    empty: include
+    empty_text: Select one legal action.
+  response_schema:
+    template: |-
+      RESPONSE SCHEMA:
+      {{ value }}
+    empty: include
+    empty_text: Return a valid response.
+
+phase_guidance:
+  initial_settlement_1: |-
+    - Evaluate the opening as a two-settlement portfolio rather than an isolated location.
+    - Compare production probability, resource coverage, number diversity, expansion room, and realistic port synergy.
+    - For each candidate, project plausible second settlements and the starting hand each would grant: one card from every adjacent non-desert tile. Compare what those cards enable early and which resources would still be missing.
+    - Keep several complementary second-settlement options because intervening placements may change availability.
+    - The first settlement gives no starting cards. The second may be placed at any vertex legal at that time and does not need to connect to your first road.
+  initial_settlement_2: |-
+    - Reassess the board as it now stands rather than committing to the original plan.
+    - Complement your first settlement's production, cover missing resources and dice numbers, and preserve room to expand.
+    - This settlement gives one starting card from each adjacent non-desert tile. Consider what those cards enable early without sacrificing long-term production.
+    - Value a port only when your combined production can support it.
+  initial_road_1: |-
+    - Aim toward more than one viable expansion location and avoid unnecessary dead ends.
+    - Compare access to missing resources, useful ports, open branches, and contested space.
+    - This road begins expansion from your first settlement. Your second settlement remains an independent choice and does not need to connect to this road.
+  initial_road_2: |-
+    - Direct this road toward open settlement locations that complement your production.
+    - Preserve multiple branches where possible, and compare access to missing resources, useful ports, and contested space.
+    - Consider how this road could eventually join your two starting networks, but do not sacrifice a stronger expansion route solely to connect them.
+  initial_placement: |-
+    Build a coherent two-settlement opening: reliable production, broad resource and number coverage, and room to expand. The first settlement gives no starting cards; the independently placed second settlement gives one card from each adjacent non-desert tile. Point each road toward useful future settlement locations.
+  discarding: |-
+    Resolve the required discard. Reassess your plan after the robber sequence changes production or resources.
+  robber: |-
+    - Balance blocking valuable opponent production against blocking your own tiles and inviting retaliation.
+    - Use visible production, public VP, and opponent hand sizes to judge the strongest target without assuming hidden cards.
+    - Robber movement and victim selection may be separate choices. If victim selection follows, the victim is chosen but the stolen card is random.
+  main_game: |-
+    - Check first for an action that wins immediately or prevents a visible immediate threat.
+    - Choose the next action as part of a sequence: trade or convert resources before spending them, then build, buy, or end the turn as the position requires.
+    - Compare progress through production, settlement access, cities, development cards, Largest Army, Longest Road, and ports rather than counting only immediate VP.
+    - Treat opponent resource types and unplayed development cards as unknown.
+    - Trade acceptance is non-binding until the turn player confirms a candidate; the turn player may instead continue or end the turn.
+
+response:
+  format: xml
+  tags:
+    - game_plan
+    - rationale
+    - action
+    - trade_offer
+  fallback: first_legal
+  instruction: |-
+    Return only these XML elements:
+    <game_plan>brief information useful for later decisions</game_plan>
+    <rationale>one brief reason grounded in the visible state and selected action</rationale>
+    <action>zero-based index from VALID ACTIONS</action>
+    For OFFER_TRADE or COUNTER_OFFER, also return <trade_offer> containing a JSON object with named give and receive resource-count objects and optional non-negative give_any or receive_any counts. Example: <trade_offer>{"give":{"WOOD":1},"receive":{"ORE":1}}</trade_offer>. Do not return <trade_offer> for other actions.

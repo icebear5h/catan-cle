@@ -13,7 +13,7 @@ from cle.players.contracts import (
     PlayerChoice,
     PlayerContext,
 )
-from game_engine.models.player import Color
+from cle.game_engine.models.player import Color
 
 
 @dataclass
@@ -36,7 +36,6 @@ class FirstLegalPlayer:
             choice=PlayerChoice(
                 action_index=0,
                 game_plan="deterministic first-legal baseline",
-                rationale="select the first advertised action",
             ),
         )
 

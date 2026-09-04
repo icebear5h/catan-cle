@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from data_pipeline.catan_board_bench.ascii_variations import full_fact_digest
-from data_pipeline.catan_board_bench.text_format_optimization import (
+from evals.catan_board_bench.ascii_variations import full_fact_digest
+from evals.catan_board_bench.text_format_optimization import (
     FORMAT_NAMES,
     build_query_indexes,
     build_text_format_optimization_probe,
@@ -15,7 +15,7 @@ from data_pipeline.catan_board_bench.text_format_optimization import (
 )
 
 
-SOURCE_DIR = Path("data_pipeline/catan_board_bench/datasets/ascii_variation_probe")
+SOURCE_DIR = Path("evals/catan_board_bench/datasets/ascii_variation_probe")
 
 
 def test_query_indexed_formats_round_trip_all_source_boards() -> None:

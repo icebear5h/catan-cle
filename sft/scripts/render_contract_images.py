@@ -14,7 +14,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from catan_board_bench.render import RenderStyle, render_contract_image
+from evals.catan_board_bench.render import RenderStyle, render_contract_image
 from sft.paths import GENERATED_SFT_ROOT, RENDERER_STYLE_CONFIG, repository_relative_path
 
 CURRICULUM_STAGE = "phase_1_post_atlas_visual_grounding"

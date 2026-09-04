@@ -7,7 +7,7 @@ Defines interface for building prompts for LLM decision-making.
 from abc import ABC, abstractmethod
 from typing import List, Optional
 from dataclasses import dataclass
-from game_engine.models.enums import Action
+from cle.game_engine.models.enums import Action
 
 
 @dataclass

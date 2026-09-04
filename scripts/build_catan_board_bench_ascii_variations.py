@@ -7,15 +7,15 @@ import argparse
 import json
 from pathlib import Path
 
-from data_pipeline.catan_board_bench.ascii_variations import (
+from evals.catan_board_bench.ascii_variations import (
     build_ascii_variation_dataset,
 )
 
 
 DEFAULT_CONTRACT_DIR = Path(
-    "data_pipeline/catan_board_bench/datasets/catan_board_bench_100/contracts"
+    "evals/catan_board_bench/datasets/catan_board_bench_100/contracts"
 )
-DEFAULT_OUTPUT_DIR = Path("data_pipeline/catan_board_bench/datasets/ascii_variation_probe")
+DEFAULT_OUTPUT_DIR = Path("evals/catan_board_bench/datasets/ascii_variation_probe")
 
 
 def parse_args() -> argparse.Namespace:

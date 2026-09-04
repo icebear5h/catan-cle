@@ -2,19 +2,137 @@ from dataclasses import dataclass, field
 
 import pytest
 
+from cle.harness import ModelResponse
+from cle.harness.communication import (
+    CommunicationSuite,
+    build_communication_request,
+    default_communication_suite_path,
+    load_communication_suite,
+    parse_communication_response,
+)
 from cle.players.baseline import FirstLegalPlayer
 from cle.players.contracts import (
     CommitmentProposal,
     CommunicationChoice,
     CommunicationMode,
+    TalkContext,
 )
 from cle.sandbox import CatanSandbox
-from game_engine.communication import CommitmentStatus
-from game_engine.game import GameEngine
-from game_engine.models.player import Color
+from cle.sandbox.communication import CommunicationPolicy
+from cle.game_engine.communication import CommitmentStatus
+from cle.game_engine.events import PlayerEvent
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.player import Color
 
 
 COLORS = (Color.RED, Color.BLUE, Color.WHITE, Color.ORANGE)
+
+
+def test_default_communication_suite_separates_role_from_policy():
+    suite = load_communication_suite()
+    context = TalkContext(
+        context_id="talk:test:BLUE",
+        player=Color.BLUE,
+        participants=COLORS,
+        cause=PlayerEvent(0, "action:0", Color.RED, "BUILD_SETTLEMENT", 21),
+        visible_through_sequence=0,
+        game_events=(),
+        recent_messages=(),
+    )
+    request = build_communication_request(context, "session:BLUE", suite)
+    system, user = request.messages
+
+    assert suite.version == 5
+    assert system.content == (
+        "You are playing a game of Catan. You are playing as BLUE."
+    )
+    assert [component.id for component in request.components] == [
+        "system.identity",
+        "environment.communication_policy",
+        "environment.trigger",
+        "environment.visible_events",
+        "environment.recent_table_talk",
+        "environment.commitments",
+        "environment.response_schema",
+    ]
+    assert user.content == "\n\n".join(
+        component.rendered for component in request.components[1:]
+    )
+    assert "SILENCE" not in system.content
+    assert "Default to SILENCE" in user.content
+    assert "concrete resource exchange" in user.content
+    assert "Never send compliments" in user.content
+    assert "COMMENT" not in user.content
+    assert next(
+        component.value
+        for component in request.components
+        if component.id == "environment.trigger"
+    ).startswith("0. RED: BUILD_SETTLEMENT")
+
+
+def test_legacy_communication_suite_remains_loadable():
+    suite = load_communication_suite(
+        default_communication_suite_path().with_name("communication_v4.yaml")
+    )
+
+    assert suite.version == 4
+    assert suite.user_template is not None
+    assert suite.sections == {}
+
+
+def test_component_communication_suite_rejects_invalid_structure_and_strings():
+    suite = load_communication_suite()
+
+    unknown = suite.model_dump(mode="python")
+    unknown["sections"]["trigger"]["template"] = "{{ private_state }}"
+    with pytest.raises(ValueError, match="unknown variables"):
+        CommunicationSuite.model_validate(unknown)
+
+    missing = suite.model_dump(mode="python")
+    del missing["sections"]["commitments"]
+    with pytest.raises(ValueError, match="exactly match"):
+        CommunicationSuite.model_validate(missing)
+
+    duplicate = suite.model_dump(mode="python")
+    duplicate["order"] = (*duplicate["order"], "trigger")
+    with pytest.raises(ValueError, match="fixed component order"):
+        CommunicationSuite.model_validate(duplicate)
+
+    oversized = suite.model_dump(mode="python")
+    oversized["sections"]["trigger"]["template"] = "x" * 12_001
+    with pytest.raises(ValueError, match="at most 12000 characters"):
+        CommunicationSuite.model_validate(oversized)
+
+
+def test_communication_parser_drops_social_comments_but_keeps_trade_messages():
+    social = parse_communication_response(
+        ModelResponse(
+            content=(
+                "<message>Nice settlement!</message>"
+                "<audience>PUBLIC</audience>"
+                "<intent>COMMENT</intent>"
+            )
+        ),
+        speaker=Color.RED,
+        participants=COLORS,
+    )
+    trade = parse_communication_response(
+        ModelResponse(
+            content=(
+                "<message>I can give WOOD for ORE.</message>"
+                "<audience>BLUE</audience>"
+                "<intent>TRADE</intent>"
+            )
+        ),
+        speaker=Color.RED,
+        participants=COLORS,
+    )
+
+    assert social.mode == CommunicationMode.SILENCE
+    assert trade.mode == CommunicationMode.SAY
+    assert trade.text == "I can give WOOD for ORE."
+    assert trade.audience == (Color.BLUE,)
+    assert trade.intent == "TRADE"
 
 
 @dataclass
@@ -85,6 +203,25 @@ async def test_same_round_players_share_cutoff_and_do_not_see_peer_message():
     assert blue.contexts[0].visible_through_sequence == white.contexts[0].visible_through_sequence
     assert blue.contexts[0].recent_messages == ()
     assert white.contexts[0].recent_messages == ()
+
+
+def test_message_events_do_not_retrigger_communication_opportunities():
+    engine = GameEngine(COLORS, seed=1, shuffle_players=False)
+    message = engine.append_message(
+        speaker=Color.BLUE,
+        text="I can trade WOOD for ORE.",
+        audience=(Color.RED,),
+        intent="TRADE",
+        causation_id="test",
+    )
+
+    opportunities = CommunicationPolicy().after_events(
+        engine,
+        (message,),
+        round_number=1,
+    )
+
+    assert opportunities == ()
 
 
 @pytest.mark.asyncio

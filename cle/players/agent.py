@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from typing import Any
 
+from cle.harness.board_surface import BoardPresenter
 from cle.harness.communication import (
     CommunicationSuite,
     build_communication_request,
@@ -30,7 +31,7 @@ from cle.players.contracts import (
     PlayerContext,
     TalkContext,
 )
-from game_engine.models.player import Color
+from cle.game_engine.models.player import Color
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,13 +50,17 @@ class AgentPlayer:
         session_id: str,
         suite: ContextSuite | None = None,
         communication_suite: CommunicationSuite | None = None,
+        board_presenter: BoardPresenter | None = None,
     ) -> None:
         self.color = color
         self.transport = transport
         self.suite = suite or load_context_suite()
         self.communication_suite = communication_suite or load_communication_suite()
         self.session = PlayerSession(color=color, session_id=session_id)
-        self._assembler = ContextAssembler(self.suite)
+        self._assembler = ContextAssembler(
+            self.suite,
+            board_presenter=board_presenter,
+        )
         self._parser = PlayerResponseParser(self.suite)
 
     @property

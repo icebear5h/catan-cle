@@ -1,6 +1,6 @@
 """All Colonist <-> Engine mapping constants."""
 
-from game_engine.models.map import WOOD, BRICK, SHEEP, WHEAT, ORE
+from cle.game_engine.models.map import WOOD, BRICK, SHEEP, WHEAT, ORE
 
 # Colonist tile type to engine resource mapping
 # VERIFIED: Tile type 1 produces resource 1, and resource 1 = WOOD (roads use 1+2)

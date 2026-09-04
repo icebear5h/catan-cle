@@ -11,7 +11,7 @@ from typing import Any
 
 from flask import Blueprint, jsonify, request, send_file
 
-from catan_board_bench.annotations import (
+from evals.catan_board_bench.annotations import (
     annotation_payload_for_contract,
     contract_to_render_state,
 )

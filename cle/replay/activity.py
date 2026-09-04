@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
-from game_engine.models.enums import RESOURCES as ENGINE_RESOURCES
+from cle.game_engine.models.enums import RESOURCES as ENGINE_RESOURCES
 
 MAX_UNBOUNDED_ACTIVITY_ROWS = 40
 

@@ -24,8 +24,8 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 import httpx
 from dotenv import load_dotenv
 
-from game_engine.models.player import Color
-from catan_board_bench.scoring import (
+from cle.game_engine.models.player import Color
+from evals.catan_board_bench.scoring import (
     PROBE_CATEGORIES,
     PROBE_SYSTEM_PROMPT,
     score_hex_direction_answer,
@@ -34,7 +34,7 @@ from catan_board_bench.scoring import (
 load_dotenv()
 
 
-BENCH_DIR = Path("data_pipeline/catan_board_bench/datasets/catan_board_bench_100")
+BENCH_DIR = Path("evals/catan_board_bench/datasets/catan_board_bench_100")
 QUESTION_DIR = BENCH_DIR / "questions"
 RUNS_DIR = Path("artifacts/runs/catan_board_bench")
 PROBE_DIR = Path("artifacts/generated/catan_board_bench/piece_recognition")

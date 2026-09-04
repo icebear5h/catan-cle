@@ -8,8 +8,8 @@ from flask import Blueprint, current_app, jsonify, request
 
 from cle.harness.reasoning import validate_native_reasoning_request
 from cle.sandbox.factory import LiveSandboxConfig, create_live_sandbox
-from game_engine.communication import CommunicationLimits
-from game_engine.trading import TradeLimits
+from cle.game_engine.communication import CommunicationLimits
+from cle.game_engine.trading import TradeLimits
 
 from ..async_runtime import sandbox_async_runtime
 from ..live.game_logging import analyze_action, post_analyze_action

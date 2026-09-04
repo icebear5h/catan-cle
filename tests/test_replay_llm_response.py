@@ -10,8 +10,8 @@ from cle.replay.activity import (
 )
 from cle.replay.colonist.event_parser import parse_colonist_events_to_actions
 from cle.sandbox.replay import ReplaySandbox
-from game_engine.game import GameEngine
-from game_engine.models.player import Color
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.player import Color
 from playground.game_viewer.routes.replay import replay_bp
 
 
@@ -39,7 +39,6 @@ def _fake_general_provider_response(**kwargs):
     return {
         "content": (
             "<game_plan>Prioritize production and expansion.</game_plan>"
-            "<rationale>This legal placement has the strongest long-term value.</rationale>"
             "<action>0</action>"
         ),
         "model": kwargs["model"],
@@ -411,14 +410,12 @@ def test_replay_llm_route_returns_response_without_advancing_cursor():
 
     assert response.status_code == 200
     payload = response.get_json()
-    assert payload["schema"] == "agent-decision-preview-v1"
+    assert payload["schema"] == "agent-decision-preview-v2"
     assert payload["game_id"] == "test-game"
     assert payload["replay_index"] == 0
     assert payload["stale"] is False
     assert payload["game_plan"] == "Prioritize production and expansion."
-    assert payload["rationale"] == (
-        "This legal placement has the strongest long-term value."
-    )
+    assert "rationale" not in payload
     assert payload["native_reasoning"] == "private native analysis"
     assert payload["native_reasoning_returned"] is True
     assert payload["native_reasoning_missing"] is False
@@ -432,6 +429,7 @@ def test_replay_llm_route_returns_response_without_advancing_cursor():
     assert payload["provider_native_finish_reason"] == "stop"
     assert "YOUR CURRENT GAME PLAN" in payload["model_messages"][1]["content"]
     assert "Build efficiently." in payload["model_messages"][1]["content"]
+    assert "rationale" not in payload["model_messages"][1]["content"].lower()
     assert state.replay_index == 0
     assert game.state.actions == before_actions
     assert len(game.history) == before_history_length

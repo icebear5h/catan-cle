@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
-from catan_board_bench.render import DEFAULT_RENDER_STYLE, render_contract_image
+from evals.catan_board_bench.render import DEFAULT_RENDER_STYLE, render_contract_image
 
 
 COPIED_DIRECTORIES = ("contracts", "questions", "leakage")
@@ -82,7 +82,7 @@ def render_variant(
         "rendered_images": len(rows),
         "render_variant": {
             "derived_from": str(source_dir),
-            "renderer": "data_pipeline.catan_board_bench.render",
+            "renderer": "evals.catan_board_bench.render",
             "style": asdict(style),
             "view_padding_factor": view_padding_factor,
             "target_board_canvas_fraction": target_board_canvas_fraction,

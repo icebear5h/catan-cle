@@ -3,8 +3,8 @@ import io
 import json
 from pathlib import Path
 
-from game_engine.game import GameEngine
-from game_engine.models.player import Color
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.player import Color
 from cle.replay.colonist.coordinates import create_map_from_colonist
 from playground.game_viewer.commentary.references import (
     build_corner_index,

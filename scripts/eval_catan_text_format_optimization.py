@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from data_pipeline.catan_board_bench import text_format_optimization as optimization
+from evals.catan_board_bench import text_format_optimization as optimization
 from scripts import eval_catan_board_bench_full_graph_formats as evaluator
 
 

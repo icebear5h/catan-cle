@@ -17,15 +17,15 @@ from typing import Any
 
 from PIL import Image, ImageDraw
 
-from catan_board_bench.annotations import annotation_payload_for_contract
-from catan_board_bench.render import (
+from evals.catan_board_bench.annotations import annotation_payload_for_contract
+from evals.catan_board_bench.render import (
     DEFAULT_RENDER_STYLE,
     WATER_RGB,
     _asset_path,
     _raster_asset,
     render_contract_image,
 )
-from catan_board_bench.tokens import color_token, edge_token, node_token, resource_token, tile_token
+from evals.catan_board_bench.tokens import color_token, edge_token, node_token, resource_token, tile_token
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]

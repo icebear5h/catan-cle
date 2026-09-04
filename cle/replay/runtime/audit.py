@@ -3,7 +3,7 @@
 from cle.replay.runtime.access import get_game_engine
 from copy import deepcopy
 
-from game_engine.models.actions import generate_playable_actions
+from cle.game_engine.models.actions import generate_playable_actions
 
 
 SEVERITY_RANK = {"info": 0, "warning": 1, "error": 2}

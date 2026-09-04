@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple
 
-from game_engine.models.enums import CITY, SETTLEMENT
+from cle.game_engine.models.enums import CITY, SETTLEMENT
 from playground.game_viewer.app import app
 from playground.game_viewer.commentary.references import (
     build_corner_index,

@@ -6,7 +6,7 @@ from flask import Flask
 from cle.harness import ModelResponse
 from cle.sandbox.factory import LiveSandboxConfig, create_text_transport
 from cle.traces import SQLiteLiveTraceStore
-from game_engine.models.player import Color
+from cle.game_engine.models.player import Color
 from playground.game_viewer.routes.live_game import live_game_bp
 from playground.game_viewer.state import ServerState
 

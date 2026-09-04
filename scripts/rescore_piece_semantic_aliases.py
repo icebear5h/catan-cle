@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Sequence
 
-from catan_board_bench.scoring import score_answer
+from evals.catan_board_bench.scoring import score_answer
 
 
 JsonDict = Dict[str, Any]

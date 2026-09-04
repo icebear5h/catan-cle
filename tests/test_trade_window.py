@@ -1,10 +1,10 @@
 import pytest
 
-from game_engine.game import GameEngine
-from game_engine.models.actions import trade_response_actions
-from game_engine.models.enums import ActionType
-from game_engine.models.player import Color
-from game_engine.trading import (
+from cle.game_engine.game import GameEngine
+from cle.game_engine.models.actions import trade_response_actions
+from cle.game_engine.models.enums import ActionType
+from cle.game_engine.models.player import Color
+from cle.game_engine.trading import (
     TradeCandidate,
     TradeLimits,
     TradeOffer,

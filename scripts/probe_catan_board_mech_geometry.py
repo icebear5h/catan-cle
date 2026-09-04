@@ -14,7 +14,7 @@ from typing import Any
 import numpy as np
 import torch
 
-from catan_board_bench.tokens import (
+from evals.catan_board_bench.tokens import (
     add_tokens_to_tokenizer,
     atlas_metadata,
     canonical_edge,

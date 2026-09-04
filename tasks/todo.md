@@ -2776,7 +2776,14 @@ v3 reference 0.037 / 0.949). Row geometry of the finals: meaninit rows are
 still nearly all entangled (149/154 with a partner >0.25, pairwise cos
 0.21); gaussinit rows have none (pairwise cos 0.011), T10 sits at the tile
 median (+0.26), family centroids are distinct (NT 0.27 vs 0.83). Recorded
-under token_init_experiment_20260904 in the report.
+under token_init_experiment_20260904 in the report. Per-task on the
+gaussinit final: localization heads 0.87 to 1.00, tile_to_token 0.97,
+tile_number 0.92, but occupancy positives 0.60 (single) / 0.38 (pairs),
+negatives 0.53 / 0.56, tile_resource 0.63. T10 shows ordinary errors, no
+head flip. Query-side grounding is what the skipped marker stage provides.
+Recommendation: gaussian init as default for from-base runs; a full staged
+run with it if the token anomalies are to be removed for good. No GPU
+running as of this note.
 Morning checks: side-by-side in-run curves; row geometry of both final
 bundles (tile rows vs tile centroid, T10 in particular); panel on the better
 bundle. The pairs_v2 final panel (ap-iKwx2e32A6pT3lzn851xJV) decides the

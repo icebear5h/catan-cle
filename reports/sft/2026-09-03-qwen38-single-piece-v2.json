@@ -444,6 +444,32 @@
     "reason": "row exact flat 74.1 -> 75.4 between 128 and 256; v3 launched from checkpoint-256"
   },
   "token_init_experiment_20260904": {
+    "gaussinit_final_per_task": {
+      "T10": "7/22 and 18/36; misses are ordinary (number 'none' on non-desert, resource confusions), no head flip; N16 3/3",
+      "output": "/runs/qwen-series-eval/direct-init/gaussinit-final",
+      "pairs_v2": {
+        "adjacent": 0.56,
+        "candidate": 0.903,
+        "colored_piece_to_token": 0.867,
+        "exact": 0.693,
+        "far": 0.564,
+        "occupancy_positive": 0.378,
+        "piece_to_token": 0.798,
+        "tile_to_token": 0.969
+      },
+      "reading": "token-as-answer heads are near-solved after 512 direct steps; token-as-query heads (occupancy, tile resource) lag far behind. The marker stage that was skipped is exactly the stage that grounds query tokens to positions.",
+      "single_piece_v3": {
+        "candidate": 0.99,
+        "colored_piece_to_token": 1.0,
+        "exact": 0.809,
+        "occupancy_negative": 0.53,
+        "occupancy_positive": 0.604,
+        "piece_to_token": 0.997,
+        "tile_number": 0.92,
+        "tile_resource": 0.633,
+        "tile_to_token": 0.977
+      }
+    },
     "reading": "identical through step 256, then the gaussian rows pull ahead by 12.5 points of row exact (0.811 vs 0.686) at 512. The mean-init rows are still almost all entangled after 512 steps (149 of 154 have a partner above 0.25) because they start nearly identical; the gaussian rows start and stay separated, every family sits apart, and T10 is an ordinary tile. Skipping the marker and v2 stages still costs about 14 points against the staged run at the same step count.",
     "row_geometry_of_finals": {
       "gaussinit": {

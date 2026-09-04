@@ -443,6 +443,99 @@
     "at_step": 293,
     "reason": "row exact flat 74.1 -> 75.4 between 128 and 256; v3 launched from checkpoint-256"
   },
+  "token_init_experiment_20260904": {
+    "reading": "identical through step 256, then the gaussian rows pull ahead by 12.5 points of row exact (0.811 vs 0.686) at 512. The mean-init rows are still almost all entangled after 512 steps (149 of 154 have a partner above 0.25) because they start nearly identical; the gaussian rows start and stay separated, every family sits apart, and T10 is an ordinary tile. Skipping the marker and v2 stages still costs about 14 points against the staged run at the same step count.",
+    "row_geometry_of_finals": {
+      "gaussinit": {
+        "T10_vs_tile_centroid": 0.26,
+        "family_centroid_cos_NT": 0.27,
+        "pairwise_cos": "0.011 +/- 0.016",
+        "rows_below_0.05_own_family": 2,
+        "tile_median": 0.26,
+        "tokens_with_partner_gt_0.25": 0
+      },
+      "meaninit": {
+        "T10_vs_tile_centroid": 0.38,
+        "family_centroid_cos_NT": 0.83,
+        "pairwise_cos": "0.209 +/- 0.088",
+        "rows_below_0.05_own_family": 0,
+        "tokens_with_partner_gt_0.25": 149
+      },
+      "pairs_v2": {
+        "T10_vs_tile_centroid": -0.1,
+        "pairwise_cos": "0.028 +/- 0.055",
+        "tokens_with_partner_gt_0.25": 8
+      },
+      "v3_staged": {
+        "T10_vs_tile_centroid": -0.19,
+        "pairwise_cos": "0.033 +/- 0.060",
+        "tokens_with_partner_gt_0.25": 7
+      }
+    },
+    "runs": {
+      "familyinit": "launched then stopped within minutes after the user clarified they meant a distributional init",
+      "gaussinit": {
+        "app": "ap-cJCHyYUTNRNuK3jD9H3jTf",
+        "curve": {
+          "128": [
+            0.543,
+            0.497
+          ],
+          "256": [
+            0.265,
+            0.637
+          ],
+          "384": [
+            0.128,
+            0.811
+          ],
+          "512": [
+            0.128,
+            0.811
+          ]
+        },
+        "run": "catan-qwen38-sl-v3-direct-gaussinit-s512-20260904"
+      },
+      "meaninit": {
+        "app": "ap-Ocnfz9zmNomkiQFMls8V90",
+        "curve": {
+          "128": [
+            0.445,
+            0.476
+          ],
+          "256": [
+            0.267,
+            0.625
+          ],
+          "384": [
+            0.234,
+            0.646
+          ],
+          "512": [
+            0.204,
+            0.686
+          ]
+        },
+        "run": "catan-qwen38-sl-v3-direct-meaninit-s512-20260904"
+      }
+    },
+    "setup": "from the base model, no initial bundle, straight onto spatial_localization_v3 train (24,080 rows), 512 steps, batch 16 x 2, eval every 128 on v3 validation; only the atlas-row init differs",
+    "staged_v3_reference": {
+      "128": [
+        0.226,
+        0.77
+      ],
+      "256": [
+        0.101,
+        0.876
+      ],
+      "512": [
+        0.037,
+        0.949
+      ],
+      "note": "started from the v2 checkpoint-256 bundle"
+    }
+  },
   "v3_dense_zero_shot": {
     "abandoned_runs_2026_09_03": [
       "catan-qwen38-sl-v4-single-piece-adjneg-20260903 (1 adjacent + 1 far, full epoch) ap-SmkyFaQNTmi5UKJQd46ZJm",

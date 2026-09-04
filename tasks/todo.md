@@ -2767,6 +2767,16 @@ User clarified they meant a distributional init: the family_words run
 vocab_gaussian` (rows drawn at the vocabulary's per-dimension mean and std):
 app ap-cJCHyYUTNRNuK3jD9H3jTf, call fc-01M1NVCS7ZSY07Y4MZHXC8F467, output
 `/runs/catan-vision-sft/catan-qwen38-sl-v3-direct-gaussinit-s512-20260904/020dd5ad268f`.
+Step 128: meaninit loss 0.445 / row exact 0.476; gaussinit loss 0.543 /
+row exact 0.497 (staged v3 reference 0.226 / 0.770).
+Step 256: meaninit 0.267 / 0.625; gaussinit 0.265 / 0.637 (staged v3 reference 0.101 / 0.876).
+Step 384: meaninit 0.234 / 0.646; gaussinit 0.128 / 0.811.
+Step 512 (final): meaninit 0.204 / 0.686; gaussinit 0.128 / 0.811 (staged
+v3 reference 0.037 / 0.949). Row geometry of the finals: meaninit rows are
+still nearly all entangled (149/154 with a partner >0.25, pairwise cos
+0.21); gaussinit rows have none (pairwise cos 0.011), T10 sits at the tile
+median (+0.26), family centroids are distinct (NT 0.27 vs 0.83). Recorded
+under token_init_experiment_20260904 in the report.
 Morning checks: side-by-side in-run curves; row geometry of both final
 bundles (tile rows vs tile centroid, T10 in particular); panel on the better
 bundle. The pairs_v2 final panel (ap-iKwx2e32A6pT3lzn851xJV) decides the

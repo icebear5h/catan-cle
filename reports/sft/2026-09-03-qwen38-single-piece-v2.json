@@ -313,6 +313,24 @@
       "distribution_by_phase": "no phase over- or under-samples the six beyond ~2 sd; co-occurrence within pair images at chance; every pair of the six is >6 hops apart",
       "input_row_cosine_baseline": "0.03 +/- 0.06",
       "pairwise_after_pairs": "0.12 to 0.33",
+      "row_surgery": {
+        "conclusion": "For T10 the prompt suffix (number? vs resource?) is ignored and the answer head is read from the row: own row -> resource head for both prompts, v3 row or tile-aligned row -> number head for both. Row geometry selects the head but cannot restore suffix conditioning, so T10's defect is upstream of its embedding row. Row surgery line closed; no hand-edited adapter is used for training.",
+        "famfix13": {
+          "N16": "2/3, 3/5",
+          "T10": "14/22, 22/36; number head 100%, resource head answers numbers",
+          "others": "unchanged",
+          "repaired_tokens_overall": "0.638 single / 0.612 pairs vs 0.594 / 0.621 at ck256"
+        },
+        "meanfix12": {
+          "T10": "0/22, 0/36; both heads answer empty",
+          "reading": "global atlas mean is node/edge dominated; aligning to it makes T10 a location query"
+        },
+        "rowswap6": {
+          "E11_32_doubling": "fixed",
+          "N16": "2/3, 2/5",
+          "T10": "12/22 single, 20/36 pairs; answers numbers to resource queries"
+        }
+      },
       "row_swap_test": {
         "E11_32_doubling": "fixed (4/4 both sets)",
         "N16": "1/3->2/3 single, 0/5->2/5 pairs",

@@ -2717,7 +2717,11 @@ dominated. Family analysis: every tile input row sits at +0.22..+0.30 to
 the tile centroid except T10 at -0.10 (v3: -0.19); N26 and E08_27 were
 anti-aligned to their families in v3, N16 became so during pairs; output
 rows are normal. famfix (13 rows realigned to their own family centroid at
-the family median, residual kept) is being scored.
+the family median, residual kept): T10 14/22 and 22/36, number head 100%
+and resource head answering numbers; N16 slightly up; others unchanged.
+Across all three surgeries T10 answers one head's type to both prompts and
+the row picks which head. The suffix-conditioning failure for T10 is
+upstream of its row. Row-surgery line closed.
 Run complete: step 384 loss 0.047 / row exact 0.960; step 512 loss 0.030 /
 row exact 0.972. Final bundle at `.../d430f310de8a/final`; eight-set panel
 (label pairs-v2-final, app ap-iKwx2e32A6pT3lzn851xJV) launched on it.

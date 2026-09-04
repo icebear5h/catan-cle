@@ -245,8 +245,9 @@ def test_per_kind_image_counts(tmp_path):
     zero_far = {kind: 0 for kind in FAR_KINDS + SINGLE_KINDS}
     assert parse_kind_counts("40", 0) == {"node_node": 40, "edge_edge": 40, "node_edge": 40, **zero_far}
     assert parse_kind_counts(7, 0) == {"node_node": 7, "edge_edge": 7, "node_edge": 7, **zero_far}
-    assert parse_kind_counts("edge_edge=80,node_edge=50", 40) == {"node_node": 40, "edge_edge": 80, "node_edge": 50, **zero_far}
-    assert parse_kind_counts("node_node_far=10", 40)["node_node_far"] == 10
+    assert parse_kind_counts("edge_edge=80,node_edge=50", 40) == {"node_node": 0, "edge_edge": 80, "node_edge": 50, **zero_far}
+    far_only = parse_kind_counts("node_node_far=10,edge_edge_far=20,node_edge_far=15", 30)
+    assert far_only["node_node_far"] == 10 and far_only["node_node"] == 0 and far_only["single_node"] == 0
     with pytest.raises(SpatialLocalizationError):
         parse_kind_counts("tile_tile=3", 40)
     state, contract = _fixture_contract()

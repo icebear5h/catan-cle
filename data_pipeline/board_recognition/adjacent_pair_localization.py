@@ -123,13 +123,14 @@ def is_far_kind(pair_kind: str) -> bool:
 def parse_kind_counts(spec: str | int, default: int) -> dict[str, int]:
     """Images per board per pair kind from ``40`` or ``node_node=30,edge_edge=80``.
 
-    A bare number applies to the touching kinds; the far control and single
-    kinds stay at zero unless named.
+    A bare number applies to the touching kinds and leaves the far control and
+    single kinds at zero. A per-kind list is explicit: every kind it does not
+    name is zero, so ``node_node_far=10`` alone builds a far-only set.
     """
 
-    counts = {kind: (int(default) if kind in TOUCHING_KINDS else 0) for kind in PAIR_KINDS}
     if isinstance(spec, int) or str(spec).isdigit():
         return {kind: (int(spec) if kind in TOUCHING_KINDS else 0) for kind in PAIR_KINDS}
+    counts = {kind: 0 for kind in PAIR_KINDS}
     for part in filter(None, (piece.strip() for piece in str(spec).split(","))):
         kind, _, value = part.partition("=")
         if kind not in PAIR_KINDS or not value.isdigit():

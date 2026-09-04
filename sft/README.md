@@ -342,7 +342,10 @@ placed more than three hops apart. They default to zero training images.
 `spatial_localization_pairs_control_v1` is a validation-and-test-only export
 (`--train-images-per-board-per-kind 0 --eval-images-per-board-per-kind
 node_node_far=10,edge_edge_far=20,node_edge_far=15`) and sits in the
-regression panel beside the touching-pair set. Read the two together: a
+regression panel beside the touching-pair set. That export predates the
+parser fix that zeroes unnamed kinds, so it also carries 30 touching pairs
+per board per kind (675 images, 6,461 rows); read it through `by_pair_kind`.
+A per-kind list is now explicit: kinds it does not name are zero. Read the two together: a
 checkpoint that answers far pairs but not touching pairs fails on neighbour
 discrimination; one that fails both has a multi-piece prior problem, and
 the aggregate eval loss cannot tell the two apart because the near-free

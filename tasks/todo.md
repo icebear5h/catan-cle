@@ -2708,6 +2708,16 @@ more than vertical ones (0.128 vs 0.032); coastal tokens slightly worse.
 Worst tokens fail on several validation boards, so it is geometry not one
 background. Token glitches: <T10> number? answered with a resource 28/58,
 <N16> answered with numbers 7/8, <E11_32> emitted twice as an answer 5/8.
+Token-row surgery on the pairs_v2 final (no training, evals under
+/runs/qwen-series-eval/pairs-v2/): rowswap6 (six rows from v3) fixed the
+E11_32 doubling, helped N16, left T10 at 50% but flipped which head it
+answers with. meanfix10 (twelve rows realigned to the global atlas mean)
+made T10 answer "empty" on both tile heads: the global mean is node/edge
+dominated. Family analysis: every tile input row sits at +0.22..+0.30 to
+the tile centroid except T10 at -0.10 (v3: -0.19); N26 and E08_27 were
+anti-aligned to their families in v3, N16 became so during pairs; output
+rows are normal. famfix (13 rows realigned to their own family centroid at
+the family median, residual kept) is being scored.
 Run complete: step 384 loss 0.047 / row exact 0.960; step 512 loss 0.030 /
 row exact 0.972. Final bundle at `.../d430f310de8a/final`; eight-set panel
 (label pairs-v2-final, app ap-iKwx2e32A6pT3lzn851xJV) launched on it.

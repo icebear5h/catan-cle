@@ -1,0 +1,149 @@
+{
+  "schema": "catan-openrouter-model-sweep/v1",
+  "id": "openrouter-vlm-27b-72b-20260831",
+  "authorized_budget_usd": 10.0,
+  "budget_allocation_usd": {
+    "board_reading": 6.0,
+    "initial_placement": 4.0
+  },
+  "selection_rule": "OpenRouter-hosted open-weight image-input models with approximately 27B-70B total parameters; Qwen2.5-VL-72B is retained as the explicit near-upper-bound control.",
+  "board_reading": {
+    "dataset_dir": "artifacts/generated/catan_board_bench/strict_vision_probe_60_1024_board90",
+    "question_count": 60,
+    "preflight_question_id": "ascii_q012_node_state",
+    "reasoning": {"enabled": false},
+    "temperature": 0.0,
+    "max_tokens": 256
+  },
+  "initial_settlement_reasoning": {
+    "seeds": [117, 883, 2027],
+    "preflight_seeds": [117],
+    "colors": ["BLUE", "RED", "WHITE", "ORANGE"],
+    "actor": "BLUE",
+    "decision": "fresh first settlement",
+    "board_surface": "indexed_tile_rows/v3",
+    "reasoning": {"effort": "high", "exclude": false},
+    "temperature": 0.2,
+    "max_tokens_omitted": true,
+    "prompt_token_allowance": 20000,
+    "scheduling": "sequential",
+    "replay_input": false,
+    "human_action_labels": false
+  },
+  "strategy_guided_reasoning": {
+    "id": "strategy-guided-v1",
+    "output_dirname": "initial_settlement_reasoning_strategy_v1",
+    "prompt_variant": "evals/suites/catan_initial_settlement_strategy_v1.json",
+    "seeds": [117],
+    "reasoning": {"effort": "high", "exclude": false},
+    "temperature": 0.2,
+    "max_tokens_omitted": true,
+    "prompt_token_allowance": 20000,
+    "scheduling": "sequential",
+    "replay_input": false,
+    "human_action_labels": false,
+    "excluded_models": {
+      "qwen/qwen3.5-27b": "DQ: uncapped baseline reached provider length after 81920 completion tokens without a final response",
+      "qwen/qwen3.5-35b-a3b": "DQ: uncapped baseline reached provider length after 16384 reasoning tokens without a final response"
+    }
+  },
+  "candidates": [
+    {
+      "model_id": "qwen/qwen3.5-27b",
+      "total_parameters_b": 27,
+      "architecture": "dense",
+      "board_reading": true,
+      "initial_placement_reasoning": true
+    },
+    {
+      "model_id": "qwen/qwen3.5-35b-a3b",
+      "total_parameters_b": 35,
+      "active_parameters_b": 3,
+      "architecture": "moe",
+      "board_reading": true,
+      "initial_placement_reasoning": true
+    },
+    {
+      "model_id": "qwen/qwen3.6-27b",
+      "total_parameters_b": 27,
+      "architecture": "dense",
+      "board_reading": true,
+      "initial_placement_reasoning": true
+    },
+    {
+      "model_id": "qwen/qwen3.6-35b-a3b",
+      "total_parameters_b": 35,
+      "active_parameters_b": 3,
+      "architecture": "moe",
+      "board_reading": true,
+      "initial_placement_reasoning": true
+    },
+    {
+      "model_id": "qwen/qwen3.8-27b",
+      "total_parameters_b": 27.8,
+      "architecture": "dense",
+      "board_reading": true,
+      "initial_placement_reasoning": true
+    },
+    {
+      "model_id": "qwen/qwen3-vl-30b-a3b-instruct",
+      "total_parameters_b": 30,
+      "active_parameters_b": 3,
+      "architecture": "moe",
+      "board_reading": true,
+      "initial_placement_reasoning": false
+    },
+    {
+      "model_id": "qwen/qwen3-vl-30b-a3b-thinking",
+      "total_parameters_b": 30,
+      "active_parameters_b": 3,
+      "architecture": "moe",
+      "board_reading": true,
+      "initial_placement_reasoning": true
+    },
+    {
+      "model_id": "qwen/qwen3-vl-32b-instruct",
+      "total_parameters_b": 32,
+      "architecture": "dense",
+      "board_reading": true,
+      "initial_placement_reasoning": false
+    },
+    {
+      "model_id": "meta/muse-glimmer-30b",
+      "total_parameters_b": 29.6,
+      "architecture": "dense",
+      "board_reading": true,
+      "initial_placement_reasoning": true
+    },
+    {
+      "model_id": "google/gemma-3-27b-it",
+      "total_parameters_b": 27,
+      "architecture": "dense",
+      "board_reading": true,
+      "initial_placement_reasoning": false
+    },
+    {
+      "model_id": "google/gemma-4-31b-it",
+      "total_parameters_b": 31,
+      "architecture": "dense",
+      "board_reading": true,
+      "initial_placement_reasoning": true
+    },
+    {
+      "model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "total_parameters_b": 30,
+      "active_parameters_b": 3,
+      "architecture": "hybrid_moe",
+      "board_reading": true,
+      "initial_placement_reasoning": true
+    },
+    {
+      "model_id": "qwen/qwen2.5-vl-72b-instruct",
+      "total_parameters_b": 72,
+      "architecture": "dense",
+      "board_reading": true,
+      "initial_placement_reasoning": false,
+      "range_exception": "near-upper-bound control"
+    }
+  ]
+}

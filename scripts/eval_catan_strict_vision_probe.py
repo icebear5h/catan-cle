@@ -15,7 +15,7 @@ import time
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Callable, Sequence
 
 from dotenv import load_dotenv
 
@@ -24,8 +24,12 @@ from evals.catan_board_bench.ascii_variations import (
     score_strict_json_answer,
     strict_scorer_digest,
 )
+from evals.catan_board_bench.paths import resolve_benchmark_reference
+from evals.catan_board_bench.presentation import (
+    load_raw_board_image_presentation,
+)
 from evals.catan_board_bench.tokens import atlas_metadata
-from scripts.eval_catan_board_bench_openrouter import call_novita
+from scripts.eval_catan_board_bench_openrouter import call_novita, call_openrouter
 from scripts.render_catan_strict_vision_probe import (
     DEFAULT_OUTPUT_DIR as DEFAULT_DATASET_DIR,
     OUTPUT_SCHEMA as DATASET_SCHEMA,
@@ -61,6 +65,11 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset-dir", type=Path, default=DEFAULT_DATASET_DIR)
     parser.add_argument("--model", required=True)
+    parser.add_argument(
+        "--provider",
+        choices=("novita", "openrouter"),
+        default="novita",
+    )
     parser.add_argument("--categories", default="")
     parser.add_argument("--max-questions", type=int, default=None)
     parser.add_argument("--concurrency", type=int, default=1)
@@ -137,7 +146,7 @@ def validate_dataset(
     if (metadata.get("render_variant") or {}).get("image_annotation") is not None:
         raise ValueError("raw-image dataset unexpectedly declares an annotation")
 
-    source_dir = Path(metadata["source_dataset"])
+    source_dir = resolve_benchmark_reference(metadata["source_dataset"])
     source_lock = metadata.get("source_lock")
     if not isinstance(source_lock, dict) or json_digest(source_lock) != metadata.get(
         "source_lock_sha256"
@@ -149,7 +158,7 @@ def validate_dataset(
         ):
             path = source_dir / reference
         else:
-            path = Path(reference)
+            path = resolve_benchmark_reference(reference)
         if not path.is_file() or file_sha256(path) != expected_sha256:
             raise ValueError(f"locked source changed: {path}")
 
@@ -213,6 +222,7 @@ def build_jobs(
 ) -> list[JsonDict]:
     manifest_by_sample = {row["sample_id"]: row for row in manifest}
     contract_cache: dict[str, JsonDict] = {}
+    presentation_cache = {}
     jobs = []
     for qa in questions:
         row = manifest_by_sample[qa["sample_id"]]
@@ -220,6 +230,19 @@ def build_jobs(
         if qa["sample_id"] not in contract_cache:
             contract_cache[qa["sample_id"]] = json.loads(contract_path.read_text())
         contract = contract_cache[qa["sample_id"]]
+        if qa["sample_id"] not in presentation_cache:
+            presentation_cache[qa["sample_id"]] = (
+                load_raw_board_image_presentation(
+                    dataset_dir / row["image_path"],
+                    source_id=qa["sample_id"],
+                    board_sha256=row["source_fact_digest"],
+                    expected_sha256=row["image_sha256"],
+                    canonical_id_map_sha256=row[
+                        "canonical_id_map_sha256"
+                    ],
+                )
+            )
+        presentation = presentation_cache[qa["sample_id"]]
         prompt = build_prompt(contract, qa)
         if qa["answer_text"] in prompt:
             raise ValueError(f"expected answer leaked into prompt for {qa['id']}")
@@ -230,6 +253,7 @@ def build_jobs(
                 "image_sha256": row["image_sha256"],
                 "contract_path": str(contract_path),
                 "contract_sha256": row["contract_sha256"],
+                "board_presentation": presentation,
                 "prompt": prompt,
             }
         )
@@ -327,9 +351,11 @@ def run_evaluation(
         print(f"\n--- {jobs[0]['qa']['id']} ---\n{jobs[0]['prompt']}")
         return
 
-    api_key = os.getenv("NOVITA_API_KEY")
+    provider = getattr(args, "provider", "novita")
+    api_key_name = "NOVITA_API_KEY" if provider == "novita" else "OPENROUTER_API_KEY"
+    api_key = os.getenv(api_key_name)
     if not api_key:
-        raise SystemExit("NOVITA_API_KEY is not set")
+        raise SystemExit(f"{api_key_name} is not set")
     response_path = args.output_dir / "responses.jsonl"
     existing = read_jsonl(response_path) if args.resume and response_path.exists() else []
     accepted = accepted_records(existing, jobs=jobs, plan=plan)
@@ -408,12 +434,13 @@ def call_job_with_hard_deadline(
     api_key: str,
     args: argparse.Namespace,
     job: JsonDict,
+    *,
+    worker_target: Callable[..., None] | None = None,
 ) -> JsonDict:
-    method = "fork" if "fork" in multiprocessing.get_all_start_methods() else "spawn"
-    context = multiprocessing.get_context(method)
+    context = multiprocessing.get_context("spawn")
     result_receiver, result_sender = context.Pipe(duplex=False)
     process = context.Process(
-        target=call_job_in_child,
+        target=worker_target or call_job_in_child,
         args=(result_sender, api_key, args, job),
     )
     started = time.monotonic()
@@ -453,16 +480,20 @@ def call_job_in_child(
 
 
 def call_job(api_key: str, args: argparse.Namespace, job: JsonDict) -> JsonDict:
+    provider = getattr(args, "provider", "novita")
+    caller = call_novita if provider == "novita" else call_openrouter
+    extra_kwargs = {"disable_reasoning": True} if provider == "openrouter" else {}
     try:
-        return call_novita(
+        return caller(
             api_key,
             args.model,
-            image_bytes=Path(job["image_path"]).read_bytes(),
+            image_bytes=job["board_presentation"].data,
             prompt=job["prompt"],
             system_prompt=SYSTEM_PROMPT,
             temperature=args.temperature,
             max_tokens=args.max_tokens,
             timeout=args.timeout,
+            **extra_kwargs,
         )
     finally:
         if args.request_interval:
@@ -504,6 +535,7 @@ def build_plan(
             for job in jobs
         },
     }
+    provider = getattr(args, "provider", "novita")
     return {
         "schema": EVAL_SCHEMA,
         "suite": SUITE_NAME,
@@ -521,8 +553,10 @@ def build_plan(
         },
         "system_prompt": SYSTEM_PROMPT,
         "request_settings": {
-            "provider": "novita",
-            "provider_routing": "novita_direct",
+            "provider": provider,
+            "provider_routing": (
+                "novita_direct" if provider == "novita" else "openrouter_default_unpinned"
+            ),
             "concurrency": args.concurrency,
             "temperature": args.temperature,
             "requested_max_tokens": args.max_tokens,
@@ -539,18 +573,28 @@ def build_plan(
     }
 
 
+def _served_model_matches(requested: str, served: Any) -> bool:
+    if served == requested:
+        return True
+    return requested.endswith(":free") and served == requested.removesuffix(":free")
+
+
 def response_record(job: JsonDict, result: JsonDict, plan: JsonDict) -> JsonDict:
     qa = job["qa"]
     response = result.get("response", "")
     error = result.get("error")
     if not error and not response:
         error = "empty response"
-    if not error and result.get("served_model") != plan["model"]:
+    if not error and not _served_model_matches(plan["model"], result.get("served_model")):
         error = (
             f"unexpected served model {result.get('served_model')!r}; expected {plan['model']!r}"
         )
-    if not error and result.get("provider") != "novita":
-        error = f"unexpected provider {result.get('provider')!r}; expected 'novita'"
+    expected_provider = plan["request_settings"]["provider"]
+    served_provider = result.get("provider")
+    if not error and expected_provider == "novita" and served_provider != "novita":
+        error = f"unexpected provider {served_provider!r}; expected 'novita'"
+    if not error and expected_provider == "openrouter" and not served_provider:
+        error = "OpenRouter response did not identify the serving provider"
     reasoning_tokens = usage_reasoning_tokens(result.get("usage") or {})
     if not error and reasoning_tokens:
         error = f"reasoning control violation: tokens={reasoning_tokens}"
@@ -615,8 +659,12 @@ def admissible_record(
             record.get("engine_state_sha256") == qa["engine_state_sha256"],
             record.get("expected") == qa["answer"],
             record.get("model_id") == plan["model"],
-            record.get("served_model") == plan["model"],
-            record.get("provider") == "novita",
+            _served_model_matches(plan["model"], record.get("served_model")),
+            (
+                record.get("provider") == "novita"
+                if plan["request_settings"]["provider"] == "novita"
+                else bool(record.get("provider"))
+            ),
             record.get("image_sha256") == job["image_sha256"],
             record.get("contract_sha256") == job["contract_sha256"],
             record.get("prompt_sha256") == hashlib.sha256(job["prompt"].encode()).hexdigest(),

@@ -926,10 +926,20 @@ def reasoning_request_for_model(
     return native_reasoning_request(effort)
 
 
+def _response_cost_usd(row: Dict[str, Any]) -> float:
+    result = row.get("result")
+    usage = result.get("usage") if isinstance(result, dict) else None
+    value = usage.get("cost") if isinstance(usage, dict) else None
+    if not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0:
+        return 0.0
+    return float(value)
+
+
 def _query_model(
     model_id: str,
     context: Any,
     reasoning_effort: str,
+    max_tokens: int,
 ) -> Dict[str, Any]:
     reasoning = reasoning_request_for_model(model_id, reasoning_effort)
     suite = load_context_suite()
@@ -937,7 +947,7 @@ def _query_model(
         OpenRouterConfig(
             model=model_id,
             temperature=0.2,
-            max_tokens=8_192,
+            max_tokens=max_tokens,
             reasoning=reasoning,
         )
     )
@@ -987,7 +997,6 @@ def _query_model(
     return {
         "context_version": f"{suite.id}@{suite.version}",
         "game_plan": choice.game_plan if choice is not None else "",
-        "rationale": choice.rationale if choice is not None else "",
         "action_index": action_index,
         "action": selected.get("action") if selected else None,
         "action_description": selected.get("description") if selected else None,
@@ -1021,7 +1030,9 @@ def query_replay(
     models: Sequence[str],
     responses_path: Path,
     reasoning_effort: str = "xhigh",
+    max_tokens: int = 8_192,
     max_requests_per_model: Optional[int] = None,
+    max_cost_usd: Optional[float] = None,
     retry_errors: bool = False,
 ) -> Dict[str, int]:
     """Query each model at every exact point, then advance only the human replay."""
@@ -1033,6 +1044,12 @@ def query_replay(
     existing_rows = _read_jsonl(responses_path)
     latest = _latest_responses(existing_rows)
     new_requests = Counter()
+    manifest_ids = {record["decision_id"] for record in manifest}
+    spent_usd = sum(
+        _response_cost_usd(row)
+        for (decision_id, model_id), row in latest.items()
+        if decision_id in manifest_ids and model_id in models
+    )
     state = _load_replay(game_id)
 
     try:
@@ -1075,6 +1092,8 @@ def query_replay(
                         and new_requests[model_id] >= max_requests_per_model
                     ):
                         continue
+                    if max_cost_usd is not None and spent_usd >= max_cost_usd:
+                        continue
                     models_to_query.append(model_id)
 
                 before = _state_fingerprint(state)
@@ -1087,6 +1106,7 @@ def query_replay(
                                 model_id,
                                 point.context,
                                 reasoning_effort,
+                                max_tokens,
                             ): model_id
                             for model_id in models_to_query
                         }
@@ -1129,6 +1149,7 @@ def query_replay(
                                 }
                             response_rows.append(row)
                             latest[(record["decision_id"], model_id)] = row
+                            spent_usd += _response_cost_usd(row)
                     _append_jsonl(responses_path, response_rows)
 
                 after = _state_fingerprint(state)
@@ -1671,10 +1692,16 @@ def run_action_diff(
     target_player: str = "captured",
     dry_run: bool = False,
     reasoning_effort: str = "xhigh",
+    max_tokens: int = 8_192,
     max_requests_per_model: Optional[int] = None,
+    max_cost_usd: Optional[float] = None,
     retry_errors: bool = False,
 ) -> Dict[str, Any]:
     """Preflight a full replay, optionally query models, and write artifacts."""
+    if max_tokens <= 0:
+        raise ValueError("max_tokens must be positive")
+    if max_cost_usd is not None and max_cost_usd <= 0:
+        raise ValueError("max_cost_usd must be positive")
     reasoning = native_reasoning_request(reasoning_effort)
     suite = load_context_suite()
     bucket_suite = load_decision_bucket_suite()
@@ -1715,7 +1742,8 @@ def run_action_diff(
             "allow_lookahead": False,
             "execute_model_actions": False,
             "temperature": 0.2,
-            "max_tokens": 8192,
+            "max_tokens": max_tokens,
+            "max_cost_usd": max_cost_usd,
             "native_reasoning_request": {
                 model_id: dict(reasoning)
                 for model_id in models
@@ -1767,7 +1795,9 @@ def run_action_diff(
             models=models,
             responses_path=responses_path,
             reasoning_effort=reasoning_effort,
+            max_tokens=max_tokens,
             max_requests_per_model=max_requests_per_model,
+            max_cost_usd=max_cost_usd,
             retry_errors=retry_errors,
         )
 

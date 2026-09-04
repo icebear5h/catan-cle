@@ -3,6 +3,7 @@ from types import SimpleNamespace
 from cle.game_engine.models.enums import Action, ActionType
 from cle.game_engine.models.player import Color
 from evals.replay_action_diff import (
+    _response_cost_usd,
     build_comparisons,
     canonicalize_policy_action_order,
     match_human_action,
@@ -145,6 +146,12 @@ def test_match_human_action_excludes_missing_controlled_parameters():
     assert "card selection" in discard["reason"]
     assert offer["status"] == "coarse"
     assert "trade terms" in offer["reason"]
+
+
+def test_action_diff_cost_guard_reads_only_valid_recorded_usage():
+    assert _response_cost_usd({"result": {"usage": {"cost": 0.125}}}) == 0.125
+    assert _response_cost_usd({"result": {"usage": {"cost": -1}}}) == 0.0
+    assert _response_cost_usd({"result": None}) == 0.0
 
 
 def test_action_diff_uses_an_explicit_observable_native_reasoning_condition():

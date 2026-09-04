@@ -18,8 +18,8 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@playground/*": ["../playground/frontend/src/*"]
+      "@playground/*": ["../../playground/frontend/src/*"]
     }
   },
-  "include": ["src", "../playground/frontend/src/types.ts"]
+  "include": ["src", "../../playground/frontend/src/types.ts"]
 }

@@ -47,6 +47,23 @@ def test_text_runner_uses_locked_winner_and_strict_scoring(tmp_path):
 
     assert len(questions) == len(jobs) == 60
     assert plan["format"] == "indexed_tile_rows"
+    assert job["board_presentation"].kind == "text"
+    assert job["board_presentation"].format == "indexed_tile_rows/v3"
+    assert job["board_presentation"].provenance.identity_space == (
+        "opaque_board_local_ids"
+    )
+    assert job["board_presentation"].content in job["prompt"]
+    expected_text = (
+        DEFAULT_DATASET_DIR
+        / "representations"
+        / job["qa"]["sample_id"]
+        / "indexed_tile_rows.txt"
+    ).read_text().rstrip("\n")
+    assert job["prompt"] == base_evaluator.build_prompt(
+        FORMAT_NAME,
+        expected_text,
+        job["qa"],
+    )
     assert plan["request_settings"]["image_input"] is False
     assert record["score"]["correct"] is True
     assert admissible_record(record, job=job, plan=plan)

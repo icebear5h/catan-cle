@@ -82,3 +82,5 @@ artifacts/staging/catan_board_bench/
 artifacts/diagnostics/sft/
 artifacts/runs/sft/*
 !artifacts/runs/sft/README.md
+artifacts/runs/inspect/*
+!artifacts/runs/inspect/README.md

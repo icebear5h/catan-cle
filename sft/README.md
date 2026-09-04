@@ -173,6 +173,33 @@ spatial replay rows solely to keep all four stage boundaries aligned with the
 production microbatch size of 32. The resulting epoch has 16,480 examples and
 515 optimizer steps at gradient accumulation 1.
 
+### Rung slices for staged real-board training
+
+The four-stage file can be cut into standalone rungs without rebuilding:
+
+```bash
+uv run python scripts/build_catan_board_recognition_production_curriculum.py \
+  --slice-stages spatial_grounding,clean_board_grounding \
+  --slice-output artifacts/generated/board_recognition/replay_v1/production_curriculum_v1_rung_a --overwrite
+```
+
+A slice keeps source order, re-indexes `curriculum_index`, records the
+source file's sha256, and resolves images from the shared `replay_v1/images`
+directory; train it with `--no-require-curriculum` from the previous rung's
+`final` bundle. The rungs follow the replay density bins, which are piece
+counts in disguise:
+
+| Rung | Stages | Pieces per board | Rows | Steps per epoch |
+|---|---|---|---|---|
+| a, early | spatial_grounding + clean_board_grounding | 0 to 16, median 9 | 4,960 | 155 |
+| b, mid | pieces_and_colors | 17 to 31, median 24 | 3,424 | 107 |
+| c, dense | real_game_distribution | 32 to 74, median 54 | 8,096 | 253 |
+
+Planned schedules: 3 epochs (465 steps) for a, 4 epochs (428) for b, 2
+epochs (506) for c, eval and save every 128, gated on the real-board panel
+per density bin. No validation board has more than 50 pieces, so a 50+
+endgame rung would need eval boards before it can be gated.
+
 ## Native TRL/PEFT vision SFT
 
 ### Empty-board spatial localization experiment
@@ -373,7 +400,73 @@ validation, and the replay production heads) runs against any checkpoint with:
 uv run python -m sft.scripts.eval_regression_panel \
   --adapter-dir /runs/catan-vision-sft/<run>/<identity>/checkpoints/checkpoint-256 \
   --label <run>-ck256
-``` Compare the
+```
+
+The panel also supports cheap, exact-row backfills instead of rerunning every
+set and visual control. `--include` takes stable set names and behavior-matrix
+backfills only need the original images:
+
+```bash
+uv run python -m sft.scripts.eval_regression_panel \
+  --adapter-dir /runs/catan-vision-sft/<run>/<identity>/final \
+  --label <checkpoint>-targeted-backfill \
+  --include single-v7,pairs-v2,pairs-control,full-board \
+  --variants original \
+  --dry-run
+```
+
+New summaries include `by_behavior`, `eval_set_id`, and the source JSONL hash.
+Build the chronological accuracy matrix and the forgetting matrix (defined as
+best-so-far accuracy minus current accuracy) from local/downloaded result
+roots with:
+
+```bash
+uv run python -m sft.scripts.report_behavior_history \
+  --checkpoint v3=/path/to/v3-panel \
+  --checkpoint pairs-v1=/path/to/pairs-v1-panel \
+  --checkpoint pairs-v2=/path/to/pairs-v2-panel \
+  --output-dir artifacts/runs/sft/behavior-history
+```
+
+Repeat a checkpoint label to merge an existing panel and a targeted backfill.
+The report refuses to calculate forgetting when the underlying row
+fingerprints differ. `sft/modal_behavior_history.py` provides the same report
+directly on `catan-sft-runs`; its semicolon-separated `--checkpoints` argument
+uses container paths under `/runs/` and is dry-run-first.
+
+The gradient-conflict probe is also dry-run-first:
+
+```bash
+uv run modal run sft/modal_gradient_conflicts.py \
+  --adapter-dir /runs/catan-vision-sft/<run>/<identity>/final \
+  --label <checkpoint>
+```
+
+It selects 24 training rows for each of pair positives, pair adjacent
+negatives, lone-road positives, and tile anchors. Pair and tile probes use
+eight examples per kind; each behavior uses unique states, avoids reuse across
+behaviors until the finite board pool is exhausted, and uses deterministic
+seed-42 selection. Six microbatches of four run through the same
+completion-only chunked NLL as SFT, in eval mode, with backward passes but no
+optimizer step. The JSON and Markdown reports separate vision, merger,
+language-LoRA, combined semantic input/output token rows, and the full update;
+they include raw and learning-rate-scaled norms, mean-gradient dot products
+and cosine, plus minibatch cosine mean/std/min/fraction-negative. Run the same
+selection against the v3 final, pairs-v1 final, and latest complete pairs-v2
+bundle. Only `--no-dry-run` crosses the paid H200 boundary.
+
+After downloading the three probe result directories, align their norms and
+cosines into a checkpoint trajectory with:
+
+```bash
+uv run python -m sft.scripts.report_gradient_trajectory \
+  --checkpoint v3=/path/to/v3-gradient-probe \
+  --checkpoint pairs-v1=/path/to/pairs-v1-gradient-probe \
+  --checkpoint pairs-v2=/path/to/pairs-v2-gradient-probe \
+  --output-dir artifacts/runs/sft/gradient-trajectory
+```
+
+Compare the
 resulting summaries with the fail-closed gate checker:
 
 ```bash

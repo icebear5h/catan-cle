@@ -2689,8 +2689,27 @@ unrelated spot masked (empties rise 66 -> 110). Grounding is real; the
 positive deficit is clutter sensitivity. Open decisions: single-piece kinds
 in the pair mix, patch loss weight 1 versus LoRA rank 16 arms.
 
+pairs_v2 checkpoint-128 (/runs/qwen-series-eval/pairs-v2/ck128): single-
+piece v3 positives 0.908 (from 0.825 after pairs_v1; roads 0.89 from 0.775,
+settlements 0.97, cities 0.88), negatives 0.853 (from 0.950; 36 of 44 name
+the piece), tiles 0.96. pairs_v2 validation positives 0.805, adjacent
+0.680, far 0.951, localization 0.985, in-run loss 0.116 / row exact 0.902.
+Road-heavy mix is recovering lone-piece roads; run continues to 512.
+Checkpoint-256: pairs_v2 validation positives 0.872 (roads 0.90), adjacent
+0.849 (26 of 34 name the target), far 0.956, localization 0.99, tiles 0.92
+to 1.00; in-run loss 0.055 / row exact 0.945. Single-piece v3 positives
+0.892 (roads 0.85), negatives 0.930, tiles 0.96 to 1.00. Both heads rising
+together for the first time; pair kinds edge_edge 0.927, node_edge 0.951,
+node_node 0.902.
+
 (An earlier launch at 13:47, app ap-XmbzzSYHOxaU5ZLDzFskw8, was interrupted
 during upload before any call spawned and is stopped.)
+- [x] Step 3 prep: `--slice-stages` in the curriculum builder; rungs a
+  (setup + grounding, 4,960 rows), b (sparse, 3,424), c (dense, 8,096)
+  written under replay_v1/production_curriculum_v1_rung_{a,b,c}; launcher
+  dry-run against validation_v1 passes. Occlusion controls showed the
+  residual positive failure is clutter sensitivity, so the 98% pair gate is
+  no longer a prerequisite; rung a starts from the pairs_v2 final bundle.
 - [ ] Step 3: after the pair gate (positives and negatives >= 98%, no hop-1
   false positives), run production_curriculum_v1 empty/setup + sparse from
   the pair bundle, then dense.

@@ -99,6 +99,138 @@
   },
   "modal_app": "ap-YT2dybLVHcEM9lLXjPQLzW",
   "next": "spatial_localization_v3 adds one tile per image (resource, number, inverse); decision on patch loss pending the step-256 occupancy read",
+  "pairs_v1_run": {
+    "dense_zero_shot": {
+      "edge.owner": 0.65,
+      "exact": 0.329,
+      "inverse.tile": 0.98,
+      "node.occupancy": 0.75,
+      "occupancy_owner_misses_77": {
+        "false_negative": 42,
+        "false_positive_elsewhere": 7,
+        "neighbor_false_positive_hop1": 11,
+        "neighbor_false_positive_hop2": 11,
+        "right_type_wrong_color": 1,
+        "wrong_piece_neighbor_hop2": 5
+      },
+      "occupied_recall_by_color": {
+        "BLACK": "17/28",
+        "BLUE": "22/29",
+        "BRONZE": "0/8",
+        "GREEN": "6/7",
+        "MYSTIC_BLUE": "9/11",
+        "ORANGE": "11/21",
+        "RED": "15/24"
+      },
+      "occupied_recall_by_piece": {
+        "CITY": "15/18",
+        "ROAD": "33/64",
+        "SETTLEMENT": "32/46"
+      },
+      "ports": 0.0,
+      "robber": 0.01,
+      "spatial_grounding": 0.1,
+      "tile.number": 0.98,
+      "tile.resource": 0.95
+    },
+    "in_run_eval": {
+      "128": {
+        "eval_loss": 0.089,
+        "row_exact": 0.885
+      },
+      "192": {
+        "eval_loss": 0.068,
+        "row_exact": 0.918
+      },
+      "256": {
+        "eval_loss": 0.059,
+        "row_exact": 0.93
+      },
+      "64": {
+        "eval_loss": 0.176,
+        "row_exact": 0.829
+      }
+    },
+    "initial_bundle": "v3 final",
+    "modal_app": "ap-GJWUfVfWDMWGJ6CGc0nADW",
+    "occlusion_controls": {
+      "colored_piece_to_token": {
+        "control_occlusion": 0.872,
+        "original": 0.995,
+        "target_occlusion": 0.044
+      },
+      "modal_app": "ap-MjEP6EuStM6eDmuqKzlA7E",
+      "occupancy_positive": {
+        "control_occlusion": 0.662,
+        "original": 0.788,
+        "target_occlusion": 0.012
+      },
+      "output": "/runs/qwen-series-eval/pairs-v1/final-occlusion",
+      "piece_to_token": {
+        "control_occlusion": 0.888,
+        "original": 1.0,
+        "target_occlusion": 0.183
+      },
+      "positives_under_control_occlusion": {
+        "empty": 110,
+        "other": 4,
+        "partner": 23,
+        "target": 268
+      },
+      "positives_under_target_occlusion": {
+        "empty": 274,
+        "other": 71,
+        "partner": 55,
+        "target": 5
+      },
+      "reading": "masking the queried spot removes the answer, so the token is grounded on its pixels; an equal-size mask elsewhere still costs 13 points and raises empty answers from 66 to 110, so the residual positive failure is clutter sensitivity, not grounding",
+      "rows_with_targets": 1709,
+      "tile_to_token": {
+        "control_occlusion": 0.756,
+        "original": 0.996,
+        "target_occlusion": 0.0
+      }
+    },
+    "pair_validation_ck128": {
+      "occupancy_negative_adjacent": 0.529,
+      "occupancy_positive": 0.728
+    },
+    "pair_validation_ck64": {
+      "occupancy_negative_adjacent": 0.849,
+      "occupancy_positive": 0.336
+    },
+    "pair_validation_final": {
+      "adjacent_misses": "41 name target, 10 partner",
+      "by_pair_kind": {
+        "edge_edge": 0.86,
+        "node_edge": 0.911,
+        "node_node": 0.921
+      },
+      "candidate": 0.996,
+      "exact": 0.929,
+      "localization": 0.995,
+      "occupancy_negative_adjacent": 0.747,
+      "occupancy_negative_far": 0.982,
+      "occupancy_positive": 0.788,
+      "positive_misses": "66 empty, 18 partner",
+      "tiles": 0.987
+    },
+    "reading": "neighbor confusions on real boards fell from 32 to 27 and cross-type from 9 to 0; false negatives unchanged at 42 and concentrated on roads; lone-piece positives regressed 0.942 -> 0.825 because the pair set has no single-piece images",
+    "run_name": "catan-qwen38-sl-pairs-v1-s256-20260903",
+    "single_piece_v3_validation": {
+      "localization": 1.0,
+      "note": "positives down from 0.942; all 42 misses empty; roads 0.775",
+      "occupancy_negative": 0.95,
+      "occupancy_positive": 0.825,
+      "tiles": 0.99
+    },
+    "single_piece_v7_validation": {
+      "occupancy_negative_adjacent": 0.677,
+      "occupancy_negative_far": 0.95,
+      "occupancy_positive": 0.825
+    },
+    "steps": 256
+  },
   "patch_loss_weight": 0.0,
   "run_name": "catan-qwen38-sl-v2-single-piece-20260903",
   "schema": "catan_qwen38_single_piece_v2/v1",

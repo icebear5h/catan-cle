@@ -4,7 +4,9 @@ from pathlib import Path
 import pytest
 
 from data_pipeline.board_recognition.adjacent_pair_localization import (
-    PAIR_KINDS,
+    FAR_KINDS,
+    SINGLE_KINDS,
+    TOUCHING_KINDS,
     build_pair_board,
     cross_touching,
     location_pairs,
@@ -48,18 +50,30 @@ def _touch(contract, first, second):
 
 def test_location_pairs_touch_per_kind():
     _, contract = _fixture_contract()
-    counts = {kind: len(location_pairs(contract, kind)) for kind in PAIR_KINDS}
+    counts = {kind: len(location_pairs(contract, kind)) for kind in TOUCHING_KINDS}
     assert counts == {"node_node": 72, "edge_edge": 126, "node_edge": 144}
-    for kind in PAIR_KINDS:
+    for kind in TOUCHING_KINDS:
         for first, second in location_pairs(contract, kind):
             assert first != second and _touch(contract, first, second)
+    neighbors = neighbor_tokens(contract)
+    touching = cross_touching(contract)
+    for kind in FAR_KINDS:
+        pairs = location_pairs(contract, kind)
+        assert len(pairs) > 100
+        for first, second in pairs:
+            assert not _touch(contract, first, second)
+            if first[1] == second[1]:
+                assert second not in neighbor_distances(neighbors, first, NEAR_MAX_HOPS)
+            else:
+                near = neighbor_distances(neighbors, first, NEAR_MAX_HOPS)
+                assert not any(endpoint in near for endpoint in touching[second])
     with pytest.raises(SpatialLocalizationError):
         location_pairs(contract, "tile_tile")
 
 
 def test_sample_pairs_is_deterministic_and_follows_the_color_rules():
     _, contract = _fixture_contract()
-    for kind in PAIR_KINDS:
+    for kind in TOUCHING_KINDS:
         pairs = location_pairs(contract, kind)
         first = sample_pairs(sample_id="board_a", pair_kind=kind, pairs=pairs, colors=COLORS, count=40)
         again = sample_pairs(sample_id="board_a", pair_kind=kind, pairs=pairs, colors=COLORS, count=40)
@@ -209,8 +223,8 @@ def test_build_pair_board_renders_one_image_per_pair(tmp_path):
         colors=COLORS,
     )
     images = sorted(path.name for path in tmp_path.glob("test_fixture_empty_*.png"))
-    assert len(images) == 3 and {name.split("_")[3] + "_" + name.split("_")[4] for name in images} == set(PAIR_KINDS)
-    assert {row["pair_kind"] for row in rows} == set(PAIR_KINDS)
+    assert len(images) == 3 and {name.split("_")[3] + "_" + name.split("_")[4] for name in images} == set(TOUCHING_KINDS)
+    assert {row["pair_kind"] for row in rows} == set(TOUCHING_KINDS)
     per_image = {}
     for row in rows:
         per_image.setdefault(row["images"][0], []).append(row["task_type"])
@@ -228,9 +242,11 @@ def test_build_pair_board_renders_one_image_per_pair(tmp_path):
 
 
 def test_per_kind_image_counts(tmp_path):
-    assert parse_kind_counts("40", 0) == {"node_node": 40, "edge_edge": 40, "node_edge": 40}
-    assert parse_kind_counts(7, 0) == {"node_node": 7, "edge_edge": 7, "node_edge": 7}
-    assert parse_kind_counts("edge_edge=80,node_edge=50", 40) == {"node_node": 40, "edge_edge": 80, "node_edge": 50}
+    zero_far = {kind: 0 for kind in FAR_KINDS + SINGLE_KINDS}
+    assert parse_kind_counts("40", 0) == {"node_node": 40, "edge_edge": 40, "node_edge": 40, **zero_far}
+    assert parse_kind_counts(7, 0) == {"node_node": 7, "edge_edge": 7, "node_edge": 7, **zero_far}
+    assert parse_kind_counts("edge_edge=80,node_edge=50", 40) == {"node_node": 40, "edge_edge": 80, "node_edge": 50, **zero_far}
+    assert parse_kind_counts("node_node_far=10", 40)["node_node_far"] == 10
     with pytest.raises(SpatialLocalizationError):
         parse_kind_counts("tile_tile=3", 40)
     state, contract = _fixture_contract()
@@ -246,6 +262,57 @@ def test_per_kind_image_counts(tmp_path):
     assert len(list(tmp_path.glob("test_fixture_empty_*.png"))) == 3
     assert {row["pair_kind"] for row in rows} == {"edge_edge", "node_edge"}
     assert sum(row["task_type"] == "occupancy_positive" and row["piece"] == "ROAD" for row in rows) == 5
+
+
+def test_far_pair_control_rows(tmp_path):
+    state, contract = _fixture_contract()
+    style = load_render_style(Path(DEFAULT_STYLE_PATH))
+    rows = build_pair_board(
+        state={**state, "split": "validation", "sample_id": "fixture_empty", "image_size": [256, 256]},
+        contract=contract,
+        output_images=tmp_path,
+        style=style,
+        images_per_kind={"node_node_far": 1, "edge_edge_far": 1, "node_edge_far": 1},
+        colors=COLORS,
+    )
+    assert {row["pair_kind"] for row in rows} == set(FAR_KINDS)
+    assert len(list(tmp_path.glob("validation_fixture_empty_*_far_*.png"))) == 3
+    for row in rows:
+        assert row["partner_distance"] == "far"
+        if row["task_type"] == "occupancy_positive":
+            assert not _touch(contract, row["target_token"], row["partner_token"])
+    node_edge = [row for row in rows if row["pair_kind"] == "node_edge_far"]
+    assert sum(row["task_type"] == "piece_to_token" for row in node_edge) == 2
+
+
+def test_single_kinds_reuse_the_single_piece_rows(tmp_path):
+    state, contract = _fixture_contract()
+    style = load_render_style(Path(DEFAULT_STYLE_PATH))
+    rows = build_pair_board(
+        state={**state, "split": "validation", "sample_id": "fixture_empty", "image_size": [256, 256]},
+        contract=contract,
+        output_images=tmp_path,
+        style=style,
+        images_per_kind={"single_node": 2, "single_edge": 1, "node_edge": 1},
+        colors=COLORS,
+        novel_color="NOVEL_VALIDATION_H165",
+        asset_root=None,
+    )
+    images = sorted(path.name for path in tmp_path.glob("validation_fixture_empty_*.png"))
+    assert len(images) == 4 and sum("_single_" in name for name in images) == 3
+    singles = [row for row in rows if row["pair_kind"] in SINGLE_KINDS]
+    assert {row["pair_kind"] for row in singles} == set(SINGLE_KINDS)
+    assert all(row["partner_distance"] == "none" and "partner_token" not in row for row in singles)
+    per_image = {}
+    for row in singles:
+        per_image.setdefault(row["images"][0], []).append(row["task_type"])
+    for task_types in per_image.values():
+        assert task_types.count("occupancy_negative_adjacent") == 1 and task_types.count("occupancy_negative_far") == 1
+        assert task_types.count("occupancy_positive") <= 1
+    node_positive = next(row for row in singles if row["pair_kind"] == "single_node" and row["task_type"] == "occupancy_positive")
+    assert node_positive["messages"][0]["content"].endswith("building?") and node_positive["schema"].startswith("catan_single_piece")
+    pair_rows = [row for row in rows if row["pair_kind"] == "node_edge"]
+    assert pair_rows and all(row["partner_distance"] == 1 for row in pair_rows)
 
 
 def test_render_placement_matches_render_contract(tmp_path):

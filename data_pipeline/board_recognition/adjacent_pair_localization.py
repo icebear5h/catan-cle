@@ -14,6 +14,18 @@ hardest perception case), ``edge_edge`` (two edges sharing a node), and
 ``node_node`` and ``edge_edge``; ``node_edge`` pairs share a colour half the
 time because a road touching its own settlement is the normal game case.
 
+The three ``*_far`` kinds are the control: the same two pieces placed more
+than ``NEAR_MAX_HOPS`` apart, so a checkpoint that reads far pairs but not
+touching pairs fails on neighbour discrimination, while one that fails both
+has a multi-piece prior problem. They default to zero training images and
+are meant for validation; set them per kind with
+``--eval-images-per-board-per-kind node_node_far=10,...``.
+
+``single_node`` and ``single_edge`` put one piece on the board with the
+single-piece stage's rows, so a mixed file keeps the lone-piece anchor that
+pure pair training erodes (the pairs_v1 run pushed lone-piece positives from
+0.94 to 0.83 on the single-piece validation set). They default to zero.
+
 Rows per image: ``occupancy_positive`` and ``colored_piece_to_token`` for each
 piece, ``piece_to_token`` only when the type alone identifies one piece,
 ``occupancy_negative_adjacent`` for a third location touching either piece,
@@ -63,6 +75,9 @@ from data_pipeline.board_recognition.single_piece_localization import (
     piece_words,
     place_piece,
     render_contract,
+    rows_for_placement,
+    sample_empty_tokens,
+    sample_placements,
     tile_facts,
     tile_rows_for_image,
     write_novel_sprites,
@@ -87,19 +102,34 @@ ROW_SCHEMA = "catan_adjacent_pair_localization_row/v1"
 GROUNDING_STAGE = "adjacent_pair"
 TASK_FAMILY = "adjacent_pair_localization"
 DEFAULT_OUTPUT_NAME = "spatial_localization_pairs_v1"
-PAIR_KINDS = ("node_node", "edge_edge", "node_edge")
+TOUCHING_KINDS = ("node_node", "edge_edge", "node_edge")
+FAR_KINDS = ("node_node_far", "edge_edge_far", "node_edge_far")
+SINGLE_KINDS = ("single_node", "single_edge")
+PAIR_KINDS = TOUCHING_KINDS + FAR_KINDS + SINGLE_KINDS
 TRAIN_IMAGES_PER_BOARD_PER_KIND = 40
 EVAL_IMAGES_PER_BOARD_PER_KIND = 30
 SAME_COLOR_FRACTION = 0.5
 NAMED_ROWS_PER_IMAGE = {"node_node": 6, "edge_edge": 4, "node_edge": 6}
 
 
-def parse_kind_counts(spec: str | int, default: int) -> dict[str, int]:
-    """Images per board per pair kind from ``40`` or ``node_node=30,edge_edge=80``."""
+def base_kind(pair_kind: str) -> str:
+    return pair_kind[: -len("_far")] if pair_kind.endswith("_far") else pair_kind
 
-    counts = {kind: int(default) for kind in PAIR_KINDS}
+
+def is_far_kind(pair_kind: str) -> bool:
+    return pair_kind.endswith("_far")
+
+
+def parse_kind_counts(spec: str | int, default: int) -> dict[str, int]:
+    """Images per board per pair kind from ``40`` or ``node_node=30,edge_edge=80``.
+
+    A bare number applies to the touching kinds; the far control and single
+    kinds stay at zero unless named.
+    """
+
+    counts = {kind: (int(default) if kind in TOUCHING_KINDS else 0) for kind in PAIR_KINDS}
     if isinstance(spec, int) or str(spec).isdigit():
-        return {kind: int(spec) for kind in PAIR_KINDS}
+        return {kind: (int(spec) if kind in TOUCHING_KINDS else 0) for kind in PAIR_KINDS}
     for part in filter(None, (piece.strip() for piece in str(spec).split(","))):
         kind, _, value = part.partition("=")
         if kind not in PAIR_KINDS or not value.isdigit():
@@ -120,9 +150,39 @@ def cross_touching(contract: JsonDict) -> dict[str, list[str]]:
     return touching
 
 
-def location_pairs(contract: JsonDict, pair_kind: str) -> list[tuple[str, str]]:
-    """Every touching location pair of one kind, in a stable order."""
+def far_location_pairs(contract: JsonDict, pair_kind: str) -> list[tuple[str, str]]:
+    """Every pair of the kind's entity types more than ``NEAR_MAX_HOPS`` apart."""
 
+    neighbors = neighbor_tokens(contract)
+    touching = cross_touching(contract)
+    nodes = [node["token"] for node in contract["nodes"]]
+    edges = [edge["token"] for edge in contract["edges"]]
+    if pair_kind == "node_node_far":
+        candidates = combinations(nodes, 2)
+    elif pair_kind == "edge_edge_far":
+        candidates = combinations(edges, 2)
+    elif pair_kind == "node_edge_far":
+        candidates = ((node, edge) for node in nodes for edge in edges)
+    else:
+        raise SpatialLocalizationError(f"unknown pair kind: {pair_kind}")
+    pairs = []
+    for first, second in candidates:
+        if entity_of(first) == entity_of(second):
+            if second in neighbor_distances(neighbors, first, NEAR_MAX_HOPS):
+                continue
+        else:
+            near = neighbor_distances(neighbors, first, NEAR_MAX_HOPS)
+            if any(endpoint in near for endpoint in touching[second]):
+                continue
+        pairs.append((first, second))
+    return sorted(pairs)
+
+
+def location_pairs(contract: JsonDict, pair_kind: str) -> list[tuple[str, str]]:
+    """Every location pair of one kind, in a stable order."""
+
+    if is_far_kind(pair_kind):
+        return far_location_pairs(contract, pair_kind)
     if pair_kind == "node_node":
         pairs = {tuple(sorted(edge["node_tokens"])) for edge in contract["edges"]}
     elif pair_kind == "edge_edge":
@@ -168,7 +228,7 @@ def sample_pairs(
         color_a = _pick(sample_id, salt + ":color_a", colors)
         others = [color for color in colors if color != color_a]
         same = (
-            pair_kind == "node_edge"
+            base_kind(pair_kind) == "node_edge"
             and novel_color is None
             and _stable_rank(sample_id, salt, "same_color") % 100 < SAME_COLOR_FRACTION * 100
         )
@@ -245,7 +305,7 @@ def _piece_metadata(state: JsonDict, piece: Placement, partner: Placement, pair_
         "partner_token": partner_token,
         "partner_piece": partner_kind,
         "partner_color": color_words(partner_color),
-        "partner_distance": 1,
+        "partner_distance": "far" if is_far_kind(pair_kind) else 1,
         "same_color": color == partner_color,
     }
 
@@ -366,10 +426,61 @@ def build_pair_board(
     touching = cross_touching(contract)
     tokens = [token for token, region in regions.items() if region["entity_type"] in ("node", "edge")]
     counts = dict(DEFAULT_NEGATIVES if negatives is None else negatives)
-    kind_counts = parse_kind_counts(images_per_kind, 0) if not isinstance(images_per_kind, dict) else images_per_kind
+    kind_counts = {kind: 0 for kind in PAIR_KINDS}
+    kind_counts.update(images_per_kind if isinstance(images_per_kind, dict) else parse_kind_counts(images_per_kind, 0))
     tiles = tile_facts(contract) if tile_rows else []
     rows: list[JsonDict] = []
-    for pair_kind in PAIR_KINDS:
+    for single_kind in SINGLE_KINDS:
+        wanted = kind_counts[single_kind]
+        if wanted <= 0:
+            continue
+        entity_type = single_kind.split("_")[1]
+        entity_tokens = [token for token in tokens if entity_of(token) == entity_type]
+        novel_count = round(wanted * NOVEL_COLOR_FRACTION) if novel_color else 0
+        singles = sample_placements(
+            sample_id=state["sample_id"], entity_type=entity_type, tokens=entity_tokens, colors=colors, count=wanted - novel_count
+        )
+        if novel_count:
+            singles += sample_placements(
+                sample_id=state["sample_id"] + "_novel", entity_type=entity_type, tokens=entity_tokens, colors=(novel_color,), count=novel_count
+            )
+        single_jobs = [
+            (token, piece, color, output_images / f"{state['split']}_{state['sample_id']}_{single_kind}_{token[1:-1]}_{piece}_{color}.png")
+            for token, piece, color in singles
+        ]
+        if pool is None:
+            for token, piece, color, destination in single_jobs:
+                render_contract(place_piece(contract, token, piece, color), image_size, style, destination, asset_root)
+        else:
+            futures = [
+                pool.submit(render_contract, place_piece(contract, token, piece, color), image_size, style, destination, asset_root)
+                for token, piece, color, destination in single_jobs
+            ]
+            for future in futures:
+                future.result()
+        for token, piece, color, destination in single_jobs:
+            single_rows = rows_for_placement(
+                state=state,
+                regions=regions,
+                controls=controls,
+                token=token,
+                piece=piece,
+                color=color,
+                image_name=destination.name,
+                empty_tokens=sample_empty_tokens(
+                    sample_id=state["sample_id"], token=token, piece=piece, color=color, tokens=entity_tokens, neighbors=neighbors, counts=counts
+                ),
+                distances=neighbor_distances(neighbors, token),
+            )
+            for row in single_rows:
+                row["pair_kind"] = single_kind
+                row["partner_distance"] = "none"
+            rows.extend(single_rows)
+            if tile_rows:
+                rows.extend(
+                    tile_rows_for_image(state=state, tiles=tiles, regions=regions, controls=controls, image_name=destination.name, salt=destination.stem)
+                )
+    for pair_kind in TOUCHING_KINDS + FAR_KINDS:
         wanted = kind_counts[pair_kind]
         if wanted <= 0:
             continue

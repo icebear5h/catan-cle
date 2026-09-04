@@ -2666,6 +2666,29 @@ image counts; pairs_v2 = node_node=30, edge_edge=80, node_edge=50 per
 board (eval 10/20/15), 1 adjacent + 1 far negative, tiles. Panel entry
 swapped to pairs_v2. Next launch: 512 steps from the pairs_v1 final bundle.
 
+Launched 2026-09-03 ~16:05 PDT: run `catan-qwen38-sl-pairs-v2-roads-s512-20260903`,
+data identity `d430f310de8a`, app ap-5628OGxpUM5CLarPop9j7r, call
+fc-01M1N012MCXBQQ8E763Z0YGNP1, from the pairs_v1 final bundle, batch 16 x 2,
+512 steps, eval and save every 128. pairs_v2: 67,478 train rows, roads 66%
+of positives, 20.4% empty. Output under
+`/runs/catan-vision-sft/catan-qwen38-sl-pairs-v2-roads-s512-20260903/d430f310de8a`.
+Local disk was full (404 MB free); with permission the abandoned v4, v5, v6
+single-piece exports were deleted (4.7 GB).
+
+Panel pairs-v1-final complete (recorded under pairs_v1_run in
+reports/sft/2026-09-03-qwen38-single-piece-v2.json): pair validation
+positives 0.788 / adjacent 0.747 / far 0.982; real boards node.occupancy
+0.75 (from 0.625), edge.owner 0.65 (from 0.602), 77 misses (from 99),
+neighbor confusions 27 (from 32), cross-type 0 (from 9), false negatives
+42 unchanged, roads 52% recall, bronze 0/8. Far-pair control set exported
+(`spatial_localization_pairs_control_v1`, validation/test only) and added
+to the panel; occlusion variants launched on the pairs_v1 bundle (app
+ap-MjEP6EuStM6eDmuqKzlA7E). Occlusion controls on the pairs_v1 bundle: positives 0.788 original,
+0.012 with the queried spot masked (274/405 become "empty"), 0.662 with an
+unrelated spot masked (empties rise 66 -> 110). Grounding is real; the
+positive deficit is clutter sensitivity. Open decisions: single-piece kinds
+in the pair mix, patch loss weight 1 versus LoRA rank 16 arms.
+
 (An earlier launch at 13:47, app ap-XmbzzSYHOxaU5ZLDzFskw8, was interrupted
 during upload before any call spawned and is stopped.)
 - [ ] Step 3: after the pair gate (positives and negatives >= 98%, no hop-1

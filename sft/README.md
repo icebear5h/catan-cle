@@ -310,6 +310,17 @@ single-piece roads versus 84% settlements and 91% cities, every miss
 0.089, 0.068, 0.059 at steps 64, 128, 192, 256), so pair-stage runs use
 512 steps.
 
+The three `*_far` pair kinds are the control condition: the same two pieces
+placed more than three hops apart. They default to zero training images.
+`spatial_localization_pairs_control_v1` is a validation-and-test-only export
+(`--train-images-per-board-per-kind 0 --eval-images-per-board-per-kind
+node_node_far=10,edge_edge_far=20,node_edge_far=15`) and sits in the
+regression panel beside the touching-pair set. Read the two together: a
+checkpoint that answers far pairs but not touching pairs fails on neighbour
+discrimination; one that fails both has a multi-piece prior problem, and
+the aggregate eval loss cannot tell the two apart because the near-free
+tile, localization, and far-empty rows dilute it four to one.
+
 Continue from the v3 single-piece `final` bundle through `--initial-bundle`.
 The gate before moving to sparse boards: occupancy positives and negatives
 both at or above 98% on the pair validation set with no hop-1 false

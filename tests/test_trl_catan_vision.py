@@ -378,6 +378,41 @@ def test_family_words_init_seeds_each_family_from_its_word_row():
         initialize_semantic_token_rows(model, components, setup, seed=42, mode="sideways")
 
 
+def test_vocab_gaussian_init_matches_the_base_vocabulary_spread():
+    vocab, hidden = 512, 8
+    token_ids = tuple(range(vocab - 154 - 4, vocab - 4))
+    setup = TokenSetup(
+        tokens=tuple(f"<T{index}>" for index in range(154)),
+        token_ids=token_ids,
+        tokenizer_size=vocab - 4,
+        model_vocab_size=vocab,
+        added_tokens=154,
+    )
+    components = ModelComponents(
+        input_embedding="model.language_model.embed_tokens",
+        output_head="lm_head",
+        language="model.language_model",
+        vision="model.visual",
+        merger="model.visual.merger",
+        vocab_size=vocab,
+        hidden_size=hidden,
+    )
+    torch.manual_seed(0)
+    model = _EmbeddingModel(vocab, hidden)
+    report = initialize_semantic_token_rows(model, components, setup, seed=42, mode="vocab_gaussian")
+    ids = torch.tensor(token_ids)
+    for module in (model.model.language_model.embed_tokens, model.lm_head):
+        reference = module.weight[: min(token_ids)]
+        rows = module.weight[ids]
+        assert torch.allclose(rows.mean(dim=0), reference.mean(dim=0), atol=0.3)
+        ratio = rows.std(dim=0) / reference.std(dim=0)
+        assert ratio.mean() > 0.7 and ratio.mean() < 1.3
+        cosine = torch.nn.functional.normalize(rows - rows.mean(0), dim=1)
+        offdiag = (cosine @ cosine.T).fill_diagonal_(0).abs().mean()
+        assert offdiag < 0.5
+    assert report["noise_scale"] == 1.0 and report["mode"] == "vocab_gaussian"
+
+
 def test_answer_token_metrics_ignore_prompt_and_trivial_completion_tokens():
     vocab, hidden = 6, 4
     weight = torch.eye(vocab, hidden)

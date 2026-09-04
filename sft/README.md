@@ -490,8 +490,11 @@ sft/modal_catan_vision_sft.py          Modal image, Volumes, upload, H200 bounda
 
 `--token-init` selects how the 154 atlas rows are seeded when no
 `--initial-bundle` is given: `mean_noise` (default, the base-vocabulary mean
-plus seeded noise) or `family_words`, which starts each row from the base
-embedding of " node", " edge", " tile", or " port" plus the same noise so
+plus noise at a tenth of the vocabulary's spread, so all rows start nearly
+identical), `vocab_gaussian` (each row drawn at the vocabulary's own
+per-dimension mean and standard deviation, so rows start as distinct as
+random real words), or `family_words`, which starts each row from the base
+embedding of " node", " edge", " tile", or " port" plus the small noise so
 every family carries its own shared direction from step one. Motivation: on
 the pair-stage bundles the tile row `<T10>` pointed away from the tile
 centroid while every other tile sat at +0.22 to +0.30, and a token's

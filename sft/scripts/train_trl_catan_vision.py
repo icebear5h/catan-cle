@@ -61,7 +61,7 @@ SPATIAL_TARGET_MODES = ("correct", "shuffled")
 # answer-only metrics so a plateau cannot hide behind end-of-turn accuracy.
 ANSWER_METRIC_TRIVIAL_TOKENS = ("<|im_end|>", "\n")
 SEMANTIC_ROW_NOISE_SCALE = 0.1
-TOKEN_INIT_MODES = ("mean_noise", "family_words")
+TOKEN_INIT_MODES = ("mean_noise", "vocab_gaussian", "family_words")
 # Base-vocabulary words whose embeddings seed each atlas family under the
 # family_words initialization; the leading space matches how the words appear
 # mid-sentence in the training prompts.
@@ -870,7 +870,11 @@ def initialize_semantic_token_rows(
     ``family_words`` each row starts from the base embedding of its family
     word (" node", " edge", " tile", " port") plus the same noise, so nodes,
     edges, tiles, and ports carry a shared per-family direction from the
-    first step instead of one undifferentiated atlas direction.
+    first step instead of one undifferentiated atlas direction. Under
+    ``vocab_gaussian`` each row is drawn from the base vocabulary's own
+    per-dimension mean and standard deviation, so the 154 rows start as far
+    apart as random real words rather than as one direction plus a tenth of
+    that spread.
     """
 
     if mode not in TOKEN_INIT_MODES:
@@ -883,7 +887,11 @@ def initialize_semantic_token_rows(
     ids = torch.tensor(setup.token_ids, dtype=torch.long)
     families = [token[1] for token in setup.tokens]
     generator = torch.Generator().manual_seed(int(seed))
-    report: JsonDict = {"mode": mode, "reference_rows": reference_rows, "noise_scale": SEMANTIC_ROW_NOISE_SCALE}
+    report: JsonDict = {
+        "mode": mode,
+        "reference_rows": reference_rows,
+        "noise_scale": 1.0 if mode == "vocab_gaussian" else SEMANTIC_ROW_NOISE_SCALE,
+    }
     for name, path in (
         ("input_embedding", components.input_embedding),
         ("output_head", components.output_head),
@@ -895,7 +903,7 @@ def initialize_semantic_token_rows(
         with torch.no_grad():
             reference = weight[:reference_rows].float()
             mean = reference.mean(dim=0)
-            noise_std = reference.std(dim=0) * SEMANTIC_ROW_NOISE_SCALE
+            noise_std = reference.std(dim=0) * (1.0 if mode == "vocab_gaussian" else SEMANTIC_ROW_NOISE_SCALE)
             del reference
             before = weight[ids].float().norm(dim=1)
             noise = torch.randn((len(setup.token_ids), weight.shape[1]), generator=generator)

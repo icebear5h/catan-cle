@@ -1,0 +1,3930 @@
+{
+  "schema": "catan_failure_scorecard/v1",
+  "panel_dir": "/private/tmp/claude-504/-Users-henry-catan-learning/53f03b8e-da92-4cfb-93fe-10c65e1c4ff7/scratchpad/s1e_eval",
+  "generated_at": "2026-09-04T22:57:46.068364+00:00",
+  "sets": {
+    "spatial_localization_v1e-stage1-validation": {
+      "eval_jsonl": "artifacts/generated/board_recognition/replay_v1/spatial_localization_v1e/stage1/validation.jsonl",
+      "records": "/private/tmp/claude-504/-Users-henry-catan-learning/53f03b8e-da92-4cfb-93fe-10c65e1c4ff7/scratchpad/s1e_eval/s1-final/catan-qwen-series-eval-gauss-ladder-eval/original/records.jsonl",
+      "counts": {
+        "rows": 1540,
+        "errors": 14,
+        "blindness": 0,
+        "neighbor_confusion": 0,
+        "far_false_positive": 0,
+        "other_occupancy_miss": 0,
+        "head_flip": 0,
+        "token_glitch": 0,
+        "orientation_ratio": null,
+        "colour_dropout_min_recall": null
+      },
+      "modes": {
+        "blindness": {
+          "count": 0,
+          "by_piece": {},
+          "by_color": {}
+        },
+        "neighbor_confusion": {
+          "count": 0,
+          "by_class": {}
+        },
+        "far_false_positive": {
+          "count": 0,
+          "by_class": {}
+        },
+        "other_occupancy_miss": {
+          "count": 0,
+          "by_class": {}
+        },
+        "head_flip": {
+          "count": 0,
+          "by_head": {},
+          "tokens_with_3plus": {}
+        },
+        "token_glitch": {
+          "count": 0,
+          "by_kind": {},
+          "tokens": {}
+        },
+        "orientation": {
+          "vertical": {
+            "errors": 0,
+            "n": 0,
+            "error_rate": null
+          },
+          "slanted": {
+            "errors": 0,
+            "n": 0,
+            "error_rate": null
+          },
+          "ratio": null
+        },
+        "colour_dropout": {
+          "recall_by_color": {},
+          "min_color": null,
+          "min_recall": null
+        }
+      },
+      "occupied_recall_by_piece": {},
+      "occupancy_classes": {},
+      "unjoined_records": 0,
+      "per_token": {
+        "<E00_01>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E00_05>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E00_20>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E01_02>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E01_06>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E02_03>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E02_09>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E03_04>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E03_12>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E04_05>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E04_15>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E05_16>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E06_07>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E06_23>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E07_08>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E07_24>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E08_09>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E08_27>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E09_10>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E10_11>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E10_29>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E11_12>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E11_32>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E12_13>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E13_14>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E13_34>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E14_15>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E14_37>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E15_17>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E16_18>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E16_21>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E17_18>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E17_39>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E18_40>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E19_20>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E19_21>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E19_46>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E20_22>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E21_43>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E22_23>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<E02_09>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E22_49>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E23_52>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E24_25>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E24_53>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E25_26>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E26_27>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E27_28>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E28_29>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E29_30>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E30_31>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E31_32>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E32_33>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E33_34>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E34_35>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E35_36>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E36_37>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E37_38>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E38_39>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E39_41>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E40_42>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E40_44>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E41_42>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E43_44>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E43_47>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E45_46>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E45_47>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E46_48>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E48_49>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E49_50>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E50_51>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E51_52>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E52_53>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<N00>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N01>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N02>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N03>": {
+          "n": 10,
+          "errors": 2,
+          "error_rate": 0.2,
+          "dominant_wrong": "<N00>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N04>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N05>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N06>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N07>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "A",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N08>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<N02>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N09>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N10>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N11>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<N02>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N12>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N13>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N14>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N15>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N16>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N17>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N18>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<N16>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N19>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N20>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N21>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<N19>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N22>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N23>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N24>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N25>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "A",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N26>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N27>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "D",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N28>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N29>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N30>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N31>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N32>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N33>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N34>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N35>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N36>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N37>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N38>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N39>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N40>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N41>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N42>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N43>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<E43_47>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N44>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N45>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N46>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N47>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N48>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N49>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N50>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N51>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N52>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N53>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<P00>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<P01>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<P02>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<P03>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<P04>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<P05>": {
+          "n": 10,
+          "errors": 2,
+          "error_rate": 0.2,
+          "dominant_wrong": "<P04>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<P06>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<P07>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<P08>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T00>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T01>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T02>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T03>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T04>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T05>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T06>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T07>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T08>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "A",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T09>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T10>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T11>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T12>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T13>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T14>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T15>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T16>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T17>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T18>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        }
+      }
+    },
+    "spatial_localization_v1-probes-validation": {
+      "eval_jsonl": "artifacts/generated/board_recognition/replay_v1/spatial_localization_v1/probes/validation.jsonl",
+      "records": "/private/tmp/claude-504/-Users-henry-catan-learning/53f03b8e-da92-4cfb-93fe-10c65e1c4ff7/scratchpad/s1e_eval/s1-final/gauss-ladder-spatial_localization_v1-probes-validation-eval/original/records.jsonl",
+      "counts": {
+        "rows": 252,
+        "errors": 207,
+        "blindness": 0,
+        "neighbor_confusion": 0,
+        "far_false_positive": 0,
+        "other_occupancy_miss": 0,
+        "head_flip": 0,
+        "token_glitch": 1,
+        "orientation_ratio": null,
+        "colour_dropout_min_recall": null
+      },
+      "modes": {
+        "blindness": {
+          "count": 0,
+          "by_piece": {},
+          "by_color": {}
+        },
+        "neighbor_confusion": {
+          "count": 0,
+          "by_class": {}
+        },
+        "far_false_positive": {
+          "count": 0,
+          "by_class": {}
+        },
+        "other_occupancy_miss": {
+          "count": 0,
+          "by_class": {}
+        },
+        "head_flip": {
+          "count": 0,
+          "by_head": {},
+          "tokens_with_3plus": {}
+        },
+        "token_glitch": {
+          "count": 1,
+          "by_kind": {
+            "no_token": 1
+          },
+          "tokens": {
+            "<E01_02>": 1
+          }
+        },
+        "orientation": {
+          "vertical": {
+            "errors": 0,
+            "n": 0,
+            "error_rate": null
+          },
+          "slanted": {
+            "errors": 0,
+            "n": 0,
+            "error_rate": null
+          },
+          "ratio": null
+        },
+        "colour_dropout": {
+          "recall_by_color": {},
+          "min_color": null,
+          "min_recall": null
+        }
+      },
+      "occupied_recall_by_piece": {},
+      "occupancy_classes": {},
+      "unjoined_records": 0,
+      "per_token": {
+        "<E00_01>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N06>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E00_05>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N22>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E00_20>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N20>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E01_02>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N49>",
+          "head_flips": 0,
+          "glitches": 1,
+          "orientation": "vertical"
+        },
+        "<E01_06>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N06>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E02_03>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<T09>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E02_09>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<T09>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E03_04>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N32>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E03_12>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N34>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E04_05>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N13>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E04_15>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N05>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E05_16>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N05>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E06_07>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N23>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E06_23>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N23>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E07_08>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<T01>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E07_24>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N53>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E08_09>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<T08>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E08_27>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N29>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E09_10>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<T09>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E10_11>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<T09>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E10_29>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<T09>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E11_12>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<T10>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E11_32>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N32>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E12_13>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<T10>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E13_14>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N38>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E13_34>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N37>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E14_15>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<T12>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E14_37>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N37>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E15_17>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N05>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E16_18>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N47>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E16_21>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<E19_20>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E17_18>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N47>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E17_39>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N37>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E18_40>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N37>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E19_20>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N20>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E19_21>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<E19_20>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E19_46>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N46>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E20_22>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N23>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E21_43>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<E24_25>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E22_23>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N23>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E22_49>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N49>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E23_52>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<T18>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E24_25>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N25>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E24_53>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N25>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E25_26>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N25>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E26_27>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N25>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E27_28>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N28>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E28_29>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E29_30>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N30>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E30_31>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N30>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E31_32>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<T09>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E32_33>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<P02>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E33_34>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N33>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E34_35>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N38>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E35_36>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N35>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E36_37>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N36>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E37_38>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<P03>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E38_39>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N36>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E39_41>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N37>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E40_42>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N42>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E40_44>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E41_42>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N42>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E43_44>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<P06>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E43_47>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N47>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E45_46>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<P06>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E45_47>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<P06>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E46_48>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N42>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E48_49>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<E19_46>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E49_50>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<E24_25>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E50_51>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N53>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E51_52>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N53>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E52_53>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N53>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<N00>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N01>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N49>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N02>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N06>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N03>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N00>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N04>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N05>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N05>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N13>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N06>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N23>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N07>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<T01>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N08>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<T09>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N09>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<T09>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N10>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<T09>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N11>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "<P02>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N12>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N37>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N13>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N37>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N14>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N37>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N15>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<T12>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N16>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N45>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N17>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N37>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N18>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<E40_44>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N19>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N46>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N20>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N21>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<P06>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N22>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N49>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N23>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N24>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N25>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N25>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N26>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N25>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N27>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N28>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N29>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "<T09>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N30>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "<E28_29>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N31>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N35>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N32>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N11>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N33>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N34>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N37>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N35>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N36>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "<P03>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N37>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N38>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N39>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N37>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N40>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "<E40_44>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N41>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N37>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N42>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N43>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<P06>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N44>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<E40_44>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N45>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<P06>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N46>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "<E46_48>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N47>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<P06>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N48>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N20>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N49>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N50>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N23>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N51>": {
+          "n": 2,
+          "errors": 1,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N53>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N52>": {
+          "n": 2,
+          "errors": 2,
+          "error_rate": 1.0,
+          "dominant_wrong": "<N53>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N53>": {
+          "n": 2,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        }
+      }
+    },
+    "spatial_localization_v1-stage1-validation": {
+      "eval_jsonl": "artifacts/generated/board_recognition/replay_v1/spatial_localization_v1/stage1/validation.jsonl",
+      "records": "/private/tmp/claude-504/-Users-henry-catan-learning/53f03b8e-da92-4cfb-93fe-10c65e1c4ff7/scratchpad/s1e_eval/s1-final/gauss-ladder-spatial_localization_v1-stage1-validation-eval/original/records.jsonl",
+      "counts": {
+        "rows": 1540,
+        "errors": 190,
+        "blindness": 0,
+        "neighbor_confusion": 0,
+        "far_false_positive": 0,
+        "other_occupancy_miss": 0,
+        "head_flip": 0,
+        "token_glitch": 3,
+        "orientation_ratio": null,
+        "colour_dropout_min_recall": null
+      },
+      "modes": {
+        "blindness": {
+          "count": 0,
+          "by_piece": {},
+          "by_color": {}
+        },
+        "neighbor_confusion": {
+          "count": 0,
+          "by_class": {}
+        },
+        "far_false_positive": {
+          "count": 0,
+          "by_class": {}
+        },
+        "other_occupancy_miss": {
+          "count": 0,
+          "by_class": {}
+        },
+        "head_flip": {
+          "count": 0,
+          "by_head": {},
+          "tokens_with_3plus": {}
+        },
+        "token_glitch": {
+          "count": 3,
+          "by_kind": {
+            "no_token": 3
+          },
+          "tokens": {
+            "<E18_40>": 2,
+            "<E41_42>": 1
+          }
+        },
+        "orientation": {
+          "vertical": {
+            "errors": 0,
+            "n": 0,
+            "error_rate": null
+          },
+          "slanted": {
+            "errors": 0,
+            "n": 0,
+            "error_rate": null
+          },
+          "ratio": null
+        },
+        "colour_dropout": {
+          "recall_by_color": {},
+          "min_color": null,
+          "min_recall": null
+        }
+      },
+      "occupied_recall_by_piece": {},
+      "occupancy_classes": {},
+      "unjoined_records": 0,
+      "per_token": {
+        "<E00_01>": {
+          "n": 10,
+          "errors": 3,
+          "error_rate": 0.3,
+          "dominant_wrong": "<E02_03>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E00_05>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "<E19_20>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E00_20>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N00>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E01_02>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N22>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E01_06>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<E02_09>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E02_03>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E02_09>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E03_04>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E03_12>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N12>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E04_05>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N19>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E04_15>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E05_16>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "<E13_14>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E06_07>": {
+          "n": 10,
+          "errors": 4,
+          "error_rate": 0.4,
+          "dominant_wrong": "<N06>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E06_23>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N23>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E07_08>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N07>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E07_24>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "<E01_06>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E08_09>": {
+          "n": 10,
+          "errors": 6,
+          "error_rate": 0.6,
+          "dominant_wrong": "<N02>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E08_27>": {
+          "n": 10,
+          "errors": 4,
+          "error_rate": 0.4,
+          "dominant_wrong": "<E52_53>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E09_10>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N10>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E10_11>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E10_29>": {
+          "n": 10,
+          "errors": 4,
+          "error_rate": 0.4,
+          "dominant_wrong": "<E27_28>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E11_12>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "<E32_33>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E11_32>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "<T02>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E12_13>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E13_14>": {
+          "n": 10,
+          "errors": 2,
+          "error_rate": 0.2,
+          "dominant_wrong": "C",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E13_34>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N34>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E14_15>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N16>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E14_37>": {
+          "n": 10,
+          "errors": 3,
+          "error_rate": 0.3,
+          "dominant_wrong": "<E16_18>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E15_17>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E16_18>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "C",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E16_21>": {
+          "n": 10,
+          "errors": 4,
+          "error_rate": 0.4,
+          "dominant_wrong": "<N19>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E17_18>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N18>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E17_39>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E18_40>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "pink",
+          "head_flips": 0,
+          "glitches": 2,
+          "orientation": "slanted"
+        },
+        "<E19_20>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E19_21>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E19_46>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<N19>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E20_22>": {
+          "n": 10,
+          "errors": 2,
+          "error_rate": 0.2,
+          "dominant_wrong": "<E02_03>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E21_43>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E22_23>": {
+          "n": 10,
+          "errors": 2,
+          "error_rate": 0.2,
+          "dominant_wrong": "<E01_06>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E22_49>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N22>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E23_52>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E24_25>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E24_53>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N24>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E25_26>": {
+          "n": 10,
+          "errors": 3,
+          "error_rate": 0.3,
+          "dominant_wrong": "<N25>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E26_27>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E27_28>": {
+          "n": 10,
+          "errors": 4,
+          "error_rate": 0.4,
+          "dominant_wrong": "<N28>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E28_29>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<P01>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E29_30>": {
+          "n": 10,
+          "errors": 4,
+          "error_rate": 0.4,
+          "dominant_wrong": "<N30>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E30_31>": {
+          "n": 10,
+          "errors": 4,
+          "error_rate": 0.4,
+          "dominant_wrong": "<N12>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E31_32>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<N32>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E32_33>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<N33>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E33_34>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E34_35>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E35_36>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<P03>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E36_37>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E37_38>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E38_39>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<N44>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E39_41>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E40_42>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E40_44>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N44>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E41_42>": {
+          "n": 10,
+          "errors": 2,
+          "error_rate": 0.2,
+          "dominant_wrong": "<N41>",
+          "head_flips": 0,
+          "glitches": 1,
+          "orientation": "vertical"
+        },
+        "<E43_44>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "<T13>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E43_47>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E45_46>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E45_47>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E46_48>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E48_49>": {
+          "n": 10,
+          "errors": 2,
+          "error_rate": 0.2,
+          "dominant_wrong": "A",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E49_50>": {
+          "n": 10,
+          "errors": 3,
+          "error_rate": 0.3,
+          "dominant_wrong": "<N50>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E50_51>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<N50>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E51_52>": {
+          "n": 10,
+          "errors": 5,
+          "error_rate": 0.5,
+          "dominant_wrong": "<N52>",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E52_53>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<N00>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N01>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N02>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N03>": {
+          "n": 10,
+          "errors": 2,
+          "error_rate": 0.2,
+          "dominant_wrong": "<N00>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N04>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N05>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N06>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N07>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "A",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N08>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<N02>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N09>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N10>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N11>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<N02>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N12>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N13>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N14>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N15>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N16>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N17>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N18>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<N16>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N19>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N20>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N21>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<N19>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N22>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N23>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N24>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N25>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "A",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N26>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N27>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "D",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N28>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N29>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N30>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N31>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N32>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N33>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N34>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N35>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N36>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N37>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N38>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N39>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N40>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N41>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N42>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N43>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<E43_47>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N44>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N45>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N46>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N47>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N48>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N49>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N50>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N51>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N52>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N53>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<P00>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<P01>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<P02>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<P03>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<P04>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<P05>": {
+          "n": 10,
+          "errors": 2,
+          "error_rate": 0.2,
+          "dominant_wrong": "<P04>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<P06>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<P07>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<P08>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T00>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T01>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T02>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T03>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T04>": {
+          "n": 10,
+          "errors": 3,
+          "error_rate": 0.3,
+          "dominant_wrong": "<N21>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T05>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T06>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T07>": {
+          "n": 10,
+          "errors": 2,
+          "error_rate": 0.2,
+          "dominant_wrong": "<N24>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T08>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<N07>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T09>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T10>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T11>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T12>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T13>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T14>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T15>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T16>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<T06>",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T17>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<T18>": {
+          "n": 10,
+          "errors": 1,
+          "error_rate": 0.1,
+          "dominant_wrong": "<N07>",
+          "head_flips": 0,
+          "glitches": 0
+        }
+      }
+    }
+  },
+  "row_entanglement": {
+    "available": true,
+    "adapter": "/private/tmp/claude-504/-Users-henry-catan-learning/53f03b8e-da92-4cfb-93fe-10c65e1c4ff7/scratchpad/s1e_final/adapter_model.safetensors",
+    "twins": [],
+    "tokens_with_twin": 0,
+    "tokens_with_twin_count": 0,
+    "rows_below_family_floor": [],
+    "rows_below_family_floor_count": 0
+  },
+  "baseline": "reports/sft/scorecards/marker-control-step256.json",
+  "deltas": {
+    "spatial_localization_v1-stage1-validation": {
+      "rows": 1348,
+      "errors": 178,
+      "blindness": 0,
+      "neighbor_confusion": 0,
+      "far_false_positive": 0,
+      "other_occupancy_miss": 0,
+      "head_flip": 0,
+      "token_glitch": 3
+    }
+  }
+}

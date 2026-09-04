@@ -2810,8 +2810,22 @@ scorecards, never loss.
   `catan-qwen38-gauss-s1-markers-entity-20260904`, app ap-kO4nZVjPpdt6jiPIqzjp8A,
   call fc-01M1PZJJ9YHDSFB7EZAK7MT0M0, 256 steps, save at 128 and 256, output
   `/runs/catan-vision-sft/catan-qwen38-gauss-s1-markers-entity-20260904/<identity>`.
-- [ ] Step 1 gate: marker set scorecard vs the old marker control (wrong-entity
-  answers, glitches, row entanglement zero).
+- [x] Step 1 gate passed: v1e validation exact 0.991 (marker_to_token 0.987,
+  token_to_marker 0.995); diamond-glyph transfer 0.877 (edges 0.764);
+  gray-dot probes 0.179 / candidate 0.310 (glyph control: 0.928 / 0.639);
+  scorecard modes all zero; rows 0 twins, 0 anti-aligned. Grounding is more
+  marker-shape-specific than the glyph control; accepted for the ladder.
+- [x] Step 2 launched: `catan-qwen38-gauss-s2-v3-20260904` from the stage-1
+  final, v3 data, 512 steps, eval at the end only.
+- [x] Budget-capped final marker diagnostic (2026-09-04): 308 paired rows across
+  all 154 tokens and five boards; free generation 303/308, candidate 304/308.
+  Marker-to-token 149/154; token-to-marker 154/154. Four wrong locations
+  (E22_23, N03, N08, P05) and one node-to-edge answer (N43 -> E43_47), no
+  malformed/repeated output. Slanted queries 95/96, vertical 48/48; actual-road
+  transfer remains untested. App ap-XgCM5XzAhsdEgK8G2F2WPQ completed and stopped,
+  192s runtime (~$0.25 compute estimate, not settled billing), no retries.
+  Report: reports/sft/2026-09-04-gaussian-entity-marker-mini.md. This small
+  diagnostic does not close the full step-1 gate or launch the next stage.
 - [ ] Step 2: v3 data from the stage-1 final, 512 steps; gate vs the old v3 adapter.
 - [ ] Step 3: pairs_v2 data from the stage-2 final, 512 steps; gate vs pairs_v2.
 - [ ] Step 4: rungs a, b, c from the winner.

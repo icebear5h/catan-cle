@@ -78,6 +78,50 @@
     "marker_control_ck256_single_piece_zero_shot_candidate": 0.08
   },
   "dataset": "spatial_localization_v2 (24,080 rows, 6,020 single-piece images, pink held out)",
+  "gaussian_ladder_20260904": {
+    "stage1": {
+      "app": "ap-kO4nZVjPpdt6jiPIqzjp8A",
+      "data": "spatial_localization_v1e (entity-shaped markers)",
+      "decision": "gate passed; grounding is more marker-shape-specific than the glyph control (diamond and gray-dot transfer lower), accepted because stage 2 retrains grounding on real sprites; future rung: mix glyph and entity markers",
+      "gate_eval": {
+        "gray_dot_probes": {
+          "candidate": 0.31,
+          "exact": 0.179
+        },
+        "v1_diamond_transfer": {
+          "edges": 0.764,
+          "exact": 0.877,
+          "marker_to_token": 0.768,
+          "token_to_marker": 0.986
+        },
+        "v1e_validation": {
+          "exact": 0.991,
+          "marker_to_token": 0.987,
+          "token_to_marker": 0.995
+        }
+      },
+      "in_run_final": {
+        "eval_loss": 0.0089,
+        "row_exact": 0.9917
+      },
+      "init": "vocab_gaussian",
+      "marker_control_reference": {
+        "diamond_candidate": 0.956,
+        "diamond_exact": 0.928,
+        "probe_candidate": 0.639
+      },
+      "run": "catan-qwen38-gauss-s1-markers-entity-20260904",
+      "scorecard": "reports/sft/scorecards/gauss-s1-markers-entity-final.json: all modes zero, 3 none-type glitches on the diamond set; rows: 0 twins, 0 below family floor on input and output",
+      "steps": 256
+    },
+    "stage2": {
+      "data": "spatial_localization_v3 train",
+      "eval": "final step only, checkpoints every 128",
+      "initial_bundle": "stage1 final 73b1c523741d",
+      "run": "catan-qwen38-gauss-s2-v3-20260904",
+      "steps": 512
+    }
+  },
   "in_run_eval": {
     "step_128": {
       "answer_row_exact": 0.7408,

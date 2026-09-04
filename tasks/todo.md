@@ -2816,7 +2816,9 @@ scorecards, never loss.
   scorecard modes all zero; rows 0 twins, 0 anti-aligned. Grounding is more
   marker-shape-specific than the glyph control; accepted for the ladder.
 - [x] Step 2 launched: `catan-qwen38-gauss-s2-v3-20260904` from the stage-1
-  final, v3 data, 512 steps, eval at the end only.
+  final, v3 data, 512 steps, eval at the end only; app
+  ap-caHTX43hyS76PjHelxu6VH, call fc-01M1QABS61GZDMXNKNHPJCRETC, output
+  `/runs/catan-vision-sft/catan-qwen38-gauss-s2-v3-20260904/020dd5ad268f`.
 - [x] Budget-capped final marker diagnostic (2026-09-04): 308 paired rows across
   all 154 tokens and five boards; free generation 303/308, candidate 304/308.
   Marker-to-token 149/154; token-to-marker 154/154. Four wrong locations

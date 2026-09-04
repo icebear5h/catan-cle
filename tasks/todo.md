@@ -2755,7 +2755,9 @@ Reference: staged v3 run (from v2 ck256) had loss 0.226 / row exact 0.770 at
 User clarified they meant a distributional init: the family_words run
 (ap-K0OaRzUNteoi3apL3WG6EM) was stopped within minutes and replaced by
 `catan-qwen38-sl-v3-direct-gaussinit-s512-20260904` with `--token-init
-vocab_gaussian` (rows drawn at the vocabulary's per-dimension mean and std).
+vocab_gaussian` (rows drawn at the vocabulary's per-dimension mean and std):
+app ap-cJCHyYUTNRNuK3jD9H3jTf, call fc-01M1NVCS7ZSY07Y4MZHXC8F467, output
+`/runs/catan-vision-sft/catan-qwen38-sl-v3-direct-gaussinit-s512-20260904/020dd5ad268f`.
 Morning checks: side-by-side in-run curves; row geometry of both final
 bundles (tile rows vs tile centroid, T10 in particular); panel on the better
 bundle. The pairs_v2 final panel (ap-iKwx2e32A6pT3lzn851xJV) decides the

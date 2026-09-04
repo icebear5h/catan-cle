@@ -2802,6 +2802,11 @@ scorecards, never loss.
   256 steps, eval and save every 64, app ap-TTCqSzF68fAtxwbTIUpQdJ, call
   fc-01M1PXB6MBB8HDRGGEE63RGEYE, output
   `/runs/catan-vision-sft/catan-qwen38-gauss-s1-marker-20260904/334d305b1c43`.
+- [x] User asked for road-shaped markers: `--entity-markers` in the marker
+  exporter draws edge markers as bars along the edge at its true angle and
+  tile markers as tile-scale hexagons; exported as spatial_localization_v1e.
+  The diamond-marker stage-1 run (ap-TTCqSzF68fAtxwbTIUpQdJ) was stopped at
+  about step 60 and stage 1 relaunched on v1e with the eval only at the end.
 - [ ] Step 1 gate: marker set scorecard vs the old marker control (wrong-entity
   answers, glitches, row entanglement zero).
 - [ ] Step 2: v3 data from the stage-1 final, 512 steps; gate vs the old v3 adapter.

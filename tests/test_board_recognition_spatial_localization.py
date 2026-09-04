@@ -4,6 +4,8 @@ from pathlib import Path
 from PIL import Image
 
 from data_pipeline.board_recognition.spatial_localization import (
+    entity_marker_polygon,
+    render_markers,
     PROBE_DOT_SCALES,
     _deterministic_shuffle,
     _relation_rows,
@@ -74,6 +76,26 @@ def test_marker_rows_are_bidirectional_and_have_control_bboxes(tmp_path):
     assert len(list(tmp_path.glob("*.png"))) == 40
     assert {row["marker_style"] for row in rows} == {"validation_diamond"}
     assert all(row["spatial_targets"][0]["bbox"] != row["spatial_targets"][0]["control_bbox"] for row in rows)
+
+
+def test_entity_markers_draw_edge_bars_along_the_edge(tmp_path):
+    bar = entity_marker_polygon({"kind": "edge", "endpoints": [(100, 100), (160, 200)]}, 16)
+    assert bar is not None and len(bar) == 4
+    centre = (sum(x for x, _ in bar) / 4, sum(y for _, y in bar) / 4)
+    assert abs(centre[0] - 130) < 1e-6 and abs(centre[1] - 150) < 1e-6  # centred on the edge midpoint
+    long_side = ((bar[0][0] - bar[1][0]) ** 2 + (bar[0][1] - bar[1][1]) ** 2) ** 0.5
+    assert abs(long_side - 0.76 * (60**2 + 100**2) ** 0.5) < 1e-6  # inset 12% at each end
+    hexagon = entity_marker_polygon({"kind": "tile", "center": (50, 50)}, 16)
+    assert hexagon is not None and len(hexagon) == 6
+    assert entity_marker_polygon({"kind": "node", "center": (5, 5)}, 16) is None
+
+    base = Image.new("RGB", (256, 256), (9, 103, 165))
+    glyph = render_markers(base, [("A", (130, 150), {"kind": "edge", "endpoints": [(100, 100), (160, 200)]})], style_name="validation_diamond")
+    shaped = render_markers(base, [("A", (130, 150), {"kind": "edge", "endpoints": [(100, 100), (160, 200)]})], style_name="validation_diamond", entity_shaped=True)
+    fill = (255, 132, 207)
+    along = (112, 120)  # a point on the edge line well away from the centre glyph
+    assert shaped.getpixel(along) == fill
+    assert glyph.getpixel(along) != fill
 
 
 def test_relation_stage_expands_every_canonical_fact_eight_times():

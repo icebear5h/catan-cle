@@ -259,13 +259,49 @@ def _font(radius: int) -> ImageFont.ImageFont:
             return ImageFont.load_default()
 
 
+def entity_marker_polygon(geometry: JsonDict, radius: int) -> list[tuple[float, float]] | None:
+    """Polygon for an entity-shaped marker, or None to fall back to the style glyph.
+
+    Edges get a bar along the edge at its true angle, so the marker stage asks
+    the model to ground a thin slanted shape the way a road is drawn; tiles
+    get a hexagon at tile scale. Nodes keep the style glyph.
+    """
+
+    kind = geometry.get("kind")
+    if kind == "edge" and geometry.get("endpoints"):
+        (x1, y1), (x2, y2) = geometry["endpoints"]
+        dx, dy = x2 - x1, y2 - y1
+        length = math.hypot(dx, dy)
+        if length == 0:
+            return None
+        ux, uy = dx / length, dy / length
+        nx, ny = -uy, ux
+        half = radius * 0.55
+        inset = length * 0.12
+        ax, ay = x1 + ux * inset, y1 + uy * inset
+        bx, by = x2 - ux * inset, y2 - uy * inset
+        return [(ax + nx * half, ay + ny * half), (bx + nx * half, by + ny * half), (bx - nx * half, by - ny * half), (ax - nx * half, ay - ny * half)]
+    if kind == "tile":
+        cx, cy = geometry["center"]
+        size = radius * 1.8
+        return [(cx + size * math.cos(math.radians(60 * index + 30)), cy + size * math.sin(math.radians(60 * index + 30))) for index in range(6)]
+    return None
+
+
 def render_markers(
     base_image: Image.Image,
-    assignments: Sequence[tuple[str, tuple[int, int]]],
+    assignments: Sequence[tuple[str, tuple[int, int]] | tuple[str, tuple[int, int], JsonDict]],
     *,
     style_name: str,
+    entity_shaped: bool = False,
 ) -> Image.Image:
-    """Overlay readable markers without changing the underlying board layout."""
+    """Overlay readable markers without changing the underlying board layout.
+
+    With ``entity_shaped`` an assignment may carry a third element describing
+    the entity (``{"kind": "edge", "endpoints": [...]}`` or ``{"kind": "tile",
+    "center": ...}``); those markers take the entity's shape and the letter
+    sits at the centre as before.
+    """
 
     if style_name not in MARKER_STYLES:
         raise ValueError(f"unknown marker style: {style_name}")
@@ -275,10 +311,15 @@ def render_markers(
     radius = max(16, round(min(image.size) * 0.023))
     font = _font(radius)
     outline = (255, 255, 255)
-    for marker, (cx, cy) in assignments:
+    for assignment in assignments:
+        marker, (cx, cy) = assignment[0], assignment[1]
+        geometry = assignment[2] if len(assignment) > 2 else {}
         if marker not in MARKERS:
             raise ValueError(f"unknown marker: {marker}")
-        if shape == "circle":
+        entity_polygon = entity_marker_polygon(geometry, radius) if entity_shaped else None
+        if entity_polygon is not None:
+            draw.polygon(entity_polygon, fill=fill, outline=outline)
+        elif shape == "circle":
             points: Any = [cx - radius, cy - radius, cx + radius, cy + radius]
             draw.ellipse(points, fill=fill, outline=outline, width=3)
         elif shape == "square":
@@ -353,6 +394,14 @@ def _training_row(
     return row
 
 
+def _marker_geometry(token: str, regions: dict[str, JsonDict], contract: JsonDict) -> JsonDict:
+    kind = regions[token]["entity_type"]
+    if kind == "edge":
+        edge = next(entry for entry in contract["edges"] if entry["token"] == token)
+        return {"kind": "edge", "endpoints": [tuple(regions[node]["center_pixels"]) for node in edge["node_tokens"]]}
+    return {"kind": kind, "center": tuple(regions[token]["center_pixels"])}
+
+
 def marker_rows_for_board(
     *,
     state: JsonDict,
@@ -361,6 +410,7 @@ def marker_rows_for_board(
     output_images: Path,
     board_index: int,
     view_padding_factor: float,
+    entity_shaped: bool = False,
 ) -> list[JsonDict]:
     """Render one marker set and return both QA directions for all 154 tokens."""
 
@@ -380,9 +430,10 @@ def marker_rows_for_board(
         token_to_marker = {token: marker_order[index] for index, token in enumerate(group)}
         image_name = f"{split}_{state['sample_id']}_markers_{group_index:02d}.png"
         assignments = [
-            (token_to_marker[token], tuple(regions[token]["center_pixels"])) for token in group
+            (token_to_marker[token], tuple(regions[token]["center_pixels"]), _marker_geometry(token, regions, contract))
+            for token in group
         ]
-        marked = render_markers(base_image, assignments, style_name=style)
+        marked = render_markers(base_image, assignments, style_name=style, entity_shaped=entity_shaped)
         marked.save(output_images / image_name)
 
         for token in group:
@@ -395,6 +446,7 @@ def marker_rows_for_board(
                 "target_token": token,
                 "marker": marker,
                 "marker_style": style,
+                "marker_shape": "entity" if entity_shaped else "glyph",
                 "marker_group": group,
             }
             rows.append(
@@ -646,6 +698,7 @@ def export_spatial_localization_curriculum(
     output_dir: str | Path | None = None,
     style_path: str | Path = DEFAULT_STYLE_PATH,
     overwrite: bool = False,
+    entity_markers: bool = False,
 ) -> JsonDict:
     """Export marked localization, unmarked orientation, and held-out probes."""
 
@@ -698,6 +751,7 @@ def export_spatial_localization_curriculum(
                     output_images=images_dir,
                     board_index=board_index,
                     view_padding_factor=style.view_padding_factor,
+                    entity_shaped=entity_markers,
                 )
             )
         marker_rows[split] = rows
@@ -781,12 +835,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--style-path", type=Path, default=DEFAULT_STYLE_PATH)
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument(
+        "--entity-markers",
+        action="store_true",
+        help="Draw edge markers as bars along the edge and tile markers at tile scale instead of one glyph for every entity.",
+    )
     args = parser.parse_args(argv)
     result = export_spatial_localization_curriculum(
         args.dataset_dir,
         output_dir=args.output_dir,
         style_path=args.style_path,
         overwrite=args.overwrite,
+        entity_markers=args.entity_markers,
     )
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0

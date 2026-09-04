@@ -1,0 +1,110 @@
+{
+  "actor": "BLUE",
+  "board_surface": "indexed_tile_rows/v3",
+  "catalog_snapshot": "artifacts/runs/model_selection/openrouter_vlm_27b_72b_20260831/openrouter_catalog_snapshot.json",
+  "colors": [
+    "BLUE",
+    "RED",
+    "WHITE",
+    "ORANGE"
+  ],
+  "context_suite": "catan-agent@7.0.0",
+  "decision": "fresh first settlement",
+  "generated_at": "2026-08-31T23:36:53.427497+00:00",
+  "human_action_labels": false,
+  "max_cost_usd": 4.0,
+  "max_retries": 0,
+  "max_tokens_omitted": true,
+  "models": [
+    "qwen/qwen3.5-27b",
+    "qwen/qwen3.5-35b-a3b",
+    "qwen/qwen3.6-27b",
+    "qwen/qwen3.6-35b-a3b",
+    "qwen/qwen3.8-27b",
+    "qwen/qwen3-vl-30b-a3b-thinking",
+    "meta/muse-glimmer-30b",
+    "google/gemma-4-31b-it",
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
+  ],
+  "prior_cost_usd": 0.09030406,
+  "prompt_token_allowance": 20000,
+  "reasoning_request": {
+    "effort": "high",
+    "exclude": false
+  },
+  "replay_input": false,
+  "request_cost_upper_bounds": {
+    "google/gemma-4-31b-it": {
+      "completion_price_per_token_usd": 3.4e-07,
+      "max_completion_tokens": 16384,
+      "prompt_price_per_token_usd": 9e-08,
+      "prompt_token_allowance": 20000,
+      "request_upper_bound_usd": 0.00737056
+    },
+    "meta/muse-glimmer-30b": {
+      "completion_price_per_token_usd": 1.2e-06,
+      "max_completion_tokens": 16384,
+      "prompt_price_per_token_usd": 3e-07,
+      "prompt_token_allowance": 20000,
+      "request_upper_bound_usd": 0.025660799999999998
+    },
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": {
+      "completion_price_per_token_usd": 0.0,
+      "max_completion_tokens": 65536,
+      "prompt_price_per_token_usd": 0.0,
+      "prompt_token_allowance": 20000,
+      "request_upper_bound_usd": 0.0
+    },
+    "qwen/qwen3-vl-30b-a3b-thinking": {
+      "completion_price_per_token_usd": 2.4e-06,
+      "max_completion_tokens": 32768,
+      "prompt_price_per_token_usd": 2e-07,
+      "prompt_token_allowance": 20000,
+      "request_upper_bound_usd": 0.0826432
+    },
+    "qwen/qwen3.5-27b": {
+      "completion_price_per_token_usd": 1.56e-06,
+      "max_completion_tokens": 65536,
+      "prompt_price_per_token_usd": 1.95e-07,
+      "prompt_token_allowance": 20000,
+      "request_upper_bound_usd": 0.10613616000000001
+    },
+    "qwen/qwen3.5-35b-a3b": {
+      "completion_price_per_token_usd": 1.25e-06,
+      "max_completion_tokens": 235929,
+      "prompt_price_per_token_usd": 2.5e-07,
+      "prompt_token_allowance": 20000,
+      "request_upper_bound_usd": 0.29991125
+    },
+    "qwen/qwen3.6-27b": {
+      "completion_price_per_token_usd": 3.6e-06,
+      "max_completion_tokens": 235929,
+      "prompt_price_per_token_usd": 6e-07,
+      "prompt_token_allowance": 20000,
+      "request_upper_bound_usd": 0.8613444
+    },
+    "qwen/qwen3.6-35b-a3b": {
+      "completion_price_per_token_usd": 9e-07,
+      "max_completion_tokens": 235929,
+      "prompt_price_per_token_usd": 1e-07,
+      "prompt_token_allowance": 20000,
+      "request_upper_bound_usd": 0.2143361
+    },
+    "qwen/qwen3.8-27b": {
+      "completion_price_per_token_usd": 2.55e-06,
+      "max_completion_tokens": 131072,
+      "prompt_price_per_token_usd": 4.25e-07,
+      "prompt_token_allowance": 20000,
+      "request_upper_bound_usd": 0.3427336
+    }
+  },
+  "scheduling": "sequential",
+  "schema": "catan-initial-settlement-reasoning-plan/v1",
+  "seeds": [
+    117,
+    883,
+    2027
+  ],
+  "temperature": 0.2,
+  "timeout_seconds": 900.0
+}

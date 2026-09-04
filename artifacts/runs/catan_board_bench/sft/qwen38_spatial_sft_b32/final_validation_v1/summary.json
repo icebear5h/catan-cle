@@ -1,0 +1,639 @@
+{
+  "adapter_dir": "/runs/catan-vision-sft/catan-qwen38-spatial-sft-b32-20260901/2a68b45208db/final",
+  "adapter_evidence": {
+    "adapter_dir": "/runs/catan-vision-sft/catan-qwen38-spatial-sft-b32-20260901/2a68b45208db/final",
+    "adapter_loaded": true,
+    "non_lora_state": {
+      "loaded": false,
+      "path": null,
+      "tensors": 0
+    },
+    "semantic_tokens": {
+      "added_tokens": 0,
+      "model_vocab_size": 248320,
+      "token_ids": [
+        248077,
+        248078,
+        248079,
+        248080,
+        248081,
+        248082,
+        248083,
+        248084,
+        248085,
+        248086,
+        248087,
+        248088,
+        248089,
+        248090,
+        248091,
+        248092,
+        248093,
+        248094,
+        248095,
+        248096,
+        248097,
+        248098,
+        248099,
+        248100,
+        248101,
+        248102,
+        248103,
+        248104,
+        248105,
+        248106,
+        248107,
+        248108,
+        248109,
+        248110,
+        248111,
+        248112,
+        248113,
+        248114,
+        248115,
+        248116,
+        248117,
+        248118,
+        248119,
+        248120,
+        248121,
+        248122,
+        248123,
+        248124,
+        248125,
+        248126,
+        248127,
+        248128,
+        248129,
+        248130,
+        248131,
+        248132,
+        248133,
+        248134,
+        248135,
+        248136,
+        248137,
+        248138,
+        248139,
+        248140,
+        248141,
+        248142,
+        248143,
+        248144,
+        248145,
+        248146,
+        248147,
+        248148,
+        248149,
+        248150,
+        248151,
+        248152,
+        248153,
+        248154,
+        248155,
+        248156,
+        248157,
+        248158,
+        248159,
+        248160,
+        248161,
+        248162,
+        248163,
+        248164,
+        248165,
+        248166,
+        248167,
+        248168,
+        248169,
+        248170,
+        248171,
+        248172,
+        248173,
+        248174,
+        248175,
+        248176,
+        248177,
+        248178,
+        248179,
+        248180,
+        248181,
+        248182,
+        248183,
+        248184,
+        248185,
+        248186,
+        248187,
+        248188,
+        248189,
+        248190,
+        248191,
+        248192,
+        248193,
+        248194,
+        248195,
+        248196,
+        248197,
+        248198,
+        248199,
+        248200,
+        248201,
+        248202,
+        248203,
+        248204,
+        248205,
+        248206,
+        248207,
+        248208,
+        248209,
+        248210,
+        248211,
+        248212,
+        248213,
+        248214,
+        248215,
+        248216,
+        248217,
+        248218,
+        248219,
+        248220,
+        248221,
+        248222,
+        248223,
+        248224,
+        248225,
+        248226,
+        248227,
+        248228,
+        248229,
+        248230
+      ],
+      "tokenizer_size": 248231,
+      "tokens": [
+        "<N00>",
+        "<N01>",
+        "<N02>",
+        "<N03>",
+        "<N04>",
+        "<N05>",
+        "<N06>",
+        "<N07>",
+        "<N08>",
+        "<N09>",
+        "<N10>",
+        "<N11>",
+        "<N12>",
+        "<N13>",
+        "<N14>",
+        "<N15>",
+        "<N16>",
+        "<N17>",
+        "<N18>",
+        "<N19>",
+        "<N20>",
+        "<N21>",
+        "<N22>",
+        "<N23>",
+        "<N24>",
+        "<N25>",
+        "<N26>",
+        "<N27>",
+        "<N28>",
+        "<N29>",
+        "<N30>",
+        "<N31>",
+        "<N32>",
+        "<N33>",
+        "<N34>",
+        "<N35>",
+        "<N36>",
+        "<N37>",
+        "<N38>",
+        "<N39>",
+        "<N40>",
+        "<N41>",
+        "<N42>",
+        "<N43>",
+        "<N44>",
+        "<N45>",
+        "<N46>",
+        "<N47>",
+        "<N48>",
+        "<N49>",
+        "<N50>",
+        "<N51>",
+        "<N52>",
+        "<N53>",
+        "<E00_01>",
+        "<E00_05>",
+        "<E00_20>",
+        "<E01_02>",
+        "<E01_06>",
+        "<E02_03>",
+        "<E02_09>",
+        "<E03_04>",
+        "<E03_12>",
+        "<E04_05>",
+        "<E04_15>",
+        "<E05_16>",
+        "<E06_07>",
+        "<E06_23>",
+        "<E07_08>",
+        "<E07_24>",
+        "<E08_09>",
+        "<E08_27>",
+        "<E09_10>",
+        "<E10_11>",
+        "<E10_29>",
+        "<E11_12>",
+        "<E11_32>",
+        "<E12_13>",
+        "<E13_14>",
+        "<E13_34>",
+        "<E14_15>",
+        "<E14_37>",
+        "<E15_17>",
+        "<E16_18>",
+        "<E16_21>",
+        "<E17_18>",
+        "<E17_39>",
+        "<E18_40>",
+        "<E19_20>",
+        "<E19_21>",
+        "<E19_46>",
+        "<E20_22>",
+        "<E21_43>",
+        "<E22_23>",
+        "<E22_49>",
+        "<E23_52>",
+        "<E24_25>",
+        "<E24_53>",
+        "<E25_26>",
+        "<E26_27>",
+        "<E27_28>",
+        "<E28_29>",
+        "<E29_30>",
+        "<E30_31>",
+        "<E31_32>",
+        "<E32_33>",
+        "<E33_34>",
+        "<E34_35>",
+        "<E35_36>",
+        "<E36_37>",
+        "<E37_38>",
+        "<E38_39>",
+        "<E39_41>",
+        "<E40_42>",
+        "<E40_44>",
+        "<E41_42>",
+        "<E43_44>",
+        "<E43_47>",
+        "<E45_46>",
+        "<E45_47>",
+        "<E46_48>",
+        "<E48_49>",
+        "<E49_50>",
+        "<E50_51>",
+        "<E51_52>",
+        "<E52_53>",
+        "<T00>",
+        "<T01>",
+        "<T02>",
+        "<T03>",
+        "<T04>",
+        "<T05>",
+        "<T06>",
+        "<T07>",
+        "<T08>",
+        "<T09>",
+        "<T10>",
+        "<T11>",
+        "<T12>",
+        "<T13>",
+        "<T14>",
+        "<T15>",
+        "<T16>",
+        "<T17>",
+        "<T18>",
+        "<P00>",
+        "<P01>",
+        "<P02>",
+        "<P03>",
+        "<P04>",
+        "<P05>",
+        "<P06>",
+        "<P07>",
+        "<P08>"
+      ]
+    },
+    "visual_state": {
+      "bytes": 921502912,
+      "expected_tensors": 333,
+      "loaded": true,
+      "path": "/runs/catan-vision-sft/catan-qwen38-spatial-sft-b32-20260901/2a68b45208db/final/visual_model.safetensors",
+      "sha256": "ee78c24414d0efe1d6243cb6d1404b682ebcd1f9e2de08346f81da2fa3d72aab",
+      "tensors": 333
+    }
+  },
+  "attempted": 1080,
+  "batch_size": 8,
+  "bits": 16,
+  "by_category": {
+    "edge.owner": {
+      "correct": 53,
+      "exact_accuracy": 0.4140625,
+      "total": 128
+    },
+    "inverse.edge": {
+      "correct": 9,
+      "exact_accuracy": 0.140625,
+      "total": 64
+    },
+    "inverse.node": {
+      "correct": 12,
+      "exact_accuracy": 0.1875,
+      "total": 64
+    },
+    "inverse.port": {
+      "correct": 63,
+      "exact_accuracy": 0.984375,
+      "total": 64
+    },
+    "inverse.tile": {
+      "correct": 48,
+      "exact_accuracy": 0.75,
+      "total": 64
+    },
+    "node.occupancy": {
+      "correct": 51,
+      "exact_accuracy": 0.3984375,
+      "total": 128
+    },
+    "port.port_type": {
+      "correct": 46,
+      "exact_accuracy": 0.359375,
+      "total": 128
+    },
+    "robber": {
+      "correct": 69,
+      "exact_accuracy": 0.359375,
+      "total": 192
+    },
+    "spatial_grounding": {
+      "correct": 51,
+      "exact_accuracy": 0.425,
+      "total": 120
+    },
+    "tile.number": {
+      "correct": 5,
+      "exact_accuracy": 0.11904761904761904,
+      "total": 42
+    },
+    "tile.resource": {
+      "correct": 6,
+      "exact_accuracy": 0.13953488372093023,
+      "total": 43
+    },
+    "tile.robber": {
+      "correct": 23,
+      "exact_accuracy": 0.5348837209302325,
+      "total": 43
+    }
+  },
+  "by_curriculum_stage": {
+    "clean_board_grounding": {
+      "correct": 32,
+      "exact_accuracy": 0.34408602150537637,
+      "total": 93
+    },
+    "pieces_and_colors": {
+      "correct": 18,
+      "exact_accuracy": 0.3333333333333333,
+      "total": 54
+    },
+    "real_game_distribution": {
+      "correct": 19,
+      "exact_accuracy": 0.4222222222222222,
+      "total": 45
+    },
+    "spatial_grounding": {
+      "correct": 51,
+      "exact_accuracy": 0.425,
+      "total": 120
+    },
+    "unknown": {
+      "correct": 316,
+      "exact_accuracy": 0.4114583333333333,
+      "total": 768
+    }
+  },
+  "by_density_bin": {
+    "dense": {
+      "correct": 86,
+      "exact_accuracy": 0.38222222222222224,
+      "total": 225
+    },
+    "empty": {
+      "correct": 83,
+      "exact_accuracy": 0.4256410256410256,
+      "total": 195
+    },
+    "setup": {
+      "correct": 158,
+      "exact_accuracy": 0.40512820512820513,
+      "total": 390
+    },
+    "sparse": {
+      "correct": 109,
+      "exact_accuracy": 0.40370370370370373,
+      "total": 270
+    }
+  },
+  "by_polarity": {
+    "hard_negative": {
+      "correct": 53,
+      "exact_accuracy": 0.4649122807017544,
+      "total": 114
+    },
+    "positive": {
+      "correct": 55,
+      "exact_accuracy": 0.4824561403508772,
+      "total": 114
+    },
+    "token_return": {
+      "correct": 12,
+      "exact_accuracy": 0.14285714285714285,
+      "total": 84
+    },
+    "unknown": {
+      "correct": 316,
+      "exact_accuracy": 0.4114583333333333,
+      "total": 768
+    }
+  },
+  "by_relationship": {
+    "above": {
+      "correct": 5,
+      "exact_accuracy": 0.2777777777777778,
+      "total": 18
+    },
+    "adjacent": {
+      "correct": 21,
+      "exact_accuracy": 0.525,
+      "total": 40
+    },
+    "below": {
+      "correct": 5,
+      "exact_accuracy": 0.38461538461538464,
+      "total": 13
+    },
+    "connected": {
+      "correct": 9,
+      "exact_accuracy": 0.45,
+      "total": 20
+    },
+    "left_of": {
+      "correct": 5,
+      "exact_accuracy": 0.3125,
+      "total": 16
+    },
+    "localization": {
+      "correct": 12,
+      "exact_accuracy": 0.1875,
+      "total": 64
+    },
+    "presence": {
+      "correct": 57,
+      "exact_accuracy": 0.4453125,
+      "total": 128
+    },
+    "right_of": {
+      "correct": 6,
+      "exact_accuracy": 0.46153846153846156,
+      "total": 13
+    },
+    "unknown": {
+      "correct": 316,
+      "exact_accuracy": 0.4114583333333333,
+      "total": 768
+    }
+  },
+  "by_row_kind": {
+    "forward": {
+      "correct": 184,
+      "exact_accuracy": 0.359375,
+      "total": 512
+    },
+    "inverse": {
+      "correct": 132,
+      "exact_accuracy": 0.515625,
+      "total": 256
+    },
+    "unknown": {
+      "correct": 120,
+      "exact_accuracy": 0.38461538461538464,
+      "total": 312
+    }
+  },
+  "by_suite": {
+    "bidirectional": {
+      "correct": 316,
+      "exact_accuracy": 0.4114583333333333,
+      "total": 768
+    },
+    "spatial_robber": {
+      "correct": 120,
+      "exact_accuracy": 0.38461538461538464,
+      "total": 312
+    }
+  },
+  "by_task_family": {
+    "robber": {
+      "correct": 69,
+      "exact_accuracy": 0.359375,
+      "total": 192
+    },
+    "spatial_grounding": {
+      "correct": 51,
+      "exact_accuracy": 0.425,
+      "total": 120
+    },
+    "unknown": {
+      "correct": 316,
+      "exact_accuracy": 0.4114583333333333,
+      "total": 768
+    }
+  },
+  "categories": {
+    "edge.owner": {
+      "correct": 53,
+      "exact_accuracy": 0.4140625,
+      "total": 128
+    },
+    "inverse.edge": {
+      "correct": 9,
+      "exact_accuracy": 0.140625,
+      "total": 64
+    },
+    "inverse.node": {
+      "correct": 12,
+      "exact_accuracy": 0.1875,
+      "total": 64
+    },
+    "inverse.port": {
+      "correct": 63,
+      "exact_accuracy": 0.984375,
+      "total": 64
+    },
+    "inverse.tile": {
+      "correct": 48,
+      "exact_accuracy": 0.75,
+      "total": 64
+    },
+    "node.occupancy": {
+      "correct": 51,
+      "exact_accuracy": 0.3984375,
+      "total": 128
+    },
+    "port.port_type": {
+      "correct": 46,
+      "exact_accuracy": 0.359375,
+      "total": 128
+    },
+    "robber": {
+      "correct": 69,
+      "exact_accuracy": 0.359375,
+      "total": 192
+    },
+    "spatial_grounding": {
+      "correct": 51,
+      "exact_accuracy": 0.425,
+      "total": 120
+    },
+    "tile.number": {
+      "correct": 5,
+      "exact_accuracy": 0.11904761904761904,
+      "total": 42
+    },
+    "tile.resource": {
+      "correct": 6,
+      "exact_accuracy": 0.13953488372093023,
+      "total": 43
+    },
+    "tile.robber": {
+      "correct": 23,
+      "exact_accuracy": 0.5348837209302325,
+      "total": 43
+    }
+  },
+  "correct": 436,
+  "eval_jsonl": "/data/catan-qwen-series-eval/qwen38-final-validation-v1/eval.jsonl",
+  "exact_accuracy": 0.40370370370370373,
+  "generated_at": "2026-09-02T19:03:53.044383+00:00",
+  "image_root": null,
+  "long_max_new_tokens": 2048,
+  "max_new_tokens": 16,
+  "model_id": "Qwen/Qwen3.8-27B",
+  "reasoning_enabled": false,
+  "rows": 1080,
+  "token_inventory": "/data/catan-qwen-series-eval/qwen38-final-validation-v1/trainable_tokens.json"
+}

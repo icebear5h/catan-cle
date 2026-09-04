@@ -1,0 +1,4968 @@
+{
+  "schema": "catan_qwen_modal_spending/v1",
+  "report_date": "2026-09-04",
+  "currency": "USD",
+  "scope": {
+    "workspaces": [
+      "tetracorp",
+      "icebear5h"
+    ],
+    "history_queried_start_utc": "2026-01-01T00:00:00Z",
+    "billing_intervals_end_exclusive_utc": "2026-09-04T20:00:00Z",
+    "cutoff_pacific": "2026-09-04 13:00 PDT",
+    "included_app_descriptions": [
+      "catan-qwen3-8-vision-sft",
+      "catan-qwen-series-eval",
+      "catan-qwen-series-sft",
+      "catan-qwen-vl-sft",
+      "catan-qwen38-vision-probe"
+    ],
+    "exclusions": [
+      "Other projects including trait-circuits Qwen probes",
+      "OpenRouter and Novita hosted inference",
+      "Shared Modal volume storage",
+      "Workspace subscription fees",
+      "Billing adjustments and credits",
+      "Usage after 2026-09-04 20:00 UTC"
+    ],
+    "notes": [
+      "Costs are provider-metered compute, not estimates or net credit-card charges.",
+      "Training apps include startup, retries and any in-run evaluation. Billing cannot split these components here.",
+      "Standalone evaluation apps include their startup and retries.",
+      "Reports omit unfinished final hourly intervals and may have collection delays.",
+      "No matching Catan/Qwen compute was returned for January through April, June, or July in either workspace.",
+      "A separate Catan checkpoint-publishing helper cost USD 0.00121044; excluded from the SFT/eval/probe total."
+    ]
+  },
+  "retrievals": [
+    {
+      "workspace": "tetracorp",
+      "retrieved_at_utc": "2026-09-04T20:11:02.657596+00:00",
+      "range": "January-August monthly reports and September 1-4 daily report"
+    },
+    {
+      "workspace": "tetracorp",
+      "retrieved_at_utc": "2026-09-04T20:09:56.574740+00:00",
+      "range": "September 4 completed hourly report intervals"
+    },
+    {
+      "workspace": "icebear5h",
+      "retrieved_at_utc": "2026-09-04T20:12:02.402477+00:00",
+      "range": "January-August monthly reports, September 1-4 daily and completed September 4 hourly intervals"
+    }
+  ],
+  "sources": {
+    "billing_docs": "https://modal.com/docs/guide/billing",
+    "billing_cli_docs": "https://modal.com/docs/cli/latest/billing",
+    "source_command_pattern": "uvx --from modal modal billing report --start START --end END --show-resources --json (monthly ranges <=31 days); --resolution h for the final day",
+    "profile_selection": "MODAL_PROFILE set per subprocess; active profile was not changed"
+  },
+  "gross_compute_usd": "320.42571787",
+  "by_workspace_usd": {
+    "tetracorp": "318.98747671",
+    "icebear5h": "1.43824116"
+  },
+  "by_category_usd": {
+    "training_including_in_run_evaluation": "261.70525581",
+    "standalone_evaluation": "58.71250602",
+    "vision_probe": "0.00795604"
+  },
+  "by_resource_usd": {
+    "CPU": "32.14223589",
+    "Memory": "42.55310043",
+    "H200": "244.26510424",
+    "L40S": "1.46527731",
+    "A10G": "0.00000000",
+    "L4": "0.00000000"
+  },
+  "app_count": 88,
+  "billing_resource_row_count": 343,
+  "current_qwen38_campaign_usd": {
+    "workspace": "tetracorp",
+    "total": 318.98747671,
+    "training_including_in_run_evaluation": 260.89632878,
+    "standalone_evaluation": 58.09114793
+  },
+  "workspace_september_summary": {
+    "tetracorp": {
+      "metered_cost": "360.10800000",
+      "billed_cost": "250.00000000",
+      "adjustments": {
+        "free_storage": "-12.28800000",
+        "plan_cost": "250.00000000",
+        "reservation_adjustment": "-0E-8",
+        "credits": "-347.82000000"
+      },
+      "metered_cost_breakdown": {
+        "ephemeral_apps": "320.12292009",
+        "llm_tokens": "0E-8",
+        "volumes": "36.36334622",
+        "deployed_apps": "3.62417526"
+      }
+    },
+    "icebear5h": {
+      "metered_cost": "3.46436692",
+      "billed_cost": "0E-8",
+      "adjustments": {
+        "reservation_adjustment": "-0E-8",
+        "plan_cost": "0E-8",
+        "free_storage": "-3.46436692",
+        "credits": "-0E-8"
+      },
+      "metered_cost_breakdown": {
+        "volumes": "3.46436692",
+        "llm_tokens": "0E-8"
+      }
+    },
+    "interpretation": "Workspace-wide snapshots, not project-specific invoices. The tetracorp snapshot has USD 250 plan cost and USD 0 net usage after credits/free storage; credits cannot be allocated to individual apps from this report."
+  },
+  "rates_used_for_context": {
+    "cpu_hour_cost": "0.04730",
+    "gpu_hour_cost_h200": "4.54000",
+    "gpu_hour_cost_l40s": "1.95000",
+    "mem_gib_hour_cost": "0.00800"
+  },
+  "apps": [
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-J1J9PHV5MyWD3PJZ7jJwqy",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "50.80964289",
+      "resources": {
+        "CPU": "6.08352388",
+        "Memory": "8.23140652",
+        "H200": "36.49471249"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": "Staged v3 single-piece + tiles",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-Ocnfz9zmNomkiQFMls8V90",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "34.45177289",
+      "resources": {
+        "H200": "24.74545134",
+        "Memory": "5.58135291",
+        "CPU": "4.12496864"
+      },
+      "first_interval": "2026-09-04T09:00:00",
+      "last_interval": "2026-09-04T14:00:00",
+      "run_label": "Direct v3 mean-init control, 512 steps",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-cJCHyYUTNRNuK3jD9H3jTf",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "34.24917076",
+      "resources": {
+        "H200": "24.59992964",
+        "Memory": "5.54853038",
+        "CPU": "4.10071074"
+      },
+      "first_interval": "2026-09-04T09:00:00",
+      "last_interval": "2026-09-04T14:00:00",
+      "run_label": "Direct v3 Gaussian-init treatment, 512 steps",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-5628OGxpUM5CLarPop9j7r",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "34.08363072",
+      "resources": {
+        "H200": "24.48102827",
+        "Memory": "5.52171211",
+        "CPU": "4.08089034"
+      },
+      "first_interval": "2026-09-04T01:00:00",
+      "last_interval": "2026-09-04T06:00:00",
+      "run_label": "pairs_v2 road-heavy continuation, 512 steps",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-quF56iRlPhhBGpJyftRifh",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "24.85127866",
+      "resources": {
+        "CPU": "2.97548533",
+        "Memory": "4.02602667",
+        "H200": "17.84976666"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-GJWUfVfWDMWGJ6CGc0nADW",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "19.67871301",
+      "resources": {
+        "CPU": "2.35616536",
+        "Memory": "3.18804615",
+        "H200": "14.13450150"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-04T00:00:00",
+      "run_label": "pairs_v1 continuation, 256 steps",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-soNGGKHXLygmhCwK3Phb4x",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "18.60215021",
+      "resources": {
+        "CPU": "2.22726669",
+        "Memory": "3.01363780",
+        "H200": "13.36124572"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": "Original marker-only control",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-YT2dybLVHcEM9lLXjPQLzW",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "18.21642705",
+      "resources": {
+        "CPU": "2.18108341",
+        "Memory": "2.95114879",
+        "H200": "13.08419485"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": "Single-piece v2 continuation",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-iKwx2e32A6pT3lzn851xJV",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "13.78580104",
+      "resources": {
+        "H200": "13.53728075",
+        "Memory": "0.07719238",
+        "CPU": "0.17132791"
+      },
+      "first_interval": "2026-09-04T06:00:00",
+      "last_interval": "2026-09-04T09:00:00",
+      "run_label": "pairs_v2 final regression panel",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-spno9s5TpSQ668zloZT3FB",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "8.64346619",
+      "resources": {
+        "H200": "8.49216050",
+        "Memory": "0.04216095",
+        "CPU": "0.10914474"
+      },
+      "first_interval": "2026-09-04T00:00:00",
+      "last_interval": "2026-09-04T02:00:00",
+      "run_label": "pairs_v1 final regression panel",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-XUiV7Z073WSH4nN2A9YxpL",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "8.25540795",
+      "resources": {
+        "CPU": "0.98843386",
+        "Memory": "1.33741579",
+        "H200": "5.92955830"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-z1FnQguxVsxU9H79lS1eoN",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "5.47301094",
+      "resources": {
+        "CPU": "0.10562105",
+        "Memory": "0.02701259",
+        "H200": "5.34037730"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-dw8a95JJBXWvcWaOUEY7MU",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "3.97192775",
+      "resources": {
+        "CPU": "0.08653487",
+        "Memory": "0.01863805",
+        "H200": "3.86675483"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-TTCqSzF68fAtxwbTIUpQdJ",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "3.69415616",
+      "resources": {
+        "H200": "2.65337757",
+        "Memory": "0.59847107",
+        "CPU": "0.44230752"
+      },
+      "first_interval": "2026-09-04T19:00:00",
+      "last_interval": "2026-09-04T19:00:00",
+      "run_label": "Gaussian diamond-marker run, stopped before replacement",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-m3CBdK0eeqfDKbYOMpf52X",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "3.01502725",
+      "resources": {
+        "CPU": "0.05695459",
+        "Memory": "0.01211757",
+        "H200": "2.94595509"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-MjEP6EuStM6eDmuqKzlA7E",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "2.35044727",
+      "resources": {
+        "H200": "2.31156351",
+        "Memory": "0.01017453",
+        "CPU": "0.02870923"
+      },
+      "first_interval": "2026-09-04T01:00:00",
+      "last_interval": "2026-09-04T02:00:00",
+      "run_label": "pairs_v1 occlusion controls",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-ulF9u7QEXYLGkbIyh4G6Em",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "2.19121321",
+      "resources": {
+        "CPU": "0.26235764",
+        "Memory": "0.35498708",
+        "H200": "1.57386849"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": "Single-piece v4 adjacent-negative run, stopped",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-BnjyrZFiDj4U8CeYumhzRm",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "1.97942508",
+      "resources": {
+        "CPU": "0.03463950",
+        "Memory": "0.00753611",
+        "H200": "1.93724947"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-Mnd9K3pqhFnmANsisPmWqQ",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "1.85818692",
+      "resources": {
+        "H200": "1.82677108",
+        "Memory": "0.00852992",
+        "CPU": "0.02288592"
+      },
+      "first_interval": "2026-09-04T08:00:00",
+      "last_interval": "2026-09-04T08:00:00",
+      "run_label": "Family-aligned row repair evaluation",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-TBv7wrvSddamDLDRxfbCGd",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "1.85414343",
+      "resources": {
+        "H200": "1.82381907",
+        "Memory": "0.00786758",
+        "CPU": "0.02245678"
+      },
+      "first_interval": "2026-09-04T07:00:00",
+      "last_interval": "2026-09-04T08:00:00",
+      "run_label": "Mean-alignment row repair evaluation",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-P6BD3ptgN6fuCZia9NgYEi",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "1.84311885",
+      "resources": {
+        "H200": "1.81259337",
+        "Memory": "0.00836223",
+        "CPU": "0.02216325"
+      },
+      "first_interval": "2026-09-04T07:00:00",
+      "last_interval": "2026-09-04T07:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-j1PEOd0LtSHj3NUe3bY79h",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "1.78999640",
+      "resources": {
+        "H200": "1.75682073",
+        "Memory": "0.00798277",
+        "CPU": "0.02519290"
+      },
+      "first_interval": "2026-09-04T14:00:00",
+      "last_interval": "2026-09-04T15:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-NgZjnvQJMF3o0d1N7Gn3CH",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "1.76873516",
+      "resources": {
+        "H200": "1.73595247",
+        "Memory": "0.00789843",
+        "CPU": "0.02488426"
+      },
+      "first_interval": "2026-09-04T02:00:00",
+      "last_interval": "2026-09-04T03:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-JOTyRLSv9Ap3rPsilCd9pS",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "1.73943954",
+      "resources": {
+        "H200": "1.70707121",
+        "Memory": "0.00775810",
+        "CPU": "0.02461023"
+      },
+      "first_interval": "2026-09-04T04:00:00",
+      "last_interval": "2026-09-04T04:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-FkLohD0umvKzVQ4NyE81KS",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "1.66884008",
+      "resources": {
+        "CPU": "0.19981303",
+        "Memory": "0.27036012",
+        "H200": "1.19866693"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-hrm1oVoy2GR31QSPYperoZ",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "1.62233840",
+      "resources": {
+        "CPU": "0.19424530",
+        "Memory": "0.26282662",
+        "H200": "1.16526648"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-NdsMnyOE7fPzrckWO2owyD",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "1.40687722",
+      "resources": {
+        "CPU": "0.01692409",
+        "Memory": "0.00537688",
+        "H200": "1.38457625"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-0EWsrpD4AGGLg8qtj3CIiF",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "1.21148706",
+      "resources": {
+        "CPU": "0.14505338",
+        "Memory": "0.19626673",
+        "H200": "0.87016695"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-3zD033fPGb5DwN9VCjjiJm",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "1.19393022",
+      "resources": {
+        "CPU": "0.14295127",
+        "Memory": "0.19342244",
+        "H200": "0.85755651"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": "Single-piece v6 near/far run, stopped",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-VE4UKMjJToiM2FeAAGZojR",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "1.14601458",
+      "resources": {
+        "CPU": "0.13721425",
+        "Memory": "0.18565987",
+        "H200": "0.82314046"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-OWGHAochdxkqxzSJXswrCW",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "1.05611245",
+      "resources": {
+        "CPU": "0.01171732",
+        "Memory": "0.00412489",
+        "H200": "1.04027024"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-K0OaRzUNteoi3apL3WG6EM",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "1.05346727",
+      "resources": {
+        "H200": "0.75666710",
+        "Memory": "0.17066676",
+        "CPU": "0.12613341"
+      },
+      "first_interval": "2026-09-04T09:00:00",
+      "last_interval": "2026-09-04T09:00:00",
+      "run_label": "Direct family-word init, stopped and replaced",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-vv9OCTqGIbDwNyi0fqZxUd",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "1.04362645",
+      "resources": {
+        "CPU": "0.02080149",
+        "Memory": "0.00459059",
+        "H200": "1.01823437"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-FxCTlNirGsvjLXJWmHx0w6",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "1.02739706",
+      "resources": {
+        "CPU": "0.01369311",
+        "Memory": "0.00390392",
+        "H200": "1.00980003"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": "pairs_v1 checkpoint-64 evaluation",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-kO4nZVjPpdt6jiPIqzjp8A",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.96216694",
+      "resources": {
+        "H200": "0.69108941",
+        "Memory": "0.15587567",
+        "CPU": "0.11520186"
+      },
+      "first_interval": "2026-09-04T19:00:00",
+      "last_interval": "2026-09-04T19:00:00",
+      "run_label": "Gaussian entity-marker stage 1, active at cutoff",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-G7ZApUsiwktgqJra0gEUG8",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "0.65717181",
+      "resources": {
+        "CPU": "0.01009551",
+        "Memory": "0.00225038",
+        "H200": "0.64482592"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-uo4HQ2swC1P2LLXzGDThWG",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "0.49683511",
+      "resources": {
+        "CPU": "0.00588709",
+        "Memory": "0.00176589",
+        "H200": "0.48918213"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-N8QB13iaQFIQUqdZrWl22a",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.37995723",
+      "resources": {
+        "CPU": "0.04549292",
+        "Memory": "0.06155490",
+        "H200": "0.27290941"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-SmkyFaQNTmi5UKJQd46ZJm",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.36169353",
+      "resources": {
+        "CPU": "0.04330617",
+        "Memory": "0.05859609",
+        "H200": "0.25979127"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": "Single-piece v4 initial full-epoch launch, stopped",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-ajARKI5Brc1VxyygHQn4d5",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.36064552",
+      "resources": {
+        "CPU": "0.04318069",
+        "Memory": "0.05842631",
+        "H200": "0.25903852"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": "Qwen3.8 training smoke",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-xy0bhh0Mhoc2kj3M8NoyII",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.35632363",
+      "resources": {
+        "CPU": "0.04266323",
+        "Memory": "0.05772614",
+        "H200": "0.25593426"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": "Qwen3.8 spatial/robber curriculum smoke",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-LOxYQx13vXR8ND3TigrtPu",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.34308252",
+      "resources": {
+        "CPU": "0.04107785",
+        "Memory": "0.05558102",
+        "H200": "0.24642365"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-2s2ZTyucK2aNBvJjtOgvcQ",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.28540412",
+      "resources": {
+        "CPU": "0.03417191",
+        "Memory": "0.04623684",
+        "H200": "0.20499537"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-y0m8wdtJLKpmlh5c55AF5l",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "0.25176988",
+      "resources": {
+        "CPU": "0.00279635",
+        "Memory": "0.00083939",
+        "H200": "0.24813414"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-AuE4sQgeHstcUPKdBuGRLW",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.24931623",
+      "resources": {
+        "CPU": "0.02985105",
+        "Memory": "0.04039043",
+        "H200": "0.17907475"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": "Single-piece v5 negative mix, stopped",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-A33q3RQkm6xjJnN4jdiqgY",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "0.21587371",
+      "resources": {
+        "CPU": "0.00645052",
+        "L40S": "0.20691663",
+        "A10G": "0.00000000",
+        "Memory": "0.00250656"
+      },
+      "first_interval": "2026-05-15T00:00:00",
+      "last_interval": "2026-05-15T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-ZdajtkpjnDqKCweCSbl1Lf",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "0.21030682",
+      "resources": {
+        "CPU": "0.00302521",
+        "Memory": "0.00061616",
+        "H200": "0.20666545"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-HBuk2vM3cY5BW4qExXZK5l",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "0.20306531",
+      "resources": {
+        "CPU": "0.00336646",
+        "Memory": "0.00065834",
+        "H200": "0.19904051"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-6m4b7cqyqwqiuCGLqRSI4F",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "0.20072033",
+      "resources": {
+        "CPU": "0.00230256",
+        "Memory": "0.00061329",
+        "H200": "0.19780448"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-x9NYU99LeyvoavNFJidmL2",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "0.18519636",
+      "resources": {
+        "CPU": "0.00301588",
+        "Memory": "0.00058021",
+        "H200": "0.18160027"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-BRhvqQxEskZVXoGjuBQPBX",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "0.18517514",
+      "resources": {
+        "CPU": "0.00299435",
+        "Memory": "0.00057953",
+        "H200": "0.18160126"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-vSp0co3ShMXqzmfUAsZQyB",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "0.18413462",
+      "resources": {
+        "CPU": "0.00208017",
+        "Memory": "0.00045445",
+        "H200": "0.18160000"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-hwCIewObaadMYmDVX9idc9",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "0.18406840",
+      "resources": {
+        "CPU": "0.00189149",
+        "Memory": "0.00055202",
+        "H200": "0.18162489"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-PrHITwfndxpYoUw2KfHocH",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "0.18109447",
+      "resources": {
+        "CPU": "0.00147534",
+        "Memory": "0.00054052",
+        "H200": "0.17907861"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-isKUVsdqZK3PBIXqGE6Y4h",
+      "description": "catan-qwen-series-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.17432623",
+      "resources": {
+        "CPU": "0.00432928",
+        "L40S": "0.16791639",
+        "Memory": "0.00208056"
+      },
+      "first_interval": "2026-05-15T00:00:00",
+      "last_interval": "2026-05-15T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-65Cy4JOiCq7HScZAxtRDIV",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.16765414",
+      "resources": {
+        "CPU": "0.02007351",
+        "Memory": "0.02716078",
+        "H200": "0.12041985"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-oTDi1txPrmaj1M988HxziS",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "0.16359288",
+      "resources": {
+        "CPU": "0.00085779",
+        "Memory": "0.00017962",
+        "H200": "0.16255547"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-QZh8xAuICfBBWNNA5jCVvR",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "0.15668919",
+      "resources": {
+        "CPU": "0.00081323",
+        "Memory": "0.00017313",
+        "H200": "0.15570283"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-OkbKhqvjK2BwVk87ZlFDzB",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "0.14947230",
+      "resources": {
+        "CPU": "0.00368642",
+        "L40S": "0.14408328",
+        "Memory": "0.00170260"
+      },
+      "first_interval": "2026-05-15T00:00:00",
+      "last_interval": "2026-05-15T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-OHJ13rYv2jzQC8RSSwy5eQ",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "0.13933986",
+      "resources": {
+        "CPU": "0.00344259",
+        "L40S": "0.13433280",
+        "Memory": "0.00156447"
+      },
+      "first_interval": "2026-05-15T00:00:00",
+      "last_interval": "2026-05-15T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-ou0Qa0sC7wNlK4PDBlDqFg",
+      "description": "catan-qwen-series-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.13267533",
+      "resources": {
+        "CPU": "0.00329058",
+        "L40S": "0.12783318",
+        "Memory": "0.00155157"
+      },
+      "first_interval": "2026-05-15T00:00:00",
+      "last_interval": "2026-05-15T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-PyqZqW7od2LYeju1z3Ihj3",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.12992473",
+      "resources": {
+        "CPU": "0.01555611",
+        "Memory": "0.02104843",
+        "H200": "0.09332019"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-areZO9nMgvxBXKMWBW87yn",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.12112151",
+      "resources": {
+        "CPU": "0.01450208",
+        "Memory": "0.01962227",
+        "H200": "0.08699716"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-mUBWUVdYaO8BZU9NqkYBYQ",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "0.11667222",
+      "resources": {
+        "CPU": "0.00273319",
+        "L40S": "0.11266707",
+        "Memory": "0.00127196"
+      },
+      "first_interval": "2026-05-15T00:00:00",
+      "last_interval": "2026-05-15T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-FXjZROd0E8Z2Gc0i71cMQF",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "0.11418494",
+      "resources": {
+        "CPU": "0.00089299",
+        "Memory": "0.00023461",
+        "H200": "0.11305734"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-R48z9ojREzfuVNAvMMfofM",
+      "description": "catan-qwen-series-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.09033748",
+      "resources": {
+        "CPU": "0.00564021",
+        "L40S": "0.08341633",
+        "Memory": "0.00128094"
+      },
+      "first_interval": "2026-05-15T00:00:00",
+      "last_interval": "2026-05-15T00:00:00",
+      "run_label": "Historical Qwen3.5-9B one-step smoke",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-QenaP8rcPVtT8ecRYnvtZ8",
+      "description": "catan-qwen-vl-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.08766977",
+      "resources": {
+        "CPU": "0.00250082",
+        "L40S": "0.08450346",
+        "Memory": "0.00066549"
+      },
+      "first_interval": "2026-05-15T00:00:00",
+      "last_interval": "2026-05-15T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-CG4RUN6kAUGIJoiBdM7eqG",
+      "description": "catan-qwen-vl-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.08746161",
+      "resources": {
+        "CPU": "0.00542257",
+        "L40S": "0.08125053",
+        "Memory": "0.00078851"
+      },
+      "first_interval": "2026-05-14T00:00:00",
+      "last_interval": "2026-05-14T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-tmYqhYfq5GpxK8lqmQnnYS",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.07725438",
+      "resources": {
+        "CPU": "0.00924980",
+        "Memory": "0.01251558",
+        "H200": "0.05548900"
+      },
+      "first_interval": "2026-09-03T00:00:00",
+      "last_interval": "2026-09-03T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-YyCwN4c8Ww5OPXSwZJYFdc",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.07374156",
+      "resources": {
+        "CPU": "0.00882920",
+        "Memory": "0.01194649",
+        "H200": "0.05296587"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-n3j5XuK39zIXYlE0zGoO9e",
+      "description": "catan-qwen-series-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.06622701",
+      "resources": {
+        "CPU": "0.00288017",
+        "L40S": "0.06283306",
+        "Memory": "0.00051378"
+      },
+      "first_interval": "2026-05-15T00:00:00",
+      "last_interval": "2026-05-15T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-obdTNJNfhBY43jAp16DxXz",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "0.05769669",
+      "resources": {
+        "L40S": "0.05637027",
+        "Memory": "0.00029617",
+        "CPU": "0.00103025"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-3dGxbAF0nPnxKANLTUQJ9W",
+      "description": "catan-qwen-vl-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.04775574",
+      "resources": {
+        "CPU": "0.00084170",
+        "L40S": "0.04658368",
+        "Memory": "0.00033036"
+      },
+      "first_interval": "2026-05-14T00:00:00",
+      "last_interval": "2026-05-14T00:00:00",
+      "run_label": "Historical Qwen3-VL-8B smoke",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-ljq31CcYAXzVEkn15ytFjM",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "0.04763907",
+      "resources": {
+        "L40S": "0.04389731",
+        "Memory": "0.00030308",
+        "CPU": "0.00343868"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-9edLReNUDIdLmUFVLR5y2g",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.04564943",
+      "resources": {
+        "CPU": "0.00546568",
+        "Memory": "0.00739543",
+        "H200": "0.03278832"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-xg8pkC78r9YEFsPLuXTBiO",
+      "description": "catan-qwen-vl-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.04496267",
+      "resources": {
+        "CPU": "0.00043754",
+        "L40S": "0.04441706",
+        "Memory": "0.00010807"
+      },
+      "first_interval": "2026-05-15T00:00:00",
+      "last_interval": "2026-05-15T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-Yd50o4HOztjNo46IXMkZ5b",
+      "description": "catan-qwen-series-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.03023214",
+      "resources": {
+        "CPU": "0.00077541",
+        "L40S": "0.02924976",
+        "Memory": "0.00020697"
+      },
+      "first_interval": "2026-05-15T00:00:00",
+      "last_interval": "2026-05-15T00:00:00",
+      "run_label": "Historical Qwen3.5-9B ten-step smoke",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-qdaGRGysBycMWKtsioaCNn",
+      "description": "catan-qwen-series-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.01679835",
+      "resources": {
+        "CPU": "0.00046309",
+        "L40S": "0.01625664",
+        "Memory": "0.00007862"
+      },
+      "first_interval": "2026-05-15T00:00:00",
+      "last_interval": "2026-05-15T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-Nn5wl0iPwlmI9xS8N0X9nC",
+      "description": "catan-qwen-series-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.01575782",
+      "resources": {
+        "CPU": "0.00050955",
+        "L40S": "0.01516631",
+        "Memory": "0.00008196"
+      },
+      "first_interval": "2026-05-15T00:00:00",
+      "last_interval": "2026-05-15T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-kfvdT1hUmoXT6TC0lJeD58",
+      "description": "catan-qwen38-vision-probe",
+      "category": "vision_probe",
+      "cost": "0.00795604",
+      "resources": {
+        "Memory": "0.00014326",
+        "CPU": "0.00781278"
+      },
+      "first_interval": "2026-08-25T00:00:00",
+      "last_interval": "2026-08-25T00:00:00",
+      "run_label": "Historical Qwen3.8 vision probe",
+      "run_label_source": "local run reports and tasks/todo.md"
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-nWLvFUdAZwqG7LCXAZkvk8",
+      "description": "catan-qwen-series-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.00664094",
+      "resources": {
+        "CPU": "0.00013370",
+        "L40S": "0.00650028",
+        "Memory": "0.00000696"
+      },
+      "first_interval": "2026-05-15T00:00:00",
+      "last_interval": "2026-05-15T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-ENue3ejaCIJf4MhD2SIyb8",
+      "description": "catan-qwen-series-eval",
+      "category": "standalone_evaluation",
+      "cost": "0.00506791",
+      "resources": {
+        "CPU": "0.00002166",
+        "Memory": "0.00000187",
+        "H200": "0.00504438"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-Le0IuEu4Pefvs4dJpHCr6b",
+      "description": "catan-qwen-series-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.00301152",
+      "resources": {
+        "CPU": "0.00285448",
+        "L4": "0.00000000",
+        "A10G": "0.00000000",
+        "Memory": "0.00015704"
+      },
+      "first_interval": "2026-05-15T00:00:00",
+      "last_interval": "2026-05-15T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "tetracorp",
+      "app_id": "ap-zWi2iDIzyyT2SOYV61Ekfl",
+      "description": "catan-qwen3-8-vision-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.00275219",
+      "resources": {
+        "Memory": "0.00008241",
+        "CPU": "0.00266978"
+      },
+      "first_interval": "2026-09-02T00:00:00",
+      "last_interval": "2026-09-02T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-iqHYStiKXzUWPySEK92bos",
+      "description": "catan-qwen-series-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.00254988",
+      "resources": {
+        "CPU": "0.00143327",
+        "L40S": "0.00108327",
+        "L4": "0.00000000",
+        "Memory": "0.00003334"
+      },
+      "first_interval": "2026-05-14T00:00:00",
+      "last_interval": "2026-05-14T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-i6Pderg5FsK90qgVCKMJaq",
+      "description": "catan-qwen-vl-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.00169009",
+      "resources": {
+        "CPU": "0.00164009",
+        "A10G": "0.00000000",
+        "Memory": "0.00005000"
+      },
+      "first_interval": "2026-05-14T00:00:00",
+      "last_interval": "2026-05-14T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-rW2zbT8nSJkX0lFluGeqht",
+      "description": "catan-qwen-series-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.00079353",
+      "resources": {
+        "CPU": "0.00077998",
+        "A10G": "0.00000000",
+        "Memory": "0.00001355"
+      },
+      "first_interval": "2026-05-15T00:00:00",
+      "last_interval": "2026-05-15T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    },
+    {
+      "workspace": "icebear5h",
+      "app_id": "ap-YfKNuCBvLI7ncNZWnKcsbY",
+      "description": "catan-qwen-series-sft",
+      "category": "training_including_in_run_evaluation",
+      "cost": "0.00003692",
+      "resources": {
+        "CPU": "0.00003581",
+        "A10G": "0.00000000",
+        "Memory": "0.00000111"
+      },
+      "first_interval": "2026-05-14T00:00:00",
+      "last_interval": "2026-05-14T00:00:00",
+      "run_label": null,
+      "run_label_source": null
+    }
+  ],
+  "billing_resource_rows": [
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-0EWsrpD4AGGLg8qtj3CIiF",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.14505338"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-0EWsrpD4AGGLg8qtj3CIiF",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "0.19626673"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-0EWsrpD4AGGLg8qtj3CIiF",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "H200",
+      "cost": "0.87016695"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-2s2ZTyucK2aNBvJjtOgvcQ",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.03417191"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-2s2ZTyucK2aNBvJjtOgvcQ",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "0.04623684"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-2s2ZTyucK2aNBvJjtOgvcQ",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "H200",
+      "cost": "0.20499537"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-3zD033fPGb5DwN9VCjjiJm",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.14295127"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-3zD033fPGb5DwN9VCjjiJm",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.19342244"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-3zD033fPGb5DwN9VCjjiJm",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "0.85755651"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-65Cy4JOiCq7HScZAxtRDIV",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.02007351"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-65Cy4JOiCq7HScZAxtRDIV",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "0.02716078"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-65Cy4JOiCq7HScZAxtRDIV",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "H200",
+      "cost": "0.12041985"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-6m4b7cqyqwqiuCGLqRSI4F",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00230256"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-6m4b7cqyqwqiuCGLqRSI4F",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00061329"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-6m4b7cqyqwqiuCGLqRSI4F",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "0.19780448"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-9edLReNUDIdLmUFVLR5y2g",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00546568"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-9edLReNUDIdLmUFVLR5y2g",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00739543"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-9edLReNUDIdLmUFVLR5y2g",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "H200",
+      "cost": "0.03278832"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-AuE4sQgeHstcUPKdBuGRLW",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.02985105"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-AuE4sQgeHstcUPKdBuGRLW",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.04039043"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-AuE4sQgeHstcUPKdBuGRLW",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "0.17907475"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-BRhvqQxEskZVXoGjuBQPBX",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00299435"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-BRhvqQxEskZVXoGjuBQPBX",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00057953"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-BRhvqQxEskZVXoGjuBQPBX",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "0.18160126"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-BnjyrZFiDj4U8CeYumhzRm",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.03463950"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-BnjyrZFiDj4U8CeYumhzRm",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00753611"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-BnjyrZFiDj4U8CeYumhzRm",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "1.93724947"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-ENue3ejaCIJf4MhD2SIyb8",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00002166"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-ENue3ejaCIJf4MhD2SIyb8",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00000187"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-ENue3ejaCIJf4MhD2SIyb8",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "H200",
+      "cost": "0.00504438"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-FXjZROd0E8Z2Gc0i71cMQF",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00089299"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-FXjZROd0E8Z2Gc0i71cMQF",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00023461"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-FXjZROd0E8Z2Gc0i71cMQF",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "H200",
+      "cost": "0.11305734"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-FkLohD0umvKzVQ4NyE81KS",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.19981303"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-FkLohD0umvKzVQ4NyE81KS",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "0.27036012"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-FkLohD0umvKzVQ4NyE81KS",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "H200",
+      "cost": "1.19866693"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-FxCTlNirGsvjLXJWmHx0w6",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.01369311"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-FxCTlNirGsvjLXJWmHx0w6",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00390392"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-FxCTlNirGsvjLXJWmHx0w6",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "1.00980003"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-G7ZApUsiwktgqJra0gEUG8",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.01009551"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-G7ZApUsiwktgqJra0gEUG8",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00225038"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-G7ZApUsiwktgqJra0gEUG8",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "H200",
+      "cost": "0.64482592"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-GJWUfVfWDMWGJ6CGc0nADW",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "2.27547006"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-GJWUfVfWDMWGJ6CGc0nADW",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "3.07886012"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-GJWUfVfWDMWGJ6CGc0nADW",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "13.65041499"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-HBuk2vM3cY5BW4qExXZK5l",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00336646"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-HBuk2vM3cY5BW4qExXZK5l",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00065834"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-HBuk2vM3cY5BW4qExXZK5l",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "0.19904051"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-J1J9PHV5MyWD3PJZ7jJwqy",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "6.08352388"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-J1J9PHV5MyWD3PJZ7jJwqy",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "8.23140652"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-J1J9PHV5MyWD3PJZ7jJwqy",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "36.49471249"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-LOxYQx13vXR8ND3TigrtPu",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.04107785"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-LOxYQx13vXR8ND3TigrtPu",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "0.05558102"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-LOxYQx13vXR8ND3TigrtPu",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "H200",
+      "cost": "0.24642365"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-N8QB13iaQFIQUqdZrWl22a",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.04549292"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-N8QB13iaQFIQUqdZrWl22a",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "0.06155490"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-N8QB13iaQFIQUqdZrWl22a",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "H200",
+      "cost": "0.27290941"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-NdsMnyOE7fPzrckWO2owyD",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.01692409"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-NdsMnyOE7fPzrckWO2owyD",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00537688"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-NdsMnyOE7fPzrckWO2owyD",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "1.38457625"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-OWGHAochdxkqxzSJXswrCW",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.01171732"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-OWGHAochdxkqxzSJXswrCW",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00412489"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-OWGHAochdxkqxzSJXswrCW",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "1.04027024"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-PrHITwfndxpYoUw2KfHocH",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00147534"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-PrHITwfndxpYoUw2KfHocH",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00054052"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-PrHITwfndxpYoUw2KfHocH",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "0.17907861"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-PyqZqW7od2LYeju1z3Ihj3",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.01555611"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-PyqZqW7od2LYeju1z3Ihj3",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "0.02104843"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-PyqZqW7od2LYeju1z3Ihj3",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "H200",
+      "cost": "0.09332019"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-QZh8xAuICfBBWNNA5jCVvR",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00081323"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-QZh8xAuICfBBWNNA5jCVvR",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00017313"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-QZh8xAuICfBBWNNA5jCVvR",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "0.15570283"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-SmkyFaQNTmi5UKJQd46ZJm",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.04330617"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-SmkyFaQNTmi5UKJQd46ZJm",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.05859609"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-SmkyFaQNTmi5UKJQd46ZJm",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "0.25979127"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-VE4UKMjJToiM2FeAAGZojR",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.13721425"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-VE4UKMjJToiM2FeAAGZojR",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "0.18565987"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-VE4UKMjJToiM2FeAAGZojR",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "H200",
+      "cost": "0.82314046"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-XUiV7Z073WSH4nN2A9YxpL",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.98843386"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-XUiV7Z073WSH4nN2A9YxpL",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "1.33741579"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-XUiV7Z073WSH4nN2A9YxpL",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "H200",
+      "cost": "5.92955830"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-YT2dybLVHcEM9lLXjPQLzW",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "2.18108341"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-YT2dybLVHcEM9lLXjPQLzW",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "2.95114879"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-YT2dybLVHcEM9lLXjPQLzW",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "13.08419485"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-YyCwN4c8Ww5OPXSwZJYFdc",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00882920"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-YyCwN4c8Ww5OPXSwZJYFdc",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "0.01194649"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-YyCwN4c8Ww5OPXSwZJYFdc",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "H200",
+      "cost": "0.05296587"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-ZdajtkpjnDqKCweCSbl1Lf",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00302521"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-ZdajtkpjnDqKCweCSbl1Lf",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00061616"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-ZdajtkpjnDqKCweCSbl1Lf",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "0.20666545"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-ajARKI5Brc1VxyygHQn4d5",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.04318069"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-ajARKI5Brc1VxyygHQn4d5",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "0.05842631"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-ajARKI5Brc1VxyygHQn4d5",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "H200",
+      "cost": "0.25903852"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-areZO9nMgvxBXKMWBW87yn",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.01450208"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-areZO9nMgvxBXKMWBW87yn",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "0.01962227"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-areZO9nMgvxBXKMWBW87yn",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "H200",
+      "cost": "0.08699716"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-dw8a95JJBXWvcWaOUEY7MU",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.08653487"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-dw8a95JJBXWvcWaOUEY7MU",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.01863805"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-dw8a95JJBXWvcWaOUEY7MU",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "3.86675483"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-hrm1oVoy2GR31QSPYperoZ",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.19424530"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-hrm1oVoy2GR31QSPYperoZ",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "0.26282662"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-hrm1oVoy2GR31QSPYperoZ",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "H200",
+      "cost": "1.16526648"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-hwCIewObaadMYmDVX9idc9",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00189149"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-hwCIewObaadMYmDVX9idc9",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00055202"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-hwCIewObaadMYmDVX9idc9",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "0.18162489"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-ljq31CcYAXzVEkn15ytFjM",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "L40S",
+      "cost": "0.04389731"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-ljq31CcYAXzVEkn15ytFjM",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00030308"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-ljq31CcYAXzVEkn15ytFjM",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00343868"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-m3CBdK0eeqfDKbYOMpf52X",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.05695459"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-m3CBdK0eeqfDKbYOMpf52X",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.01211757"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-m3CBdK0eeqfDKbYOMpf52X",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "2.94595509"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-oTDi1txPrmaj1M988HxziS",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00085779"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-oTDi1txPrmaj1M988HxziS",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00017962"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-oTDi1txPrmaj1M988HxziS",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "0.16255547"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-obdTNJNfhBY43jAp16DxXz",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "L40S",
+      "cost": "0.05637027"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-obdTNJNfhBY43jAp16DxXz",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00029617"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-obdTNJNfhBY43jAp16DxXz",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00103025"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-quF56iRlPhhBGpJyftRifh",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "2.97548533"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-quF56iRlPhhBGpJyftRifh",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "4.02602667"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-quF56iRlPhhBGpJyftRifh",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "H200",
+      "cost": "17.84976666"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-soNGGKHXLygmhCwK3Phb4x",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.94830675"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-soNGGKHXLygmhCwK3Phb4x",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "1.28312118"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-soNGGKHXLygmhCwK3Phb4x",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "H200",
+      "cost": "5.68883807"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-soNGGKHXLygmhCwK3Phb4x",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "1.27895994"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-soNGGKHXLygmhCwK3Phb4x",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "1.73051662"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-soNGGKHXLygmhCwK3Phb4x",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "7.67240765"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-tmYqhYfq5GpxK8lqmQnnYS",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00924980"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-tmYqhYfq5GpxK8lqmQnnYS",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.01251558"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-tmYqhYfq5GpxK8lqmQnnYS",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "0.05548900"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-ulF9u7QEXYLGkbIyh4G6Em",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.26235764"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-ulF9u7QEXYLGkbIyh4G6Em",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.35498708"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-ulF9u7QEXYLGkbIyh4G6Em",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "1.57386849"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-uo4HQ2swC1P2LLXzGDThWG",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00588709"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-uo4HQ2swC1P2LLXzGDThWG",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00176589"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-uo4HQ2swC1P2LLXzGDThWG",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "0.48918213"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-vSp0co3ShMXqzmfUAsZQyB",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00208017"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-vSp0co3ShMXqzmfUAsZQyB",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00045445"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-vSp0co3ShMXqzmfUAsZQyB",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "0.18160000"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-vv9OCTqGIbDwNyi0fqZxUd",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.02080149"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-vv9OCTqGIbDwNyi0fqZxUd",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00459059"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-vv9OCTqGIbDwNyi0fqZxUd",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "1.01823437"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-x9NYU99LeyvoavNFJidmL2",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00301588"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-x9NYU99LeyvoavNFJidmL2",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00058021"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-x9NYU99LeyvoavNFJidmL2",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "0.18160027"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-xy0bhh0Mhoc2kj3M8NoyII",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.04266323"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-xy0bhh0Mhoc2kj3M8NoyII",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "0.05772614"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-xy0bhh0Mhoc2kj3M8NoyII",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "H200",
+      "cost": "0.25593426"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-y0m8wdtJLKpmlh5c55AF5l",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00279635"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-y0m8wdtJLKpmlh5c55AF5l",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00083939"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-y0m8wdtJLKpmlh5c55AF5l",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "0.24813414"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-z1FnQguxVsxU9H79lS1eoN",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "CPU",
+      "cost": "0.10562105"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-z1FnQguxVsxU9H79lS1eoN",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "Memory",
+      "cost": "0.02701259"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-z1FnQguxVsxU9H79lS1eoN",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-03T00:00:00",
+      "resource": "H200",
+      "cost": "5.34037730"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-zWi2iDIzyyT2SOYV61Ekfl",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00008241"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "september",
+      "object_id": "ap-zWi2iDIzyyT2SOYV61Ekfl",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-02T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00266978"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-5628OGxpUM5CLarPop9j7r",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T01:00:00",
+      "resource": "H200",
+      "cost": "3.00396774"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-5628OGxpUM5CLarPop9j7r",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T01:00:00",
+      "resource": "Memory",
+      "cost": "0.67754691"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-5628OGxpUM5CLarPop9j7r",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T01:00:00",
+      "resource": "CPU",
+      "cost": "0.50074951"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-5628OGxpUM5CLarPop9j7r",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T02:00:00",
+      "resource": "H200",
+      "cost": "4.53509731"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-5628OGxpUM5CLarPop9j7r",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T02:00:00",
+      "resource": "Memory",
+      "cost": "1.02289420"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-5628OGxpUM5CLarPop9j7r",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T02:00:00",
+      "resource": "CPU",
+      "cost": "0.75598274"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-5628OGxpUM5CLarPop9j7r",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T03:00:00",
+      "resource": "H200",
+      "cost": "4.53999965"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-5628OGxpUM5CLarPop9j7r",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T03:00:00",
+      "resource": "Memory",
+      "cost": "1.02399992"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-5628OGxpUM5CLarPop9j7r",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T03:00:00",
+      "resource": "CPU",
+      "cost": "0.75679994"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-5628OGxpUM5CLarPop9j7r",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T04:00:00",
+      "resource": "H200",
+      "cost": "4.52234537"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-5628OGxpUM5CLarPop9j7r",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T04:00:00",
+      "resource": "Memory",
+      "cost": "1.02001799"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-5628OGxpUM5CLarPop9j7r",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T04:00:00",
+      "resource": "CPU",
+      "cost": "0.75385704"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-5628OGxpUM5CLarPop9j7r",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T05:00:00",
+      "resource": "H200",
+      "cost": "4.54026648"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-5628OGxpUM5CLarPop9j7r",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T05:00:00",
+      "resource": "Memory",
+      "cost": "1.02406010"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-5628OGxpUM5CLarPop9j7r",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T05:00:00",
+      "resource": "CPU",
+      "cost": "0.75684442"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-5628OGxpUM5CLarPop9j7r",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T06:00:00",
+      "resource": "H200",
+      "cost": "3.33935172"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-5628OGxpUM5CLarPop9j7r",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T06:00:00",
+      "resource": "Memory",
+      "cost": "0.75319299"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-5628OGxpUM5CLarPop9j7r",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T06:00:00",
+      "resource": "CPU",
+      "cost": "0.55665669"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-GJWUfVfWDMWGJ6CGc0nADW",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T00:00:00",
+      "resource": "H200",
+      "cost": "0.48408651"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-GJWUfVfWDMWGJ6CGc0nADW",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T00:00:00",
+      "resource": "Memory",
+      "cost": "0.10918603"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-GJWUfVfWDMWGJ6CGc0nADW",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T00:00:00",
+      "resource": "CPU",
+      "cost": "0.08069530"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-JOTyRLSv9Ap3rPsilCd9pS",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T04:00:00",
+      "resource": "H200",
+      "cost": "1.70707121"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-JOTyRLSv9Ap3rPsilCd9pS",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T04:00:00",
+      "resource": "Memory",
+      "cost": "0.00775810"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-JOTyRLSv9Ap3rPsilCd9pS",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T04:00:00",
+      "resource": "CPU",
+      "cost": "0.02461023"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-K0OaRzUNteoi3apL3WG6EM",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T09:00:00",
+      "resource": "H200",
+      "cost": "0.75666710"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-K0OaRzUNteoi3apL3WG6EM",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T09:00:00",
+      "resource": "Memory",
+      "cost": "0.17066676"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-K0OaRzUNteoi3apL3WG6EM",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T09:00:00",
+      "resource": "CPU",
+      "cost": "0.12613341"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-MjEP6EuStM6eDmuqKzlA7E",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T01:00:00",
+      "resource": "H200",
+      "cost": "0.56247440"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-MjEP6EuStM6eDmuqKzlA7E",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T01:00:00",
+      "resource": "Memory",
+      "cost": "0.00233376"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-MjEP6EuStM6eDmuqKzlA7E",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T01:00:00",
+      "resource": "CPU",
+      "cost": "0.00708128"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-MjEP6EuStM6eDmuqKzlA7E",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T02:00:00",
+      "resource": "H200",
+      "cost": "1.74908911"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-MjEP6EuStM6eDmuqKzlA7E",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T02:00:00",
+      "resource": "Memory",
+      "cost": "0.00784077"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-MjEP6EuStM6eDmuqKzlA7E",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T02:00:00",
+      "resource": "CPU",
+      "cost": "0.02162795"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-Mnd9K3pqhFnmANsisPmWqQ",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T08:00:00",
+      "resource": "H200",
+      "cost": "1.82677108"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-Mnd9K3pqhFnmANsisPmWqQ",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T08:00:00",
+      "resource": "Memory",
+      "cost": "0.00852992"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-Mnd9K3pqhFnmANsisPmWqQ",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T08:00:00",
+      "resource": "CPU",
+      "cost": "0.02288592"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-NgZjnvQJMF3o0d1N7Gn3CH",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T02:00:00",
+      "resource": "H200",
+      "cost": "0.80711210"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-NgZjnvQJMF3o0d1N7Gn3CH",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T02:00:00",
+      "resource": "Memory",
+      "cost": "0.00378792"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-NgZjnvQJMF3o0d1N7Gn3CH",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T02:00:00",
+      "resource": "CPU",
+      "cost": "0.01190404"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-NgZjnvQJMF3o0d1N7Gn3CH",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T03:00:00",
+      "resource": "H200",
+      "cost": "0.92884037"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-NgZjnvQJMF3o0d1N7Gn3CH",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T03:00:00",
+      "resource": "Memory",
+      "cost": "0.00411051"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-NgZjnvQJMF3o0d1N7Gn3CH",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T03:00:00",
+      "resource": "CPU",
+      "cost": "0.01298022"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-Ocnfz9zmNomkiQFMls8V90",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T09:00:00",
+      "resource": "H200",
+      "cost": "3.95484389"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-Ocnfz9zmNomkiQFMls8V90",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T09:00:00",
+      "resource": "Memory",
+      "cost": "0.89201765"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-Ocnfz9zmNomkiQFMls8V90",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T09:00:00",
+      "resource": "CPU",
+      "cost": "0.65925680"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-Ocnfz9zmNomkiQFMls8V90",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T10:00:00",
+      "resource": "H200",
+      "cost": "4.54002884"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-Ocnfz9zmNomkiQFMls8V90",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T10:00:00",
+      "resource": "Memory",
+      "cost": "1.02400651"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-Ocnfz9zmNomkiQFMls8V90",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T10:00:00",
+      "resource": "CPU",
+      "cost": "0.75680481"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-Ocnfz9zmNomkiQFMls8V90",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T11:00:00",
+      "resource": "H200",
+      "cost": "4.54028144"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-Ocnfz9zmNomkiQFMls8V90",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T11:00:00",
+      "resource": "Memory",
+      "cost": "1.02406348"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-Ocnfz9zmNomkiQFMls8V90",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T11:00:00",
+      "resource": "CPU",
+      "cost": "0.75684692"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-Ocnfz9zmNomkiQFMls8V90",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T12:00:00",
+      "resource": "H200",
+      "cost": "4.53496202"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-Ocnfz9zmNomkiQFMls8V90",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T12:00:00",
+      "resource": "Memory",
+      "cost": "1.02286368"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-Ocnfz9zmNomkiQFMls8V90",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T12:00:00",
+      "resource": "CPU",
+      "cost": "0.75596019"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-Ocnfz9zmNomkiQFMls8V90",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T13:00:00",
+      "resource": "H200",
+      "cost": "4.53859139"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-Ocnfz9zmNomkiQFMls8V90",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T13:00:00",
+      "resource": "Memory",
+      "cost": "1.02368229"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-Ocnfz9zmNomkiQFMls8V90",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T13:00:00",
+      "resource": "CPU",
+      "cost": "0.75656519"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-Ocnfz9zmNomkiQFMls8V90",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T14:00:00",
+      "resource": "H200",
+      "cost": "2.63674376"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-Ocnfz9zmNomkiQFMls8V90",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T14:00:00",
+      "resource": "Memory",
+      "cost": "0.59471930"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-Ocnfz9zmNomkiQFMls8V90",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T14:00:00",
+      "resource": "CPU",
+      "cost": "0.43953473"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-P6BD3ptgN6fuCZia9NgYEi",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T07:00:00",
+      "resource": "H200",
+      "cost": "1.81259337"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-P6BD3ptgN6fuCZia9NgYEi",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T07:00:00",
+      "resource": "Memory",
+      "cost": "0.00836223"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-P6BD3ptgN6fuCZia9NgYEi",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T07:00:00",
+      "resource": "CPU",
+      "cost": "0.02216325"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-TBv7wrvSddamDLDRxfbCGd",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T07:00:00",
+      "resource": "H200",
+      "cost": "1.16779016"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-TBv7wrvSddamDLDRxfbCGd",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T07:00:00",
+      "resource": "Memory",
+      "cost": "0.00520891"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-TBv7wrvSddamDLDRxfbCGd",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T07:00:00",
+      "resource": "CPU",
+      "cost": "0.01503601"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-TBv7wrvSddamDLDRxfbCGd",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T08:00:00",
+      "resource": "H200",
+      "cost": "0.65602891"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-TBv7wrvSddamDLDRxfbCGd",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T08:00:00",
+      "resource": "Memory",
+      "cost": "0.00265867"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-TBv7wrvSddamDLDRxfbCGd",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T08:00:00",
+      "resource": "CPU",
+      "cost": "0.00742077"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-TTCqSzF68fAtxwbTIUpQdJ",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T19:00:00",
+      "resource": "H200",
+      "cost": "2.65337757"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-TTCqSzF68fAtxwbTIUpQdJ",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T19:00:00",
+      "resource": "Memory",
+      "cost": "0.59847107"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-TTCqSzF68fAtxwbTIUpQdJ",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T19:00:00",
+      "resource": "CPU",
+      "cost": "0.44230752"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-cJCHyYUTNRNuK3jD9H3jTf",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T09:00:00",
+      "resource": "H200",
+      "cost": "3.13007974"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-cJCHyYUTNRNuK3jD9H3jTf",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T09:00:00",
+      "resource": "Memory",
+      "cost": "0.70599155"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-cJCHyYUTNRNuK3jD9H3jTf",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T09:00:00",
+      "resource": "CPU",
+      "cost": "0.52177188"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-cJCHyYUTNRNuK3jD9H3jTf",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T10:00:00",
+      "resource": "H200",
+      "cost": "4.54018823"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-cJCHyYUTNRNuK3jD9H3jTf",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T10:00:00",
+      "resource": "Memory",
+      "cost": "1.02404246"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-cJCHyYUTNRNuK3jD9H3jTf",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T10:00:00",
+      "resource": "CPU",
+      "cost": "0.75683138"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-cJCHyYUTNRNuK3jD9H3jTf",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T11:00:00",
+      "resource": "H200",
+      "cost": "4.53912273"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-cJCHyYUTNRNuK3jD9H3jTf",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T11:00:00",
+      "resource": "Memory",
+      "cost": "1.02380213"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-cJCHyYUTNRNuK3jD9H3jTf",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T11:00:00",
+      "resource": "CPU",
+      "cost": "0.75665376"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-cJCHyYUTNRNuK3jD9H3jTf",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T12:00:00",
+      "resource": "H200",
+      "cost": "4.54000006"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-cJCHyYUTNRNuK3jD9H3jTf",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T12:00:00",
+      "resource": "Memory",
+      "cost": "1.02400001"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-cJCHyYUTNRNuK3jD9H3jTf",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T12:00:00",
+      "resource": "CPU",
+      "cost": "0.75680001"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-cJCHyYUTNRNuK3jD9H3jTf",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T13:00:00",
+      "resource": "H200",
+      "cost": "4.54039742"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-cJCHyYUTNRNuK3jD9H3jTf",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T13:00:00",
+      "resource": "Memory",
+      "cost": "1.02408964"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-cJCHyYUTNRNuK3jD9H3jTf",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T13:00:00",
+      "resource": "CPU",
+      "cost": "0.75686625"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-cJCHyYUTNRNuK3jD9H3jTf",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T14:00:00",
+      "resource": "H200",
+      "cost": "3.31014146"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-cJCHyYUTNRNuK3jD9H3jTf",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T14:00:00",
+      "resource": "Memory",
+      "cost": "0.74660459"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-cJCHyYUTNRNuK3jD9H3jTf",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T14:00:00",
+      "resource": "CPU",
+      "cost": "0.55178746"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-iKwx2e32A6pT3lzn851xJV",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T06:00:00",
+      "resource": "H200",
+      "cost": "0.89791106"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-iKwx2e32A6pT3lzn851xJV",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T06:00:00",
+      "resource": "Memory",
+      "cost": "0.00396046"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-iKwx2e32A6pT3lzn851xJV",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T06:00:00",
+      "resource": "CPU",
+      "cost": "0.01143701"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-iKwx2e32A6pT3lzn851xJV",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T07:00:00",
+      "resource": "H200",
+      "cost": "4.54000008"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-iKwx2e32A6pT3lzn851xJV",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T07:00:00",
+      "resource": "Memory",
+      "cost": "0.02547432"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-iKwx2e32A6pT3lzn851xJV",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T07:00:00",
+      "resource": "CPU",
+      "cost": "0.05857399"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-iKwx2e32A6pT3lzn851xJV",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T08:00:00",
+      "resource": "H200",
+      "cost": "4.54000041"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-iKwx2e32A6pT3lzn851xJV",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T08:00:00",
+      "resource": "Memory",
+      "cost": "0.02702176"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-iKwx2e32A6pT3lzn851xJV",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T08:00:00",
+      "resource": "CPU",
+      "cost": "0.05646122"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-iKwx2e32A6pT3lzn851xJV",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T09:00:00",
+      "resource": "H200",
+      "cost": "3.55936920"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-iKwx2e32A6pT3lzn851xJV",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T09:00:00",
+      "resource": "Memory",
+      "cost": "0.02073584"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-iKwx2e32A6pT3lzn851xJV",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T09:00:00",
+      "resource": "CPU",
+      "cost": "0.04485569"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-j1PEOd0LtSHj3NUe3bY79h",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T14:00:00",
+      "resource": "H200",
+      "cost": "0.45652342"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-j1PEOd0LtSHj3NUe3bY79h",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T14:00:00",
+      "resource": "Memory",
+      "cost": "0.00197673"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-j1PEOd0LtSHj3NUe3bY79h",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T14:00:00",
+      "resource": "CPU",
+      "cost": "0.00658834"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-j1PEOd0LtSHj3NUe3bY79h",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T15:00:00",
+      "resource": "H200",
+      "cost": "1.30029731"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-j1PEOd0LtSHj3NUe3bY79h",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T15:00:00",
+      "resource": "Memory",
+      "cost": "0.00600604"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-j1PEOd0LtSHj3NUe3bY79h",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T15:00:00",
+      "resource": "CPU",
+      "cost": "0.01860456"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-kO4nZVjPpdt6jiPIqzjp8A",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T19:00:00",
+      "resource": "H200",
+      "cost": "0.69108941"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-kO4nZVjPpdt6jiPIqzjp8A",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T19:00:00",
+      "resource": "Memory",
+      "cost": "0.15587567"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-kO4nZVjPpdt6jiPIqzjp8A",
+      "description": "catan-qwen3-8-vision-sft",
+      "environment": "main",
+      "interval_start": "2026-09-04T19:00:00",
+      "resource": "CPU",
+      "cost": "0.11520186"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-spno9s5TpSQ668zloZT3FB",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T00:00:00",
+      "resource": "H200",
+      "cost": "3.79001601"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-spno9s5TpSQ668zloZT3FB",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T00:00:00",
+      "resource": "Memory",
+      "cost": "0.01855227"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-spno9s5TpSQ668zloZT3FB",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T00:00:00",
+      "resource": "CPU",
+      "cost": "0.04890766"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-spno9s5TpSQ668zloZT3FB",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T01:00:00",
+      "resource": "H200",
+      "cost": "4.54072314"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-spno9s5TpSQ668zloZT3FB",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T01:00:00",
+      "resource": "Memory",
+      "cost": "0.02316321"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-spno9s5TpSQ668zloZT3FB",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T01:00:00",
+      "resource": "CPU",
+      "cost": "0.05917285"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-spno9s5TpSQ668zloZT3FB",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T02:00:00",
+      "resource": "H200",
+      "cost": "0.16142135"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-spno9s5TpSQ668zloZT3FB",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T02:00:00",
+      "resource": "Memory",
+      "cost": "0.00044547"
+    },
+    {
+      "workspace": "tetracorp",
+      "source": "today",
+      "object_id": "ap-spno9s5TpSQ668zloZT3FB",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-09-04T02:00:00",
+      "resource": "CPU",
+      "cost": "0.00106423"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-3dGxbAF0nPnxKANLTUQJ9W",
+      "description": "catan-qwen-vl-sft",
+      "environment": "main",
+      "interval_start": "2026-05-14T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00084170"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-3dGxbAF0nPnxKANLTUQJ9W",
+      "description": "catan-qwen-vl-sft",
+      "environment": "main",
+      "interval_start": "2026-05-14T00:00:00",
+      "resource": "L40S",
+      "cost": "0.04658368"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-3dGxbAF0nPnxKANLTUQJ9W",
+      "description": "catan-qwen-vl-sft",
+      "environment": "main",
+      "interval_start": "2026-05-14T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00033036"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-A33q3RQkm6xjJnN4jdiqgY",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00645052"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-A33q3RQkm6xjJnN4jdiqgY",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "L40S",
+      "cost": "0.20691663"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-A33q3RQkm6xjJnN4jdiqgY",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "A10G",
+      "cost": "0E-8"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-A33q3RQkm6xjJnN4jdiqgY",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00250656"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-CG4RUN6kAUGIJoiBdM7eqG",
+      "description": "catan-qwen-vl-sft",
+      "environment": "main",
+      "interval_start": "2026-05-14T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00542257"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-CG4RUN6kAUGIJoiBdM7eqG",
+      "description": "catan-qwen-vl-sft",
+      "environment": "main",
+      "interval_start": "2026-05-14T00:00:00",
+      "resource": "L40S",
+      "cost": "0.08125053"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-CG4RUN6kAUGIJoiBdM7eqG",
+      "description": "catan-qwen-vl-sft",
+      "environment": "main",
+      "interval_start": "2026-05-14T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00078851"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-Le0IuEu4Pefvs4dJpHCr6b",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00285448"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-Le0IuEu4Pefvs4dJpHCr6b",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "L4",
+      "cost": "0E-8"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-Le0IuEu4Pefvs4dJpHCr6b",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "A10G",
+      "cost": "0E-8"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-Le0IuEu4Pefvs4dJpHCr6b",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00015704"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-Nn5wl0iPwlmI9xS8N0X9nC",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00050955"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-Nn5wl0iPwlmI9xS8N0X9nC",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "L40S",
+      "cost": "0.01516631"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-Nn5wl0iPwlmI9xS8N0X9nC",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00008196"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-OHJ13rYv2jzQC8RSSwy5eQ",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00344259"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-OHJ13rYv2jzQC8RSSwy5eQ",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "L40S",
+      "cost": "0.13433280"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-OHJ13rYv2jzQC8RSSwy5eQ",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00156447"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-OkbKhqvjK2BwVk87ZlFDzB",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00368642"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-OkbKhqvjK2BwVk87ZlFDzB",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "L40S",
+      "cost": "0.14408328"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-OkbKhqvjK2BwVk87ZlFDzB",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00170260"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-QenaP8rcPVtT8ecRYnvtZ8",
+      "description": "catan-qwen-vl-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00250082"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-QenaP8rcPVtT8ecRYnvtZ8",
+      "description": "catan-qwen-vl-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "L40S",
+      "cost": "0.08450346"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-QenaP8rcPVtT8ecRYnvtZ8",
+      "description": "catan-qwen-vl-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00066549"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-R48z9ojREzfuVNAvMMfofM",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00564021"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-R48z9ojREzfuVNAvMMfofM",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "L40S",
+      "cost": "0.08341633"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-R48z9ojREzfuVNAvMMfofM",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00128094"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-Yd50o4HOztjNo46IXMkZ5b",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00077541"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-Yd50o4HOztjNo46IXMkZ5b",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "L40S",
+      "cost": "0.02924976"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-Yd50o4HOztjNo46IXMkZ5b",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00020697"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-YfKNuCBvLI7ncNZWnKcsbY",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-14T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00003581"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-YfKNuCBvLI7ncNZWnKcsbY",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-14T00:00:00",
+      "resource": "A10G",
+      "cost": "0E-8"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-YfKNuCBvLI7ncNZWnKcsbY",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-14T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00000111"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-i6Pderg5FsK90qgVCKMJaq",
+      "description": "catan-qwen-vl-sft",
+      "environment": "main",
+      "interval_start": "2026-05-14T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00164009"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-i6Pderg5FsK90qgVCKMJaq",
+      "description": "catan-qwen-vl-sft",
+      "environment": "main",
+      "interval_start": "2026-05-14T00:00:00",
+      "resource": "A10G",
+      "cost": "0E-8"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-i6Pderg5FsK90qgVCKMJaq",
+      "description": "catan-qwen-vl-sft",
+      "environment": "main",
+      "interval_start": "2026-05-14T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00005000"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-iqHYStiKXzUWPySEK92bos",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-14T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00143327"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-iqHYStiKXzUWPySEK92bos",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-14T00:00:00",
+      "resource": "L40S",
+      "cost": "0.00108327"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-iqHYStiKXzUWPySEK92bos",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-14T00:00:00",
+      "resource": "L4",
+      "cost": "0E-8"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-iqHYStiKXzUWPySEK92bos",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-14T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00003334"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-isKUVsdqZK3PBIXqGE6Y4h",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00432928"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-isKUVsdqZK3PBIXqGE6Y4h",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "L40S",
+      "cost": "0.16791639"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-isKUVsdqZK3PBIXqGE6Y4h",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00208056"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-mUBWUVdYaO8BZU9NqkYBYQ",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00273319"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-mUBWUVdYaO8BZU9NqkYBYQ",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "L40S",
+      "cost": "0.11266707"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-mUBWUVdYaO8BZU9NqkYBYQ",
+      "description": "catan-qwen-series-eval",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00127196"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-n3j5XuK39zIXYlE0zGoO9e",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00288017"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-n3j5XuK39zIXYlE0zGoO9e",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "L40S",
+      "cost": "0.06283306"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-n3j5XuK39zIXYlE0zGoO9e",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00051378"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-nWLvFUdAZwqG7LCXAZkvk8",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00013370"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-nWLvFUdAZwqG7LCXAZkvk8",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "L40S",
+      "cost": "0.00650028"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-nWLvFUdAZwqG7LCXAZkvk8",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00000696"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-ou0Qa0sC7wNlK4PDBlDqFg",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00329058"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-ou0Qa0sC7wNlK4PDBlDqFg",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "L40S",
+      "cost": "0.12783318"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-ou0Qa0sC7wNlK4PDBlDqFg",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00155157"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-qdaGRGysBycMWKtsioaCNn",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00046309"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-qdaGRGysBycMWKtsioaCNn",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "L40S",
+      "cost": "0.01625664"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-qdaGRGysBycMWKtsioaCNn",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00007862"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-rW2zbT8nSJkX0lFluGeqht",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00077998"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-rW2zbT8nSJkX0lFluGeqht",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "A10G",
+      "cost": "0E-8"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-rW2zbT8nSJkX0lFluGeqht",
+      "description": "catan-qwen-series-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00001355"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-xg8pkC78r9YEFsPLuXTBiO",
+      "description": "catan-qwen-vl-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00043754"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-xg8pkC78r9YEFsPLuXTBiO",
+      "description": "catan-qwen-vl-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "L40S",
+      "cost": "0.04441706"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_05",
+      "object_id": "ap-xg8pkC78r9YEFsPLuXTBiO",
+      "description": "catan-qwen-vl-sft",
+      "environment": "main",
+      "interval_start": "2026-05-15T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00010807"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_08",
+      "object_id": "ap-kfvdT1hUmoXT6TC0lJeD58",
+      "description": "catan-qwen38-vision-probe",
+      "environment": "main",
+      "interval_start": "2026-08-25T00:00:00",
+      "resource": "Memory",
+      "cost": "0.00014326"
+    },
+    {
+      "workspace": "icebear5h",
+      "source": "month_08",
+      "object_id": "ap-kfvdT1hUmoXT6TC0lJeD58",
+      "description": "catan-qwen38-vision-probe",
+      "environment": "main",
+      "interval_start": "2026-08-25T00:00:00",
+      "resource": "CPU",
+      "cost": "0.00781278"
+    }
+  ]
+}

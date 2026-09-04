@@ -1,0 +1,103 @@
+{
+  "actor": "BLUE",
+  "board_surface": "indexed_tile_rows/v3",
+  "catalog_snapshot": "artifacts/runs/model_selection/openrouter_vlm_27b_72b_20260831/openrouter_catalog_snapshot.json",
+  "colors": [
+    "BLUE",
+    "RED",
+    "WHITE",
+    "ORANGE"
+  ],
+  "context_suite": "catan-agent@7.0.0+initial-settlement-strategy.1.0.0",
+  "decision": "fresh first settlement",
+  "generated_at": "2026-09-01T01:29:39.028528+00:00",
+  "human_action_labels": false,
+  "max_cost_usd": 4.0,
+  "max_retries": 0,
+  "max_tokens_omitted": true,
+  "models": [
+    "qwen/qwen3.6-27b",
+    "qwen/qwen3.6-35b-a3b",
+    "qwen/qwen3.8-27b",
+    "qwen/qwen3-vl-30b-a3b-thinking",
+    "meta/muse-glimmer-30b",
+    "google/gemma-4-31b-it",
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
+  ],
+  "prior_cost_usd": 0.42847115,
+  "prompt_token_allowance": 20000,
+  "prompt_variant": {
+    "base_context_suite": "catan-agent@7.0.0",
+    "guidance": "STRATEGIC OBJECTIVE FOR THIS PROBE:\n- Maximizing raw pip count is not the objective. Resource diversity is not the objective either. Use production and coverage only when they support a coherent opening plan.\n- Evaluate the first and plausible second settlements as one coupled portfolio. You place the second settlement after every opponent has placed once, so identify multiple complementary backups rather than assuming one node will remain available.\n- Choose and justify a board-specific opening archetype. Examples include an expansion engine built around WOOD, BRICK, and WHEAT; a development-card/city engine built around ORE, WHEAT, and SHEEP; or a credible scarcity/port conversion plan. Do not force all five resources when a focused engine has better conversion ratios.\n- Compare whether the combined production can repeatedly pay for the intended build sequence. Look for bottlenecks: roads need WOOD+BRICK, settlements need WOOD+BRICK+WHEAT+SHEEP, cities need ORE+WHEAT, and development cards need ORE+WHEAT+SHEEP. Duplicate resource production can be intentional; nominal diversity without buildable combinations can be weak.\n- Account for the starting cards from the second settlement, realistic port timing, resource scarcity, number correlation, robber exposure, opponent contention, road direction, and at least two reachable expansion targets.\n- Tie the selected first settlement to a concrete early-game sequence and state what the second settlement must complement. Prefer a slightly lower-pip coherent engine over a higher-pip collection that lacks synergy or a credible route to builds.\n- The first settlement gives no starting cards. The second settlement is independent of the first road and gives one card from each adjacent non-desert tile.",
+    "guidance_sha256": "6d98ec9e0c4438d6fd8b0bfd511aaf852b3c03ff33dbc05dc5da654f3050eab7",
+    "id": "initial-settlement-strategy",
+    "phase": "initial_settlement_1",
+    "schema": "catan-eval-prompt-variant/v1",
+    "source_path": "evals/suites/catan_initial_settlement_strategy_v1.json",
+    "source_sha256": "1c56cbbfb970675f4b4b236c76686a4b3aab803faedfdb0dcbd0811e7089ffd0",
+    "version": "1.0.0"
+  },
+  "reasoning_request": {
+    "effort": "high",
+    "exclude": false
+  },
+  "replay_input": false,
+  "request_cost_upper_bounds": {
+    "google/gemma-4-31b-it": {
+      "completion_price_per_token_usd": 3.4e-07,
+      "max_completion_tokens": 16384,
+      "prompt_price_per_token_usd": 9e-08,
+      "prompt_token_allowance": 20000,
+      "request_upper_bound_usd": 0.00737056
+    },
+    "meta/muse-glimmer-30b": {
+      "completion_price_per_token_usd": 1.2e-06,
+      "max_completion_tokens": 16384,
+      "prompt_price_per_token_usd": 3e-07,
+      "prompt_token_allowance": 20000,
+      "request_upper_bound_usd": 0.025660799999999998
+    },
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": {
+      "completion_price_per_token_usd": 0.0,
+      "max_completion_tokens": 65536,
+      "prompt_price_per_token_usd": 0.0,
+      "prompt_token_allowance": 20000,
+      "request_upper_bound_usd": 0.0
+    },
+    "qwen/qwen3-vl-30b-a3b-thinking": {
+      "completion_price_per_token_usd": 2.4e-06,
+      "max_completion_tokens": 32768,
+      "prompt_price_per_token_usd": 2e-07,
+      "prompt_token_allowance": 20000,
+      "request_upper_bound_usd": 0.0826432
+    },
+    "qwen/qwen3.6-27b": {
+      "completion_price_per_token_usd": 3.6e-06,
+      "max_completion_tokens": 235929,
+      "prompt_price_per_token_usd": 6e-07,
+      "prompt_token_allowance": 20000,
+      "request_upper_bound_usd": 0.8613444
+    },
+    "qwen/qwen3.6-35b-a3b": {
+      "completion_price_per_token_usd": 9e-07,
+      "max_completion_tokens": 235929,
+      "prompt_price_per_token_usd": 1e-07,
+      "prompt_token_allowance": 20000,
+      "request_upper_bound_usd": 0.2143361
+    },
+    "qwen/qwen3.8-27b": {
+      "completion_price_per_token_usd": 2.55e-06,
+      "max_completion_tokens": 131072,
+      "prompt_price_per_token_usd": 4.25e-07,
+      "prompt_token_allowance": 20000,
+      "request_upper_bound_usd": 0.3427336
+    }
+  },
+  "scheduling": "sequential",
+  "schema": "catan-initial-settlement-reasoning-plan/v1",
+  "seeds": [
+    117
+  ],
+  "temperature": 0.2,
+  "timeout_seconds": 900.0
+}

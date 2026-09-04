@@ -1,0 +1,28 @@
+{
+  "schema": "catan_qwen38_modal_smoke/v1",
+  "status": "completed",
+  "run_id": "ap-ajARKI5Brc1VxyygHQn4d5",
+  "run_url": "https://modal.com/apps/tetracorp/main/ap-ajARKI5Brc1VxyygHQn4d5",
+  "model_id": "Qwen/Qwen3.8-27B",
+  "hardware": "H200",
+  "optimizer_steps": 1,
+  "microbatches": 8,
+  "tokens": 8377,
+  "loss": 6.869959831237793,
+  "grad_norm": 556.1,
+  "mean_token_accuracy": 0.4613,
+  "step_wall_seconds": 44.25,
+  "train_runtime_seconds": 61.0507,
+  "learning_rate": 0.0,
+  "learning_rate_note": "The one-step smoke remained entirely inside the configured warmup.",
+  "artifacts": {
+    "adapter_bytes": 239913744,
+    "visual_state_bytes": 921502912,
+    "visual_tensors": 333
+  },
+  "reload_validation": {
+    "valid": true,
+    "semantic_tokens": 154,
+    "visual_tensors": 333
+  }
+}

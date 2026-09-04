@@ -9,4 +9,6 @@ model/provider settings, scoring version, verification performed, and known
 limitations.
 
 - `catan_board_bench/`: benchmark and format-evaluation findings.
+- `evals/`: evaluation-tooling, workflow, and migration findings.
+- `model_selection/`: model-family audits and Catan-policy selection research.
 - `sft/`: supervised fine-tuning run records and conclusions.

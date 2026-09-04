@@ -1,0 +1,185 @@
+{
+  "canonicalizations": [
+    {
+      "canonical_indices": [
+        35,
+        36
+      ],
+      "raw_event_index": 43,
+      "reason": "MOVE_ROBBER is the causal prerequisite of STEAL",
+      "source_replay_indices": [
+        35,
+        36
+      ]
+    },
+    {
+      "canonical_indices": [
+        214,
+        215
+      ],
+      "raw_event_index": 253,
+      "reason": "MOVE_ROBBER is the causal prerequisite of STEAL",
+      "source_replay_indices": [
+        214,
+        215
+      ]
+    },
+    {
+      "canonical_indices": [
+        313,
+        314
+      ],
+      "raw_event_index": 368,
+      "reason": "MOVE_ROBBER is the causal prerequisite of STEAL",
+      "source_replay_indices": [
+        313,
+        314
+      ]
+    },
+    {
+      "canonical_indices": [
+        329,
+        330
+      ],
+      "raw_event_index": 383,
+      "reason": "MOVE_ROBBER is the causal prerequisite of STEAL",
+      "source_replay_indices": [
+        329,
+        330
+      ]
+    },
+    {
+      "canonical_indices": [
+        358,
+        359
+      ],
+      "raw_event_index": 427,
+      "reason": "MOVE_ROBBER is the causal prerequisite of STEAL",
+      "source_replay_indices": [
+        358,
+        359
+      ]
+    },
+    {
+      "canonical_indices": [
+        371,
+        372
+      ],
+      "raw_event_index": 440,
+      "reason": "MOVE_ROBBER is the causal prerequisite of STEAL",
+      "source_replay_indices": [
+        371,
+        372
+      ]
+    },
+    {
+      "canonical_indices": [
+        399,
+        400
+      ],
+      "raw_event_index": 485,
+      "reason": "MOVE_ROBBER is the causal prerequisite of STEAL",
+      "source_replay_indices": [
+        399,
+        400
+      ]
+    },
+    {
+      "canonical_indices": [
+        410,
+        411
+      ],
+      "raw_event_index": 497,
+      "reason": "MOVE_ROBBER is the causal prerequisite of STEAL",
+      "source_replay_indices": [
+        410,
+        411
+      ]
+    },
+    {
+      "canonical_indices": [
+        454,
+        455
+      ],
+      "raw_event_index": 569,
+      "reason": "MOVE_ROBBER is the causal prerequisite of STEAL",
+      "source_replay_indices": [
+        454,
+        455
+      ]
+    }
+  ],
+  "comparison_parser_version": "shared-action-parser-v3",
+  "exact_decision_count": 86,
+  "game_id": "242781000",
+  "generated_at": "2026-08-31T23:01:06.717774+00:00",
+  "manifest_semantic_sha256": "5e439f79745bbd19e8da627e0380872941a200dfc8014ff6faeacf9910d913ef",
+  "manifest_sha256": "a03e664c2047032bddb3b83a5d816a3967e4a68eb174b6e974551f1aa5f5132f",
+  "models": [
+    "qwen/qwen3.5-27b",
+    "qwen/qwen3.5-35b-a3b",
+    "qwen/qwen3.6-27b",
+    "qwen/qwen3.6-35b-a3b",
+    "qwen/qwen3.8-27b",
+    "qwen/qwen3-vl-30b-a3b-thinking",
+    "meta/muse-glimmer-30b",
+    "google/gemma-4-31b-it",
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
+  ],
+  "parsed_action_count": 570,
+  "schema_version": "replay-action-diff-v2",
+  "settings": {
+    "allow_lookahead": false,
+    "coarse_actions_excluded": true,
+    "context_version": "catan-agent@7.0.0",
+    "decision_bucket_suite": "catan-decision-spot-checks@1.0.0",
+    "execute_model_actions": false,
+    "headline_includes_forced_exact_choices": true,
+    "max_cost_usd": 4.0,
+    "max_tokens": 4096,
+    "native_reasoning_request": {
+      "google/gemma-4-31b-it": {
+        "effort": "high",
+        "exclude": false
+      },
+      "meta/muse-glimmer-30b": {
+        "effort": "high",
+        "exclude": false
+      },
+      "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": {
+        "effort": "high",
+        "exclude": false
+      },
+      "qwen/qwen3-vl-30b-a3b-thinking": {
+        "effort": "high",
+        "exclude": false
+      },
+      "qwen/qwen3.5-27b": {
+        "effort": "high",
+        "exclude": false
+      },
+      "qwen/qwen3.5-35b-a3b": {
+        "effort": "high",
+        "exclude": false
+      },
+      "qwen/qwen3.6-27b": {
+        "effort": "high",
+        "exclude": false
+      },
+      "qwen/qwen3.6-35b-a3b": {
+        "effort": "high",
+        "exclude": false
+      },
+      "qwen/qwen3.8-27b": {
+        "effort": "high",
+        "exclude": false
+      }
+    },
+    "same_event_robber_order": "MOVE_ROBBER then STEAL",
+    "stateless_game_plan": true,
+    "temperature": 0.2
+  },
+  "target_engine_color": "BLUE",
+  "target_player": "2",
+  "target_player_id": 2
+}

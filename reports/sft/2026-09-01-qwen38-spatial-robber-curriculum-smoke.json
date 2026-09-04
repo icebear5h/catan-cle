@@ -1,0 +1,92 @@
+{
+  "schema": "catan_qwen38_curriculum_smoke/v1",
+  "status": "completed",
+  "run_id": "ap-xy0bhh0Mhoc2kj3M8NoyII",
+  "run_url": "https://modal.com/apps/tetracorp/main/ap-xy0bhh0Mhoc2kj3M8NoyII",
+  "model_id": "Qwen/Qwen3.8-27B",
+  "hardware": "H200",
+  "profile": "vision_tokens_lora",
+  "lora_rank": 8,
+  "optimizer_steps": 4,
+  "microbatches": 32,
+  "dataset_rows": 32,
+  "tokens": 33566,
+  "loss": 6.0777270793914795,
+  "grad_norm": 952.4383544921875,
+  "mean_token_accuracy": 0.6015625149011612,
+  "step_wall_seconds": 34.90475,
+  "train_runtime_seconds": 139.619,
+  "learning_rate": 2.500000000000001e-7,
+  "learning_rate_note": "Stage 1 was the zero-LR warmup step; stage 2 reached 1e-6 before cosine decay across stages 3 and 4.",
+  "stage_metrics": [
+    {
+      "stage": "spatial_grounding",
+      "step": 1,
+      "loss": 4.738509178161621,
+      "mean_token_accuracy": 0.6666666865348816,
+      "grad_norm": 486.5607604980469,
+      "learning_rate": 0.0,
+      "cumulative_tokens": 8405
+    },
+    {
+      "stage": "clean_board_grounding",
+      "step": 2,
+      "loss": 7.1392822265625,
+      "mean_token_accuracy": 0.604166679084301,
+      "grad_norm": 450.1152038574219,
+      "learning_rate": 1e-6,
+      "cumulative_tokens": 16789
+    },
+    {
+      "stage": "pieces_and_colors",
+      "step": 3,
+      "loss": 6.396533012390137,
+      "mean_token_accuracy": 0.572916679084301,
+      "grad_norm": 597.5426635742188,
+      "learning_rate": 7.5e-7,
+      "cumulative_tokens": 25179
+    },
+    {
+      "stage": "real_game_distribution",
+      "step": 4,
+      "loss": 6.03658390045166,
+      "mean_token_accuracy": 0.5625000149011612,
+      "grad_norm": 952.4383544921875,
+      "learning_rate": 2.500000000000001e-7,
+      "cumulative_tokens": 33566
+    }
+  ],
+  "dataset": {
+    "source": "artifacts/generated/board_recognition/replay_v1/spatial_robber_v1/curriculum_smoke_32.jsonl",
+    "source_sha256": "77c01ddad4cfad58314f8ccd2aeb9c020c76df98178810cacbb5eaa8f0c1b4a6",
+    "unique_images": 6,
+    "rows_per_stage": 8,
+    "stages": [
+      "spatial_grounding",
+      "clean_board_grounding",
+      "pieces_and_colors",
+      "real_game_distribution"
+    ]
+  },
+  "artifacts": {
+    "adapter_bytes": 239913744,
+    "visual_state_bytes": 921502912,
+    "visual_tensors": 333,
+    "remote_dir": "/runs/catan-vision-sft/catan-qwen38-spatial-robber-curriculum-smoke-4step-20260901/4113e07888a0/final"
+  },
+  "optimizer_coverage": {
+    "valid": true,
+    "trainable_tensors": 1327,
+    "covered_tensors": 1327,
+    "errors": []
+  },
+  "reload_validation": {
+    "valid": true,
+    "semantic_tokens": 154,
+    "visual_tensors": 333,
+    "visual_state_sha256": "fee36f2bca67445773e7b4fcc80da8cc4b609fe218fc30aa54b6a3214feb8396"
+  },
+  "hub_publish": null,
+  "source_identity": "4113e07888a0afb4a4bd022b85bab36f1a01ecfde420597cdafcb59a68e48849",
+  "launch_identity": "1460a6ba1b7e1a0ac86667aadb8f18fdde74e6aab89bcd0e356c86988c85c295"
+}

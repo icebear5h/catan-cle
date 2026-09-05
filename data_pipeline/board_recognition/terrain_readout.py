@@ -10,8 +10,12 @@ omissions:
 - ``tile_resource``: ``<T00> resource?`` -> ``wood`` (``desert`` for the desert)
 - ``tile_number``: ``<T00> number?`` -> ``11`` (``none`` for the desert)
 - ``port_type``: ``<P00> port?`` -> ``sheep port`` or ``3:1 port``
-- ``terrain_readout``: ``Read all tiles and ports.`` ->
-  ``<T00> wood 11; <T01> brick 2; ...; <P00> sheep port; ...``
+- ``terrain_readout``: an explicit instruction naming the 19 tiles, the 9
+  ports, the item format, the order, and the separator ->
+  ``<T00> wood 11; <T01> brick 2; ...; <P00> sheep port; ...``. The first
+  export used the bare "Read all tiles and ports." and half the readouts
+  stopped early; the count, order, and schema in the prompt give the model
+  a stopping criterion instead of something to infer from one row in 48.
 
 No inverse ("Where is the ...?") rows: the inverse direction is not a
 bijection on boards with duplicate tiles and it interferes with the forward
@@ -66,7 +70,10 @@ DEFAULT_OUTPUT_NAME = "terrain_readout_v1"
 GROUNDING_STAGE = "terrain_readout"
 TASK_FAMILY = "terrain_readout"
 SPLITS = ("train", "validation", "test")
-READOUT_PROMPT = "Read all tiles and ports."
+READOUT_PROMPT = (
+    "List every tile <T00> to <T18> as \"token resource number\" and every port <P00> to <P08> "
+    "as \"token port\", in token order, separated by \"; \"."
+)
 READOUTS_PER_IMAGE = 1
 SYNTHETIC_IMAGE_SIZE = 1024
 

@@ -10,6 +10,8 @@ from data_pipeline.board_recognition.terrain_readout import (
     port_answer,
     readout_answer,
     rows_for_state,
+    synthetic_board,
+    synthetic_seed,
     terrain_facts,
 )
 from data_pipeline.board_recognition.spatial_localization import SpatialLocalizationError
@@ -86,3 +88,18 @@ def test_export_splits_by_layout():
         assert all((FIXTURE_ROOT / "images" / row["images"][0]).is_file() for row in train[:20])
     finally:
         _remove_tree(output)
+
+
+def test_synthetic_boards_are_seeded_distinct_layouts():
+    state_a, contract_a = synthetic_board(7, "train", 0)
+    state_b, contract_b = synthetic_board(7, "train", 1)
+    again, contract_again = synthetic_board(7, "train", 0)
+    assert state_a["sample_id"] == again["sample_id"] and contract_a["tiles"] == contract_again["tiles"]
+    assert synthetic_seed(7, "train", 0) != synthetic_seed(7, "validation", 0)
+    tiles_a, ports_a = terrain_facts(contract_a)
+    tiles_b, ports_b = terrain_facts(contract_b)
+    assert [t["resource"] for t in tiles_a] != [t["resource"] for t in tiles_b] or [t["number"] for t in tiles_a] != [t["number"] for t in tiles_b]
+    assert sum(t["resource"] == "desert" for t in tiles_a) == 1 and sum(p["answer"] == "3:1 port" for p in ports_a) == 4
+    assert layout_id(state_a["sample_id"]).startswith("synth") and state_a["split"] == "train"
+    rows = rows_for_state(state_a, contract_a)
+    assert len(rows) == 48 and all(row["layout_id"] == layout_id(state_a["sample_id"]) for row in rows)

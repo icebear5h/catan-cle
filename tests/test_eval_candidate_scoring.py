@@ -3,6 +3,7 @@ import torch
 
 from sft.scripts.eval_qwen_vl_adapter import (
     is_long_answer,
+    score_response,
     candidate_answers,
     candidate_token_ids,
     evaluation_metadata,
@@ -271,3 +272,13 @@ def test_long_answer_rows_are_detected_by_task_type_or_length():
     assert is_long_answer(short) is False
     assert is_long_answer(readout) is True
     assert is_long_answer(long_text) is True
+
+
+def test_readout_scoring_is_whitespace_tolerant_and_counts_items():
+    expected = "<T00> wood 11; <T01> brick 2; <T02> desert none; <P00> 3:1 port; <P01> ore port"
+    exact = score_response(expected, "<T00> wood 11;<T01> brick 2; <T02> desert none;<P00> 3:1 port; <P01> ore port")
+    assert exact["scoring"] == "readout_items" and exact["correct"] is True and exact["items_correct"] == 5
+    partial = score_response(expected, "<T00> wood 11; <T01> brick 3; <T02> desert none; <P00> 3:1 port")
+    assert partial["correct"] is False and partial["items_correct"] == 3 and partial["items_total"] == 5
+    short = score_response("wood", "wood")
+    assert short["scoring"] != "readout_items" and short["correct"] is True

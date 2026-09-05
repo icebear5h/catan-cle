@@ -94,9 +94,35 @@ def extract_json_object(text: str) -> Any | None:
         return None
 
 
+READOUT_ITEM_RE = re.compile(r"(<[NETP][0-9_]+>)\s*([^;<]*)")
+
+
+def readout_items(text: str) -> dict[str, str]:
+    """Parse ``<T00> wood 11; <P00> 3:1 port`` into token -> value, whitespace-tolerant."""
+
+    return {token: " ".join(value.split()) for token, value in READOUT_ITEM_RE.findall(text)}
+
+
+def score_readout(expected: str, response: str) -> dict[str, Any]:
+    expected_items = readout_items(expected)
+    response_items = readout_items(response)
+    matched = sum(1 for token, value in expected_items.items() if response_items.get(token) == value)
+    return {
+        "correct": matched == len(expected_items) and len(response_items) == len(expected_items),
+        "scoring": "readout_items",
+        "expected_normalized": "; ".join(f"{token} {value}" for token, value in expected_items.items()),
+        "response_normalized": "; ".join(f"{token} {value}" for token, value in response_items.items()),
+        "items_correct": matched,
+        "items_total": len(expected_items),
+        "items_extra": max(0, len(response_items) - len(expected_items)),
+    }
+
+
 def score_response(expected: str, response: str) -> dict[str, Any]:
     expected_norm = normalize_text(expected)
     response_norm = normalize_text(response)
+    if len(readout_items(expected_norm)) >= 4:
+        return score_readout(expected_norm, response_norm)
 
     expected_json = extract_json_object(expected_norm)
     if expected_json is not None:
@@ -731,21 +757,26 @@ def run_eval_job(
     candidate_ids_cache: dict[tuple[str, ...], list[int]] = {}
 
     records = []
-    rows = sorted(rows, key=is_long_answer)  # long-answer rows batch together at the end
+    short_rows = [row for row in rows if not is_long_answer(row)]
+    long_rows = [row for row in rows if is_long_answer(row)]
+    batches = [short_rows[start : start + args.batch_size] for start in range(0, len(short_rows), args.batch_size)]
+    batches += [long_rows[start : start + args.long_batch_size] for start in range(0, len(long_rows), args.long_batch_size)]
     with records_path.open("w") as handle:
-        for batch_start in range(0, len(rows), args.batch_size):
-            batch = rows[batch_start : batch_start + args.batch_size]
+        batch_start = 0
+        for batch in batches:
             responses, first_logits = generate_responses(
                 model=model,
                 processor=processor,
                 rows=batch,
-                max_new_tokens=args.long_max_new_tokens if any(is_long_answer(row) for row in batch) else args.max_new_tokens,
+                max_new_tokens=args.long_max_new_tokens if is_long_answer(batch[0]) else args.max_new_tokens,
                 image_variant=image_variant,
                 shuffled_images=shuffled_images,
                 occlusion_margin=args.occlusion_margin,
             )
             for offset, (row, response) in enumerate(zip(batch, responses, strict=True)):
                 index = batch_start + offset + 1
+                if offset == len(batch) - 1:
+                    batch_start += len(batch)
                 target = expected_text(row)
                 metadata = evaluation_metadata(row, image_variant=image_variant)
                 category = metadata.get("category") or metadata.get("task_type", "")
@@ -920,7 +951,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, default=1)
     parser.add_argument("--limit", type=int)
     parser.add_argument("--max-new-tokens", type=int, default=256)
-    parser.add_argument("--long-max-new-tokens", type=int, default=2048)
+    parser.add_argument("--long-max-new-tokens", type=int, default=512)
+    parser.add_argument("--long-batch-size", type=int, default=8)
     parser.add_argument(
         "--image-variant",
         default="original",

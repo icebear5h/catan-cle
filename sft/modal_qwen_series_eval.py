@@ -165,6 +165,8 @@ def _run_eval(
     image_variant: str = "original",
     occlusion_margin: float = 0.03,
     candidate_scoring: bool = True,
+    long_max_new_tokens: int = 512,
+    long_batch_size: int = 8,
 ) -> dict:
     command = [
         "python",
@@ -186,6 +188,10 @@ def _run_eval(
         image_variant,
         "--occlusion-margin",
         str(occlusion_margin),
+        "--long-max-new-tokens",
+        str(long_max_new_tokens),
+        "--long-batch-size",
+        str(long_batch_size),
     ]
     if adapter_dir:
         command.extend(["--adapter-dir", adapter_dir])
@@ -230,6 +236,8 @@ def eval_remote(
     image_variant: str = "original",
     occlusion_margin: float = 0.03,
     candidate_scoring: bool = True,
+    long_max_new_tokens: int = 512,
+    long_batch_size: int = 8,
 ) -> dict:
     return _run_eval(
         eval_jsonl,
@@ -244,6 +252,8 @@ def eval_remote(
         image_variant,
         occlusion_margin,
         candidate_scoring,
+        long_max_new_tokens,
+        long_batch_size,
     )
 
 
@@ -270,6 +280,8 @@ def eval_h200(
     image_variant: str = "original",
     occlusion_margin: float = 0.03,
     candidate_scoring: bool = True,
+    long_max_new_tokens: int = 512,
+    long_batch_size: int = 8,
 ) -> dict:
     return _run_eval(
         eval_jsonl,
@@ -284,6 +296,8 @@ def eval_h200(
         image_variant,
         occlusion_margin,
         candidate_scoring,
+        long_max_new_tokens,
+        long_batch_size,
     )
 
 
@@ -304,6 +318,8 @@ def main(
     image_variant: str = "original",
     occlusion_margin: float = 0.03,
     candidate_scoring: bool = True,
+    long_max_new_tokens: int = 512,
+    long_batch_size: int = 8,
     spawn_eval: bool = False,
 ):
     if bits not in {4, 8, 16}:
@@ -357,6 +373,8 @@ def main(
         "image_variant": image_variant,
         "occlusion_margin": occlusion_margin,
         "candidate_scoring": candidate_scoring,
+        "long_max_new_tokens": long_max_new_tokens,
+        "long_batch_size": long_batch_size,
     }
     remote_function = eval_h200 if gpu == "h200" else eval_remote
     if spawn_eval:

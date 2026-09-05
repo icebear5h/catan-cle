@@ -2819,6 +2819,7 @@ scorecards, never loss.
   final, v3 data, 512 steps, eval at the end only; app
   ap-caHTX43hyS76PjHelxu6VH, call fc-01M1QABS61GZDMXNKNHPJCRETC, output
   `/runs/catan-vision-sft/catan-qwen38-gauss-s2-v3-20260904/020dd5ad268f`.
+  Stopped by the user within minutes of launch (2026-09-04); no checkpoint written.
 - [x] Budget-capped final marker diagnostic (2026-09-04): 308 paired rows across
   all 154 tokens and five boards; free generation 303/308, candidate 304/308.
   Marker-to-token 149/154; token-to-marker 154/154. Four wrong locations
@@ -2828,6 +2829,12 @@ scorecards, never loss.
   192s runtime (~$0.25 compute estimate, not settled billing), no retries.
   Report: reports/sft/2026-09-04-gaussian-entity-marker-mini.md. This small
   diagnostic does not close the full step-1 gate or launch the next stage.
-- [ ] Step 2: v3 data from the stage-1 final, 512 steps; gate vs the old v3 adapter.
+- [x] Step 2 redefined by the user as terrain readout (tiles and ports only,
+  full readouts, no inverse, no pieces, split by layout): exporter
+  `terrain_readout.py`, evaluator long-answer routing, panel set `terrain`.
+  Launched `catan-qwen38-gauss-s2-terrain-20260904` from the stage-1 final,
+  49,152 rows, 512 steps, eval at the end only.
+- [ ] Step 2 gate: terrain validation scorecard (tile/port heads on unseen
+  layouts, readout completeness) plus rows clean; then the pair rung.
 - [ ] Step 3: pairs_v2 data from the stage-2 final, 512 steps; gate vs pairs_v2.
 - [ ] Step 4: rungs a, b, c from the winner.

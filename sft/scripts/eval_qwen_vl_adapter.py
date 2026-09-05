@@ -52,6 +52,22 @@ def expected_text(row: dict[str, Any]) -> str:
     ).strip()
 
 
+LONG_ANSWER_CHARACTERS = 48
+LONG_ANSWER_TASK_TYPES = {"terrain_readout"}
+
+
+def is_long_answer(row: dict[str, Any]) -> bool:
+    """Rows whose expected answer needs the long generation budget.
+
+    Full-board readouts answer with every tile and port keyed by atlas token,
+    far past the 16-token budget the one-token and one-phrase heads use.
+    """
+
+    if row.get("task_type") in LONG_ANSWER_TASK_TYPES or (row.get("metadata") or {}).get("task_type") in LONG_ANSWER_TASK_TYPES:
+        return True
+    return len(expected_text(row)) > LONG_ANSWER_CHARACTERS
+
+
 def normalize_text(text: str) -> str:
     text = text.strip()
     text = text.split("<|im_end|>", 1)[0].strip()
@@ -715,6 +731,7 @@ def run_eval_job(
     candidate_ids_cache: dict[tuple[str, ...], list[int]] = {}
 
     records = []
+    rows = sorted(rows, key=is_long_answer)  # long-answer rows batch together at the end
     with records_path.open("w") as handle:
         for batch_start in range(0, len(rows), args.batch_size):
             batch = rows[batch_start : batch_start + args.batch_size]
@@ -722,7 +739,7 @@ def run_eval_job(
                 model=model,
                 processor=processor,
                 rows=batch,
-                max_new_tokens=args.max_new_tokens,
+                max_new_tokens=args.long_max_new_tokens if any(is_long_answer(row) for row in batch) else args.max_new_tokens,
                 image_variant=image_variant,
                 shuffled_images=shuffled_images,
                 occlusion_margin=args.occlusion_margin,

@@ -2,6 +2,7 @@ import pytest
 import torch
 
 from sft.scripts.eval_qwen_vl_adapter import (
+    is_long_answer,
     candidate_answers,
     candidate_token_ids,
     evaluation_metadata,
@@ -261,3 +262,12 @@ def test_summary_exposes_curated_behavior_metrics():
 
     assert summary["by_behavior"]["pair.positive"]["exact_accuracy"] == 1.0
     assert summary["by_behavior"]["pair.road_positive"]["total"] == 1
+
+
+def test_long_answer_rows_are_detected_by_task_type_or_length():
+    short = {"messages": [{"role": "user", "content": "<image>\n<T00> resource?"}, {"role": "assistant", "content": "wood"}]}
+    readout = {"task_type": "terrain_readout", "messages": [{"role": "user", "content": "<image>\nRead all tiles and ports."}, {"role": "assistant", "content": "<T00> wood 11; <T01> brick 2"}]}
+    long_text = {"messages": [{"role": "user", "content": "<image>\nx"}, {"role": "assistant", "content": "a" * 60}]}
+    assert is_long_answer(short) is False
+    assert is_long_answer(readout) is True
+    assert is_long_answer(long_text) is True

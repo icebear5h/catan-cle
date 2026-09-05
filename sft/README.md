@@ -173,6 +173,31 @@ spatial replay rows solely to keep all four stage boundaries aligned with the
 production microbatch size of 32. The resulting epoch has 16,480 examples and
 515 optimizer steps at gradient accumulation 1.
 
+### Terrain readout (`terrain_readout_v1`)
+
+Stage 2 of the gaussian ladder asks only "what is at each tile and port?".
+`data_pipeline/board_recognition/terrain_readout.py` takes every replay
+board image already on disk and emits the production forward prompts for
+all 19 tiles and all 9 ports, duplicates and generic ports included
+(`<T00> resource?` -> `wood`, `<T00> number?` -> `11`, desert -> `desert` /
+`none`, `<P00> port?` -> `sheep port` or `3:1 port`), plus one complete
+readout per image, `Read all tiles and ports.` -> `<T00> wheat 11; ...;
+<P08> 3:1 port`, in fixed token order so omissions are visible. No inverse
+rows (not a bijection on duplicate tiles, and they interfere with the
+forward heads) and no piece rows. Splits follow the manifest, which splits
+by layout: 77 train, 5 validation, 5 test replays, every state of a replay
+in one split. 1,024 train images, 49,152 rows; validation 64 images, 3,072
+rows. Images are the shared `replay_v1/images`.
+
+```bash
+uv run python -m data_pipeline.board_recognition.terrain_readout \
+  artifacts/generated/board_recognition/replay_v1 --overwrite
+```
+
+The evaluator routes rows whose answer is a readout (task type
+`terrain_readout`, or any expected answer over 48 characters) to
+`--long-max-new-tokens`; everything else keeps the 16-token budget.
+
 ### Rung slices for staged real-board training
 
 The four-stage file can be cut into standalone rungs without rebuilding:

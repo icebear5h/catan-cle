@@ -34,6 +34,7 @@ PANEL = (
     ("single-v7", REPLAY_ROOT / "spatial_localization_v7/stage1/validation.jsonl", REPLAY_ROOT / "spatial_localization_v7/images", "single-piece plus tile validation, one touching and one far negative per image"),
     ("pairs-v2", REPLAY_ROOT / "spatial_localization_pairs_v2/stage1/validation.jsonl", REPLAY_ROOT / "spatial_localization_pairs_v2/images", "adjacent-pair validation, road-heavy kind mix"),
     ("pairs-control", REPLAY_ROOT / "spatial_localization_pairs_control_v1/stage1/validation.jsonl", REPLAY_ROOT / "spatial_localization_pairs_control_v1/images", "far-pair control: two pieces beyond three hops"),
+    ("terrain", REPLAY_ROOT / "terrain_readout_v1/stage1/validation.jsonl", REPLAY_ROOT / "images", "terrain readout: every tile and port on real boards, plus full readouts"),
     ("full-board", REPLAY_ROOT / "evals/validation_v1.jsonl", REPLAY_ROOT / "images", "replay production heads and inverse rows"),
 )
 VARIANTS = "original,blank"

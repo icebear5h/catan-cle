@@ -2930,8 +2930,12 @@ scorecards, never loss.
   positives 665, other 28, head flips 0, glitches 0; edge error vertical
   0.124 versus slanted 0.196; colour recall min 0.493 (green), bronze 0.60,
   blue 0.67, mystic blue 0.88; occupied recall city 0.887, settlement 0.842,
-  road 0.565. Readouts 0 of 128 (never trained). The colour-diagnostic set
-  is still scoring. Scorecard fix on the way: rows were treated as
+  road 0.565. Readouts 0 of 128 (never trained). Colour-diagnostic set
+  (8,192 rows, 16 engine layouts, all 11 colours): node occupancy 0.824,
+  edge owner 0.791; blindness 596, neighbor 537, far 408; occupied recall
+  settlement 0.757, city 0.764, road 0.419; per-colour recall from green
+  0.433 to pink 0.582, every colour in the 0.43 to 0.58 band, so the bar
+  is min recall 0.433 and the failure there is global, not one colour. Scorecard fix on the way: rows were treated as
   synthetic because they carry target_token/piece/color; `is_synthetic`
   now keys on the grounding stage (single_piece, adjacent_pair).
 - [ ] Launch `catan-qwen38-gauss-s3-nodes-edges-20260904` from terrain

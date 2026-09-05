@@ -285,6 +285,36 @@
           "red": 0.77
         },
         "readouts": "0/128 exact, never trained"
+      },
+      "baseline_pairs_v2_on_color_diagnostic": {
+        "node_occupancy": 0.824,
+        "edge_owner": 0.791,
+        "modes": {
+          "blindness": 596,
+          "neighbor_confusion": 537,
+          "far_false_positive": 408,
+          "head_flip": 0,
+          "glitch": 0
+        },
+        "occupied_recall": {
+          "settlement": 0.757,
+          "city": 0.764,
+          "road": 0.419
+        },
+        "colour_recall": {
+          "green": 0.433,
+          "silver": 0.479,
+          "orange": 0.483,
+          "mystic blue": 0.492,
+          "blue": 0.513,
+          "black": 0.517,
+          "bronze": 0.52,
+          "red": 0.546,
+          "gold": 0.548,
+          "white": 0.549,
+          "pink": 0.582
+        },
+        "note": "every colour sits in a 0.43 to 0.58 band; the diagnostic boards are harder than the replay validation, not colour-specific"
       }
     }
   },

@@ -2863,7 +2863,26 @@ scorecards, never loss.
   rotated out by the two-checkpoint save limit. ck384 rows are identical to
   ck256 to three decimals (input 0.012 / 0 twins / T10 +0.244; output 0.062 /
   0 twins). Stage-2 gate launched on ck384: full 9-set panel, original and
-  blank, label `gauss-s2-terrain-ck384`.
+  blank, label `gauss-s2-terrain-ck384`; app ap-K55aKeyzYWoa9A3fYpcmG9, call
+  fc-01M1QZYZQZCVGMRKMGP1FQ8Z6R, output
+  `/runs/qwen-series-eval/regression-panel/gauss-s2-terrain-ck384`.
+- [x] Gate, first four sets (2026-09-04 23:05 PDT, panel still running): the
+  terrain rung forgot the marker grounding. Diamond marker set, ck384 versus
+  the stage-1 final on the same 1,540 rows: marker->token 17/770 = 0.022
+  (was 0.768), token->marker 552/770 = 0.717 (was 0.986; tiles 1.000, ports
+  0.844, edges 0.725, nodes 0.585). The marker->token misses are head flips:
+  446 answer a tile token (<N00> -> <T05>), 307 answer a resource word
+  ("sheep"). Gray-dot probes 0.000 (was 0.179). Tile heads transfer to the
+  v3 renders at 1.000; piece heads on single-v2/v3 are 0.000 as expected for
+  a bundle that has never seen a piece. Row drift from the stage-1 final:
+  node/edge input rows did not move at all (cos 1.000, norm unchanged) and
+  their output rows barely (cos 0.993, norm -1%); tile/port rows moved (cos
+  0.90, input norm +12%, output norm +7-9%). So the forgetting lives in the
+  shared LoRA, vision tower and merger plus the grown tile/port output rows,
+  not in row entanglement (still 0 twins). Failing mode: head flip /
+  forgetting. The fix it names is rehearsal: mix marker and terrain rows into
+  every later rung instead of training each rung on its own data alone.
+  Decision pending with the user before stage 3 launches.
 - [ ] Step 2 gate: terrain validation scorecard (tile/port heads on unseen
   layouts, readout completeness) plus rows clean; then the pair rung.
 - [ ] Step 3: pairs_v2 data from the stage-2 final, 512 steps; gate vs pairs_v2.

@@ -2883,8 +2883,16 @@ scorecards, never loss.
   forgetting. The fix it names is rehearsal: mix marker and terrain rows into
   every later rung instead of training each rung on its own data alone.
   Decision pending with the user before stage 3 launches.
-- [ ] Step 2 gate: terrain validation scorecard (tile/port heads on unseen
-  layouts, readout completeness) plus rows clean; then the pair rung.
+- [x] Step 2 gate PASSED on checkpoint-384 (panel `gauss-s2-terrain-ck384`,
+  scorecard `reports/sft/scorecards/gauss-s2-terrain-ck384.json`): terrain
+  set 3,072/3,072 on the 5 unseen layouts, readouts 64/64 exact, 0 sequence
+  skips, 0 head flips, 0 glitches; blank-image control 5.4%, so it reads
+  the board. Rows 0 twins, 0 below the family floor. Full-board set: port
+  1.000, tile number 1.000, tile resource 1.000; node occupancy and edge
+  owner 0.000 (never trained on pieces), robber 0.25, spatial yes/no 0.48.
+  Side effects recorded, not gated: markers 0.369 (marker-to-token 0.022),
+  probes 0.000, single-v2 0.001, single-v3 0.304 (tile heads only), pairs
+  0.211, pairs-control 0.209. These are the stage-3 side-effect baseline.
 - [x] Step 3 redefined again by the user (2026-09-05): not pairs. The node
   and edge recognition rung trains on real replay boards, token as query
   only, terrain-style: `<N17> building?`, `<E17_18> road?`, plus a 54-item

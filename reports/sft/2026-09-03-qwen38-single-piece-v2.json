@@ -185,7 +185,46 @@
         },
         "gate": "9-set regression panel original+blank, label gauss-s2-terrain-ck384 (running)"
       },
-      "bundle": "/runs/catan-vision-sft/catan-qwen38-gauss-s2-terrain-20260904/398f0a023ec9/checkpoints/checkpoint-384"
+      "bundle": "/runs/catan-vision-sft/catan-qwen38-gauss-s2-terrain-20260904/398f0a023ec9/checkpoints/checkpoint-384",
+      "gate": {
+        "result": "pass",
+        "panel": "/runs/qwen-series-eval/regression-panel/gauss-s2-terrain-ck384",
+        "scorecard": "reports/sft/scorecards/gauss-s2-terrain-ck384.json",
+        "terrain": {
+          "exact": "3072/3072",
+          "readouts_exact": "64/64",
+          "sequence_skips": 0,
+          "head_flips": 0,
+          "glitches": 0,
+          "blank_control_exact": 0.054
+        },
+        "rows": {
+          "input_twins": 0,
+          "rows_below_family_floor": 0
+        },
+        "full_board": {
+          "port_port_type": 1.0,
+          "tile_number": 1.0,
+          "tile_resource": 1.0,
+          "node_occupancy": 0.0,
+          "edge_owner": 0.0,
+          "robber": 0.25,
+          "spatial_grounding": 0.483,
+          "inverse": 0.0
+        },
+        "side_effects": {
+          "markers": 0.369,
+          "markers_marker_to_token": 0.022,
+          "markers_token_to_marker": 0.717,
+          "probes": 0.0,
+          "single_v2": 0.001,
+          "single_v3": 0.304,
+          "single_v7": 0.264,
+          "pairs_v2": 0.211,
+          "pairs_control": 0.209,
+          "note": "marker retention dropped as a gate by the user; piece heads are zero-shot for this bundle"
+        }
+      }
     }
   },
   "in_run_eval": {

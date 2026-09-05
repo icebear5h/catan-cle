@@ -225,6 +225,67 @@
           "note": "marker retention dropped as a gate by the user; piece heads are zero-shot for this bundle"
         }
       }
+    },
+    "stage3": {
+      "name": "node and edge recognition rung",
+      "spec": "reports/sft/2026-09-05-node-edge-recognition-rung.md",
+      "data": "node_edge_readout_v1 (train 17,708 rows / 1,024 images; validation, test, color_diagnostic 8,192 rows each, full coverage)",
+      "initial_bundle": "/runs/catan-vision-sft/catan-qwen38-gauss-s2-terrain-20260904/398f0a023ec9/checkpoints/checkpoint-384",
+      "run": "catan-qwen38-gauss-s3-nodes-edges-20260905 (not launched yet)",
+      "baseline_pairs_v2_on_validation": {
+        "scorecard": "reports/sft/scorecards/pairs-v2-final-node-edge.json",
+        "exact": 0.7817,
+        "node_occupancy": 0.749,
+        "edge_owner": 0.828,
+        "node_occupancy_by_density": {
+          "empty": 1.0,
+          "setup": 0.817,
+          "sparse": 0.686,
+          "dense": 0.623
+        },
+        "edge_owner_by_density": {
+          "empty": 1.0,
+          "setup": 0.889,
+          "sparse": 0.768,
+          "dense": 0.736
+        },
+        "occupied_recall": {
+          "city": 0.887,
+          "settlement": 0.842,
+          "road": 0.565
+        },
+        "empty_accuracy": {
+          "node": 0.73,
+          "edge": 0.872
+        },
+        "modes": {
+          "blindness": 317,
+          "blindness_by_piece": {
+            "road": 254,
+            "settlement": 53,
+            "city": 10
+          },
+          "neighbor_confusion": 650,
+          "far_false_positive": 665,
+          "other": 28,
+          "head_flip": 0,
+          "glitch": 0
+        },
+        "orientation_error_rate": {
+          "vertical": 0.124,
+          "slanted": 0.196
+        },
+        "colour_recall": {
+          "black": 0.743,
+          "blue": 0.672,
+          "bronze": 0.6,
+          "green": 0.493,
+          "mystic blue": 0.881,
+          "orange": 0.627,
+          "red": 0.77
+        },
+        "readouts": "0/128 exact, never trained"
+      }
     }
   },
   "in_run_eval": {

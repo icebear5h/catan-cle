@@ -128,8 +128,17 @@ def readout_skips(expected: str, response: str) -> JsonDict:
     return {"missing_tokens": missing, "shifted_values": shifted, "skipped": missing > 0 or shifted > 0}
 
 
+SYNTHETIC_STAGES = frozenset({"single_piece", "adjacent_pair"})
+
+
 def is_synthetic(row: JsonDict) -> bool:
-    return all(key in row for key in ("target_token", "piece", "color"))
+    """Rows from the rendered single-piece and pair exporters, whose board is only the placed pieces.
+
+    Real-board rows (terrain, node and edge readout) carry the same target, piece
+    and colour keys, so the grounding stage decides, not the keys.
+    """
+
+    return row.get("grounding_stage") in SYNTHETIC_STAGES and all(key in row for key in ("target_token", "piece", "color"))
 
 
 def synthetic_board(base: Board, row: JsonDict) -> Board:

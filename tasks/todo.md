@@ -2918,9 +2918,22 @@ scorecards, never loss.
   clean: 17,708 train / 8,192 eval rows from terrain checkpoint-384, 512
   steps, eval and save every 128, output
   `/runs/catan-vision-sft/catan-qwen38-gauss-s3-nodes-edges-20260905/e64dcbc2cc4c`.
-- [ ] Baseline running: pairs_v2 final on `node-edge` and `node-edge-colors`,
-  original variant, label `pairs-v2-final-node-edge`; app
-  ap-ehWrCwFf8DOxe4kIPddtkM, call fc-01M1RCZERAYN2NNK0MF1T59A2T.
+- [x] Baseline, pairs_v2 final on `node-edge` (validation, 8,192 rows, every
+  node and edge of 64 images; label `pairs-v2-final-node-edge`, app
+  ap-ehWrCwFf8DOxe4kIPddtkM; scorecard
+  `reports/sft/scorecards/pairs-v2-final-node-edge.json`). These are the
+  stage-3 gate bars: node occupancy 0.749 (empty boards 1.000, setup 0.817,
+  sparse 0.686, dense 0.623; occupied 0.852, empties 0.730); edge owner
+  0.828 (setup 0.889, sparse 0.768, dense 0.736; roads 0.565, empties
+  0.872). Modes: blindness 317 (roads 254, settlements 53, cities 10),
+  neighbor confusion 650 (hop-1 360, hop-2 268, wrong piece 22), far false
+  positives 665, other 28, head flips 0, glitches 0; edge error vertical
+  0.124 versus slanted 0.196; colour recall min 0.493 (green), bronze 0.60,
+  blue 0.67, mystic blue 0.88; occupied recall city 0.887, settlement 0.842,
+  road 0.565. Readouts 0 of 128 (never trained). The colour-diagnostic set
+  is still scoring. Scorecard fix on the way: rows were treated as
+  synthetic because they carry target_token/piece/color; `is_synthetic`
+  now keys on the grounding stage (single_piece, adjacent_pair).
 - [ ] Launch `catan-qwen38-gauss-s3-nodes-edges-20260904` from terrain
   checkpoint-384, 512 steps, eval and save every 128; checkpoint evals;
   final panel, scorecard, rows; gate table here.

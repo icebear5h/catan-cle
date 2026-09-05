@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from sft.scripts import failure_scorecard
-from sft.scripts.failure_scorecard import eval_jsonl_for, main, readout_skips
+from sft.scripts.failure_scorecard import eval_jsonl_for, is_synthetic, main, readout_skips
 
 FIXTURE = Path("artifacts/fixtures/board_recognition/curriculum_smoke")
 STATE_ID = "empty_setup_node_p000_base"
@@ -151,7 +151,7 @@ def test_synthetic_pair_rows_use_the_placed_pieces(tmp_path: Path, fixture_contr
     # The base contract is empty; only the row's target and partner pieces exist on the synthetic board.
     contracts_dir = write_contract(tmp_path, fixture_contract, pieces={"nodes": {}, "edges": {}})
     pair = {
-        "state_id": STATE_ID, "target_token": "<N01>", "piece": "SETTLEMENT", "color": "red",
+        "state_id": STATE_ID, "grounding_stage": "adjacent_pair", "target_token": "<N01>", "piece": "SETTLEMENT", "color": "red",
         "partner_token": "<N02>", "partner_piece": "CITY", "partner_color": "green", "partner_distance": 1,
     }
     cases = [
@@ -254,3 +254,12 @@ def test_readout_skips_count_dropped_tokens_and_shifted_values() -> None:
     assert shifted == {"missing_tokens": 1, "shifted_values": 2, "skipped": True}
     wrong = readout_skips(expected, "<T00> ore 2; <T01> sheep 3; <T02> wood 6; <T03> wood 10; <T04> wood 3; <T05> wheat 6")
     assert wrong == {"missing_tokens": 0, "shifted_values": 0, "skipped": False}
+
+
+def test_real_board_rows_with_piece_keys_are_not_synthetic() -> None:
+    keys = {"state_id": STATE_ID, "target_token": "<N01>", "piece": "SETTLEMENT", "color": "RED"}
+    assert is_synthetic({**keys, "grounding_stage": "single_piece"})
+    assert is_synthetic({**keys, "grounding_stage": "adjacent_pair"})
+    assert not is_synthetic({**keys, "grounding_stage": "node_edge_readout"})
+    assert not is_synthetic({**keys, "grounding_stage": "terrain_readout"})
+    assert not is_synthetic(keys)

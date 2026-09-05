@@ -115,11 +115,54 @@
       "steps": 256
     },
     "stage2": {
-      "data": "spatial_localization_v3 train",
+      "cancelled_v3_run": {
+        "run": "catan-qwen38-gauss-s2-v3-20260904",
+        "data": "spatial_localization_v3 train",
+        "note": "stopped by the user within minutes; stage 2 redefined as terrain readout"
+      },
+      "run": "catan-qwen38-gauss-s2-terrain-20260904",
+      "app": "ap-zUI8zNEA48pTRdWvaZkyec",
+      "output": "/runs/catan-vision-sft/catan-qwen38-gauss-s2-terrain-20260904/398f0a023ec9",
+      "initial_bundle": "stage1 entity-marker final",
+      "data": "terrain_readout_v1 stage1 train (49,152 rows, 77 real layouts; 47 short rows + readouts per image)",
+      "steps": 512,
       "eval": "final step only, checkpoints every 128",
-      "initial_bundle": "stage1 final 73b1c523741d",
-      "run": "catan-qwen38-gauss-s2-v3-20260904",
-      "steps": 512
+      "validation": "terrain_readout_v1 stage1 validation, 3,072 rows over 5 layouts unseen in training (64 images)",
+      "checkpoint_128": {
+        "tile_number": 0.996,
+        "tile_resource": 0.991,
+        "port_port_type": 0.953,
+        "port_miss_note": "16 of 23 port misses answered 'wood port'",
+        "readout_items": "1479/1792 = 0.825",
+        "readouts_complete": "4/64",
+        "readout_miss_note": "omissions: ports and desert dropped, half stop early at 19-27 items; scored with the pre-explicit prompt"
+      },
+      "checkpoint_256": {
+        "eval_dir": "/runs/qwen-series-eval/gauss-ladder/s2-terrain-ck256",
+        "rows": 3072,
+        "correct": 3071,
+        "tile_number": "1216/1216",
+        "tile_resource": "1216/1216",
+        "port_port_type": "576/576",
+        "per_layout": "all 5 layouts perfect on tile.number, tile.resource, port.port_type",
+        "readout_items": "1779/1792 = 0.993",
+        "readouts_extra_items": 0,
+        "readouts_complete": "63/64",
+        "readout_miss": {
+          "id": "r_replay_194209320_s000246_terrain_readout_0",
+          "items_correct": 15,
+          "items_total": 28,
+          "pattern": "sequence skip: <T03> answered with <T04>'s value, shift persists through <T06>, then jumps to <P05> and stops; <T18> and eight ports missing"
+        },
+        "token_rows": {
+          "input_pair_mean": 0.012,
+          "input_twins": 0,
+          "input_below_family_floor": 0,
+          "T10_tile_centroid": 0.244,
+          "output_pair_mean": 0.062,
+          "output_twins": 0
+        }
+      }
     }
   },
   "in_run_eval": {

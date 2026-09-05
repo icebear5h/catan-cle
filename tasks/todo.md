@@ -2847,6 +2847,16 @@ scorecards, never loss.
   (900 synthetic train layouts, 40 val, 40 test; 92,352 rows) is exported
   and dry-run clean but NOT launched: the user wants checkpoint-256 of the
   current run first.
+- [x] Checkpoint-256 on the same 5 unseen layouts (eval
+  `/runs/qwen-series-eval/gauss-ladder/s2-terrain-ck256`, 3,072 rows):
+  tile.number 1216/1216, tile.resource 1216/1216, port.port_type 576/576, all
+  five layouts perfect on every short head. Readouts 63 of 64 exact, items
+  1779/1792 = 0.993, zero extra items. The one miss (layout 194209320, state
+  246) is a sequence skip: <T03> got <T04>'s answer and the shift ran to <T06>,
+  then the model jumped to <P05> and stopped, dropping <T18> and eight ports.
+  Rows at ck256: input pair mean 0.012, 0 twins, 0 below the family floor,
+  T10 +0.244 on the tile centroid; output 0.062, 0 twins. It generalises
+  across layouts; the run continues to 512 for the final gate.
 - [ ] Step 2 gate: terrain validation scorecard (tile/port heads on unseen
   layouts, readout completeness) plus rows clean; then the pair rung.
 - [ ] Step 3: pairs_v2 data from the stage-2 final, 512 steps; gate vs pairs_v2.

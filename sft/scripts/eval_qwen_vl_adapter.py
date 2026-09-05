@@ -53,7 +53,7 @@ def expected_text(row: dict[str, Any]) -> str:
 
 
 LONG_ANSWER_CHARACTERS = 48
-LONG_ANSWER_TASK_TYPES = {"terrain_readout"}
+LONG_ANSWER_TASK_TYPES = {"terrain_readout", "node_readout", "edge_readout"}
 
 
 def is_long_answer(row: dict[str, Any]) -> bool:
@@ -556,6 +556,11 @@ def evaluation_metadata(row: dict[str, Any], *, image_variant: str) -> dict[str,
         "same_color",
         "negative_distance",
         "negative_kind",
+        "state_id",
+        "layout_id",
+        "piece_count",
+        "item_count",
+        "occupied_count",
         "eval_set_id",
         "eval_source_sha256",
     ):

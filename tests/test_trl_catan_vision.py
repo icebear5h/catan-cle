@@ -118,6 +118,16 @@ def test_message_pair_normalizes_sharegpt_and_short_answer():
     )
 
 
+def test_message_pair_admits_full_board_readouts_and_rejects_runaway_answers():
+    readout = "; ".join(f"<E{i:02d}_{i + 1:02d}> mystic blue road" for i in range(72))
+    assert len(readout) > 512
+    row = {"messages": [{"role": "user", "content": "<image>\nList every edge."}, {"role": "assistant", "content": readout}]}
+    assert _message_pair(row, line_number=1) == ("List every edge.", readout)
+    runaway = {"messages": [{"role": "user", "content": "<image>\nx"}, {"role": "assistant", "content": "a" * 2049}]}
+    with pytest.raises(ValueError, match="answer-length contract"):
+        _message_pair(runaway, line_number=2)
+
+
 class _NestedModel(torch.nn.Module):
     def __init__(self):
         super().__init__()

@@ -2885,12 +2885,35 @@ scorecards, never loss.
   Decision pending with the user before stage 3 launches.
 - [ ] Step 2 gate: terrain validation scorecard (tile/port heads on unseen
   layouts, readout completeness) plus rows clean; then the pair rung.
-- [ ] Step 3, renamed by the user (2026-09-04) to the node and edge
-  recognition rung: pairs_v2 data from terrain checkpoint-384, 512 steps,
-  eval and save every 128. Gate on node occupancy, edge owner and
-  localization only (pair validation and real boards versus the pairs_v2
-  bundle). Markers, probes, single-piece, terrain and the other full-board
-  heads are side-effect checks against checkpoint-384, reported not gated.
-  The node_node pair kind (adjacent buildings, illegal under the distance
-  rule, 19% of boards) stays in for now; a legal two-hop variant is parked.
+- [x] Step 3 redefined again by the user (2026-09-05): not pairs. The node
+  and edge recognition rung trains on real replay boards, token as query
+  only, terrain-style: `<N17> building?`, `<E17_18> road?`, plus a 54-item
+  node readout and a 72-item edge readout per image with explicit empties.
+  Spec in the plan file (every row, colour validation, gate).
+- [x] Exporter `data_pipeline/board_recognition/node_edge_readout.py` and
+  tests (6): train capped at 4 occupied + 4 empty per family per image (empty
+  quota adjacent 2 / cross-type or hop-2 1 / far 1), eval splits with
+  every node and edge; splits train / validation / test / color_diagnostic.
+- [x] Evaluator: `node_readout`/`edge_readout` in LONG_ANSWER_TASK_TYPES;
+  metadata whitelist gains state_id, layout_id, piece_count, item_count,
+  occupied_count.
+- [x] Panel sets `node-edge` and `node-edge-colors`; scorecard reads
+  every `.readout` category and counts sequence skips (dropped tokens,
+  values shifted onto the previous token). Trainer row guard raised from
+  512 to 2,048 answer characters (`MAX_ANSWER_CHARACTERS`); readouts run
+  to 1,525.
+- [x] Exported `node_edge_readout_v1` (2026-09-05): 77/5/5/16 layouts;
+  train 17,708 rows (886 of 1,024 images at the full 18; empties 6,123
+  adjacent / 830 cross-type / 1,239 far), validation, test and
+  color_diagnostic 8,192 rows each; 30 sampled rows agree with their
+  contracts; readout answers 700 to 1,525 characters. Launcher dry run
+  clean: 17,708 train / 8,192 eval rows from terrain checkpoint-384, 512
+  steps, eval and save every 128, output
+  `/runs/catan-vision-sft/catan-qwen38-gauss-s3-nodes-edges-20260905/e64dcbc2cc4c`.
+- [ ] Baseline running: pairs_v2 final on `node-edge` and `node-edge-colors`,
+  original variant, label `pairs-v2-final-node-edge`; app
+  ap-ehWrCwFf8DOxe4kIPddtkM, call fc-01M1RCZERAYN2NNK0MF1T59A2T.
+- [ ] Launch `catan-qwen38-gauss-s3-nodes-edges-20260904` from terrain
+  checkpoint-384, 512 steps, eval and save every 128; checkpoint evals;
+  final panel, scorecard, rows; gate table here.
 - [ ] Step 4: rungs a, b, c from the winner.

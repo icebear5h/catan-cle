@@ -11,7 +11,9 @@ instead of the truth), ``far_false_positive`` (a piece from elsewhere on the
 board, or one that is not on the board), ``head_flip`` (the answer belongs to
 another prompt head), ``token_glitch`` (one atlas token expected, response is not
 exactly one token), ``orientation`` (edge-occupancy error rate, vertical versus
-slanted edges), ``colour_dropout`` (occupied recall per colour), and, with
+slanted edges), ``colour_dropout`` (occupied recall per colour), ``readouts`` (full-board
+lists: exact and item rates, dropped tokens, values shifted onto the previous
+token, and ``sequence_skips`` counting readouts with either), and, with
 ``--adapter``, ``row_entanglement`` from ``inspect_token_rows`` when importable.
 A per-token table covers every atlas token a row is about: the prompt token, or
 the expected token on inverse and localization rows.
@@ -72,7 +74,8 @@ NEIGHBOR_CLASSES = (
 FAR_CLASSES = ("false_positive_elsewhere", "false_positive_absent")
 OTHER_CLASSES = ("right_color_wrong_type", "right_type_wrong_color", "wrong_piece_other")
 COUNT_MODES = ("blindness", "neighbor_confusion", "far_false_positive", "other_occupancy_miss", "head_flip", "token_glitch")
-TABLE_KEYS = COUNT_MODES + ("orientation_ratio", "colour_dropout_min_recall")
+TABLE_KEYS = COUNT_MODES + ("orientation_ratio", "colour_dropout_min_recall", "readouts", "readouts_exact", "sequence_skips")
+READOUT_ITEM_RE = re.compile(r"(<[NETP][0-9_]+>)\s*([^;<]*)")
 IMAGE_SIZE = 1024
 VERTICAL_MAX_DEGREES = 15.0
 
@@ -103,6 +106,26 @@ def response_type(answer: str) -> str | None:
 def glitch_kind(response: str) -> str:
     found = ATLAS_TOKEN_RE.findall(response)
     return "multiple_tokens" if len(found) > 1 else "extra_text" if found else "no_token"
+
+
+def readout_items(text: str) -> list[tuple[str, str]]:
+    """Ordered ``(token, value)`` items of a readout answer, whitespace-tolerant."""
+
+    return [(token, " ".join(value.split())) for token, value in READOUT_ITEM_RE.findall(text)]
+
+
+def readout_skips(expected: str, response: str) -> JsonDict:
+    """Sequence errors in one readout: expected tokens the response dropped, and values shifted onto the previous token."""
+
+    expected_items = readout_items(expected)
+    response_values = dict(readout_items(response))
+    missing = sum(1 for token, _ in expected_items if token not in response_values)
+    shifted = 0
+    for index, (token, value) in enumerate(expected_items[:-1]):
+        answered = response_values.get(token)
+        if answered is not None and answered != value and answered == expected_items[index + 1][1]:
+            shifted += 1
+    return {"missing_tokens": missing, "shifted_values": shifted, "skipped": missing > 0 or shifted > 0}
 
 
 def is_synthetic(row: JsonDict) -> bool:
@@ -177,6 +200,7 @@ class Scorer:
         classes, heads, head_tokens, glitches, glitch_tokens, blind_piece, blind_color = (Counter() for _ in range(7))
         recall_color, recall_piece = (defaultdict(lambda: [0, 0]) for _ in range(2))
         orientation = {"vertical": [0, 0], "slanted": [0, 0]}
+        readouts: dict[str, JsonDict] = defaultdict(lambda: {"count": 0, "exact": 0, "items_correct": 0, "items_total": 0, "items_extra": 0, "missing_tokens": 0, "shifted_values": 0, "sequence_skips": 0})
         errors = unjoined = 0
         for record in records:
             row = eval_row_for(record, by_id, eval_rows)
@@ -186,6 +210,18 @@ class Scorer:
             response = str(score["response_normalized"]).strip()
             truth, answer = expected.lower(), response.lower()
             errors += not correct
+            category = str(record.get("metadata", {}).get("category", ""))
+            if category.endswith(".readout") or len(readout_items(expected)) >= 4:
+                entry = readouts[category or "readout"]
+                skips = readout_skips(expected, response)
+                entry["count"] += 1
+                entry["exact"] += correct
+                for key in ("items_correct", "items_total", "items_extra"):
+                    entry[key] += int(score.get(key, 0))
+                entry["missing_tokens"] += skips["missing_tokens"]
+                entry["shifted_values"] += skips["shifted_values"]
+                entry["sequence_skips"] += skips["skipped"]
+                continue
             prompt = user_prompt(row)
             token = subject_token(prompt, expected, record, row)
             if token is not None:
@@ -241,9 +277,15 @@ class Scorer:
             "token_glitch": {"count": sum(glitches.values()), "by_kind": dict(sorted(glitches.items())), "tokens": dict(sorted(glitch_tokens.items()))},
             "orientation": {"vertical": vertical, "slanted": slanted, "ratio": ratio},
             "colour_dropout": {"recall_by_color": recall, "min_color": weakest, "min_recall": recall[weakest]["recall"] if weakest else None},
+            "readouts": {name: {**entry, "exact_rate": round(entry["exact"] / entry["count"], 4), "item_rate": round(entry["items_correct"] / entry["items_total"], 4) if entry["items_total"] else None} for name, entry in sorted(readouts.items())},
         }
         counts = {"rows": len(records), "errors": errors, **{key: modes[key]["count"] for key in COUNT_MODES}}
         counts.update({"orientation_ratio": ratio, "colour_dropout_min_recall": modes["colour_dropout"]["min_recall"]})
+        counts.update({
+            "readouts": sum(entry["count"] for entry in readouts.values()),
+            "readouts_exact": sum(entry["exact"] for entry in readouts.values()),
+            "sequence_skips": sum(entry["sequence_skips"] for entry in readouts.values()),
+        })
         return {
             "counts": counts,
             "modes": modes,

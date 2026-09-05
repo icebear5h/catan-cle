@@ -55,6 +55,11 @@ DATASET_REPORT_FILE = "dataset_contract.json"
 RELOAD_REPORT_FILE = "reload_validation.json"
 RUN_CONFIG_FILE = "training_config.json"
 INITIAL_BUNDLE_FILE = "initial_bundle.json"
+# Row guard: one-phrase heads answer in a few words, and a full-board readout (54
+# nodes or 72 edges, empties explicit) runs to about 1,500 characters. Anything
+# past this is a broken row, not a long one.
+MAX_PROMPT_CHARACTERS = 4096
+MAX_ANSWER_CHARACTERS = 2048
 PATCH_METRICS_FILE = "patch_localization_config.json"
 SPATIAL_TARGET_MODES = ("correct", "shuffled")
 # Completion tokens that every row shares; they are excluded from the
@@ -354,8 +359,8 @@ def _message_pair(row: JsonDict, *, line_number: int) -> tuple[str, str]:
         raise ValueError(f"line {line_number} must contain exactly one image placeholder")
     if not prompt or not answer:
         raise ValueError(f"line {line_number} contains an empty prompt or answer")
-    if len(prompt) > 4096 or len(answer) > 512:
-        raise ValueError(f"line {line_number} exceeds the short-answer contract")
+    if len(prompt) > MAX_PROMPT_CHARACTERS or len(answer) > MAX_ANSWER_CHARACTERS:
+        raise ValueError(f"line {line_number} exceeds the answer-length contract")
     return prompt, answer
 
 

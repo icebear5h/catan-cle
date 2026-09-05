@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from sft.scripts import failure_scorecard
-from sft.scripts.failure_scorecard import eval_jsonl_for, main
+from sft.scripts.failure_scorecard import eval_jsonl_for, main, readout_skips
 
 FIXTURE = Path("artifacts/fixtures/board_recognition/curriculum_smoke")
 STATE_ID = "empty_setup_node_p000_base"
@@ -111,6 +111,9 @@ def test_counts_one_planted_miss_per_mode(tmp_path: Path, fixture_contract: dict
         "token_glitch": 1,
         "orientation_ratio": 0.0,
         "colour_dropout_min_recall": 0.5,
+        "readouts": 0,
+        "readouts_exact": 0,
+        "sequence_skips": 0,
     }
     modes = entry["modes"]
     assert modes["blindness"] == {"count": 1, "by_piece": {"settlement": 1}, "by_color": {"red": 1}}
@@ -241,3 +244,13 @@ def test_eval_jsonl_for_inverts_set_ids(tmp_path: Path, monkeypatch) -> None:
     assert eval_jsonl_for("anything", {"anything": override}) == override
     with pytest.raises(FileNotFoundError, match="--set"):
         eval_jsonl_for("spatial_localization_v9-stage1-validation", {})
+
+
+def test_readout_skips_count_dropped_tokens_and_shifted_values() -> None:
+    expected = "<T00> wood 11; <T01> sheep 3; <T02> wood 6; <T03> wood 10; <T04> wood 3; <T05> wheat 6"
+    exact = readout_skips(expected, expected)
+    assert exact == {"missing_tokens": 0, "shifted_values": 0, "skipped": False}
+    shifted = readout_skips(expected, "<T00> wood 11; <T01> sheep 3; <T02> wood 6; <T03> wood 3; <T04> wheat 6")
+    assert shifted == {"missing_tokens": 1, "shifted_values": 2, "skipped": True}
+    wrong = readout_skips(expected, "<T00> ore 2; <T01> sheep 3; <T02> wood 6; <T03> wood 10; <T04> wood 3; <T05> wheat 6")
+    assert wrong == {"missing_tokens": 0, "shifted_values": 0, "skipped": False}

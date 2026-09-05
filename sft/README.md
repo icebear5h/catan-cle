@@ -198,6 +198,40 @@ The evaluator routes rows whose answer is a readout (task type
 `terrain_readout`, or any expected answer over 48 characters) to
 `--long-max-new-tokens`; everything else keeps the 16-token budget.
 
+### Node and edge readout (`node_edge_readout_v1`)
+
+Stage 3 of the gaussian ladder asks only "what is at each node and edge?".
+`data_pipeline/board_recognition/node_edge_readout.py` takes every replay
+board image and emits the production forward prompts, token as query only
+(`<N17> building?` -> `red settlement`, `red city` or `empty`;
+`<E17_18> road?` -> `blue road` or `empty`), plus two complete readouts per
+image that walk every token in atlas order with empties explicit: 54 nodes
+(`<N00> empty; <N01> red settlement; ...`) and 72 edges. Listing every
+location is the stopping criterion; an occupied-only list has none. Train
+images are capped at 4 occupied and 4 empty locations per family, the
+empties ranked hardest first (touching a same-type piece, touching the
+other type, two hops, far; quota 2 / 1 / 1 with fill from the ranked
+pool). Validation, test and `color_diagnostic` get every node and edge of
+every image, a full 126-way classification per board plus both readouts,
+so a per-token confusion map needs no rerun. No inverse rows, no tile,
+port or robber rows. Splits follow the manifest by layout and are checked
+pairwise: 77 train, 5 validation, 5 test replays, 16 colour-diagnostic
+engine layouts (eval only; the only split where all eleven piece colours
+appear). 1,024 train images, 17,708 rows; each eval split 64 images, 8,192
+rows. Images are hard links of `replay_v1/images`.
+
+```bash
+uv run python -m data_pipeline.board_recognition.node_edge_readout \
+  artifacts/generated/board_recognition/replay_v1 --overwrite
+```
+
+Readout answers run to 1,525 characters, so the trainer's row guard
+(`MAX_ANSWER_CHARACTERS`) is 2,048; the evaluator routes `node_readout`
+and `edge_readout` to the long budget and scores them by items. The panel
+carries the two eval splits as `node-edge` and `node-edge-colors`; the
+scorecard reports readouts (exact and item rates, dropped tokens, values
+shifted onto the previous token) under `readouts` and `sequence_skips`.
+
 ### Rung slices for staged real-board training
 
 The four-stage file can be cut into standalone rungs without rebuilding:

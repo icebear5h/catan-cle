@@ -2836,6 +2836,17 @@ scorecards, never loss.
   49,152 rows, 512 steps, eval at the end only; app ap-zUI8zNEA48pTRdWvaZkyec,
   call fc-01M1QG8NPW77M1YJRZA1JBGYCH, output
   `/runs/catan-vision-sft/catan-qwen38-gauss-s2-terrain-20260904/398f0a023ec9`.
+- [x] Loss at 1e-5 on the 77 training layouts raised a memorisation flag;
+  checkpoint-128 on the 5 unseen validation layouts: tile.number 0.996,
+  tile.resource 0.991, port.port_type 0.953 (16 of 23 misses answer "wood
+  port"), so it reads rather than memorises. Readouts by items 1479/1792 =
+  0.825, 4 of 64 fully correct; misses are omissions (ports dropped, desert
+  dropped, half the readouts stop early at 19-27 items). The first ck128 eval
+  OOMed on the readout rows (batch 48 at 2,048 tokens); evaluator now
+  sub-batches long rows and scores readouts by items. terrain_readout_v2
+  (900 synthetic train layouts, 40 val, 40 test; 92,352 rows) is exported
+  and dry-run clean but NOT launched: the user wants checkpoint-256 of the
+  current run first.
 - [ ] Step 2 gate: terrain validation scorecard (tile/port heads on unseen
   layouts, readout completeness) plus rows clean; then the pair rung.
 - [ ] Step 3: pairs_v2 data from the stage-2 final, 512 steps; gate vs pairs_v2.

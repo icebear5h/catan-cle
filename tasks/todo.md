@@ -2856,7 +2856,14 @@ scorecards, never loss.
   then the model jumped to <P05> and stopped, dropping <T18> and eight ports.
   Rows at ck256: input pair mean 0.012, 0 twins, 0 below the family floor,
   T10 +0.244 on the tile centroid; output 0.062, 0 twins. It generalises
-  across layouts; the run continues to 512 for the final gate.
+  across layouts.
+- [x] Run stopped by the user at about step 405 (2026-09-04 21:50 PDT): the
+  last 107 steps sit under a quarter of peak learning rate and checkpoint-384
+  (21:34) was complete on the volume. Checkpoints 256 and 384 remain; 128 was
+  rotated out by the two-checkpoint save limit. ck384 rows are identical to
+  ck256 to three decimals (input 0.012 / 0 twins / T10 +0.244; output 0.062 /
+  0 twins). Stage-2 gate launched on ck384: full 9-set panel, original and
+  blank, label `gauss-s2-terrain-ck384`.
 - [ ] Step 2 gate: terrain validation scorecard (tile/port heads on unseen
   layouts, readout completeness) plus rows clean; then the pair rung.
 - [ ] Step 3: pairs_v2 data from the stage-2 final, 512 steps; gate vs pairs_v2.

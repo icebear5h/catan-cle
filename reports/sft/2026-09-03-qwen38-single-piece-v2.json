@@ -162,7 +162,30 @@
           "output_pair_mean": 0.062,
           "output_twins": 0
         }
-      }
+      },
+      "stopped": {
+        "at_step": "about 405 of 512",
+        "time": "2026-09-04 21:50 PDT",
+        "reason": "user decision; remaining steps under a quarter of peak learning rate",
+        "checkpoints_kept": [
+          "checkpoint-256",
+          "checkpoint-384"
+        ],
+        "checkpoint_128": "rotated out by save_total_limit=2"
+      },
+      "checkpoint_384": {
+        "landed": "2026-09-04 21:34 PDT",
+        "token_rows": {
+          "input_pair_mean": 0.012,
+          "input_twins": 0,
+          "input_below_family_floor": 0,
+          "T10_tile_centroid": 0.244,
+          "output_pair_mean": 0.062,
+          "output_twins": 0
+        },
+        "gate": "9-set regression panel original+blank, label gauss-s2-terrain-ck384 (running)"
+      },
+      "bundle": "/runs/catan-vision-sft/catan-qwen38-gauss-s2-terrain-20260904/398f0a023ec9/checkpoints/checkpoint-384"
     }
   },
   "in_run_eval": {

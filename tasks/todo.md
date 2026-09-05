@@ -2833,7 +2833,9 @@ scorecards, never loss.
   full readouts, no inverse, no pieces, split by layout): exporter
   `terrain_readout.py`, evaluator long-answer routing, panel set `terrain`.
   Launched `catan-qwen38-gauss-s2-terrain-20260904` from the stage-1 final,
-  49,152 rows, 512 steps, eval at the end only.
+  49,152 rows, 512 steps, eval at the end only; app ap-zUI8zNEA48pTRdWvaZkyec,
+  call fc-01M1QG8NPW77M1YJRZA1JBGYCH, output
+  `/runs/catan-vision-sft/catan-qwen38-gauss-s2-terrain-20260904/398f0a023ec9`.
 - [ ] Step 2 gate: terrain validation scorecard (tile/port heads on unseen
   layouts, readout completeness) plus rows clean; then the pair rung.
 - [ ] Step 3: pairs_v2 data from the stage-2 final, 512 steps; gate vs pairs_v2.

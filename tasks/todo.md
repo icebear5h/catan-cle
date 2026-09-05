@@ -2885,5 +2885,12 @@ scorecards, never loss.
   Decision pending with the user before stage 3 launches.
 - [ ] Step 2 gate: terrain validation scorecard (tile/port heads on unseen
   layouts, readout completeness) plus rows clean; then the pair rung.
-- [ ] Step 3: pairs_v2 data from the stage-2 final, 512 steps; gate vs pairs_v2.
+- [ ] Step 3, renamed by the user (2026-09-04) to the node and edge
+  recognition rung: pairs_v2 data from terrain checkpoint-384, 512 steps,
+  eval and save every 128. Gate on node occupancy, edge owner and
+  localization only (pair validation and real boards versus the pairs_v2
+  bundle). Markers, probes, single-piece, terrain and the other full-board
+  heads are side-effect checks against checkpoint-384, reported not gated.
+  The node_node pair kind (adjacent buildings, illegal under the distance
+  rule, 19% of boards) stays in for now; a legal two-hop variant is parked.
 - [ ] Step 4: rungs a, b, c from the winner.

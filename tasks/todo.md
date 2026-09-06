@@ -3055,3 +3055,17 @@ scorecards, never loss.
   0.334 with 683 extras) as the model began emitting pieces inside them.
   The single-set panel run writes to the label root
   (`gauss-s3-rw-ck128/summary.json`), not a set subdirectory.
+- [x] Eval redesign after the user's call on the 70%-empty sets (2026-09-05
+  evening): node-edge eval splits are balanced (every occupied location
+  plus as many empties by kind shares adjacent 0.5 / cross 0.15 / hop2 0.1
+  / hop3 0.05 / far 0.2): validation 2,622 rows, test 2,790, colour 2,801;
+  `--eval-coverage full` kept for diagnostics. Train empties use the same
+  shares. Evaluator: per-class recall and precision, balanced accuracy,
+  occupied versus empty readout items. Scorecard leads with road,
+  settlement, city recall and empty precision. Bundles rescored on the
+  balanced validation (`reports/sft/scorecards/balanced-node-edge-*.json`):
+  pairs_v2 errors 819/2,622, roads 0.565, settlements 0.842, cities 0.887,
+  empty precision 0.753; stage-3 ck128 errors 1,297, roads 0.035; ck256
+  errors 742, roads 0.418, settlements 0.763, cities 0.913, empty precision
+  0.702, far false positives 0. Mixed rung 3b re-exported with the balanced
+  in-run eval sample (887 rows); dry run clean; still not launched.

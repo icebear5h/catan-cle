@@ -4,7 +4,8 @@ from pathlib import Path
 
 from data_pipeline.board_recognition.node_edge_readout import (
     EDGE_READOUT_PROMPT,
-    EMPTY_QUOTA,
+    EMPTY_SHARES,
+    empty_quotas,
     NODE_READOUT_PROMPT,
     board_pieces,
     empty_candidates,
@@ -40,7 +41,7 @@ def test_readouts_walk_every_token_in_order_with_explicit_empties():
     state, contract = _fixture_state("sparse_midgame_edge_p000_base")
     tokens = family_tokens(contract)
     pieces = board_pieces(contract)
-    rows = rows_for_state(state, contract, full_coverage=True)
+    rows = rows_for_state(state, contract, coverage="full")
     node_readout = next(row for row in rows if row["task_type"] == "node_readout")
     edge_readout = next(row for row in rows if row["task_type"] == "edge_readout")
     assert _prompt(node_readout) == NODE_READOUT_PROMPT and _prompt(edge_readout) == EDGE_READOUT_PROMPT
@@ -61,7 +62,7 @@ def test_readouts_walk_every_token_in_order_with_explicit_empties():
 
 def test_full_coverage_rows_match_the_semantic_contract():
     state, contract = _fixture_state("sparse_midgame_tile_p000_base")
-    rows = rows_for_state({**state, "split": "validation"}, contract, full_coverage=True)
+    rows = rows_for_state({**state, "split": "validation"}, contract, coverage="full")
     short = [row for row in rows if row["entity_type"] != "board"]
     assert len(short) == 54 + 72 and len(rows) == 54 + 72 + 2
     nodes = {node["token"]: node for node in contract["nodes"]}
@@ -91,8 +92,8 @@ def test_full_coverage_rows_match_the_semantic_contract():
 
 def test_train_sampling_is_capped_deterministic_and_hard_first():
     state, contract = _fixture_state("dense_endgame_node_p000_base")
-    rows = rows_for_state(state, contract, full_coverage=False)
-    again = rows_for_state(state, contract, full_coverage=False)
+    rows = rows_for_state(state, contract, coverage="capped")
+    again = rows_for_state(state, contract, coverage="capped")
     assert rows == again
     for family in ("node", "edge"):
         occupied = [row for row in rows if row["entity_type"] == family and row["polarity"] == "positive"]
@@ -100,12 +101,18 @@ def test_train_sampling_is_capped_deterministic_and_hard_first():
         assert len(occupied) == 4 and len(empties) == 4
         kinds = [row["negative_kind"] for row in empties]
         # A dense board has no far empties, so the far quota falls through to the ranked leftovers.
-        assert kinds.count("adjacent") >= EMPTY_QUOTA["adjacent"] and "cross_type" in kinds and "far" not in kinds
+        assert kinds.count("adjacent") >= 2 and "cross_type" in kinds and "far" not in kinds
         assert all(row["negative_distance"] == 1 for row in empties if row["negative_kind"] == "adjacent")
     assert sum(row["entity_type"] == "board" for row in rows) == 2
     assert len(rows) == 8 + 8 + 2
-    smaller = rows_for_state(state, contract, full_coverage=False, rows_per_family=2, readouts_per_family=2)
+    smaller = rows_for_state(state, contract, coverage="capped", rows_per_family=2, readouts_per_family=2)
     assert len(smaller) == 4 + 4 + 4
+
+
+def test_empty_quotas_follow_the_shares():
+    assert empty_quotas(4) == {"adjacent": 2, "cross_type": 1, "hop2": 0, "hop3": 0, "far": 1}
+    assert empty_quotas(20) == {"adjacent": 10, "cross_type": 3, "hop2": 2, "hop3": 1, "far": 4}
+    assert sum(empty_quotas(37).values()) == 37 and abs(sum(EMPTY_SHARES.values()) - 1) < 1e-9
 
 
 def test_empty_kinds_rank_touching_before_far():
@@ -129,7 +136,7 @@ def test_empty_kinds_rank_touching_before_far():
 
 def test_empty_board_yields_far_empties_and_all_empty_readouts():
     state, contract = _fixture_state("empty_setup_node_p000_base")
-    rows = rows_for_state(state, contract, full_coverage=False)
+    rows = rows_for_state(state, contract, coverage="capped")
     assert not [row for row in rows if row["polarity"] == "positive" and row["entity_type"] != "board"]
     empties = [row for row in rows if row["polarity"] == "hard_negative"]
     assert len(empties) == 8 and all(row["negative_kind"] == "far" and row["negative_distance"] == "far" for row in empties)
@@ -161,9 +168,26 @@ def test_export_splits_by_layout_with_full_coverage_evals():
         per_image = {}
         for row in validation:
             per_image[row["images"][0]] = per_image.get(row["images"][0], 0) + 1
-        assert set(per_image.values()) == {54 + 72 + 2}
+        assert all(count <= 54 + 72 + 2 for count in per_image.values())
+        occupied = sum(1 for row in validation if row["polarity"] == "positive" and row["entity_type"] != "board")
+        empties = sum(1 for row in validation if row["polarity"] == "hard_negative")
+        assert occupied and empties >= occupied and empties <= max(occupied, 8 * len(per_image))
         assert max(sum(1 for row in train if row["images"][0] == image and row["entity_type"] == "node") for image in {row["images"][0] for row in train}) <= 8
         assert all((output / "images" / row["images"][0]).is_file() for row in train[:20])
-        assert metadata["files"]["stage1/validation.jsonl"]["full_coverage"] and not metadata["files"]["stage1/train.jsonl"]["full_coverage"]
+        assert metadata["files"]["stage1/validation.jsonl"]["coverage"] == "balanced" and metadata["files"]["stage1/train.jsonl"]["coverage"] == "capped"
     finally:
         _remove_tree(output)
+
+
+def test_balanced_coverage_keeps_every_piece_and_matches_it_with_empties():
+    state, contract = _fixture_state("sparse_midgame_edge_p000_base")
+    rows = rows_for_state({**state, "split": "validation"}, contract, coverage="balanced")
+    pieces = board_pieces(contract)
+    for family in ("node", "edge"):
+        occupied = [row for row in rows if row["entity_type"] == family and row["polarity"] == "positive"]
+        empties = [row for row in rows if row["entity_type"] == family and row["polarity"] == "hard_negative"]
+        assert len(occupied) == len(pieces[family]) and len(empties) == len(pieces[family])
+        assert empties[0]["negative_kind"] == "adjacent"
+    assert sum(row["entity_type"] == "board" for row in rows) == 2
+    full = rows_for_state({**state, "split": "validation"}, contract, coverage="full")
+    assert len(full) == 54 + 72 + 2 and len(rows) < len(full)

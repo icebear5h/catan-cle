@@ -1,0 +1,1275 @@
+{
+  "schema": "catan_failure_scorecard/v1",
+  "panel_dir": "/private/tmp/claude-504/-Users-henry-catan-learning/53f03b8e-da92-4cfb-93fe-10c65e1c4ff7/scratchpad/balanced_ck128",
+  "generated_at": "2026-09-06T03:46:24.861886+00:00",
+  "sets": {
+    "node_edge_readout_v1-stage1-validation": {
+      "eval_jsonl": "artifacts/generated/board_recognition/replay_v1/node_edge_readout_v1/stage1/validation.jsonl",
+      "records": "/private/tmp/claude-504/-Users-henry-catan-learning/53f03b8e-da92-4cfb-93fe-10c65e1c4ff7/scratchpad/balanced_ck128/regression-panel-node_edge_readout_v1-stage1-validation-eval/original/records.jsonl",
+      "counts": {
+        "rows": 2622,
+        "errors": 1297,
+        "blindness": 1103,
+        "neighbor_confusion": 56,
+        "far_false_positive": 6,
+        "other_occupancy_miss": 4,
+        "head_flip": 0,
+        "token_glitch": 0,
+        "orientation_ratio": 1.0262,
+        "colour_dropout_min_recall": 0.0,
+        "road_recall": 0.035,
+        "settlement_recall": 0.0719,
+        "city_recall": 0.2261,
+        "empty_precision": 0.5302,
+        "readouts": 128,
+        "readouts_exact": 0,
+        "readout_occupied_item_recall": null,
+        "sequence_skips": 128
+      },
+      "modes": {
+        "blindness": {
+          "count": 1103,
+          "by_piece": {
+            "city": 80,
+            "road": 631,
+            "settlement": 392
+          },
+          "by_color": {
+            "black": 206,
+            "blue": 253,
+            "bronze": 13,
+            "green": 61,
+            "mystic blue": 42,
+            "orange": 210,
+            "red": 318
+          }
+        },
+        "neighbor_confusion": {
+          "count": 56,
+          "by_class": {
+            "neighbor_false_positive_hop1": 33,
+            "neighbor_false_positive_hop2": 6,
+            "wrong_piece_neighbor_hop2": 17
+          }
+        },
+        "far_false_positive": {
+          "count": 6,
+          "by_class": {
+            "false_positive_elsewhere": 6
+          }
+        },
+        "other_occupancy_miss": {
+          "count": 4,
+          "by_class": {
+            "right_type_wrong_color": 4
+          }
+        },
+        "head_flip": {
+          "count": 0,
+          "by_head": {},
+          "tokens_with_3plus": {}
+        },
+        "token_glitch": {
+          "count": 0,
+          "by_kind": {},
+          "tokens": {}
+        },
+        "orientation": {
+          "vertical": {
+            "errors": 210,
+            "n": 433,
+            "error_rate": 0.485
+          },
+          "slanted": {
+            "errors": 439,
+            "n": 929,
+            "error_rate": 0.4726
+          },
+          "ratio": 1.0262
+        },
+        "colour_dropout": {
+          "recall_by_color": {
+            "black": {
+              "correct": 4,
+              "total": 218,
+              "recall": 0.0183
+            },
+            "blue": {
+              "correct": 3,
+              "total": 256,
+              "recall": 0.0117
+            },
+            "bronze": {
+              "correct": 32,
+              "total": 50,
+              "recall": 0.64
+            },
+            "green": {
+              "correct": 9,
+              "total": 73,
+              "recall": 0.1233
+            },
+            "mystic blue": {
+              "correct": 0,
+              "total": 42,
+              "recall": 0.0
+            },
+            "orange": {
+              "correct": 31,
+              "total": 244,
+              "recall": 0.127
+            },
+            "red": {
+              "correct": 1,
+              "total": 321,
+              "recall": 0.0031
+            }
+          },
+          "min_color": "mystic blue",
+          "min_recall": 0.0
+        },
+        "readouts": {
+          "edge.readout": {
+            "count": 64,
+            "exact": 0,
+            "items_correct": 3842,
+            "items_total": 4608,
+            "items_extra": 0,
+            "occupied_items_correct": 0,
+            "occupied_items_total": 0,
+            "missing_tokens": 64,
+            "shifted_values": 481,
+            "sequence_skips": 64,
+            "exact_rate": 0.0,
+            "item_rate": 0.8338,
+            "occupied_item_recall": null
+          },
+          "node.readout": {
+            "count": 64,
+            "exact": 0,
+            "items_correct": 2624,
+            "items_total": 3456,
+            "items_extra": 0,
+            "occupied_items_correct": 0,
+            "occupied_items_total": 0,
+            "missing_tokens": 382,
+            "shifted_values": 420,
+            "sequence_skips": 64,
+            "exact_rate": 0.0,
+            "item_rate": 0.7593,
+            "occupied_item_recall": null
+          }
+        }
+      },
+      "occupied_recall_by_piece": {
+        "city": {
+          "correct": 26,
+          "total": 115,
+          "recall": 0.2261
+        },
+        "road": {
+          "correct": 23,
+          "total": 658,
+          "recall": 0.035
+        },
+        "settlement": {
+          "correct": 31,
+          "total": 431,
+          "recall": 0.0719
+        }
+      },
+      "occupancy_classes": {
+        "false_negative": 1103,
+        "neighbor_false_positive_hop1": 33,
+        "neighbor_false_positive_hop2": 6,
+        "false_positive_elsewhere": 6,
+        "wrong_piece_neighbor_hop2": 17,
+        "right_type_wrong_color": 4
+      },
+      "unjoined_records": 0,
+      "per_token": {
+        "<E00_01>": {
+          "n": 17,
+          "errors": 8,
+          "error_rate": 0.4706,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E00_05>": {
+          "n": 26,
+          "errors": 15,
+          "error_rate": 0.5769,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E00_20>": {
+          "n": 19,
+          "errors": 8,
+          "error_rate": 0.4211,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E01_02>": {
+          "n": 20,
+          "errors": 16,
+          "error_rate": 0.8,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E01_06>": {
+          "n": 27,
+          "errors": 16,
+          "error_rate": 0.5926,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E02_03>": {
+          "n": 18,
+          "errors": 8,
+          "error_rate": 0.4444,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E02_09>": {
+          "n": 15,
+          "errors": 2,
+          "error_rate": 0.1333,
+          "dominant_wrong": "bronze road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E03_04>": {
+          "n": 25,
+          "errors": 12,
+          "error_rate": 0.48,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E03_12>": {
+          "n": 25,
+          "errors": 25,
+          "error_rate": 1.0,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E04_05>": {
+          "n": 14,
+          "errors": 8,
+          "error_rate": 0.5714,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E04_15>": {
+          "n": 17,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E05_16>": {
+          "n": 7,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E06_07>": {
+          "n": 22,
+          "errors": 14,
+          "error_rate": 0.6364,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E06_23>": {
+          "n": 12,
+          "errors": 2,
+          "error_rate": 0.1667,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E07_08>": {
+          "n": 18,
+          "errors": 4,
+          "error_rate": 0.2222,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E07_24>": {
+          "n": 24,
+          "errors": 17,
+          "error_rate": 0.7083,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E08_09>": {
+          "n": 19,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E08_27>": {
+          "n": 31,
+          "errors": 19,
+          "error_rate": 0.6129,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E09_10>": {
+          "n": 20,
+          "errors": 13,
+          "error_rate": 0.65,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E10_11>": {
+          "n": 34,
+          "errors": 18,
+          "error_rate": 0.5294,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E10_29>": {
+          "n": 30,
+          "errors": 16,
+          "error_rate": 0.5333,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E11_12>": {
+          "n": 24,
+          "errors": 10,
+          "error_rate": 0.4167,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E11_32>": {
+          "n": 19,
+          "errors": 15,
+          "error_rate": 0.7895,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E12_13>": {
+          "n": 28,
+          "errors": 18,
+          "error_rate": 0.6429,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E13_14>": {
+          "n": 27,
+          "errors": 12,
+          "error_rate": 0.4444,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E13_34>": {
+          "n": 21,
+          "errors": 16,
+          "error_rate": 0.7619,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E14_15>": {
+          "n": 25,
+          "errors": 11,
+          "error_rate": 0.44,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E14_37>": {
+          "n": 44,
+          "errors": 36,
+          "error_rate": 0.8182,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E15_17>": {
+          "n": 16,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E16_18>": {
+          "n": 13,
+          "errors": 7,
+          "error_rate": 0.5385,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E16_21>": {
+          "n": 15,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E17_18>": {
+          "n": 29,
+          "errors": 21,
+          "error_rate": 0.7241,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E17_39>": {
+          "n": 42,
+          "errors": 38,
+          "error_rate": 0.9048,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E18_40>": {
+          "n": 21,
+          "errors": 7,
+          "error_rate": 0.3333,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E19_20>": {
+          "n": 24,
+          "errors": 10,
+          "error_rate": 0.4167,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E19_21>": {
+          "n": 12,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E19_46>": {
+          "n": 17,
+          "errors": 11,
+          "error_rate": 0.6471,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E20_22>": {
+          "n": 29,
+          "errors": 19,
+          "error_rate": 0.6552,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E21_43>": {
+          "n": 30,
+          "errors": 30,
+          "error_rate": 1.0,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E22_23>": {
+          "n": 22,
+          "errors": 16,
+          "error_rate": 0.7273,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E22_49>": {
+          "n": 18,
+          "errors": 8,
+          "error_rate": 0.4444,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E23_52>": {
+          "n": 10,
+          "errors": 2,
+          "error_rate": 0.2,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E24_25>": {
+          "n": 13,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E24_53>": {
+          "n": 23,
+          "errors": 13,
+          "error_rate": 0.5652,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E25_26>": {
+          "n": 9,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E26_27>": {
+          "n": 18,
+          "errors": 9,
+          "error_rate": 0.5,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E27_28>": {
+          "n": 14,
+          "errors": 1,
+          "error_rate": 0.0714,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E28_29>": {
+          "n": 14,
+          "errors": 2,
+          "error_rate": 0.1429,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E29_30>": {
+          "n": 18,
+          "errors": 1,
+          "error_rate": 0.0556,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E30_31>": {
+          "n": 14,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E31_32>": {
+          "n": 9,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E32_33>": {
+          "n": 11,
+          "errors": 5,
+          "error_rate": 0.4545,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E33_34>": {
+          "n": 15,
+          "errors": 8,
+          "error_rate": 0.5333,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E34_35>": {
+          "n": 12,
+          "errors": 6,
+          "error_rate": 0.5,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E35_36>": {
+          "n": 11,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E36_37>": {
+          "n": 24,
+          "errors": 16,
+          "error_rate": 0.6667,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E37_38>": {
+          "n": 18,
+          "errors": 7,
+          "error_rate": 0.3889,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E38_39>": {
+          "n": 22,
+          "errors": 6,
+          "error_rate": 0.2727,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E39_41>": {
+          "n": 13,
+          "errors": 7,
+          "error_rate": 0.5385,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E40_42>": {
+          "n": 5,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E40_44>": {
+          "n": 12,
+          "errors": 9,
+          "error_rate": 0.75,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E41_42>": {
+          "n": 7,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E43_44>": {
+          "n": 21,
+          "errors": 15,
+          "error_rate": 0.7143,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E43_47>": {
+          "n": 21,
+          "errors": 6,
+          "error_rate": 0.2857,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E45_46>": {
+          "n": 12,
+          "errors": 4,
+          "error_rate": 0.3333,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E45_47>": {
+          "n": 16,
+          "errors": 4,
+          "error_rate": 0.25,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E46_48>": {
+          "n": 15,
+          "errors": 7,
+          "error_rate": 0.4667,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E48_49>": {
+          "n": 20,
+          "errors": 6,
+          "error_rate": 0.3,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E49_50>": {
+          "n": 11,
+          "errors": 1,
+          "error_rate": 0.0909,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E50_51>": {
+          "n": 15,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E51_52>": {
+          "n": 11,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E52_53>": {
+          "n": 12,
+          "errors": 8,
+          "error_rate": 0.6667,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<N00>": {
+          "n": 32,
+          "errors": 17,
+          "error_rate": 0.5312,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N01>": {
+          "n": 24,
+          "errors": 5,
+          "error_rate": 0.2083,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N02>": {
+          "n": 28,
+          "errors": 16,
+          "error_rate": 0.5714,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N03>": {
+          "n": 25,
+          "errors": 9,
+          "error_rate": 0.36,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N04>": {
+          "n": 27,
+          "errors": 13,
+          "error_rate": 0.4815,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N05>": {
+          "n": 15,
+          "errors": 5,
+          "error_rate": 0.3333,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N06>": {
+          "n": 27,
+          "errors": 16,
+          "error_rate": 0.5926,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N07>": {
+          "n": 23,
+          "errors": 13,
+          "error_rate": 0.5652,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N08>": {
+          "n": 35,
+          "errors": 21,
+          "error_rate": 0.6,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N09>": {
+          "n": 21,
+          "errors": 11,
+          "error_rate": 0.5238,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N10>": {
+          "n": 35,
+          "errors": 28,
+          "error_rate": 0.8,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N11>": {
+          "n": 29,
+          "errors": 7,
+          "error_rate": 0.2414,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N12>": {
+          "n": 32,
+          "errors": 27,
+          "error_rate": 0.8438,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N13>": {
+          "n": 28,
+          "errors": 10,
+          "error_rate": 0.3571,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N14>": {
+          "n": 51,
+          "errors": 33,
+          "error_rate": 0.6471,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N15>": {
+          "n": 27,
+          "errors": 18,
+          "error_rate": 0.6667,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N16>": {
+          "n": 17,
+          "errors": 11,
+          "error_rate": 0.6471,
+          "dominant_wrong": "orange city",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N17>": {
+          "n": 36,
+          "errors": 28,
+          "error_rate": 0.7778,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N18>": {
+          "n": 32,
+          "errors": 29,
+          "error_rate": 0.9062,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N19>": {
+          "n": 27,
+          "errors": 8,
+          "error_rate": 0.2963,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N20>": {
+          "n": 30,
+          "errors": 22,
+          "error_rate": 0.7333,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N21>": {
+          "n": 38,
+          "errors": 27,
+          "error_rate": 0.7105,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N22>": {
+          "n": 16,
+          "errors": 2,
+          "error_rate": 0.125,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N23>": {
+          "n": 22,
+          "errors": 9,
+          "error_rate": 0.4091,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N24>": {
+          "n": 24,
+          "errors": 16,
+          "error_rate": 0.6667,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N25>": {
+          "n": 11,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N26>": {
+          "n": 14,
+          "errors": 5,
+          "error_rate": 0.3571,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N27>": {
+          "n": 15,
+          "errors": 1,
+          "error_rate": 0.0667,
+          "dominant_wrong": "bronze settlement",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N28>": {
+          "n": 12,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N29>": {
+          "n": 12,
+          "errors": 3,
+          "error_rate": 0.25,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N30>": {
+          "n": 15,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N31>": {
+          "n": 5,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N32>": {
+          "n": 20,
+          "errors": 11,
+          "error_rate": 0.55,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N33>": {
+          "n": 12,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N34>": {
+          "n": 17,
+          "errors": 10,
+          "error_rate": 0.5882,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N35>": {
+          "n": 14,
+          "errors": 5,
+          "error_rate": 0.3571,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N36>": {
+          "n": 19,
+          "errors": 15,
+          "error_rate": 0.7895,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N37>": {
+          "n": 26,
+          "errors": 4,
+          "error_rate": 0.1538,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N38>": {
+          "n": 15,
+          "errors": 12,
+          "error_rate": 0.8,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N39>": {
+          "n": 21,
+          "errors": 6,
+          "error_rate": 0.2857,
+          "dominant_wrong": "orange city",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N40>": {
+          "n": 24,
+          "errors": 12,
+          "error_rate": 0.5,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N41>": {
+          "n": 12,
+          "errors": 7,
+          "error_rate": 0.5833,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N42>": {
+          "n": 9,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N43>": {
+          "n": 11,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N44>": {
+          "n": 16,
+          "errors": 4,
+          "error_rate": 0.25,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N45>": {
+          "n": 8,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N46>": {
+          "n": 15,
+          "errors": 3,
+          "error_rate": 0.2,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N47>": {
+          "n": 22,
+          "errors": 5,
+          "error_rate": 0.2273,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N48>": {
+          "n": 10,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N49>": {
+          "n": 23,
+          "errors": 11,
+          "error_rate": 0.4783,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N50>": {
+          "n": 18,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N51>": {
+          "n": 8,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N52>": {
+          "n": 15,
+          "errors": 5,
+          "error_rate": 0.3333,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N53>": {
+          "n": 12,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        }
+      }
+    }
+  },
+  "row_entanglement": null
+}

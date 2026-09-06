@@ -19,8 +19,8 @@ Readouts list every location, empties included, for the same reason the
 terrain readout lists the desert: a fixed count and order is a stopping
 criterion, an occupied-only list is not. Train images are capped at
 ``rows_per_family`` occupied and ``rows_per_family`` empty locations per
-family, the empties ranked so the confusable ones come first (touching a
-same-type piece, touching the other type, two hops out, far). Eval splits
+family, the empties drawn by kind shares so the confusable ones dominate
+(touching a same-type piece, touching the other type, two hops out, far). Eval splits
 get every node and edge of every image, a full classification per board.
 
 No inverse rows, no tile, port or robber rows: the rung is scoped to nodes
@@ -73,7 +73,12 @@ DEFAULT_OUTPUT_NAME = "node_edge_readout_v1"
 GROUNDING_STAGE = "node_edge_readout"
 TASK_FAMILY = "node_edge_readout"
 SPLITS = ("train", "validation", "test", "color_diagnostic")
-FULL_COVERAGE_SPLITS = ("validation", "test", "color_diagnostic")
+EVAL_SPLITS = ("validation", "test", "color_diagnostic")
+# Coverage per image: "capped" samples rows_per_family occupied and empties (train);
+# "balanced" keeps every occupied location and as many empties, hardest first
+# (eval); "full" writes every location, seven in ten of them empty (pools and
+# diagnostics only: exact accuracy on a full split rewards answering empty).
+COVERAGE_MODES = ("capped", "balanced", "full")
 FAMILIES = ("node", "edge")
 CATEGORY = {"node": "node.occupancy", "edge": "edge.owner"}
 TASK_TYPE = {"node": "node_occupancy", "edge": "edge_owner"}
@@ -92,10 +97,11 @@ EDGE_READOUT_PROMPT = (
 READOUT_PROMPT = {"node": NODE_READOUT_PROMPT, "edge": EDGE_READOUT_PROMPT}
 ROWS_PER_FAMILY = 4
 READOUTS_PER_FAMILY = 1
-# Empty locations are drawn by kind, hardest first; leftovers fill from the
-# ranked pool in kind order when a kind runs short.
+# Empty locations are drawn by kind in these shares (largest remainder), so
+# the confusable kinds dominate without the far ones vanishing; leftovers fill
+# from the ranked pool in kind order when a kind runs short.
 EMPTY_KINDS = ("adjacent", "cross_type", "hop2", "hop3", "far")
-EMPTY_QUOTA = {"adjacent": 2, "cross_type": 1, "far": 1}
+EMPTY_SHARES = {"adjacent": 0.5, "cross_type": 0.15, "hop2": 0.1, "hop3": 0.05, "far": 0.2}
 EMPTY_ANSWER = "empty"
 
 
@@ -165,12 +171,23 @@ def sample_occupied(sample_id: str, family: str, occupied: dict[str, JsonDict], 
     return ordered[:count]
 
 
+def empty_quotas(count: int) -> dict[str, int]:
+    """Largest-remainder split of ``count`` over ``EMPTY_SHARES``."""
+
+    raw = {kind: count * share for kind, share in EMPTY_SHARES.items()}
+    quotas = {kind: int(value) for kind, value in raw.items()}
+    leftover = count - sum(quotas.values())
+    for kind, _ in sorted(((kind, raw[kind] - quotas[kind]) for kind in raw), key=lambda item: (-item[1], EMPTY_KINDS.index(item[0])))[:leftover]:
+        quotas[kind] += 1
+    return quotas
+
+
 def sample_empties(sample_id: str, family: str, candidates: Sequence[JsonDict], count: int) -> list[JsonDict]:
-    """Draw ``count`` empties by kind quota, hardest kinds first, filling leftovers in kind order."""
+    """Draw ``count`` empties by kind shares, hardest kinds first, filling leftovers in kind order."""
 
     ranked = sorted(candidates, key=lambda item: (EMPTY_KINDS.index(item["kind"]), _stable_rank(sample_id, "empty", family, item["token"]), item["token"]))
     chosen: list[JsonDict] = []
-    for kind, quota in EMPTY_QUOTA.items():
+    for kind, quota in empty_quotas(count).items():
         chosen.extend([item for item in ranked if item["kind"] == kind and item not in chosen][:quota])
     for item in ranked:
         if len(chosen) >= count:
@@ -190,11 +207,14 @@ def rows_for_state(
     state: JsonDict,
     contract: JsonDict,
     *,
-    full_coverage: bool,
+    coverage: str = "capped",
     rows_per_family: int = ROWS_PER_FAMILY,
     readouts_per_family: int = READOUTS_PER_FAMILY,
 ) -> list[JsonDict]:
-    """Short rows for the sampled (or every) node and edge, then the two readouts."""
+    """Short rows for the capped, balanced or full set of nodes and edges, then the two readouts."""
+
+    if coverage not in COVERAGE_MODES:
+        raise SpatialLocalizationError(f"unknown coverage {coverage!r}; choose from {COVERAGE_MODES}")
 
     image_name = Path(state["image_path"]).name
     buildings, roads, density = board_density(contract)
@@ -214,9 +234,12 @@ def rows_for_state(
     for family in FAMILIES:
         occupied = pieces[family]
         empties = empty_candidates(contract, family, pieces=pieces, neighbors=neighbors)
-        if full_coverage:
+        if coverage == "full":
             occupied_tokens = list(occupied)
             chosen_empties = empties
+        elif coverage == "balanced":
+            occupied_tokens = list(occupied)
+            chosen_empties = sample_empties(state["sample_id"], family, empties, max(len(occupied), rows_per_family))
         else:
             occupied_tokens = sample_occupied(state["sample_id"], family, occupied, rows_per_family)
             chosen_empties = sample_empties(state["sample_id"], family, empties, rows_per_family)
@@ -245,12 +268,18 @@ def export_node_edge_readout(
     splits: Sequence[str] = SPLITS,
     validate_dataset: bool = True,
     train_full_coverage: bool = False,
+    eval_coverage: str = "balanced",
 ) -> JsonDict:
     """Export the node and edge rows; replay images are hard-linked into ``<output>/images``.
 
-    ``train_full_coverage`` writes every node and edge of every train image
-    instead of the capped sample: a pool for a mixer to draw quotas from.
+    Train rows are capped per image unless ``train_full_coverage`` (a pool for
+    the mixer). Eval splits are ``balanced`` by default: every occupied node
+    and edge plus as many hardest-first empties; ``eval_coverage="full"``
+    writes every location for diagnostics.
     """
+
+    if eval_coverage not in ("balanced", "full"):
+        raise SpatialLocalizationError(f"eval_coverage must be balanced or full, got {eval_coverage!r}")
 
     dataset_root = Path(dataset_dir).resolve()
     output = Path(output_dir).resolve() if output_dir is not None else (dataset_root / DEFAULT_OUTPUT_NAME).resolve()
@@ -289,8 +318,8 @@ def export_node_edge_readout(
         for state in states:
             if state["split"] != split:
                 continue
-            full = split in FULL_COVERAGE_SPLITS or (split == "train" and train_full_coverage)
-            rows.extend(rows_for_state(state, contracts[state["sample_id"]], full_coverage=full, rows_per_family=rows_per_family, readouts_per_family=readouts_per_family))
+            coverage = eval_coverage if split in EVAL_SPLITS else ("full" if train_full_coverage else "capped")
+            rows.extend(rows_for_state(state, contracts[state["sample_id"]], coverage=coverage, rows_per_family=rows_per_family, readouts_per_family=readouts_per_family))
         if not rows:
             continue
         if split == "train":
@@ -304,7 +333,8 @@ def export_node_edge_readout(
         summary["dimensions"]["color"] = dict(sorted(Counter(row["color"] for row in rows if row["polarity"] == "positive" and row["entity_type"] != "board").items()))
         summary["unique_images"] = len({row["images"][0] for row in rows})
         summary["layouts"] = len(layouts_by_split[split])
-        summary["full_coverage"] = split in FULL_COVERAGE_SPLITS or (split == "train" and train_full_coverage)
+        summary["coverage"] = eval_coverage if split in EVAL_SPLITS else ("full" if train_full_coverage else "capped")
+        summary["full_coverage"] = summary["coverage"] == "full"
         files[f"stage1/{split}.jsonl"] = {**summary, "sha256": file_sha256(path)}
 
     metadata = {
@@ -314,9 +344,9 @@ def export_node_edge_readout(
         "image_root": str(images_dir),
         "rows_per_family": rows_per_family,
         "readouts_per_family": readouts_per_family,
-        "empty_quota": dict(EMPTY_QUOTA),
+        "empty_shares": dict(EMPTY_SHARES),
         "empty_kinds": list(EMPTY_KINDS),
-        "full_coverage_splits": [split for split in splits if split in FULL_COVERAGE_SPLITS or (split == "train" and train_full_coverage)],
+        "coverage_by_split": {split: (eval_coverage if split in EVAL_SPLITS else ("full" if train_full_coverage else "capped")) for split in splits},
         "readout_prompts": dict(READOUT_PROMPT),
         "split_unit": "layout (replay); every state of a replay shares one layout and one split",
         "layouts_by_split": {split: len(layouts) for split, layouts in layouts_by_split.items()},
@@ -334,6 +364,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--rows-per-family", type=int, default=ROWS_PER_FAMILY, help="Occupied and empty locations sampled per family per train image.")
     parser.add_argument("--readouts-per-family", type=int, default=READOUTS_PER_FAMILY)
     parser.add_argument("--train-full-coverage", action="store_true", help="Every node and edge of every train image: a pool for the rung mixer.")
+    parser.add_argument("--eval-coverage", choices=("balanced", "full"), default="balanced", help="Eval splits: every occupied location plus as many hardest-first empties (balanced), or every location (full).")
     args = parser.parse_args(argv)
     result = export_node_edge_readout(
         args.dataset_dir,
@@ -342,6 +373,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         rows_per_family=args.rows_per_family,
         readouts_per_family=args.readouts_per_family,
         train_full_coverage=args.train_full_coverage,
+        eval_coverage=args.eval_coverage,
     )
     print(json.dumps({key: value for key, value in result.items() if key != "files"}, indent=2, sort_keys=True))
     return 0

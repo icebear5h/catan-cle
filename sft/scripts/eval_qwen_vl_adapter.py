@@ -107,6 +107,8 @@ def score_readout(expected: str, response: str) -> dict[str, Any]:
     expected_items = readout_items(expected)
     response_items = readout_items(response)
     matched = sum(1 for token, value in expected_items.items() if response_items.get(token) == value)
+    occupied = {token: value for token, value in expected_items.items() if value != "empty"}
+    occupied_matched = sum(1 for token, value in occupied.items() if response_items.get(token) == value)
     return {
         "correct": matched == len(expected_items) and len(response_items) == len(expected_items),
         "scoring": "readout_items",
@@ -115,6 +117,12 @@ def score_readout(expected: str, response: str) -> dict[str, Any]:
         "items_correct": matched,
         "items_total": len(expected_items),
         "items_extra": max(0, len(response_items) - len(expected_items)),
+        # A full-list readout is mostly ``empty`` on a real board; the occupied
+        # items are the ones that carry the board state, so they are scored apart.
+        "occupied_items_correct": occupied_matched,
+        "occupied_items_total": len(occupied),
+        "empty_items_correct": matched - occupied_matched,
+        "empty_items_total": len(expected_items) - len(occupied),
     }
 
 
@@ -477,6 +485,85 @@ def summarize_neighbor_confusion(records: list[dict[str, Any]]) -> dict[str, Any
     return result
 
 
+OCCUPANCY_CATEGORIES = ("node.occupancy", "edge.owner")
+
+
+def occupancy_class(answer: str) -> str:
+    """``empty``, or the piece word that ends an occupancy answer (``settlement``, ``city``, ``road``)."""
+
+    words = answer.strip().lower().split()
+    return "empty" if not words or words[-1] == "empty" else words[-1]
+
+
+def summarize_occupancy_classes(records: list[dict[str, Any]]) -> dict[str, Any]:
+    """Per-class recall and precision for the occupancy heads, and their balanced accuracy.
+
+    Real boards are mostly empty, so exact accuracy on these heads rewards a
+    model that answers ``empty`` everywhere; recall per piece class and the
+    precision of ``empty`` are the numbers that mean something.
+    """
+
+    expected_counts: dict[str, int] = {}
+    predicted_counts: dict[str, int] = {}
+    correct_counts: dict[str, int] = {}
+    for record in records:
+        if record.get("metadata", {}).get("category") not in OCCUPANCY_CATEGORIES:
+            continue
+        expected = occupancy_class(str(record["score"].get("expected_normalized", "")))
+        predicted = occupancy_class(str(record["score"].get("response_normalized", "")))
+        expected_counts[expected] = expected_counts.get(expected, 0) + 1
+        predicted_counts[predicted] = predicted_counts.get(predicted, 0) + 1
+        if record["score"]["correct"]:
+            correct_counts[expected] = correct_counts.get(expected, 0) + 1
+    classes = {}
+    for name in sorted(set(expected_counts) | set(predicted_counts)):
+        expected = expected_counts.get(name, 0)
+        predicted = predicted_counts.get(name, 0)
+        correct = correct_counts.get(name, 0)
+        classes[name] = {
+            "expected": expected,
+            "predicted": predicted,
+            "correct": correct,
+            "recall": correct / expected if expected else None,
+            "precision": correct / predicted if predicted else None,
+        }
+    recalls = [entry["recall"] for entry in classes.values() if entry["recall"] is not None]
+    return {
+        "classes": classes,
+        "balanced_accuracy": sum(recalls) / len(recalls) if recalls else None,
+        "occupied_recall": (
+            sum(classes[name]["correct"] for name in classes if name != "empty")
+            / sum(classes[name]["expected"] for name in classes if name != "empty")
+            if sum(classes[name]["expected"] for name in classes if name != "empty")
+            else None
+        ),
+        "empty_precision": classes["empty"]["precision"] if "empty" in classes else None,
+    }
+
+
+def summarize_readout_items(records: list[dict[str, Any]]) -> dict[str, Any]:
+    """Occupied and empty item rates per readout category."""
+
+    totals: dict[str, dict[str, int]] = {}
+    for record in records:
+        score = record["score"]
+        if "occupied_items_total" not in score:
+            continue
+        category = str(record.get("metadata", {}).get("category", "readout"))
+        entry = totals.setdefault(category, {"readouts": 0, "exact": 0, "occupied_correct": 0, "occupied_total": 0, "empty_correct": 0, "empty_total": 0, "extra": 0})
+        entry["readouts"] += 1
+        entry["exact"] += int(score["correct"])
+        entry["occupied_correct"] += score["occupied_items_correct"]
+        entry["occupied_total"] += score["occupied_items_total"]
+        entry["empty_correct"] += score["empty_items_correct"]
+        entry["empty_total"] += score["empty_items_total"]
+        entry["extra"] += score["items_extra"]
+    for entry in totals.values():
+        entry["occupied_item_recall"] = entry["occupied_correct"] / entry["occupied_total"] if entry["occupied_total"] else None
+        entry["empty_item_accuracy"] = entry["empty_correct"] / entry["empty_total"] if entry["empty_total"] else None
+    return totals
+
+
 def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
     attempted = [record for record in records if record.get("response") is not None]
 
@@ -522,6 +609,8 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
     ):
         summary[f"by_{key}"] = summarize_dimension(attempted, key)
     summary["categories"] = summary["by_category"]
+    summary["occupancy_classes"] = summarize_occupancy_classes(attempted)
+    summary["readout_items"] = summarize_readout_items(attempted)
     summary["neighbor_confusion"] = summarize_neighbor_confusion(attempted)
     summary["by_behavior"] = summarize_behaviors(attempted)
     return summary

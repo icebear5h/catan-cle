@@ -15,7 +15,9 @@ slanted edges), ``colour_dropout`` (occupied recall per colour), ``readouts`` (f
 lists: exact and item rates, dropped tokens, values shifted onto the previous
 token, and ``sequence_skips`` counting readouts with either), and, with
 ``--adapter``, ``row_entanglement`` from ``inspect_token_rows`` when importable.
-A per-token table covers every atlas token a row is about: the prompt token, or
+The table leads with occupied recall per piece and the precision of ``empty``,
+because real boards are mostly empty and exact accuracy rewards answering
+``empty``. A per-token table covers every atlas token a row is about: the prompt token, or
 the expected token on inverse and localization rows.
 
 Usage:
@@ -74,7 +76,8 @@ NEIGHBOR_CLASSES = (
 FAR_CLASSES = ("false_positive_elsewhere", "false_positive_absent")
 OTHER_CLASSES = ("right_color_wrong_type", "right_type_wrong_color", "wrong_piece_other")
 COUNT_MODES = ("blindness", "neighbor_confusion", "far_false_positive", "other_occupancy_miss", "head_flip", "token_glitch")
-TABLE_KEYS = COUNT_MODES + ("orientation_ratio", "colour_dropout_min_recall", "readouts", "readouts_exact", "sequence_skips")
+RECALL_KEYS = ("road_recall", "settlement_recall", "city_recall", "empty_precision")
+TABLE_KEYS = RECALL_KEYS + COUNT_MODES + ("orientation_ratio", "colour_dropout_min_recall", "readouts", "readouts_exact", "readout_occupied_item_recall", "sequence_skips")
 READOUT_ITEM_RE = re.compile(r"(<[NETP][0-9_]+>)\s*([^;<]*)")
 IMAGE_SIZE = 1024
 VERTICAL_MAX_DEGREES = 15.0
@@ -209,7 +212,8 @@ class Scorer:
         classes, heads, head_tokens, glitches, glitch_tokens, blind_piece, blind_color = (Counter() for _ in range(7))
         recall_color, recall_piece = (defaultdict(lambda: [0, 0]) for _ in range(2))
         orientation = {"vertical": [0, 0], "slanted": [0, 0]}
-        readouts: dict[str, JsonDict] = defaultdict(lambda: {"count": 0, "exact": 0, "items_correct": 0, "items_total": 0, "items_extra": 0, "missing_tokens": 0, "shifted_values": 0, "sequence_skips": 0})
+        readouts: dict[str, JsonDict] = defaultdict(lambda: {"count": 0, "exact": 0, "items_correct": 0, "items_total": 0, "items_extra": 0, "occupied_items_correct": 0, "occupied_items_total": 0, "missing_tokens": 0, "shifted_values": 0, "sequence_skips": 0})
+        predicted_empty = [0, 0]  # correct, predicted
         errors = unjoined = 0
         for record in records:
             row = eval_row_for(record, by_id, eval_rows)
@@ -225,7 +229,7 @@ class Scorer:
                 skips = readout_skips(expected, response)
                 entry["count"] += 1
                 entry["exact"] += correct
-                for key in ("items_correct", "items_total", "items_extra"):
+                for key in ("items_correct", "items_total", "items_extra", "occupied_items_correct", "occupied_items_total"):
                     entry[key] += int(score.get(key, 0))
                 entry["missing_tokens"] += skips["missing_tokens"]
                 entry["shifted_values"] += skips["shifted_values"]
@@ -247,6 +251,9 @@ class Scorer:
                 glitch_tokens[token] += 1
                 tokens[token]["glitches"] += 1
             metadata = record.get("metadata", {})
+            if metadata.get("category") in OCCUPANCY_CATEGORIES and answer == "empty":
+                predicted_empty[1] += 1
+                predicted_empty[0] += truth == "empty"
             if metadata.get("category") not in OCCUPANCY_CATEGORIES or token is None:
                 continue
             if row is None:
@@ -286,13 +293,20 @@ class Scorer:
             "token_glitch": {"count": sum(glitches.values()), "by_kind": dict(sorted(glitches.items())), "tokens": dict(sorted(glitch_tokens.items()))},
             "orientation": {"vertical": vertical, "slanted": slanted, "ratio": ratio},
             "colour_dropout": {"recall_by_color": recall, "min_color": weakest, "min_recall": recall[weakest]["recall"] if weakest else None},
-            "readouts": {name: {**entry, "exact_rate": round(entry["exact"] / entry["count"], 4), "item_rate": round(entry["items_correct"] / entry["items_total"], 4) if entry["items_total"] else None} for name, entry in sorted(readouts.items())},
+            "readouts": {name: {**entry, "exact_rate": round(entry["exact"] / entry["count"], 4), "item_rate": round(entry["items_correct"] / entry["items_total"], 4) if entry["items_total"] else None, "occupied_item_recall": round(entry["occupied_items_correct"] / entry["occupied_items_total"], 4) if entry["occupied_items_total"] else None} for name, entry in sorted(readouts.items())},
         }
         counts = {"rows": len(records), "errors": errors, **{key: modes[key]["count"] for key in COUNT_MODES}}
         counts.update({"orientation_ratio": ratio, "colour_dropout_min_recall": modes["colour_dropout"]["min_recall"]})
+        piece_recall = finalize_recall(recall_piece)
+        occupied_items = sum(entry["occupied_items_total"] for entry in readouts.values())
         counts.update({
+            "road_recall": piece_recall["road"]["recall"] if "road" in piece_recall else None,
+            "settlement_recall": piece_recall["settlement"]["recall"] if "settlement" in piece_recall else None,
+            "city_recall": piece_recall["city"]["recall"] if "city" in piece_recall else None,
+            "empty_precision": round(predicted_empty[0] / predicted_empty[1], 4) if predicted_empty[1] else None,
             "readouts": sum(entry["count"] for entry in readouts.values()),
             "readouts_exact": sum(entry["exact"] for entry in readouts.values()),
+            "readout_occupied_item_recall": round(sum(entry["occupied_items_correct"] for entry in readouts.values()) / occupied_items, 4) if occupied_items else None,
             "sequence_skips": sum(entry["sequence_skips"] for entry in readouts.values()),
         })
         return {

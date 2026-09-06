@@ -211,9 +211,13 @@ location is the stopping criterion; an occupied-only list has none. Train
 images are capped at 4 occupied and 4 empty locations per family, the
 empties ranked hardest first (touching a same-type piece, touching the
 other type, two hops, far; quota 2 / 1 / 1 with fill from the ranked
-pool). Validation, test and `color_diagnostic` get every node and edge of
-every image, a full 126-way classification per board plus both readouts,
-so a per-token confusion map needs no rerun. No inverse rows, no tile,
+pool). Validation, test and `color_diagnostic` are balanced: every occupied node
+and edge of every image plus as many empties drawn by the same kind shares
+(validation 2,622 rows), so exact accuracy cannot be earned by answering
+`empty`; `--eval-coverage full` writes every location for diagnostics. The
+evaluator reports per-class recall and precision, balanced accuracy and the
+occupied versus empty item split of every readout; the scorecard table
+leads with road, settlement and city recall and the precision of `empty`. No inverse rows, no tile,
 port or robber rows. Splits follow the manifest by layout and are checked
 pairwise: 77 train, 5 validation, 5 test replays, 16 colour-diagnostic
 engine layouts (eval only; the only split where all eleven piece colours

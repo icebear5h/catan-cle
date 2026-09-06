@@ -15,7 +15,9 @@ slanted edges), ``colour_dropout`` (occupied recall per colour), ``readouts`` (f
 lists: exact and item rates, dropped tokens, values shifted onto the previous
 token, and ``sequence_skips`` counting readouts with either), and, with
 ``--adapter``, ``row_entanglement`` from ``inspect_token_rows`` when importable.
-The table leads with occupied recall per piece and the precision of ``empty``,
+The table leads with occupied recall per piece, the precision of ``empty``, and
+the tile resource, dice number and port heads (all-positive rows, so recall is
+their accuracy),
 because real boards are mostly empty and exact accuracy rewards answering
 ``empty``. A per-token table covers every atlas token a row is about: the prompt token, or
 the expected token on inverse and localization rows.
@@ -76,7 +78,8 @@ NEIGHBOR_CLASSES = (
 FAR_CLASSES = ("false_positive_elsewhere", "false_positive_absent")
 OTHER_CLASSES = ("right_color_wrong_type", "right_type_wrong_color", "wrong_piece_other")
 COUNT_MODES = ("blindness", "neighbor_confusion", "far_false_positive", "other_occupancy_miss", "head_flip", "token_glitch")
-RECALL_KEYS = ("road_recall", "settlement_recall", "city_recall", "empty_precision")
+RECALL_KEYS = ("road_recall", "settlement_recall", "city_recall", "empty_precision", "tile_resource_recall", "tile_number_recall", "port_recall")
+TERRAIN_RECALL = {"tile_resource_recall": "tile.resource", "tile_number_recall": "tile.number", "port_recall": "port.port_type"}
 TABLE_KEYS = RECALL_KEYS + COUNT_MODES + ("orientation_ratio", "colour_dropout_min_recall", "readouts", "readouts_exact", "readout_occupied_item_recall", "sequence_skips")
 READOUT_ITEM_RE = re.compile(r"(<[NETP][0-9_]+>)\s*([^;<]*)")
 IMAGE_SIZE = 1024
@@ -214,6 +217,7 @@ class Scorer:
         orientation = {"vertical": [0, 0], "slanted": [0, 0]}
         readouts: dict[str, JsonDict] = defaultdict(lambda: {"count": 0, "exact": 0, "items_correct": 0, "items_total": 0, "items_extra": 0, "occupied_items_correct": 0, "occupied_items_total": 0, "missing_tokens": 0, "shifted_values": 0, "sequence_skips": 0})
         predicted_empty = [0, 0]  # correct, predicted
+        terrain: dict[str, list[int]] = defaultdict(lambda: [0, 0])  # category -> correct, total
         errors = unjoined = 0
         for record in records:
             row = eval_row_for(record, by_id, eval_rows)
@@ -224,6 +228,9 @@ class Scorer:
             truth, answer = expected.lower(), response.lower()
             errors += not correct
             category = str(record.get("metadata", {}).get("category", ""))
+            if category in TERRAIN_RECALL.values():
+                terrain[category][0] += correct
+                terrain[category][1] += 1
             if category.endswith(".readout") or len(readout_items(expected)) >= 4:
                 entry = readouts[category or "readout"]
                 skips = readout_skips(expected, response)
@@ -304,6 +311,7 @@ class Scorer:
             "settlement_recall": piece_recall["settlement"]["recall"] if "settlement" in piece_recall else None,
             "city_recall": piece_recall["city"]["recall"] if "city" in piece_recall else None,
             "empty_precision": round(predicted_empty[0] / predicted_empty[1], 4) if predicted_empty[1] else None,
+            **{key: (round(terrain[category][0] / terrain[category][1], 4) if terrain[category][1] else None) for key, category in TERRAIN_RECALL.items()},
             "readouts": sum(entry["count"] for entry in readouts.values()),
             "readouts_exact": sum(entry["exact"] for entry in readouts.values()),
             "readout_occupied_item_recall": round(sum(entry["occupied_items_correct"] for entry in readouts.values()) / occupied_items, 4) if occupied_items else None,

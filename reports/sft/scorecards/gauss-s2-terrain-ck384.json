@@ -1,7 +1,7 @@
 {
   "schema": "catan_failure_scorecard/v1",
   "panel_dir": "/private/tmp/claude-504/-Users-henry-catan-learning/53f03b8e-da92-4cfb-93fe-10c65e1c4ff7/scratchpad/panel384",
-  "generated_at": "2026-09-05T09:12:07.302432+00:00",
+  "generated_at": "2026-09-06T03:51:41.491601+00:00",
   "sets": {
     "spatial_localization_v1-stage1-validation": {
       "eval_jsonl": "artifacts/generated/board_recognition/replay_v1/spatial_localization_v1/stage1/validation.jsonl",
@@ -17,8 +17,16 @@
         "token_glitch": 474,
         "orientation_ratio": null,
         "colour_dropout_min_recall": null,
+        "road_recall": null,
+        "settlement_recall": null,
+        "city_recall": null,
+        "empty_precision": null,
+        "tile_resource_recall": null,
+        "tile_number_recall": null,
+        "port_recall": null,
         "readouts": 0,
         "readouts_exact": 0,
+        "readout_occupied_item_recall": null,
         "sequence_skips": 0
       },
       "modes": {
@@ -1529,8 +1537,16 @@
         "token_glitch": 340,
         "orientation_ratio": 1.0,
         "colour_dropout_min_recall": 0.0,
+        "road_recall": 0.0,
+        "settlement_recall": 0.0,
+        "city_recall": 0.0,
+        "empty_precision": null,
+        "tile_resource_recall": 1.0,
+        "tile_number_recall": 1.0,
+        "port_recall": 1.0,
         "readouts": 0,
         "readouts_exact": 0,
+        "readout_occupied_item_recall": null,
         "sequence_skips": 0
       },
       "modes": {
@@ -3121,8 +3137,16 @@
         "token_glitch": 2546,
         "orientation_ratio": 1.0011,
         "colour_dropout_min_recall": 0.0,
+        "road_recall": 0.0015,
+        "settlement_recall": 0.0,
+        "city_recall": 0.0,
+        "empty_precision": null,
+        "tile_resource_recall": 1.0,
+        "tile_number_recall": 1.0,
+        "port_recall": null,
         "readouts": 0,
         "readouts_exact": 0,
+        "readout_occupied_item_recall": null,
         "sequence_skips": 0
       },
       "modes": {
@@ -4725,8 +4749,16 @@
         "token_glitch": 828,
         "orientation_ratio": 1.0027,
         "colour_dropout_min_recall": 0.0,
+        "road_recall": 0.004,
+        "settlement_recall": 0.0,
+        "city_recall": 0.0,
+        "empty_precision": null,
+        "tile_resource_recall": 1.0,
+        "tile_number_recall": 1.0,
+        "port_recall": null,
         "readouts": 0,
         "readouts_exact": 0,
+        "readout_occupied_item_recall": null,
         "sequence_skips": 0
       },
       "modes": {
@@ -6298,8 +6330,16 @@
         "token_glitch": 78,
         "orientation_ratio": null,
         "colour_dropout_min_recall": null,
+        "road_recall": null,
+        "settlement_recall": null,
+        "city_recall": null,
+        "empty_precision": null,
+        "tile_resource_recall": null,
+        "tile_number_recall": null,
+        "port_recall": null,
         "readouts": 0,
         "readouts_exact": 0,
+        "readout_occupied_item_recall": null,
         "sequence_skips": 0
       },
       "modes": {
@@ -7504,8 +7544,16 @@
         "token_glitch": 600,
         "orientation_ratio": 1.0052,
         "colour_dropout_min_recall": 0.0,
+        "road_recall": 0.0067,
+        "settlement_recall": 0.0,
+        "city_recall": 0.0,
+        "empty_precision": null,
+        "tile_resource_recall": null,
+        "tile_number_recall": null,
+        "port_recall": null,
         "readouts": 0,
         "readouts_exact": 0,
+        "readout_occupied_item_recall": null,
         "sequence_skips": 0
       },
       "modes": {
@@ -8852,8 +8900,16 @@
         "token_glitch": 840,
         "orientation_ratio": 1.0056,
         "colour_dropout_min_recall": 0.0,
+        "road_recall": 0.0083,
+        "settlement_recall": 0.0,
+        "city_recall": 0.0,
+        "empty_precision": null,
+        "tile_resource_recall": 1.0,
+        "tile_number_recall": 1.0,
+        "port_recall": null,
         "readouts": 0,
         "readouts_exact": 0,
+        "readout_occupied_item_recall": null,
         "sequence_skips": 0
       },
       "modes": {
@@ -10386,8 +10442,16 @@
         "token_glitch": 840,
         "orientation_ratio": 1.0037,
         "colour_dropout_min_recall": 0.0,
+        "road_recall": 0.0083,
+        "settlement_recall": 0.0,
+        "city_recall": 0.0,
+        "empty_precision": null,
+        "tile_resource_recall": 1.0,
+        "tile_number_recall": 1.0,
+        "port_recall": null,
         "readouts": 0,
         "readouts_exact": 0,
+        "readout_occupied_item_recall": null,
         "sequence_skips": 0
       },
       "modes": {
@@ -11953,8 +12017,16 @@
         "token_glitch": 0,
         "orientation_ratio": null,
         "colour_dropout_min_recall": null,
+        "road_recall": null,
+        "settlement_recall": null,
+        "city_recall": null,
+        "empty_precision": null,
+        "tile_resource_recall": 1.0,
+        "tile_number_recall": 1.0,
+        "port_recall": 1.0,
         "readouts": 64,
         "readouts_exact": 64,
+        "readout_occupied_item_recall": null,
         "sequence_skips": 0
       },
       "modes": {
@@ -12010,11 +12082,14 @@
             "items_correct": 1792,
             "items_total": 1792,
             "items_extra": 0,
+            "occupied_items_correct": 0,
+            "occupied_items_total": 0,
             "missing_tokens": 0,
             "shifted_values": 0,
             "sequence_skips": 0,
             "exact_rate": 1.0,
-            "item_rate": 1.0
+            "item_rate": 1.0,
+            "occupied_item_recall": null
           }
         }
       },
@@ -12257,100 +12332,5 @@
     "tokens_with_twin_count": 0,
     "rows_below_family_floor": [],
     "rows_below_family_floor_count": 0
-  },
-  "baseline": "reports/sft/scorecards/pairs-v2-final.json",
-  "deltas": {
-    "spatial_localization_v1-stage1-validation": {
-      "rows": 0,
-      "errors": 595,
-      "blindness": 0,
-      "neighbor_confusion": 0,
-      "far_false_positive": 0,
-      "other_occupancy_miss": 0,
-      "head_flip": 0,
-      "token_glitch": 467
-    },
-    "replay_v1-evals-validation_v1": {
-      "rows": 0,
-      "errors": 87,
-      "blindness": -24,
-      "neighbor_confusion": -10,
-      "far_false_positive": 111,
-      "other_occupancy_miss": 126,
-      "head_flip": -81,
-      "token_glitch": 241,
-      "orientation_ratio": 0.1963,
-      "colour_dropout_min_recall": -0.7143
-    },
-    "spatial_localization_pairs_control_v1-stage1-validation": {
-      "rows": 0,
-      "errors": 4958,
-      "blindness": -66,
-      "neighbor_confusion": -57,
-      "far_false_positive": 1331,
-      "other_occupancy_miss": 1211,
-      "head_flip": 731,
-      "token_glitch": 2546,
-      "orientation_ratio": 0.7151,
-      "colour_dropout_min_recall": -0.9107
-    },
-    "spatial_localization_pairs_v2-stage1-validation": {
-      "rows": 0,
-      "errors": 1623,
-      "blindness": -24,
-      "neighbor_confusion": -22,
-      "far_false_positive": 442,
-      "other_occupancy_miss": 403,
-      "head_flip": 225,
-      "token_glitch": 828,
-      "orientation_ratio": 0.7556,
-      "colour_dropout_min_recall": -0.8824
-    },
-    "spatial_localization_v1-probes-validation": {
-      "rows": 0,
-      "errors": 185,
-      "blindness": 0,
-      "neighbor_confusion": 0,
-      "far_false_positive": 0,
-      "other_occupancy_miss": 0,
-      "head_flip": 0,
-      "token_glitch": 73
-    },
-    "spatial_localization_v2-stage1-validation": {
-      "rows": 0,
-      "errors": 1173,
-      "blindness": -12,
-      "neighbor_confusion": -4,
-      "far_false_positive": 290,
-      "other_occupancy_miss": 299,
-      "head_flip": 182,
-      "token_glitch": 600,
-      "orientation_ratio": 0.8069,
-      "colour_dropout_min_recall": -0.8571
-    },
-    "spatial_localization_v3-stage1-validation": {
-      "rows": 0,
-      "errors": 1358,
-      "blindness": -9,
-      "neighbor_confusion": -2,
-      "far_false_positive": 290,
-      "other_occupancy_miss": 239,
-      "head_flip": 168,
-      "token_glitch": 840,
-      "orientation_ratio": 1.0056,
-      "colour_dropout_min_recall": -0.7895
-    },
-    "spatial_localization_v7-stage1-validation": {
-      "rows": 0,
-      "errors": 1609,
-      "blindness": -9,
-      "neighbor_confusion": -39,
-      "far_false_positive": 578,
-      "other_occupancy_miss": 239,
-      "head_flip": 266,
-      "token_glitch": 840,
-      "orientation_ratio": 0.7042,
-      "colour_dropout_min_recall": -0.7895
-    }
   }
 }

@@ -1,8 +1,361 @@
 {
   "schema": "catan_failure_scorecard/v1",
   "panel_dir": "/private/tmp/claude-504/-Users-henry-catan-learning/53f03b8e-da92-4cfb-93fe-10c65e1c4ff7/scratchpad/balanced_ck256",
-  "generated_at": "2026-09-06T03:46:27.280911+00:00",
+  "generated_at": "2026-09-06T03:51:38.842923+00:00",
   "sets": {
+    "terrain_readout_v1-stage1-validation": {
+      "eval_jsonl": "artifacts/generated/board_recognition/replay_v1/terrain_readout_v1/stage1/validation.jsonl",
+      "records": "/private/tmp/claude-504/-Users-henry-catan-learning/53f03b8e-da92-4cfb-93fe-10c65e1c4ff7/scratchpad/balanced_ck256/catan-qwen-series-eval-regression-panel-eval/original/records.jsonl",
+      "counts": {
+        "rows": 3072,
+        "errors": 2709,
+        "blindness": 0,
+        "neighbor_confusion": 0,
+        "far_false_positive": 0,
+        "other_occupancy_miss": 0,
+        "head_flip": 2639,
+        "token_glitch": 0,
+        "orientation_ratio": null,
+        "colour_dropout_min_recall": null,
+        "road_recall": null,
+        "settlement_recall": null,
+        "city_recall": null,
+        "empty_precision": null,
+        "tile_resource_recall": 0.0831,
+        "tile_number_recall": 0.2146,
+        "port_recall": 0.0017,
+        "readouts": 64,
+        "readouts_exact": 0,
+        "readout_occupied_item_recall": null,
+        "sequence_skips": 64
+      },
+      "modes": {
+        "blindness": {
+          "count": 0,
+          "by_piece": {},
+          "by_color": {}
+        },
+        "neighbor_confusion": {
+          "count": 0,
+          "by_class": {}
+        },
+        "far_false_positive": {
+          "count": 0,
+          "by_class": {}
+        },
+        "other_occupancy_miss": {
+          "count": 0,
+          "by_class": {}
+        },
+        "head_flip": {
+          "count": 2639,
+          "by_head": {
+            "number->occupancy": 952,
+            "port->occupancy": 572,
+            "resource->occupancy": 1115
+          },
+          "tokens_with_3plus": {
+            "<P00>": 63,
+            "<P01>": 64,
+            "<P02>": 64,
+            "<P03>": 64,
+            "<P04>": 64,
+            "<P05>": 64,
+            "<P06>": 61,
+            "<P07>": 64,
+            "<P08>": 64,
+            "<T00>": 123,
+            "<T01>": 125,
+            "<T02>": 128,
+            "<T03>": 107,
+            "<T04>": 76,
+            "<T05>": 123,
+            "<T06>": 128,
+            "<T07>": 67,
+            "<T08>": 121,
+            "<T09>": 95,
+            "<T10>": 128,
+            "<T11>": 121,
+            "<T12>": 110,
+            "<T13>": 128,
+            "<T14>": 88,
+            "<T15>": 82,
+            "<T16>": 110,
+            "<T17>": 128,
+            "<T18>": 79
+          }
+        },
+        "token_glitch": {
+          "count": 0,
+          "by_kind": {},
+          "tokens": {}
+        },
+        "orientation": {
+          "vertical": {
+            "errors": 0,
+            "n": 0,
+            "error_rate": null
+          },
+          "slanted": {
+            "errors": 0,
+            "n": 0,
+            "error_rate": null
+          },
+          "ratio": null
+        },
+        "colour_dropout": {
+          "recall_by_color": {},
+          "min_color": null,
+          "min_recall": null
+        },
+        "readouts": {
+          "terrain.readout": {
+            "count": 64,
+            "exact": 0,
+            "items_correct": 0,
+            "items_total": 1792,
+            "items_extra": 0,
+            "occupied_items_correct": 0,
+            "occupied_items_total": 0,
+            "missing_tokens": 1792,
+            "shifted_values": 0,
+            "sequence_skips": 64,
+            "exact_rate": 0.0,
+            "item_rate": 0.0,
+            "occupied_item_recall": null
+          }
+        }
+      },
+      "occupied_recall_by_piece": {},
+      "occupancy_classes": {},
+      "unjoined_records": 0,
+      "per_token": {
+        "<P00>": {
+          "n": 64,
+          "errors": 63,
+          "error_rate": 0.9844,
+          "dominant_wrong": "empty",
+          "head_flips": 63,
+          "glitches": 0
+        },
+        "<P01>": {
+          "n": 64,
+          "errors": 64,
+          "error_rate": 1.0,
+          "dominant_wrong": "empty",
+          "head_flips": 64,
+          "glitches": 0
+        },
+        "<P02>": {
+          "n": 64,
+          "errors": 64,
+          "error_rate": 1.0,
+          "dominant_wrong": "empty",
+          "head_flips": 64,
+          "glitches": 0
+        },
+        "<P03>": {
+          "n": 64,
+          "errors": 64,
+          "error_rate": 1.0,
+          "dominant_wrong": "empty",
+          "head_flips": 64,
+          "glitches": 0
+        },
+        "<P04>": {
+          "n": 64,
+          "errors": 64,
+          "error_rate": 1.0,
+          "dominant_wrong": "empty",
+          "head_flips": 64,
+          "glitches": 0
+        },
+        "<P05>": {
+          "n": 64,
+          "errors": 64,
+          "error_rate": 1.0,
+          "dominant_wrong": "empty",
+          "head_flips": 64,
+          "glitches": 0
+        },
+        "<P06>": {
+          "n": 64,
+          "errors": 64,
+          "error_rate": 1.0,
+          "dominant_wrong": "empty",
+          "head_flips": 61,
+          "glitches": 0
+        },
+        "<P07>": {
+          "n": 64,
+          "errors": 64,
+          "error_rate": 1.0,
+          "dominant_wrong": "empty",
+          "head_flips": 64,
+          "glitches": 0
+        },
+        "<P08>": {
+          "n": 64,
+          "errors": 64,
+          "error_rate": 1.0,
+          "dominant_wrong": "empty",
+          "head_flips": 64,
+          "glitches": 0
+        },
+        "<T00>": {
+          "n": 128,
+          "errors": 123,
+          "error_rate": 0.9609,
+          "dominant_wrong": "empty",
+          "head_flips": 123,
+          "glitches": 0
+        },
+        "<T01>": {
+          "n": 128,
+          "errors": 128,
+          "error_rate": 1.0,
+          "dominant_wrong": "empty",
+          "head_flips": 125,
+          "glitches": 0
+        },
+        "<T02>": {
+          "n": 128,
+          "errors": 128,
+          "error_rate": 1.0,
+          "dominant_wrong": "empty",
+          "head_flips": 128,
+          "glitches": 0
+        },
+        "<T03>": {
+          "n": 128,
+          "errors": 107,
+          "error_rate": 0.8359,
+          "dominant_wrong": "empty",
+          "head_flips": 107,
+          "glitches": 0
+        },
+        "<T04>": {
+          "n": 128,
+          "errors": 76,
+          "error_rate": 0.5938,
+          "dominant_wrong": "empty",
+          "head_flips": 76,
+          "glitches": 0
+        },
+        "<T05>": {
+          "n": 128,
+          "errors": 123,
+          "error_rate": 0.9609,
+          "dominant_wrong": "empty",
+          "head_flips": 123,
+          "glitches": 0
+        },
+        "<T06>": {
+          "n": 128,
+          "errors": 128,
+          "error_rate": 1.0,
+          "dominant_wrong": "empty",
+          "head_flips": 128,
+          "glitches": 0
+        },
+        "<T07>": {
+          "n": 128,
+          "errors": 67,
+          "error_rate": 0.5234,
+          "dominant_wrong": "empty",
+          "head_flips": 67,
+          "glitches": 0
+        },
+        "<T08>": {
+          "n": 128,
+          "errors": 121,
+          "error_rate": 0.9453,
+          "dominant_wrong": "empty",
+          "head_flips": 121,
+          "glitches": 0
+        },
+        "<T09>": {
+          "n": 128,
+          "errors": 95,
+          "error_rate": 0.7422,
+          "dominant_wrong": "empty",
+          "head_flips": 95,
+          "glitches": 0
+        },
+        "<T10>": {
+          "n": 128,
+          "errors": 128,
+          "error_rate": 1.0,
+          "dominant_wrong": "empty",
+          "head_flips": 128,
+          "glitches": 0
+        },
+        "<T11>": {
+          "n": 128,
+          "errors": 121,
+          "error_rate": 0.9453,
+          "dominant_wrong": "empty",
+          "head_flips": 121,
+          "glitches": 0
+        },
+        "<T12>": {
+          "n": 128,
+          "errors": 110,
+          "error_rate": 0.8594,
+          "dominant_wrong": "empty",
+          "head_flips": 110,
+          "glitches": 0
+        },
+        "<T13>": {
+          "n": 128,
+          "errors": 128,
+          "error_rate": 1.0,
+          "dominant_wrong": "empty",
+          "head_flips": 128,
+          "glitches": 0
+        },
+        "<T14>": {
+          "n": 128,
+          "errors": 88,
+          "error_rate": 0.6875,
+          "dominant_wrong": "empty",
+          "head_flips": 88,
+          "glitches": 0
+        },
+        "<T15>": {
+          "n": 128,
+          "errors": 82,
+          "error_rate": 0.6406,
+          "dominant_wrong": "empty",
+          "head_flips": 82,
+          "glitches": 0
+        },
+        "<T16>": {
+          "n": 128,
+          "errors": 110,
+          "error_rate": 0.8594,
+          "dominant_wrong": "empty",
+          "head_flips": 110,
+          "glitches": 0
+        },
+        "<T17>": {
+          "n": 128,
+          "errors": 128,
+          "error_rate": 1.0,
+          "dominant_wrong": "empty",
+          "head_flips": 128,
+          "glitches": 0
+        },
+        "<T18>": {
+          "n": 128,
+          "errors": 79,
+          "error_rate": 0.6172,
+          "dominant_wrong": "empty",
+          "head_flips": 79,
+          "glitches": 0
+        }
+      }
+    },
     "node_edge_readout_v1-stage1-validation": {
       "eval_jsonl": "artifacts/generated/board_recognition/replay_v1/node_edge_readout_v1/stage1/validation.jsonl",
       "records": "/private/tmp/claude-504/-Users-henry-catan-learning/53f03b8e-da92-4cfb-93fe-10c65e1c4ff7/scratchpad/balanced_ck256/regression-panel-node_edge_readout_v1-stage1-validation-eval/original/records.jsonl",
@@ -21,6 +374,9 @@
         "settlement_recall": 0.7633,
         "city_recall": 0.913,
         "empty_precision": 0.702,
+        "tile_resource_recall": null,
+        "tile_number_recall": null,
+        "port_recall": null,
         "readouts": 128,
         "readouts_exact": 5,
         "readout_occupied_item_recall": null,

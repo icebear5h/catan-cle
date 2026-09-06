@@ -3069,3 +3069,12 @@ scorecards, never loss.
   errors 742, roads 0.418, settlements 0.763, cities 0.913, empty precision
   0.702, far false positives 0. Mixed rung 3b re-exported with the balanced
   in-run eval sample (887 rows); dry run clean; still not launched.
+- [x] Scorecard gains tile resource, dice number and port recall beside the
+  piece recalls (2026-09-05). One table, balanced node-edge validation plus
+  the terrain set (pairs_v2's terrain from the full-board set, 43/42/128
+  rows): pairs_v2 roads 0.565 / settlements 0.842 / cities 0.887 / empty
+  precision 0.753 / resource 1.000 / number 0.976 / port 0.000 (never
+  trained on ports); stage-2 ck384 pieces 0 / terrain 1.000 / 1.000 /
+  1.000, readouts 64/64; stage-3 ck256 roads 0.418 / settlements 0.763 /
+  cities 0.913 / empty precision 0.702 / resource 0.083 / number 0.215 /
+  port 0.002, readouts 5/128.

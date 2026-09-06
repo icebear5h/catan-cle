@@ -101,7 +101,7 @@ def test_counts_one_planted_miss_per_mode(tmp_path: Path, fixture_contract: dict
     assert report["row_entanglement"] is None
     entry = report["sets"][SET_ID]
     counts = entry["counts"]
-    for key in ("road_recall", "settlement_recall", "city_recall", "empty_precision", "readout_occupied_item_recall"):
+    for key in ("road_recall", "settlement_recall", "city_recall", "empty_precision", "readout_occupied_item_recall", "tile_resource_recall", "tile_number_recall", "port_recall"):
         counts.pop(key)
     assert counts == {
         "rows": 6,

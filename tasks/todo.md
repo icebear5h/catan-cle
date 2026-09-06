@@ -2970,3 +2970,15 @@ scorecards, never loss.
   the robber tile). User explicitly deferred this until after the current rung;
   do not mix it into the approved piece-recognition run.
 - [ ] Step 4: rungs a, b, c from the winner.
+- [x] The long gaps in the loss prints are the in-run eval (2026-09-05
+  18:00 PDT): the full 8,192-row validation at eval batch 32 is 256 batches
+  at about 7.6 s each, roughly 33 minutes of silence at steps 128, 256, 384
+  and 512, about 2.2 hours of the run. Checkpoint-128 landed 16:17; the
+  step-256 eval was at 191/256 at 17:58. Next launch: pass a 1,024-row
+  eval sample for the in-run eval; the full-coverage scoring is the side
+  evaluator's job.
+- [ ] Checkpoint-128 side eval launched 18:05 (`node-edge` set, original,
+  label `gauss-s3-rw-ck128`, app ap-BPlyYX5M4JOnZNX894MlkO, call
+  fc-01M1T3RCRSK5MXQ57TWSF1D9MN); ck256, ck384 and the final to follow;
+  final panel with `node-edge` and `node-edge-colors`, scorecard against
+  `pairs-v2-final-node-edge`, rows; gate table here.

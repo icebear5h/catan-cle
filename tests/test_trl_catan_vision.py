@@ -567,3 +567,138 @@ def test_soft_patch_objective_localizes_matching_post_merger_feature():
     assert torch.isfinite(loss)
     assert accuracy.item() == 1.0
     assert count == 1
+
+
+def test_olora_config_and_token_init_keep():
+    from sft.scripts.train_trl_catan_vision import PROFILE_OLORA_FROZEN_BUNDLE, TrainConfig
+
+    base = dict(train_jsonl="t.jsonl", image_root="images", token_inventory="tokens.json", output_dir="out")
+    config = TrainConfig(**base, profile=PROFILE_OLORA_FROZEN_BUNDLE, frozen_bundle="/runs/parent", token_init="keep")
+    config.validate()
+    assert config.olora and config.language_lora
+    with pytest.raises(ValueError, match="frozen_bundle"):
+        TrainConfig(**base, profile=PROFILE_OLORA_FROZEN_BUNDLE, token_init="keep").validate()
+    with pytest.raises(ValueError, match="token_init=keep"):
+        TrainConfig(**base, profile=PROFILE_OLORA_FROZEN_BUNDLE, frozen_bundle="/runs/parent").validate()
+    with pytest.raises(ValueError, match="mutually exclusive"):
+        TrainConfig(**base, profile=PROFILE_OLORA_FROZEN_BUNDLE, frozen_bundle="/runs/parent", initial_bundle="/runs/x", token_init="keep").validate()
+    with pytest.raises(ValueError, match="olora profile"):
+        TrainConfig(**base, frozen_bundle="/runs/parent").validate()
+
+
+def test_module_key_and_orthonormal_rows():
+    from sft.scripts.train_trl_catan_vision import module_key, orthonormal_rows
+
+    assert module_key("base_model.model.model.language_model.layers.0.mlp.down_proj.lora_A.default.weight") == "model.language_model.layers.0.mlp.down_proj"
+    assert module_key("model.visual.blocks.3.attn.qkv.lora_A.weight") == "model.visual.blocks.3.attn.qkv"
+    assert module_key("base_model.model.model.visual.merger.linear_fc1.lora_B.default.weight") == "model.visual.merger.linear_fc1"
+    rows = torch.tensor([[1.0, 0.0, 0.0, 0.0], [1.0, 1.0, 0.0, 0.0], [2.0, 2.0, 0.0, 0.0]])
+    basis = orthonormal_rows(rows)
+    assert basis.shape == (2, 4)
+    assert torch.allclose(basis @ basis.T, torch.eye(2), atol=1e-6)
+    assert torch.allclose(basis[:, 2:], torch.zeros(2, 2), atol=1e-6)
+
+
+class _AdapterHolder(torch.nn.Module):
+    def __init__(self, a_new: torch.Tensor, frozen: torch.Tensor):
+        super().__init__()
+        self.model = torch.nn.Module()
+        self.model.layer = torch.nn.Module()
+        self.model.layer.lora_A = torch.nn.Module()
+        self.model.layer.lora_A.default = torch.nn.Module()
+        self.model.layer.lora_A.default.weight = torch.nn.Parameter(a_new.clone())
+        self.model.other = torch.nn.Module()
+        self.model.other.lora_A = torch.nn.Module()
+        self.model.other.lora_A.default = torch.nn.Module()
+        self.model.other.lora_A.default.weight = torch.nn.Parameter(frozen.clone(), requires_grad=False)
+        self.model.free = torch.nn.Module()
+        self.model.free.lora_A = torch.nn.Module()
+        self.model.free.lora_A.default = torch.nn.Module()
+        self.model.free.lora_A.default.weight = torch.nn.Parameter(a_new.clone())
+
+
+def test_orthogonal_penalty_measures_projection_onto_protected_rows():
+    from sft.scripts.train_trl_catan_vision import orthogonal_penalty, orthonormal_rows
+
+    protected = orthonormal_rows(torch.tensor([[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0]]))
+    inside = torch.tensor([[3.0, 0.0, 0.0, 0.0], [0.0, 4.0, 0.0, 0.0]])
+    outside = torch.tensor([[0.0, 0.0, 3.0, 0.0], [0.0, 0.0, 0.0, 4.0]])
+    bases = {"model.layer": protected}
+    cache: dict[str, torch.Tensor] = {}
+    penalty, fraction, unprotected = orthogonal_penalty(_AdapterHolder(inside, inside), bases, cache)
+    assert torch.isclose(penalty, torch.tensor(25.0)) and fraction == pytest.approx(1.0) and unprotected == 1
+    penalty, fraction, _ = orthogonal_penalty(_AdapterHolder(outside, inside), bases, cache)
+    assert torch.isclose(penalty, torch.tensor(0.0)) and fraction == pytest.approx(0.0)
+    mixed = inside + outside
+    penalty, fraction, _ = orthogonal_penalty(_AdapterHolder(mixed, inside), bases, cache)
+    assert torch.isclose(penalty, torch.tensor(25.0)) and fraction == pytest.approx(0.5)
+    penalty.backward()
+    assert cache["model.layer"] is not None
+    with pytest.raises(RuntimeError, match="protected basis"):
+        orthogonal_penalty(_AdapterHolder(inside, inside), {"model.nothing": protected}, {})
+
+
+def test_load_protected_bases_merges_adapter_and_factor_rows(tmp_path: Path):
+    from safetensors.torch import save_file
+
+    from sft.scripts.train_trl_catan_vision import load_protected_bases
+
+    adapter = tmp_path / "frozen"
+    adapter.mkdir()
+    save_file(
+        {
+            "base_model.model.model.language_model.layers.0.mlp.down_proj.lora_A.default.weight": torch.eye(2, 6),
+            "base_model.model.model.language_model.layers.0.mlp.down_proj.lora_B.default.weight": torch.zeros(6, 2),
+        },
+        str(adapter / "adapter_model.safetensors"),
+    )
+    factors = tmp_path / "factors.safetensors"
+    save_file({"model.visual.blocks.0.attn.qkv.lora_A.weight": torch.tensor([[0.0, 0.0, 0.0, 2.0]]), "model.visual.blocks.0.attn.qkv.lora_B.weight": torch.zeros(4, 1)}, str(factors))
+    bases = load_protected_bases(adapter, factors)
+    assert set(bases) == {"model.language_model.layers.0.mlp.down_proj", "model.visual.blocks.0.attn.qkv"}
+    assert bases["model.language_model.layers.0.mlp.down_proj"].shape == (2, 6)
+    assert torch.allclose(bases["model.visual.blocks.0.attn.qkv"].abs(), torch.tensor([[0.0, 0.0, 0.0, 1.0]]))
+
+
+def test_vision_lora_targets_and_categories():
+    from sft.scripts.train_trl_catan_vision import ModelComponents, parameter_category, vision_linear_targets
+
+    components = ModelComponents(
+        input_embedding="model.language_model.embed_tokens",
+        output_head="lm_head",
+        language="model.language_model",
+        vision="model.visual",
+        merger="model.visual.merger",
+        hidden_size=8,
+        vocab_size=32,
+    )
+    model = torch.nn.Module()
+    model.model = torch.nn.Module()
+    model.model.visual = torch.nn.Module()
+    model.model.visual.blocks = torch.nn.ModuleList([torch.nn.Module()])
+    block = model.model.visual.blocks[0]
+    block.attn = torch.nn.Module()
+    block.attn.qkv = torch.nn.Linear(4, 12)
+    block.attn.proj = torch.nn.Linear(4, 4)
+    block.norm1 = torch.nn.LayerNorm(4)
+    block.mlp = torch.nn.Module()
+    block.mlp.linear_fc1 = torch.nn.Linear(4, 8)
+    block.mlp.linear_fc2 = torch.nn.Linear(8, 4)
+    model.model.visual.merger = torch.nn.Module()
+    model.model.visual.merger.linear_fc1 = torch.nn.Linear(4, 4)
+    model.model.visual.merger.linear_fc2 = torch.nn.Linear(4, 4)
+    model.model.visual.patch_embed = torch.nn.Module()
+    model.model.visual.patch_embed.proj = torch.nn.Linear(4, 4)
+    targets = vision_linear_targets(model, components)
+    assert targets == [
+        "model.visual.blocks.0.attn.qkv",
+        "model.visual.blocks.0.attn.proj",
+        "model.visual.blocks.0.mlp.linear_fc1",
+        "model.visual.blocks.0.mlp.linear_fc2",
+        "model.visual.merger.linear_fc1",
+        "model.visual.merger.linear_fc2",
+    ]
+    assert parameter_category("base_model.model.model.visual.blocks.0.attn.qkv.lora_A.default.weight", components) == "vision_lora"
+    assert parameter_category("base_model.model.model.visual.merger.linear_fc1.lora_B.default.weight", components) == "vision_lora"
+    assert parameter_category("base_model.model.model.language_model.layers.0.mlp.up_proj.lora_A.default.weight", components) == "language_lora"
+    assert parameter_category("base_model.model.model.visual.blocks.0.norm1.weight", components) == "vision"

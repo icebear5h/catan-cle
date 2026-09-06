@@ -3078,3 +3078,18 @@ scorecards, never loss.
   1.000, readouts 64/64; stage-3 ck256 roads 0.418 / settlements 0.763 /
   cities 0.913 / empty precision 0.702 / resource 0.083 / number 0.215 /
   port 0.002, readouts 5/128.
+- [x] O-LoRA trainer profile `olora_frozen_bundle` (2026-09-06): frozen
+  stage-2 bundle (exact vision weights, language LoRA and rows merged in
+  memory), fresh rank-16 adapters on language layers and the vision tower's
+  qkv/proj/fc1/fc2 and merger projections, atlas rows kept, orthogonality
+  penalty (lambda 0.5) against the frozen adapter's lora_A rows and the
+  visual-delta SVD lora_A rows; bundles carry `frozen_adapter/`; evaluator,
+  initial-bundle loading and reload validation merge it first. Launcher
+  gains `--frozen-bundle --visual-delta-factors --orthogonal-lambda
+  --vision-lora-learning-rate --lora-rank --lora-alpha --lora-dropout` and
+  uploads the factor file with the dataset. Tests: 26 trainer tests incl.
+  penalty math, bases loading, vision targets and categories. Dry run clean
+  on mixed rung 3b: run `catan-qwen38-olora-s3c-mixed-20260906`.
+- [ ] Workspace move to the user's `icebear5h` profile (own account):
+  volumes created, stage-2 checkpoint-384 bundle uploaded to the same path;
+  the base model re-downloads into the new HF cache on the first run.

@@ -14,6 +14,7 @@ import hashlib
 import json
 import math
 import os
+import shutil
 import types
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor
@@ -29,7 +30,16 @@ MODEL_ID = "Qwen/Qwen3.8-27B"
 HUB_MODEL_ID = "TetraCorp/catan-qwen3.8-27b-spatial-sft"
 PROFILE_VISION_TOKENS = "vision_tokens"
 PROFILE_VISION_TOKENS_LORA = "vision_tokens_lora"
-PROFILES = (PROFILE_VISION_TOKENS, PROFILE_VISION_TOKENS_LORA)
+# O-LoRA rung: a finished bundle is merged into the base as a frozen task, the
+# vision tower stays at that bundle's exact weights, and fresh rank-r adapters
+# on the language layers and the vision tower learn the next task with their
+# input rows held orthogonal to the frozen task's subspaces.
+PROFILE_OLORA_FROZEN_BUNDLE = "olora_frozen_bundle"
+PROFILES = (PROFILE_VISION_TOKENS, PROFILE_VISION_TOKENS_LORA, PROFILE_OLORA_FROZEN_BUNDLE)
+LORA_PROFILES = (PROFILE_VISION_TOKENS_LORA, PROFILE_OLORA_FROZEN_BUNDLE)
+FROZEN_BUNDLE_FILE = "frozen_bundle.json"
+FROZEN_ADAPTER_DIR = "frozen_adapter"
+VISION_LORA_SUFFIXES = ("attn.qkv", "attn.proj", "mlp.linear_fc1", "mlp.linear_fc2", "merger.linear_fc1", "merger.linear_fc2")
 CURRICULUM_STAGES = (
     "spatial_grounding",
     "clean_board_grounding",
@@ -66,7 +76,7 @@ SPATIAL_TARGET_MODES = ("correct", "shuffled")
 # answer-only metrics so a plateau cannot hide behind end-of-turn accuracy.
 ANSWER_METRIC_TRIVIAL_TOKENS = ("<|im_end|>", "\n")
 SEMANTIC_ROW_NOISE_SCALE = 0.1
-TOKEN_INIT_MODES = ("mean_noise", "vocab_gaussian", "family_words")
+TOKEN_INIT_MODES = ("mean_noise", "vocab_gaussian", "family_words", "keep")
 # Base-vocabulary words whose embeddings seed each atlas family under the
 # family_words initialization; the leading space matches how the words appear
 # mid-sentence in the training prompts.
@@ -197,6 +207,10 @@ class TrainConfig:
     patch_temperature: float = 0.07
     spatial_target_mode: str = "correct"
     token_init: str = "mean_noise"
+    frozen_bundle: str | None = None
+    visual_delta_factors: str | None = None
+    orthogonal_lambda: float = 0.5
+    vision_lora_learning_rate: float = 1e-4
 
     def validate(self) -> None:
         for name in ("train_jsonl", "image_root", "token_inventory", "output_dir"):
@@ -212,6 +226,17 @@ class TrainConfig:
             raise ValueError("eval_jsonl and eval_image_root must be supplied together")
         if self.resume_from_checkpoint and self.initial_bundle:
             raise ValueError("resume_from_checkpoint and initial_bundle are mutually exclusive")
+        if self.olora:
+            if not self.frozen_bundle:
+                raise ValueError("the olora profile needs frozen_bundle")
+            if self.initial_bundle:
+                raise ValueError("frozen_bundle and initial_bundle are mutually exclusive")
+            if self.token_init != "keep":
+                raise ValueError("the olora profile keeps the frozen bundle's rows; use token_init=keep")
+            if self.orthogonal_lambda < 0:
+                raise ValueError("orthogonal_lambda must be non-negative")
+        elif self.frozen_bundle:
+            raise ValueError("frozen_bundle needs the olora profile")
         if self.max_steps is not None and self.max_steps <= 0:
             raise ValueError("max_steps must be positive or None")
         if self.num_train_epochs <= 0:
@@ -250,7 +275,11 @@ class TrainConfig:
 
     @property
     def language_lora(self) -> bool:
-        return self.profile == PROFILE_VISION_TOKENS_LORA
+        return self.profile in LORA_PROFILES
+
+    @property
+    def olora(self) -> bool:
+        return self.profile == PROFILE_OLORA_FROZEN_BUNDLE
 
 
 @dataclass(frozen=True)
@@ -884,6 +913,8 @@ def initialize_semantic_token_rows(
 
     if mode not in TOKEN_INIT_MODES:
         raise ValueError(f"unknown token init mode: {mode}")
+    if mode == "keep":
+        return {"mode": mode, "note": "rows left as loaded; the frozen bundle already merged its atlas rows"}
     reference_rows = min(setup.token_ids)
     if reference_rows <= 0:
         raise ValueError("semantic token ids must follow the base vocabulary")
@@ -1065,6 +1096,20 @@ def language_linear_targets(model: torch.nn.Module, components: ModelComponents)
     return targets
 
 
+def vision_linear_targets(model: torch.nn.Module, components: ModelComponents) -> list[str]:
+    """Attention, MLP and merger projections of the vision tower, the O-LoRA vision targets."""
+
+    prefix = components.vision + "."
+    targets = [
+        name
+        for name, module in model.named_modules()
+        if name.startswith(prefix) and isinstance(module, torch.nn.Linear) and name.endswith(VISION_LORA_SUFFIXES)
+    ]
+    if not targets:
+        raise RuntimeError("no vision linear modules were found for LoRA")
+    return targets
+
+
 def wrap_trainable_model(
     model: torch.nn.Module,
     setup: TokenSetup,
@@ -1102,6 +1147,205 @@ def wrap_trainable_model(
     wrapped._catan_token_setup = setup
     wrapped._catan_initialization = {"semantic_rows": token_init, "visual_master_weights": visual}
     return wrapped
+
+
+def module_key(parameter_name: str) -> str:
+    """The base-model module path an adapter or factor tensor belongs to.
+
+    ``base_model.model.model.language_model.layers.0.mlp.down_proj.lora_A.default.weight``
+    and ``model.visual.blocks.0.attn.qkv.lora_A.weight`` both map to their
+    ``model....`` module path, so bases from a frozen adapter file and from the
+    visual-delta factor file address the same modules as the live model.
+    """
+
+    name = parameter_name
+    for prefix in ("base_model.model.", "base_model."):
+        if name.startswith(prefix):
+            name = name[len(prefix):]
+            break
+    for marker in (".lora_A.", ".lora_B."):
+        if marker in name:
+            return name.split(marker, 1)[0]
+    return name
+
+
+def orthonormal_rows(matrix: torch.Tensor) -> torch.Tensor:
+    """An orthonormal basis (rows) of the row space of ``matrix``, in fp32."""
+
+    rows = matrix.detach().float()
+    q, r = torch.linalg.qr(rows.T)
+    keep = torch.abs(torch.diagonal(r)) > 1e-6
+    return q[:, keep].T.contiguous()
+
+
+def load_protected_bases(
+    frozen_adapter_dir: Path,
+    visual_delta_factors: Path | None,
+) -> dict[str, torch.Tensor]:
+    """Orthonormal input bases per module: the frozen adapter's ``lora_A`` rows, plus the visual delta's."""
+
+    from safetensors.torch import load_file
+
+    bases: dict[str, torch.Tensor] = {}
+    adapter = load_file(frozen_adapter_dir / "adapter_model.safetensors")
+    for name, tensor in adapter.items():
+        if ".lora_A." in name:
+            bases[module_key(name)] = orthonormal_rows(tensor)
+    if visual_delta_factors is not None:
+        factors = load_file(visual_delta_factors)
+        for name, tensor in factors.items():
+            if ".lora_A." in name:
+                key = module_key(name)
+                if key in bases:
+                    raise RuntimeError(f"protected basis defined twice: {key}")
+                bases[key] = orthonormal_rows(tensor)
+    if not bases:
+        raise RuntimeError("no protected bases were found")
+    return bases
+
+
+def orthogonal_penalty(
+    model: torch.nn.Module,
+    bases: dict[str, torch.Tensor],
+    cache: dict[str, torch.Tensor],
+) -> tuple[torch.Tensor, float, int]:
+    """O-LoRA's L_orth: the squared projection of every trainable ``lora_A`` onto its module's protected basis.
+
+    Returns the penalty, the fraction of the adapters' total squared norm that
+    lies inside the protected subspaces (a scale-free progress number), and the
+    count of trainable adapters with no basis (which are unconstrained).
+    """
+
+    penalty = None
+    inside = 0.0
+    total = 0.0
+    unprotected = 0
+    for name, parameter in model.named_parameters():
+        if ".lora_A." not in name or not parameter.requires_grad:
+            continue
+        key = module_key(name)
+        basis = bases.get(key)
+        if basis is None:
+            unprotected += 1
+            continue
+        cached = cache.get(key)
+        if cached is None or cached.device != parameter.device:
+            cached = basis.to(parameter.device)
+            cache[key] = cached
+        rows = parameter.float()
+        projection = rows @ cached.T
+        term = (projection * projection).sum()
+        penalty = term if penalty is None else penalty + term
+        inside += float(term.detach())
+        total += float((rows.detach() * rows.detach()).sum())
+    if penalty is None:
+        raise RuntimeError("no trainable lora_A parameter has a protected basis")
+    return penalty, (inside / total if total else 0.0), unprotected
+
+
+def frozen_adapter_files(bundle: Path) -> tuple[Path, ...]:
+    return (bundle / "adapter_config.json", bundle / "adapter_model.safetensors")
+
+
+def apply_frozen_adapter(base_model: torch.nn.Module, frozen_dir: Path) -> tuple[torch.nn.Module, JsonDict]:
+    """Merge a finished adapter (LoRA and atlas rows) into the base weights and drop its wrappers."""
+
+    from peft import PeftModel
+
+    missing = [str(path) for path in frozen_adapter_files(frozen_dir) if not path.is_file()]
+    if missing:
+        raise FileNotFoundError(f"frozen adapter is incomplete: {missing}")
+    frozen = PeftModel.from_pretrained(base_model, frozen_dir, is_trainable=False)
+    merged = frozen.merge_and_unload()
+    leftover = [name for name, _ in merged.named_parameters() if ".lora_" in name or "trainable_tokens" in name]
+    if leftover:
+        raise RuntimeError(f"frozen adapter did not merge cleanly: {leftover[:4]}")
+    return merged, {"path": str(frozen_dir), "adapter_sha256": sha256_file(frozen_dir / "adapter_model.safetensors")}
+
+
+def freeze_visual_except_lora(model: torch.nn.Module, components: ModelComponents) -> JsonDict:
+    """Hold the vision tower at its loaded weights in fp32; only its LoRA tensors train."""
+
+    visual = resolve_wrapped_module(model, components.vision)
+    visual.float()
+    trainable = frozen = 0
+    for name, parameter in visual.named_parameters():
+        is_lora = ".lora_" in f".{name}"
+        parameter.requires_grad_(is_lora)
+        trainable += is_lora
+        frozen += not is_lora
+    return {"module": components.vision, "trainable_tensors": trainable, "frozen_tensors": frozen}
+
+
+def load_frozen_bundle(
+    base_model: torch.nn.Module,
+    setup: TokenSetup,
+    components: ModelComponents,
+    config: TrainConfig,
+) -> tuple[torch.nn.Module, JsonDict]:
+    """The O-LoRA start: exact vision weights, the parent's adapter merged, fresh adapters on top."""
+
+    from peft import LoraConfig, get_peft_model
+
+    if config.frozen_bundle is None:
+        raise ValueError("frozen_bundle is required")
+    bundle = Path(config.frozen_bundle).expanduser().resolve()
+    required = frozen_adapter_files(bundle) + (bundle / VISUAL_STATE_FILE, bundle / TRAINABLE_SCOPE_FILE)
+    missing = [str(path) for path in required if not path.is_file()]
+    if missing:
+        raise FileNotFoundError(f"frozen bundle is incomplete: {missing}")
+    parent_scope = json.loads((bundle / TRAINABLE_SCOPE_FILE).read_text())
+    if tuple(parent_scope.get("semantic_tokens", {}).get("token_ids", [])) != setup.token_ids:
+        raise RuntimeError("incompatible frozen bundle: semantic token IDs differ")
+    factors = Path(config.visual_delta_factors).expanduser().resolve() if config.visual_delta_factors else None
+    if factors is not None and not factors.is_file():
+        raise FileNotFoundError(factors)
+
+    base_model._catan_components = components
+    resolve_wrapped_module(base_model, components.vision).float()
+    visual = load_visual_state(base_model, bundle)
+    merged, frozen_report = apply_frozen_adapter(base_model, bundle)
+    merged.requires_grad_(False)
+    token_targets = {
+        components.input_embedding: list(setup.token_ids),
+        components.output_head: list(setup.token_ids),
+    }
+    peft_config = LoraConfig(
+        task_type="CAUSAL_LM",
+        r=config.lora_rank,
+        lora_alpha=config.lora_alpha,
+        lora_dropout=config.lora_dropout,
+        bias="none",
+        target_modules=language_linear_targets(merged, components) + vision_linear_targets(merged, components),
+        trainable_token_indices=token_targets,
+    )
+    model = get_peft_model(merged, peft_config)
+    visual_freeze = freeze_visual_except_lora(model, components)
+    bases = load_protected_bases(bundle, factors)
+    trainable_keys = {module_key(name) for name, parameter in model.named_parameters() if ".lora_A." in name and parameter.requires_grad}
+    protected = sorted(trainable_keys & set(bases))
+    unprotected = sorted(trainable_keys - set(bases))
+    if not protected:
+        raise RuntimeError("no trainable adapter module has a protected basis; check the frozen adapter and factor file")
+    model._catan_components = components
+    model._catan_token_setup = setup
+    model._catan_initialization = {"semantic_rows": {"mode": "keep"}, "visual_master_weights": visual_freeze}
+    model._catan_orthogonal_bases = bases
+    model._catan_frozen_adapter_dir = bundle
+    report = {
+        "schema": "catan_trl_frozen_bundle/v1",
+        "path": str(bundle),
+        "frozen_adapter": frozen_report,
+        "visual_sha256": visual["sha256"],
+        "visual_delta_factors": str(factors) if factors else None,
+        "visual_delta_factors_sha256": sha256_file(factors) if factors else None,
+        "new_adapter": {"rank": config.lora_rank, "alpha": config.lora_alpha, "language_targets": len(language_linear_targets(merged, components)), "vision_targets": len(vision_linear_targets(merged, components))},
+        "protected_modules": len(protected),
+        "unprotected_modules": unprotected,
+        "orthogonal_lambda": config.orthogonal_lambda,
+        "optimizer_state_restored": False,
+    }
+    return model, report
 
 
 def load_initial_bundle(
@@ -1142,6 +1386,8 @@ def load_initial_bundle(
     if errors:
         raise RuntimeError("incompatible initial bundle: " + "; ".join(errors))
 
+    if (bundle / FROZEN_ADAPTER_DIR).is_dir():
+        base_model, _ = apply_frozen_adapter(base_model, bundle / FROZEN_ADAPTER_DIR)
     model = PeftModel.from_pretrained(base_model, bundle, is_trainable=True)
     model._catan_components = components
     model._catan_token_setup = setup
@@ -1168,7 +1414,11 @@ def parameter_category(name: str, components: ModelComponents) -> str:
         if _matches_path(name, components.output_head):
             return "atlas_output_rows"
     if "lora_A" in name or "lora_B" in name:
-        return "language_lora" if _matches_path(name, components.language) else "forbidden"
+        if _matches_path(name, components.language):
+            return "language_lora"
+        if _matches_path(name, components.vision):
+            return "vision_lora"
+        return "forbidden"
     if _matches_path(name, components.merger):
         return "merger"
     if _matches_path(name, components.vision):
@@ -1191,6 +1441,7 @@ def audit_trainable_scope(
             "atlas_input_rows",
             "atlas_output_rows",
             "language_lora",
+            "vision_lora",
             "forbidden",
         )
     }
@@ -1211,9 +1462,16 @@ def audit_trainable_scope(
         )
         if category.startswith("atlas_") and tuple(parameter.shape) != expected_delta:
             errors.append(f"{name} must have shape {expected_delta}")
-    for required in ("vision", "merger", "atlas_input_rows", "atlas_output_rows"):
+    required_groups = ("atlas_input_rows", "atlas_output_rows", "language_lora", "vision_lora") if config.olora else ("vision", "merger", "atlas_input_rows", "atlas_output_rows")
+    for required in required_groups:
         if groups[required]["parameters"] == 0:
             errors.append(f"required trainable group is empty: {required}")
+    if config.olora:
+        for frozen in ("vision", "merger"):
+            if groups[frozen]["parameters"]:
+                errors.append(f"{frozen} weights must stay frozen under the olora profile")
+    elif groups["vision_lora"]["parameters"]:
+        errors.append("vision LoRA parameters need the olora profile")
     for category in ("atlas_input_rows", "atlas_output_rows"):
         if groups[category]["tensors"] != 1:
             errors.append(f"exactly one {category} tensor is required")
@@ -1221,7 +1479,7 @@ def audit_trainable_scope(
         errors.append("language LoRA parameters disagree with the selected profile")
     if groups["forbidden"]["parameters"]:
         errors.append("base language or unknown parameters are trainable")
-    for category in ("vision", "merger"):
+    for category in ("vision", "merger", "vision_lora"):
         if set(dtypes[category]) - {"torch.float32"}:
             errors.append(f"{category} trainable parameters must hold fp32 master weights")
     report = {
@@ -1251,6 +1509,7 @@ def build_optimizer(
         "merger": [],
         "token_rows": [],
         "language_lora": [],
+        "vision_lora": [],
     }
     for name, parameter in model.named_parameters():
         if not parameter.requires_grad:
@@ -1264,9 +1523,11 @@ def build_optimizer(
             grouped["token_rows"].append(parameter)
         elif category == "language_lora":
             grouped["language_lora"].append(parameter)
+        elif category == "vision_lora":
+            grouped["vision_lora"].append(parameter)
         else:
             raise RuntimeError(f"cannot route trainable parameter to optimizer: {name}")
-    required = ("vision", "merger", "token_rows")
+    required = ("token_rows", "language_lora", "vision_lora") if config.olora else ("vision", "merger", "token_rows")
     if any(not grouped[name] for name in required):
         raise RuntimeError({name: len(values) for name, values in grouped.items()})
     if config.language_lora != bool(grouped["language_lora"]):
@@ -1291,6 +1552,16 @@ def build_optimizer(
             "catan_name": "token_rows",
         },
     ]
+    optimizer_groups = [group for group in optimizer_groups if group["params"]]
+    if grouped["vision_lora"]:
+        optimizer_groups.append(
+            {
+                "params": grouped["vision_lora"],
+                "lr": config.vision_lora_learning_rate,
+                "weight_decay": config.weight_decay,
+                "catan_name": "vision_lora",
+            }
+        )
     if grouped["language_lora"]:
         optimizer_groups.append(
             {
@@ -1506,6 +1777,7 @@ def _trainer_class(config: TrainConfig, components: ModelComponents, setup: Toke
             if self._catan_merge_size <= 0:
                 raise ValueError("vision spatial merge size must be positive")
             self._catan_metrics: dict[str, list[float]] = defaultdict(list)
+            self._catan_basis_cache: dict[str, torch.Tensor] = {}
 
         def compute_loss(
             self,
@@ -1542,6 +1814,13 @@ def _trainer_class(config: TrainConfig, components: ModelComponents, setup: Toke
                 temperature=config.patch_temperature,
             )
             total_loss = nll_loss + config.patch_loss_weight * patch_loss
+            bases = getattr(unwrapped, "_catan_orthogonal_bases", None)
+            if bases is not None and config.orthogonal_lambda > 0:
+                orth, fraction, unprotected = orthogonal_penalty(unwrapped, bases, self._catan_basis_cache)
+                total_loss = total_loss + config.orthogonal_lambda * orth
+                self._catan_metrics["orth_loss"].append(float(orth.detach()))
+                self._catan_metrics["orth_fraction"].append(fraction)
+                self._catan_metrics["orth_unprotected_modules"].append(float(unprotected))
             if labels is not None:
                 weight, bias = output_head_weight(unwrapped.get_base_model().get_output_embeddings())
                 answer = answer_token_metrics(
@@ -1616,6 +1895,15 @@ def _trainer_class(config: TrainConfig, components: ModelComponents, setup: Toke
                 target_dir / TRAINABLE_SCOPE_FILE,
             )
             write_json_atomic(target_dir / RUN_CONFIG_FILE, asdict(config))
+            frozen_dir = getattr(unwrapped, "_catan_frozen_adapter_dir", None)
+            if frozen_dir is not None:
+                # A bundle from this profile only reproduces its model on top of the
+                # merged parent, so the parent adapter travels inside every save.
+                carried = target_dir / FROZEN_ADAPTER_DIR
+                carried.mkdir(exist_ok=True)
+                for source in frozen_adapter_files(Path(frozen_dir)):
+                    shutil.copy2(source, carried / source.name)
+                write_json_atomic(target_dir / FROZEN_BUNDLE_FILE, {"schema": "catan_trl_frozen_bundle_pointer/v1", "path": str(frozen_dir), "carried_adapter": str(carried), "orthogonal_lambda": config.orthogonal_lambda})
             write_json_atomic(
                 target_dir / PATCH_METRICS_FILE,
                 {
@@ -1636,7 +1924,10 @@ def _trainer_class(config: TrainConfig, components: ModelComponents, setup: Toke
         ) -> None:
             super()._load_from_checkpoint(resume_from_checkpoint, model=model)
             target = self.model if model is None else model
-            promote_visual_master_weights(target, components)
+            if config.olora:
+                freeze_visual_except_lora(target, components)
+            else:
+                promote_visual_master_weights(target, components)
             load_visual_state(target, resume_from_checkpoint)
 
     return CatanSFTTrainer
@@ -1735,6 +2026,8 @@ def validate_saved_bundle(
     setup, components = prepare_semantic_tokens(processor, base, inventory)
     if setup.token_ids != expected_setup.token_ids:
         raise RuntimeError("saved tokenizer changed the semantic token IDs")
+    if (final_dir / FROZEN_ADAPTER_DIR).is_dir():
+        base, _ = apply_frozen_adapter(base, final_dir / FROZEN_ADAPTER_DIR)
     reloaded = PeftModel.from_pretrained(base, final_dir)
     visual = load_visual_state(reloaded, final_dir)
     report = {
@@ -1800,7 +2093,11 @@ def run_training(config: TrainConfig) -> JsonDict:
     processor, base_model = _load_base_model_and_processor(config)
     setup, components = prepare_semantic_tokens(processor, base_model, inventory)
     initial_bundle_report = None
-    if config.initial_bundle:
+    frozen_bundle_report = None
+    if config.olora:
+        model, frozen_bundle_report = load_frozen_bundle(base_model, setup, components, config)
+        write_json_atomic(output_dir / FROZEN_BUNDLE_FILE, frozen_bundle_report)
+    elif config.initial_bundle:
         model, initial_bundle_report = load_initial_bundle(
             base_model,
             setup,
@@ -1856,6 +2153,8 @@ def run_training(config: TrainConfig) -> JsonDict:
     )
     if initial_bundle_report is not None:
         write_json_atomic(final_dir / INITIAL_BUNDLE_FILE, initial_bundle_report)
+    if frozen_bundle_report is not None:
+        write_json_atomic(final_dir / FROZEN_BUNDLE_FILE, {**frozen_bundle_report, "carried_adapter": str(final_dir / FROZEN_ADAPTER_DIR)})
 
     del trainer, model, base_model, processor, dataset, eval_dataset
     gc.collect()
@@ -1873,6 +2172,7 @@ def run_training(config: TrainConfig) -> JsonDict:
         "metrics": metrics,
         "eval_metrics": final_eval_metrics,
         "initial_bundle": initial_bundle_report,
+        "frozen_bundle": frozen_bundle_report,
         "reload_validation": reload_report,
         "hub_publish": publish_report,
     }
@@ -1922,6 +2222,10 @@ def parse_args(argv: Iterable[str] | None = None) -> TrainConfig:
         default="correct",
     )
     parser.add_argument("--token-init", choices=TOKEN_INIT_MODES, default="mean_noise")
+    parser.add_argument("--frozen-bundle", help="Finished bundle merged into the base as the frozen task (olora profile)")
+    parser.add_argument("--visual-delta-factors", help="safetensors of lora_A/lora_B factors of the frozen task's visual delta; their lora_A rows are the protected vision subspaces")
+    parser.add_argument("--orthogonal-lambda", type=float, default=0.5)
+    parser.add_argument("--vision-lora-learning-rate", type=float, default=1e-4)
     args = parser.parse_args(argv)
     return TrainConfig(
         train_jsonl=args.train_jsonl,
@@ -1962,6 +2266,10 @@ def parse_args(argv: Iterable[str] | None = None) -> TrainConfig:
         patch_temperature=args.patch_temperature,
         spatial_target_mode=args.spatial_target_mode,
         token_init=args.token_init,
+        frozen_bundle=args.frozen_bundle,
+        visual_delta_factors=args.visual_delta_factors,
+        orthogonal_lambda=args.orthogonal_lambda,
+        vision_lora_learning_rate=args.vision_lora_learning_rate,
     )
 
 

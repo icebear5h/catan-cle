@@ -272,6 +272,42 @@ few hundred of them; the terrain rung reached 63 of 64 exact readouts with
 about a thousand at half its tokens, the reweighted piece run starved them
 at 81.
 
+### O-LoRA rungs (`olora_frozen_bundle` profile)
+
+Rungs trained on one family overwrite the others through the shared LoRA and
+vision tower. The `olora_frozen_bundle` profile follows O-LoRA (Wang et al.,
+2023): a finished bundle is the frozen task, the next task gets fresh
+adapters, and the new adapters' input rows are held orthogonal to the frozen
+task's subspaces by a penalty. Concretely, `--frozen-bundle <dir>` loads
+that bundle's vision weights exactly (frozen, fp32), merges its language
+LoRA and atlas rows into the base in memory, then adds rank-`--lora-rank`
+adapters on every language linear layer and on the vision tower's
+attention, MLP and merger projections (`VISION_LORA_SUFFIXES`), plus the
+trainable atlas rows (`--token-init keep`). The loss adds
+`--orthogonal-lambda` times the squared projection of every trainable
+`lora_A` onto its protected basis: the frozen adapter's own `lora_A` rows
+for language modules, and the `lora_A` rows of `--visual-delta-factors`
+(the SVD factors of the frozen task's visual delta, see
+`sft/scripts/extract_visual_delta.py`) for vision modules. Logged as
+`orth_loss`, `orth_fraction` (share of the adapters' squared norm inside
+the protected subspaces) and `orth_unprotected_modules`. Norms, biases,
+patch embedding and position embedding stay frozen.
+
+A bundle from this profile only reproduces its model on top of the merged
+parent, so every checkpoint and the final carry `frozen_adapter/` (the
+parent's `adapter_config.json` and `adapter_model.safetensors`) and
+`frozen_bundle.json`; the evaluator, `--initial-bundle` and the reload
+validation merge that adapter into the base before loading the bundle.
+
+```bash
+modal run --detach sft/modal_catan_vision_sft.py \
+  --profile olora_frozen_bundle --token-init keep --lora-rank 16 --lora-alpha 32 \
+  --frozen-bundle /runs/catan-vision-sft/<parent run>/checkpoints/checkpoint-384 \
+  --visual-delta-factors artifacts/diagnostics/sft/visual_delta_gauss_s2_ck384_20260905/derived/visual_delta_rank16_linear.safetensors \
+  --orthogonal-lambda 0.5 --vision-lora-learning-rate 1e-4 \
+  --train-jsonl .../mixed_rung3b_v1/stage1/train.jsonl ... --no-dry-run --spawn-training
+```
+
 ### Rung slices for staged real-board training
 
 The four-stage file can be cut into standalone rungs without rebuilding:

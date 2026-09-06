@@ -9,7 +9,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import tempfile
+import time
 from dataclasses import asdict, replace
 from datetime import datetime, timezone
 from pathlib import Path
@@ -47,6 +49,22 @@ REMOTE_CACHE = "/cache"
 REMOTE_DATA = "/data"
 REMOTE_RUNS = "/runs"
 LAUNCH_MANIFEST = "modal_launch.json"
+BUDGET_GUARD_FILE = "budget_guard.json"
+BUDGET_TIMEOUT_SECONDS = 7 * 60 * 60
+BUDGET_STARTUP_SECONDS = 10 * 60
+BUDGET_EVAL_RESERVE_USD = 25.0
+# Published standard Function rates checked 2026-09-05; recheck before reuse.
+BUDGET_RATE_PER_SECOND = 0.001261 + 16 * 0.0000131 + 128 * 0.00000222
+BUDGET_FUNCTION_OPTIONS = {
+    "gpu": "H200",
+    "cpu": (16.0, 16.0),
+    "memory": (128 * 1024, 128 * 1024),
+    "timeout": BUDGET_TIMEOUT_SECONDS,
+    "startup_timeout": BUDGET_STARTUP_SECONDS,
+    "retries": 0,
+    "max_containers": 1,
+    "scaledown_window": 2,
+}
 
 app = modal.App(APP_NAME)
 hf_cache = modal.Volume.from_name("catan-hf-cache", create_if_missing=True)
@@ -122,6 +140,60 @@ def _dependency_versions() -> dict[str, str]:
     }
 
 
+def training_budget_plan(budget_usd: float) -> dict[str, Any] | None:
+    """Reserve eval money and validate the bounded training envelope before upload.
+
+    This is a one-launch resource/time bound, not an account billing limit.
+    A separate CPU watchdog cancels even rescheduled/crash-looping GPU calls at
+    an absolute deadline. No evaluation or second training run is auto-launched.
+    """
+    if not math.isfinite(budget_usd) or budget_usd < 0:
+        raise ValueError("budget_usd must be finite and nonnegative")
+    if budget_usd == 0:
+        return None
+    maximum = BUDGET_RATE_PER_SECOND * (BUDGET_TIMEOUT_SECONDS + BUDGET_STARTUP_SECONDS)
+    remainder = budget_usd - maximum - BUDGET_EVAL_RESERVE_USD
+    if remainder < 5.0:
+        raise ValueError("budget is too small for the bounded training profile, $25 eval reserve and $5+ safety margin")
+    return {
+        "schema": "catan_single_run_budget/v1",
+        "budget_usd": budget_usd,
+        "maximum_training_window_usd_at_list_rates": maximum,
+        "standalone_eval_reserve_usd": BUDGET_EVAL_RESERVE_USD,
+        "remaining_headroom_usd": remainder,
+        "gpu": "H200", "cpu_core_limit": 16, "memory_gib_limit": 128,
+        "execution_timeout_seconds": BUDGET_TIMEOUT_SECONDS,
+        "startup_timeout_seconds": BUDGET_STARTUP_SECONDS,
+        "rate_per_second": BUDGET_RATE_PER_SECOND,
+        "pricing_source": "https://modal.com/pricing",
+        "pricing_checked": "2026-09-05",
+        "function_retries": 0,
+        "absolute_deadline_watchdog": True,
+        "evals_auto_launched": False,
+        "excludes": ["prior spending", "shared storage", "workspace subscription"],
+    }
+
+
+def wait_for_budgeted_call(call: Any, deadline_unix: float) -> dict[str, Any]:
+    """Observe one known call, cancelling its containers on deadline or failure."""
+    if not math.isfinite(deadline_unix):
+        raise ValueError("budget deadline must be finite")
+    try:
+        while (remaining := deadline_unix - time.time()) > 0:
+            try:
+                result = call.get(timeout=min(30.0, remaining))
+                return {"status": "finished", "result": result}
+            except TimeoutError:
+                continue
+        call.cancel(terminate_containers=True)
+        return {"status": "budget_deadline_cancelled"}
+    except BaseException:
+        # If the watcher itself is interrupted, fail closed. A later restart of
+        # this watcher may observe cancellation but cannot start more training.
+        call.cancel(terminate_containers=True)
+        raise
+
+
 def upload_training_bundle(
     train_jsonl: Path,
     image_root: Path,
@@ -131,8 +203,13 @@ def upload_training_bundle(
     require_curriculum: bool,
     eval_jsonl: Path | None = None,
     eval_image_root: Path | None = None,
+    extra_files: dict[str, Path] | None = None,
 ) -> tuple[str, str | None, str, str, dict[str, Any], dict[str, Any] | None]:
-    """Upload one ordered JSONL and its deduplicated images without reordering."""
+    """Upload one ordered JSONL and its deduplicated images without reordering.
+
+    ``extra_files`` maps a remote file name under the dataset directory to a
+    local file that travels with the data (the visual-delta factors for O-LoRA).
+    """
 
     source = train_jsonl.expanduser().resolve()
     root = image_root.expanduser().resolve()
@@ -185,6 +262,8 @@ def upload_training_bundle(
             if remote_eval_jsonl is not None:
                 batch.put_file(rewritten_eval_path, remote_eval_jsonl)
             batch.put_file(inventory_path, remote_inventory)
+            for remote_name, local_path in (extra_files or {}).items():
+                batch.put_file(local_path.expanduser().resolve(), f"{remote_root}/{remote_name}")
 
     return (
         f"{REMOTE_DATA}{remote_jsonl}",
@@ -306,6 +385,57 @@ def train_h200(
         sft_runs.commit()
 
 
+@app.function(
+    image=training_image, secrets=[hf_secret], volumes=_VOLUMES,
+    **BUDGET_FUNCTION_OPTIONS,
+)
+def train_h200_budgeted(
+    config_payload: dict[str, Any], launch_payload: dict[str, Any],
+    deadline_unix: float,
+) -> dict[str, Any]:
+    budget = launch_payload.get("budget")
+    if budget != training_budget_plan(float((budget or {}).get("budget_usd", 0))):
+        raise ValueError("missing or inconsistent budget plan")
+    if budget is None or not math.isfinite(deadline_unix) or time.time() >= deadline_unix:
+        raise RuntimeError("missing budget or expired training deadline")
+    if deadline_unix - time.time() > BUDGET_TIMEOUT_SECONDS + BUDGET_STARTUP_SECONDS + 5:
+        raise ValueError("training deadline exceeds the bounded profile")
+    # .local executes the existing trainer body IN THIS bounded container;
+    # it does not allocate the legacy 24-hour H200 function.
+    return train_h200.local(config_payload, launch_payload, False)
+
+
+@app.function(
+    image=training_image, volumes={REMOTE_RUNS: sft_runs},
+    cpu=(0.25, 0.25), memory=(2048, 2048),
+    timeout=BUDGET_TIMEOUT_SECONDS + BUDGET_STARTUP_SECONDS + 120,
+    startup_timeout=120, retries=0, max_containers=1, scaledown_window=2,
+)
+def guard_training_budget(
+    function_call_id: str, deadline_unix: float, output_dir: str,
+) -> dict[str, Any]:
+    """Independent CPU-only watch; retries/preemptions cannot reset the deadline."""
+    call = modal.FunctionCall.from_id(function_call_id)
+    # Outside the training output directory: a pre-start guard must not trip
+    # the existing non-empty-output/launch-manifest collision check.
+    path = Path(output_dir).parent / f"{Path(output_dir).name}-{BUDGET_GUARD_FILE}"
+    state = {"function_call_id": function_call_id, "deadline_unix": deadline_unix,
+             "started_at": _utc_now(), "status": "watching"}
+    try:
+        _write_json_atomic(path, state)
+        sft_runs.commit()
+        state.update(wait_for_budgeted_call(call, deadline_unix))
+    except BaseException as exc:
+        call.cancel(terminate_containers=True)
+        state.update(status="failed_closed", error=repr(exc))
+        raise
+    finally:
+        state["ended_at"] = _utc_now()
+        _write_json_atomic(path, state)
+        sft_runs.commit()
+    return state
+
+
 @app.local_entrypoint()
 def main(
     train_jsonl: str | None = None,
@@ -329,6 +459,9 @@ def main(
     merger_learning_rate: float = 5e-5,
     weight_decay: float = 0.01,
     warmup_ratio: float = 0.1,
+    lora_rank: int = 8,
+    lora_alpha: int = 16,
+    lora_dropout: float = 0.05,
     image_min_pixels: int = 256 * 256,
     image_max_pixels: int = 1024 * 1024,
     save_steps: int = 256,
@@ -340,14 +473,26 @@ def main(
     patch_temperature: float = 0.07,
     spatial_target_mode: str = "correct",
     token_init: str = "mean_noise",
+    frozen_bundle: str | None = None,
+    visual_delta_factors: str | None = None,
+    orthogonal_lambda: float = 0.5,
+    vision_lora_learning_rate: float = 1e-4,
     require_curriculum: bool = True,
     publish_to_hub: bool = False,
     resume_latest: bool = False,
     spawn_training: bool = False,
+    budget_usd: float = 0.0,
+    receipt_path: str | None = None,
     dry_run: bool = True,
 ) -> None:
     """Print the exact plan by default; ``--no-dry-run`` allocates the H200."""
 
+    budget = training_budget_plan(budget_usd)
+    receipt = Path(receipt_path).expanduser().resolve() if receipt_path else None
+    if receipt is not None and receipt.exists():
+        raise FileExistsError(f"refusing to overwrite launch receipt: {receipt}")
+    if budget is not None and (resume_latest or publish_to_hub):
+        raise ValueError("budgeted launches do not resume or publish; assess spending before a separate run")
     if profile not in PROFILES:
         raise ValueError(f"profile must be one of {PROFILES}")
     supplied = (train_jsonl, image_root, token_inventory)
@@ -385,6 +530,10 @@ def main(
     remote_eval = f"{REMOTE_DATA}/{remote_dir}/eval.jsonl" if eval_jsonl else None
     remote_images = f"{REMOTE_DATA}/{remote_dir}/images"
     remote_tokens = f"{REMOTE_DATA}/{remote_dir}/trainable_tokens.json"
+    factors_local = Path(visual_delta_factors).expanduser().resolve() if visual_delta_factors else None
+    if factors_local is not None and not factors_local.is_file():
+        raise FileNotFoundError(factors_local)
+    remote_factors = f"{REMOTE_DATA}/{remote_dir}/visual_delta_factors.safetensors" if factors_local is not None else None
     output_dir = f"{REMOTE_RUNS}/catan-vision-sft/{run_name}/{source_identity}"
 
     config = TrainConfig(
@@ -411,6 +560,9 @@ def main(
         merger_learning_rate=merger_learning_rate,
         weight_decay=weight_decay,
         warmup_ratio=warmup_ratio,
+        lora_rank=lora_rank,
+        lora_alpha=lora_alpha,
+        lora_dropout=lora_dropout,
         image_min_pixels=image_min_pixels,
         image_max_pixels=image_max_pixels,
         save_steps=save_steps,
@@ -422,6 +574,10 @@ def main(
         patch_temperature=patch_temperature,
         spatial_target_mode=spatial_target_mode,
         token_init=token_init,
+        frozen_bundle=frozen_bundle,
+        visual_delta_factors=remote_factors,
+        orthogonal_lambda=orthogonal_lambda,
+        vision_lora_learning_rate=vision_lora_learning_rate,
     )
     config.validate()
     launch = {
@@ -431,6 +587,8 @@ def main(
         "config": asdict(config),
         "dataset": {"train": local_contract, "eval": local_eval_contract},
     }
+    if budget is not None:
+        launch["budget"] = budget
     plan = {
         **launch,
         "identity": _canonical_hash(launch),
@@ -442,6 +600,8 @@ def main(
         "spawn_training": spawn_training,
     }
     print(json.dumps(plan, indent=2, sort_keys=True))
+    if receipt is not None:
+        _write_json_atomic(receipt, plan)
     if dry_run:
         return
 
@@ -460,6 +620,7 @@ def main(
         require_curriculum=require_curriculum,
         eval_jsonl=Path(eval_jsonl) if eval_jsonl is not None else None,
         eval_image_root=Path(eval_image_root) if eval_image_root is not None else None,
+        extra_files={"visual_delta_factors.safetensors": factors_local} if factors_local is not None else None,
     )
     if (uploaded_train, uploaded_eval, uploaded_images, uploaded_tokens) != (
         remote_train,
@@ -472,6 +633,26 @@ def main(
         raise RuntimeError("dataset changed between planning and upload")
     if uploaded_eval_contract != local_eval_contract:
         raise RuntimeError("evaluation dataset changed between planning and upload")
+    if budget is not None:
+        deadline = time.time() + BUDGET_TIMEOUT_SECONDS + BUDGET_STARTUP_SECONDS
+        call = train_h200_budgeted.spawn(asdict(config), launch, deadline)
+        try:
+            watcher = guard_training_budget.spawn(call.object_id, deadline, output_dir)
+        except BaseException:
+            call.cancel(terminate_containers=True)
+            raise
+        spawned = {
+            "status": "spawned", "function_call_id": call.object_id,
+            "budget_guard_call_id": watcher.object_id, "deadline_unix": deadline,
+            "identity": plan["identity"], "output_dir": output_dir,
+            "modal_app_id": app.app_id,
+        }
+        if receipt is not None:
+            _write_json_atomic(receipt, {**plan, **spawned})
+        print(json.dumps(spawned, indent=2, sort_keys=True), flush=True)
+        if not spawn_training:
+            print(json.dumps(watcher.get(), indent=2, sort_keys=True))
+        return
     if spawn_training:
         call = train_h200.spawn(asdict(config), launch, resume_latest)
         print(

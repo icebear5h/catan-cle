@@ -793,6 +793,14 @@ def load_model(
                 adapter_path,
                 torch,
             )
+        frozen_dir = adapter_path / "frozen_adapter"
+        if frozen_dir.is_dir():
+            # An O-LoRA bundle only reproduces its model on top of the parent
+            # adapter it carries: merge that into the base before loading it.
+            frozen = peft.PeftModel.from_pretrained(model, frozen_dir, is_trainable=False)
+            model = frozen.merge_and_unload()
+            adapter_evidence["frozen_adapter"] = {"loaded": True, "path": str(frozen_dir)}
+            print(f"merged_frozen_adapter={frozen_dir}")
         model = peft.PeftModel.from_pretrained(model, adapter_dir)
         if visual_path.is_file():
             visual_evidence = load_visual_state(model, adapter_path)

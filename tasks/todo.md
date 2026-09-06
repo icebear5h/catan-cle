@@ -2982,3 +2982,15 @@ scorecards, never loss.
   fc-01M1T3RCRSK5MXQ57TWSF1D9MN); ck256, ck384 and the final to follow;
   final panel with `node-edge` and `node-edge-colors`, scorecard against
   `pairs-v2-final-node-edge`, rows; gate table here.
+- [x] Stage-3 run stopped by the user at 18:25 PDT after terrain collapsed
+  (checkpoint-256 on the terrain set, first 1,336 rows: port 0/252, tile
+  number 0.183, tile resource 0.083, the wrong answer is `empty`; the
+  stage-2 bundle was 1.000 on all three). Checkpoint-256 is complete on the
+  volume; checkpoint-128 node-edge eval and checkpoint-256 terrain +
+  node-edge evals kept running. Early piece numbers at ck128 (3,604 rows):
+  edge owner 0.865, node occupancy 0.869 versus pairs_v2 0.828 / 0.749, with
+  272 of 276 edge misses being `empty` on a road. Mechanism: no tile or
+  port rows in the mix, shared LoRA / vision tower / merger overwritten,
+  `empty` became the default answer for unrecognised prompts; token rows
+  unchanged. Fix for every later rung: rehearsal of every earlier head in
+  the mix, or the combined all-location readout.

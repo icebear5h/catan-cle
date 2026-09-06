@@ -2857,8 +2857,8 @@ scorecards, never loss.
   Rows at ck256: input pair mean 0.012, 0 twins, 0 below the family floor,
   T10 +0.244 on the tile centroid; output 0.062, 0 twins. It generalises
   across layouts.
-- [x] Run stopped by the user at about step 405 (2026-09-04 21:50 PDT): the
-  last 107 steps sit under a quarter of peak learning rate and checkpoint-384
+- [x] Run stopped by the user at step 416 (2026-09-04 21:50 PDT, from the
+  progress bar in the final log): the last 96 steps sit under a quarter of peak learning rate and checkpoint-384
   (21:34) was complete on the volume. Checkpoints 256 and 384 remain; 128 was
   rotated out by the two-checkpoint save limit. ck384 rows are identical to
   ck256 to three decimals (input 0.012 / 0 twins / T10 +0.244; output 0.062 /
@@ -2938,7 +2938,35 @@ scorecards, never loss.
   is min recall 0.433 and the failure there is global, not one colour. Scorecard fix on the way: rows were treated as
   synthetic because they carry target_token/piece/color; `is_synthetic`
   now keys on the grounding stage (single_piece, adjacent_pair).
-- [ ] Launch `catan-qwen38-gauss-s3-nodes-edges-20260904` from terrain
-  checkpoint-384, 512 steps, eval and save every 128; checkpoint evals;
-  final panel, scorecard, rows; gate table here.
+- [x] User approved piece-recognition launch (2026-09-05). Reweighted input
+  `node_edge_readout_reweighted_v1`: 17,708 rows / 1,024 images, completion-token
+  exposure approximately 50% occupied / 25% empty / 25% readout, colour x piece
+  balancing; the full-readout subset is 81 rows. Held-out files unchanged.
+  Run `catan-qwen38-gauss-s3-nodes-edges-rw-20260905`, dataset `bbbc99d8bc8c`,
+  from terrain checkpoint-384, 512 steps, batch 16 x 2, eval/save every 128.
+  App `ap-ZwkBRDHVyLMbNl3fg4BiuH`; training call
+  `fc-01M1SQEX7D43F1JGWZSMA6YKVT`; CPU watchdog
+  `fc-01M1SQEXBHVSB8Y4ZNHCX2RF7X`. $79 plan, $25 reserved for later evals;
+  training bounded by 7-hour execution timeout, 16-core/128-GiB ceilings,
+  no function-error retries and absolute cancellation at 21:36:43 PDT.
+  A timeout means incomplete training; no automatic resume or extra run.
+  Local receipt `artifacts/runs/sft/gauss-s3-nodes-edges-rw-20260905/launch.json`.
+- [x] Startup verified at 14:31 PDT: step 3/512 observed; CPU watchdog persisted
+  `watching` at 14:27:12. Live trainable-scope report has no errors; all vision
+  (327 tensors), merger (6), language LoRA (992) and atlas-row tensors are FP32.
+  This confirms startup and precision, not recognition accuracy.
+- [x] User requested removal of budget guard at 14:35 PDT. Paused the CPU
+  watchdog process before cancelling `fc-01M1SQEXBHVSB8Y4ZNHCX2RF7X` with
+  container termination, avoiding its fail-closed training cancellation.
+  Watchdog call confirmed cancelled; original training call remains active
+  (step 9/512 observed), with no restart. Absolute watchdog deadline no longer
+  enforced; native seven-hour per-attempt timeout and resource limits remain.
+  The original $79 plan is not an active aggregate spending guarantee.
+- [ ] Read piece-recognition checkpoint metrics;
+  final node/edge, colour and terrain-retention evals within the $25 reserve,
+  scorecard/rows and gate table here. No standalone eval jobs auto-launched.
+- [ ] After piece recognition improves: new combined readout of all 154
+  locations followed by `robber <Txx>` (155 entries, existing atlas token for
+  the robber tile). User explicitly deferred this until after the current rung;
+  do not mix it into the approved piece-recognition run.
 - [ ] Step 4: rungs a, b, c from the winner.

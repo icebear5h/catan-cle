@@ -164,7 +164,7 @@
         }
       },
       "stopped": {
-        "at_step": "about 405 of 512",
+        "at_step": "416 of 512 (progress bar at the stop)",
         "time": "2026-09-04 21:50 PDT",
         "reason": "user decision; remaining steps under a quarter of peak learning rate",
         "checkpoints_kept": [

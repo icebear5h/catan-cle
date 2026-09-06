@@ -1,9 +1,13 @@
 # Node and edge recognition rung (gaussian ladder, stage 3)
 
-Status, 2026-09-05 02:30 PDT: dataset built, exported and verified
-(`node_edge_readout_v1`); evaluator, panel and scorecard updated; pairs_v2
-baseline scoring the new validation sets; training launch pending the
-user's go. Working checklist: `tasks/todo.md`. Numbers land in
+Status, 2026-09-05 14:35 PDT: the approved reweighted piece-recognition
+run is training on Modal (step 9/512 observed). At the user's request the
+CPU budget watchdog was cancelled without restarting training; the native
+seven-hour training timeout and resource limits remain. Run identifiers and
+the original budget envelope are below. The original
+export and held-out sets remain unchanged. The combined 154-location readout
+plus `robber <Txx>` is explicitly deferred until piece recognition improves;
+it is **not** included in this run. Working checklist: `tasks/todo.md`. Numbers land in
 `reports/sft/2026-09-03-qwen38-single-piece-v2.json` under
 `gaussian_ladder_20260904.stage3`.
 
@@ -15,7 +19,7 @@ so far, all from the base model with `vocab_gaussian` token rows:
 | Rung | Bundle | Result |
 |---|---|---|
 | 1, entity-shaped markers, 256 steps | `gauss-s1-markers-entity` final | markers 99.1% on its own set; 0 twins |
-| 2, terrain readout, stopped at step 405 | `gauss-s2-terrain` checkpoint-384 | tile number, resource, port 100% on 5 unseen layouts; readouts 64 of 64; 0 twins |
+| 2, terrain readout, stopped at step 416 | `gauss-s2-terrain` checkpoint-384 | tile number, resource, port 100% on 5 unseen layouts; readouts 64 of 64; 0 twins |
 
 Rung 2 forgot the marker heads (marker-to-token 77% to 2%). Decision: the
 markers were scaffolding, forget them, do not gate on them. Every earlier
@@ -210,17 +214,180 @@ is about 553 steps, so 512 steps sees the data about once.
   `sequence_skips`.
 - `sft/scripts/train_trl_catan_vision.py`: `MAX_ANSWER_CHARACTERS = 2048`.
 
-## Launch
+## Training reweighting addendum, 2026-09-05
 
-- Baseline first: pairs_v2 final on `node-edge` and `node-edge-colors`,
-  original variant, label `pairs-v2-final-node-edge` (running).
+The user requested reweighting after the balance audit. A **separate local
+training export** is now built at
+`artifacts/generated/board_recognition/replay_v1/node_edge_readout_reweighted_v1`.
+No training was launched or remote bundle changed. The counts above describe
+the original export; the following counts describe the new training input.
+
+This is **token-budgeted row resampling**, not a custom weighted loss. It works
+with the existing sequential TRL loader without changing chunked NLL, vision
+precision, optimizer settings, prompts or answer labels. The starting budget
+is 50% short occupied / 25% short empty / 25% complete readout **completion
+tokens**, measured with the stage-2 checkpoint-384 tokenizer including its
+atomic atlas tokens. Counts include the answer plus `<|im_end|>\n`, exclude
+prompts, and are corpus exposure estimates rather than exact gradient shares.
+Batch normalization, row difficulty and the training prefix also matter.
+These are explicit, tunable starting weights, not an empirically optimal mix.
+
+| Training exposure | Original | Reweighted |
+|---|---:|---:|
+| short occupied, completion tokens | 5.1% | 50.4% |
+| short empty, completion tokens | 4.0% | 25.2% |
+| full readouts, completion tokens | 90.9% | 24.5% |
+| short occupied rows | 7,468 | 10,328 |
+| short empty rows | 8,192 | 7,299 |
+| full readout rows | 2,048 | 81 |
+| total rows | 17,708 | 17,708 |
+| empty items, short + readout answers | 70.4% | 48.9% |
+| images appearing anywhere in training | 1,024 | 1,024 |
+| images with a sampled complete readout | 1,024 | 80 |
+
+**Coverage tradeoff:** downweighting long answers by resampling substantially
+reduces the number of readout examples. The 81 selected readouts still contain
+every node or edge, empties included. Their own empty fraction is 75.3%; this
+does not rebalance items *inside* a readout. Keeping all 2,048 readouts while
+reducing their contribution would require a different, per-item or per-row
+loss-weighting implementation. This export should not be described as that.
+
+For occupied queries, the token budget is road 50%, settlement 25%, city 25%,
+then equal across all eleven colours within each piece type. Short positives
+are drawn from all **35,292 existing labelled occupied spots**, expanding the
+old four-per-family cap by extracting the same labels from full readouts.
+Every old short label must agree with its board readout. No new images,
+recoloured boards, inverse prompts or new answer formats were introduced.
+
+Red and white now each have 996 short positives (498 road, 249 settlement,
+249 city), versus 1,559 and 169 before. Bronze has 796 and mystic blue 568:
+their names take more tokenizer tokens, so their row counts are lower while
+their within-piece token exposure matches the other colours. Balance is on
+**colour × piece tokens**, not an assertion of equal numbers of independent
+examples. There are 17,155 unique sampled queries; the most-repeated query
+appears three times. The exporter refuses requests needing more than four
+copies unless explicitly configured otherwise. More repeats do not add visual
+diversity.
+
+Within node/edge families, source hard-negative-kind and readout-density row
+proportions are preserved up to integer rounding. Positive reweighting shifts
+the overall density distribution toward dense boards, where cities and many
+rare colours occur; the metadata records that shift. The first 16,384 rows
+(512 steps at effective batch 32) contain 49.7% occupied / 24.9% empty / 25.4%
+readout completion tokens, with 79 readouts over 78 images.
+
+Implementation: `data_pipeline/board_recognition/reweight_node_edge.py`;
+tests: `tests/test_reweight_node_edge.py`. Reproduce to a **new** output path:
+
+```bash
+.venv/bin/python -m data_pipeline.board_recognition.reweight_node_edge \
+  artifacts/generated/board_recognition/replay_v1/node_edge_readout_v1 \
+  --output-dir artifacts/generated/board_recognition/replay_v1/node_edge_readout_reweighted_v1 \
+  --tokenizer-json /path/to/checkpoint-384/tokenizer.json \
+  --occupied-share 0.50 --empty-share 0.25 --readout-share 0.25 \
+  --seed 42 --max-repeats 4
+```
+
+The command refuses existing outputs. `metadata.json` records source and
+tokenizer fingerprints, bucket quotas, colour × piece counts and token totals,
+before/after item counts, density shifts, repeat counts and the training-prefix
+audit. Training SHA-256:
+`c0be726b243fb306b4bd382d529fe97e18feac34652acc0b82c440d533ef3521`.
+Validation, test and colour-diagnostic JSONLs are byte-identical to the
+original export, with hash equality checked after copying. The old export is
+untouched. Scarce diagnostic colour × piece support is **not** repaired by
+training reweighting; nor are the scorer issues or retention gates changed.
+
+Local verification: 44 tests passed across reweighting, the original exporter
+and the trainer; Ruff and `git diff --check` passed. The existing trainer's
+dataset-contract audit accepts all 17,708 rows and 1,024 images. Independently,
+all 17,627 sampled short answers agree with the source engine contracts. No
+GPU training or GPU evaluation was used for these checks.
+
+## Approved launch, 2026-09-05
+
+**Guard change, 14:35 PDT:** user requested removal of the budget guard. The
+watchdog Python process was paused before cancelling its FunctionCall with
+container termination, preventing the fail-closed exception handler from
+cancelling training. Modal confirmed the watchdog call cancelled and the
+original training call still running; no training restart or extra run was
+launched. The watchdog no longer enforces the 21:36:43 absolute cancellation
+deadline. The native seven-hour per-attempt timeout, resource limits and
+entry-time deadline validation remain unchanged in the live training function.
+The original $79 envelope below is launch history, not an active aggregate
+spending guarantee; the $25 eval reserve remains a planning allocation.
+
+Budget constraint added by the user: **under $80 for this rung's incremental
+compute, training plus evaluations**. The launched plan uses $79: a bounded
+training window worth at most approximately $45.27 at checked list rates,
+$25 reserved for standalone evaluations, and $8.73 headroom for the CPU
+watchdog, startup/cancellation overhead and billing uncertainty. The earlier
+$40 training allocation was a planning estimate; this larger envelope allows
+up to seven hours without authorizing another experiment.
+This excludes prior spending, shared storage and the workspace subscription;
+estimates are gross, before credits. The user separately authorized this launch.
+
+At [Modal's published rates](https://modal.com/pricing), checked 2026-09-05,
+the requested H200 + 16 physical CPU cores + 128 GiB RAM costs approximately
+$6.32/hour (usage above the CPU/RAM reservation can add cost). Five to six
+billed hours would be $32–38. Comparable 512-step runs in the
+`2026-09-04-modal-spending.md` ledger cost about $34. Runtime of the new mix
+is not measured; the earlier output-token reduction is not a proportional
+reduction in vision compute. Allow roughly $20–30 for side/final evals for a
+provisional total of **$52–68**, subject to measured throughput.
+
+Budget policy: preserve the final node/edge, colour and retention measurements;
+fit intermediate side evaluations within the remaining eval allocation. No
+additional training variants or discretionary reruns without a fresh budget
+check. The legacy launcher retains its 24-hour default, but this run uses the
+new `--budget-usd 79` path: execution timeout 7 hours, startup timeout 10 minutes,
+hard CPU and RAM limits of 16 cores / 128 GiB, one H200 container, and no
+configured function-error retries. A separate CPU-only watchdog observes the
+specific training call and cancels its containers at the **absolute** deadline,
+including across infrastructure rescheduling. If arming fails locally, the
+launcher cancels training. On watcher execution errors it also fails closed.
+This is a resource/time envelope at published rates, **not a Modal account-wide
+dollar cap**. No standalone evals or further training are automatically spawned.
+
+Confirmed submission:
+
+- App: `ap-ZwkBRDHVyLMbNl3fg4BiuH`
+  ([dashboard](https://modal.com/apps/tetracorp/main/ap-ZwkBRDHVyLMbNl3fg4BiuH)).
+- Training call: `fc-01M1SQEX7D43F1JGWZSMA6YKVT`.
+- CPU watchdog call: `fc-01M1SQEXBHVSB8Y4ZNHCX2RF7X` (**cancelled by user request**).
+- Original absolute cancellation deadline: **2026-09-05 21:36:43 PDT**;
+  watchdog enforcement removed at 14:35. Native seven-hour timeout remains.
+  A timed-out run is incomplete, not a successful 512-step run.
+- Output:
+  `/runs/catan-vision-sft/catan-qwen38-gauss-s3-nodes-edges-rw-20260905/bbbc99d8bc8c`.
+- Identity: `ad6c1526635c60cc4e1c0b5116ee5b61e07bfe1840a57492890b98b73fcc8856`.
+- Local receipt:
+  `artifacts/runs/sft/gauss-s3-nodes-edges-rw-20260905/launch.json`.
+- Watchdog status on `catan-sft-runs`:
+  `catan-vision-sft/catan-qwen38-gauss-s3-nodes-edges-rw-20260905/bbbc99d8bc8c-budget_guard.json`.
+- Startup verified: watchdog persisted `watching` at 14:27:12 PDT; training
+  reached step 3/512 at 14:31:22 PDT. The live `trainable_parameters.json`
+  reports no scope errors and FP32 for all 327 vision tensors, six merger
+  tensors, 992 language-LoRA tensors and both atlas-row tensors. These are
+  startup checks, not evidence of held-out accuracy or effective update size.
+- Preflight: checkpoint-384 bundle present, original 154-token inventory
+  matched exactly, no active Qwen run found, new output name unused. Fifty-six
+  focused tests passed, including budget cancellation and existing trainer/data
+  tests. Actual checkpoint metrics are pending; submission is not evidence of
+  learned piece recognition.
+
+- Baseline: pairs_v2 final on `node-edge` and `node-edge-colors`, original
+  variant, label `pairs-v2-final-node-edge` (completed; recorded in `tasks/todo.md`).
 - Rung: `sft/modal_catan_vision_sft.py` from
   `/runs/catan-vision-sft/catan-qwen38-gauss-s2-terrain-20260904/398f0a023ec9/checkpoints/checkpoint-384`,
-  train and validation from `node_edge_readout_v1/stage1`, batch 16 x 2,
+  train and validation from `node_edge_readout_reweighted_v1/stage1`, with
+  `node_edge_readout_reweighted_v1/images` as image root, batch 16 x 2,
   512 steps, eval and save every 128, `--no-require-curriculum`, run name
-  `catan-qwen38-gauss-s3-nodes-edges-20260905`, output
-  `/runs/catan-vision-sft/catan-qwen38-gauss-s3-nodes-edges-20260905/e64dcbc2cc4c`.
-  About 5 hours. Dry run clean.
+  `catan-qwen38-gauss-s3-nodes-edges-rw-20260905`.
+  The original dry run and output suffix `e64dcbc2cc4c` apply only to the old
+  dataset; the new dataset identity is `bbbc99d8bc8c`. Local dataset-contract
+  validation passes and the reweighted bundle has been uploaded. The previous
+  runtime estimate is not yet revalidated for this shorter-answer mix.
 - Checkpoint evals at 128, 256, 384 on the full validation set, original
   variant, `--long-max-new-tokens 640 --long-batch-size 8`, under
   `qwen-series-eval/gauss-ladder/s3-nodes-edges-ck<N>`.
@@ -259,6 +426,6 @@ balance in the sample; head flip or rows: init or row anchoring).
 
 | When | What |
 |---|---|
-| now | baseline eval on the H200; launch waits on the user |
-| every 128 steps | trainer eval (crash and divergence only); side eval on the full validation set; scorecard delta against the previous checkpoint |
-| final | panel with the new sets; scorecard against the pairs_v2 baseline; row inspector; gate table in `tasks/todo.md`; results into the report JSON |
+| now | training active; startup and FP32 scope verified; watchdog cancelled by user request, native timeout unchanged |
+| every 128 steps | in-run trainer eval and checkpoint; standalone side evals require a remaining-budget check and are not auto-launched |
+| final | prioritize node/edge, colour and terrain-retention evaluation within the $25 reserve; scorecard and row inspection on saved artifacts; no automatic next rung |

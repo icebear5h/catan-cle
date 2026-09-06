@@ -244,8 +244,13 @@ def export_node_edge_readout(
     readouts_per_family: int = READOUTS_PER_FAMILY,
     splits: Sequence[str] = SPLITS,
     validate_dataset: bool = True,
+    train_full_coverage: bool = False,
 ) -> JsonDict:
-    """Export the node and edge rows; replay images are hard-linked into ``<output>/images``."""
+    """Export the node and edge rows; replay images are hard-linked into ``<output>/images``.
+
+    ``train_full_coverage`` writes every node and edge of every train image
+    instead of the capped sample: a pool for a mixer to draw quotas from.
+    """
 
     dataset_root = Path(dataset_dir).resolve()
     output = Path(output_dir).resolve() if output_dir is not None else (dataset_root / DEFAULT_OUTPUT_NAME).resolve()
@@ -284,7 +289,8 @@ def export_node_edge_readout(
         for state in states:
             if state["split"] != split:
                 continue
-            rows.extend(rows_for_state(state, contracts[state["sample_id"]], full_coverage=split in FULL_COVERAGE_SPLITS, rows_per_family=rows_per_family, readouts_per_family=readouts_per_family))
+            full = split in FULL_COVERAGE_SPLITS or (split == "train" and train_full_coverage)
+            rows.extend(rows_for_state(state, contracts[state["sample_id"]], full_coverage=full, rows_per_family=rows_per_family, readouts_per_family=readouts_per_family))
         if not rows:
             continue
         if split == "train":
@@ -298,7 +304,7 @@ def export_node_edge_readout(
         summary["dimensions"]["color"] = dict(sorted(Counter(row["color"] for row in rows if row["polarity"] == "positive" and row["entity_type"] != "board").items()))
         summary["unique_images"] = len({row["images"][0] for row in rows})
         summary["layouts"] = len(layouts_by_split[split])
-        summary["full_coverage"] = split in FULL_COVERAGE_SPLITS
+        summary["full_coverage"] = split in FULL_COVERAGE_SPLITS or (split == "train" and train_full_coverage)
         files[f"stage1/{split}.jsonl"] = {**summary, "sha256": file_sha256(path)}
 
     metadata = {
@@ -310,7 +316,7 @@ def export_node_edge_readout(
         "readouts_per_family": readouts_per_family,
         "empty_quota": dict(EMPTY_QUOTA),
         "empty_kinds": list(EMPTY_KINDS),
-        "full_coverage_splits": [split for split in splits if split in FULL_COVERAGE_SPLITS],
+        "full_coverage_splits": [split for split in splits if split in FULL_COVERAGE_SPLITS or (split == "train" and train_full_coverage)],
         "readout_prompts": dict(READOUT_PROMPT),
         "split_unit": "layout (replay); every state of a replay shares one layout and one split",
         "layouts_by_split": {split: len(layouts) for split, layouts in layouts_by_split.items()},
@@ -327,6 +333,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--rows-per-family", type=int, default=ROWS_PER_FAMILY, help="Occupied and empty locations sampled per family per train image.")
     parser.add_argument("--readouts-per-family", type=int, default=READOUTS_PER_FAMILY)
+    parser.add_argument("--train-full-coverage", action="store_true", help="Every node and edge of every train image: a pool for the rung mixer.")
     args = parser.parse_args(argv)
     result = export_node_edge_readout(
         args.dataset_dir,
@@ -334,6 +341,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         overwrite=args.overwrite,
         rows_per_family=args.rows_per_family,
         readouts_per_family=args.readouts_per_family,
+        train_full_coverage=args.train_full_coverage,
     )
     print(json.dumps({key: value for key, value in result.items() if key != "files"}, indent=2, sort_keys=True))
     return 0

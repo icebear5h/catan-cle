@@ -1,0 +1,30 @@
+{
+  "schema": "catan_mixed_rung_recipe/v1",
+  "note": "Rung 3b: pieces plus terrain rehearsal, density-stratified, readouts in the hundreds. Token shares are estimates from the mixer.",
+  "sources": {
+    "pieces": "artifacts/generated/board_recognition/replay_v1/node_edge_readout_pool_v1",
+    "terrain": "artifacts/generated/board_recognition/replay_v1/terrain_readout_v1"
+  },
+  "train_split": "train",
+  "groups": [
+    {"name": "piece_occupied", "source": "pieces", "categories": ["node.occupancy", "edge.owner"], "polarity": "positive",
+     "rows": 7000, "density": {"setup": 1, "sparse": 1, "dense": 1}, "max_repeats": 3,
+     "balance": ["piece", "color"], "piece_shares": {"ROAD": 0.5, "SETTLEMENT": 0.25, "CITY": 0.25}},
+    {"name": "piece_empty", "source": "pieces", "categories": ["node.occupancy", "edge.owner"], "polarity": "hard_negative",
+     "rows": 4500, "density": {"empty": 0.1, "setup": 1, "sparse": 1, "dense": 1},
+     "balance": ["entity_type", "negative_kind"], "negative_kind_shares": {"adjacent": 0.5, "cross_type": 0.15, "hop2": 0.1, "hop3": 0.05, "far": 0.2}},
+    {"name": "terrain_short", "source": "terrain", "categories": ["tile.resource", "tile.number", "port.port_type"],
+     "rows": 3000, "density": {"empty": 0.2, "setup": 1, "sparse": 1, "dense": 1},
+     "balance": ["category"], "category_shares": {"tile.resource": 0.4, "tile.number": 0.4, "port.port_type": 0.2}},
+    {"name": "terrain_readout", "source": "terrain", "categories": ["terrain.readout"],
+     "rows": 120, "density": {"empty": 0.2, "setup": 1, "sparse": 1, "dense": 1}},
+    {"name": "node_readout", "source": "pieces", "categories": ["node.readout"],
+     "rows": 80, "density": {"empty": 0.2, "setup": 1, "sparse": 1, "dense": 1}},
+    {"name": "edge_readout", "source": "pieces", "categories": ["edge.readout"],
+     "rows": 70, "density": {"empty": 0.2, "setup": 1, "sparse": 1, "dense": 1}}
+  ],
+  "eval_sample": [
+    {"source": "pieces", "split": "validation", "every": 8},
+    {"source": "terrain", "split": "validation", "every": 6}
+  ]
+}

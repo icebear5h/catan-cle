@@ -232,6 +232,42 @@ carries the two eval splits as `node-edge` and `node-edge-colors`; the
 scorecard reports readouts (exact and item rates, dropped tokens, values
 shifted onto the previous token) under `readouts` and `sequence_skips`.
 
+### Mixed rungs (`mix_rung_data`)
+
+Rungs trained on one family forget the others: the terrain rung dropped the
+markers, the piece rung dropped terrain (port 1 of 576 after 256 steps).
+`data_pipeline/board_recognition/mix_rung_data.py` draws one training set
+from the exports already on disk by a JSON recipe: groups with row quotas,
+density-bin weights, balance keys (colour, piece, empty kind) with optional
+shares, and `max_repeats` to oversample a short cell before topping up from
+the rest of its bin. Rows keep their source ids and metadata; images are
+hard-linked into one root; `metadata.json` reports realised counts,
+shortfalls, repeats and estimated completion-token shares per group. An
+`eval_sample` block builds a small in-run eval file (every k-th row of the
+sources' validation splits) so the trainer's eval is minutes, not the
+33-minute full-coverage pass; the full sets stay on the side evaluator.
+
+```bash
+uv run python -m data_pipeline.board_recognition.node_edge_readout \
+  artifacts/generated/board_recognition/replay_v1 \
+  --output-dir artifacts/generated/board_recognition/replay_v1/node_edge_readout_pool_v1 \
+  --train-full-coverage --overwrite        # every node and edge of every train image, the pool
+uv run python -m data_pipeline.board_recognition.mix_rung_data \
+  configs/sft/mix_rung3b_v1.json \
+  artifacts/generated/board_recognition/replay_v1/mixed_rung3b_v1 --overwrite
+```
+
+`configs/sft/mix_rung3b_v1.json` is rung 3b: pieces plus terrain rehearsal,
+14,770 rows over the 1,024 train images, density bins near-equal (setup
+4,563 / sparse 4,833 / dense 5,024 / empty 350). Estimated token shares:
+piece short rows 38% (7,000 occupied balanced over colour x piece with
+roads at half, 4,500 empties hardest-first), terrain 25% (3,000 short
+rows, 120 readouts), node and edge readouts 37% (80 + 70). Readouts are
+60 to 100 times longer than a short row, so a token-balanced mix holds a
+few hundred of them; the terrain rung reached 63 of 64 exact readouts with
+about a thousand at half its tokens, the reweighted piece run starved them
+at 81.
+
 ### Rung slices for staged real-board training
 
 The four-stage file can be cut into standalone rungs without rebuilding:

@@ -220,3 +220,18 @@
 - [gotcha] Aggregate eval loss on the board-reader sets cannot see a broken head: tile, localization, and far-empty rows are near-free and dilute it four to one, so occupancy positives at 73% and 95% both sit inside 0.02 to 0.06. Gate on per-task exact match and the neighbor_confusion block, never on loss.
 - [gotcha] Every stage so far trains the 154 atlas-token rows at the first stage's peak rate, and they keep moving: after two pair stages six rows (T10, N16, N26, E08_27, E37_38, E45_46) share a direction at 4 to 6 sigma above the 0.03 baseline and bleed behaviour into each other. Check pairwise row cosines between bundles before blaming data; anchor or freeze settled rows in later stages.
 - [data] Slanted roads fail four times as often as vertical ones on synthetic boards (12.8% vs 3.2%), independent of patch-boundary distance and training frequency. Real boards are almost all slanted roads, so read road recall by orientation before adding resolution.
+
+- [gotcha] Full-coverage board evals are ~70% `empty` rows. Exact accuracy
+  and teacher-forced token accuracy reward an all-empty model (stage-3 ck128:
+  85% accuracy, 4% road recall). Read blindness and occupied recall by piece
+  and density first; accuracy last.
+- [gotcha] A single-set panel run writes `summary.json` at the label root
+  (`regression-panel/<label>/summary.json`); multi-set runs nest
+  `<set>/<variant>/`. Waiters must check the label root for single-set jobs.
+- [pattern] Sequential rungs on one family forget the others through the
+  shared LoRA, vision tower and merger, not the token rows (rows stay put
+  when absent from prompts). Every rung after the first carries rehearsal
+  rows of every earlier head; `mix_rung_data.py` with a JSON recipe.
+- [gotcha] Readouts are 60 to 100x longer than short rows, so a mix with two
+  readouts per image is >90% readout tokens; balance by estimated completion
+  tokens (the mixer reports shares), keep readouts in the hundreds.

@@ -371,6 +371,24 @@
           "readouts": "0/64, response 'empty port; ...'"
         },
         "verdict": "fails blindness and colour; density prior from a 71% dense train mix; terrain forgotten; rehearsal + density stratification needed"
+      },
+      "checkpoint_128": {
+        "node_edge_validation": {
+          "scorecard": "reports/sft/scorecards/gauss-s3-rw-ck128.json",
+          "node_occupancy": 0.835,
+          "edge_owner": 0.854,
+          "blindness": 1103,
+          "neighbor_confusion": 117,
+          "far_false_positive": 19,
+          "road_recall": 0.04,
+          "settlement_recall": "0.03-0.09",
+          "colour_min_recall": 0.0,
+          "readout_items": {
+            "node": 0.759,
+            "edge": 0.834
+          },
+          "note": "answers empty almost everywhere; 85% accuracy is the empties majority"
+        }
       }
     }
   },

@@ -1,0 +1,1284 @@
+{
+  "schema": "catan_failure_scorecard/v1",
+  "panel_dir": "/private/tmp/claude-504/-Users-henry-catan-learning/53f03b8e-da92-4cfb-93fe-10c65e1c4ff7/scratchpad/panel_s3rw_ck128",
+  "generated_at": "2026-09-06T03:39:02.660956+00:00",
+  "sets": {
+    "node_edge_readout_v1-stage1-validation": {
+      "eval_jsonl": "artifacts/generated/board_recognition/replay_v1/node_edge_readout_v1/stage1/validation.jsonl",
+      "records": "/private/tmp/claude-504/-Users-henry-catan-learning/53f03b8e-da92-4cfb-93fe-10c65e1c4ff7/scratchpad/panel_s3rw_ck128/regression-panel-node_edge_readout_v1-stage1-validation-eval/original/records.jsonl",
+      "counts": {
+        "rows": 8192,
+        "errors": 1371,
+        "blindness": 1103,
+        "neighbor_confusion": 117,
+        "far_false_positive": 19,
+        "other_occupancy_miss": 4,
+        "head_flip": 0,
+        "token_glitch": 0,
+        "orientation_ratio": 0.9668,
+        "colour_dropout_min_recall": 0.0,
+        "readouts": 128,
+        "readouts_exact": 0,
+        "sequence_skips": 128
+      },
+      "modes": {
+        "blindness": {
+          "count": 1103,
+          "by_piece": {
+            "city": 80,
+            "road": 631,
+            "settlement": 392
+          },
+          "by_color": {
+            "black": 206,
+            "blue": 253,
+            "bronze": 13,
+            "green": 61,
+            "mystic blue": 42,
+            "orange": 210,
+            "red": 318
+          }
+        },
+        "neighbor_confusion": {
+          "count": 117,
+          "by_class": {
+            "neighbor_false_positive_hop1": 77,
+            "neighbor_false_positive_hop2": 23,
+            "wrong_piece_neighbor_hop2": 17
+          }
+        },
+        "far_false_positive": {
+          "count": 19,
+          "by_class": {
+            "false_positive_elsewhere": 17,
+            "false_positive_absent": 2
+          }
+        },
+        "other_occupancy_miss": {
+          "count": 4,
+          "by_class": {
+            "right_type_wrong_color": 4
+          }
+        },
+        "head_flip": {
+          "count": 0,
+          "by_head": {},
+          "tokens_with_3plus": {}
+        },
+        "token_glitch": {
+          "count": 0,
+          "by_kind": {},
+          "tokens": {}
+        },
+        "orientation": {
+          "vertical": {
+            "errors": 219,
+            "n": 1536,
+            "error_rate": 0.1426
+          },
+          "slanted": {
+            "errors": 453,
+            "n": 3072,
+            "error_rate": 0.1475
+          },
+          "ratio": 0.9668
+        },
+        "colour_dropout": {
+          "recall_by_color": {
+            "black": {
+              "correct": 4,
+              "total": 218,
+              "recall": 0.0183
+            },
+            "blue": {
+              "correct": 3,
+              "total": 256,
+              "recall": 0.0117
+            },
+            "bronze": {
+              "correct": 32,
+              "total": 50,
+              "recall": 0.64
+            },
+            "green": {
+              "correct": 9,
+              "total": 73,
+              "recall": 0.1233
+            },
+            "mystic blue": {
+              "correct": 0,
+              "total": 42,
+              "recall": 0.0
+            },
+            "orange": {
+              "correct": 31,
+              "total": 244,
+              "recall": 0.127
+            },
+            "red": {
+              "correct": 1,
+              "total": 321,
+              "recall": 0.0031
+            }
+          },
+          "min_color": "mystic blue",
+          "min_recall": 0.0
+        },
+        "readouts": {
+          "edge.readout": {
+            "count": 64,
+            "exact": 0,
+            "items_correct": 3842,
+            "items_total": 4608,
+            "items_extra": 0,
+            "missing_tokens": 64,
+            "shifted_values": 481,
+            "sequence_skips": 64,
+            "exact_rate": 0.0,
+            "item_rate": 0.8338
+          },
+          "node.readout": {
+            "count": 64,
+            "exact": 0,
+            "items_correct": 2624,
+            "items_total": 3456,
+            "items_extra": 0,
+            "missing_tokens": 382,
+            "shifted_values": 420,
+            "sequence_skips": 64,
+            "exact_rate": 0.0,
+            "item_rate": 0.7593
+          }
+        }
+      },
+      "occupied_recall_by_piece": {
+        "city": {
+          "correct": 26,
+          "total": 115,
+          "recall": 0.2261
+        },
+        "road": {
+          "correct": 23,
+          "total": 658,
+          "recall": 0.035
+        },
+        "settlement": {
+          "correct": 31,
+          "total": 431,
+          "recall": 0.0719
+        }
+      },
+      "occupancy_classes": {
+        "false_negative": 1103,
+        "neighbor_false_positive_hop1": 77,
+        "neighbor_false_positive_hop2": 23,
+        "false_positive_elsewhere": 17,
+        "false_positive_absent": 2,
+        "wrong_piece_neighbor_hop2": 17,
+        "right_type_wrong_color": 4
+      },
+      "unjoined_records": 0,
+      "per_token": {
+        "<E00_01>": {
+          "n": 64,
+          "errors": 8,
+          "error_rate": 0.125,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E00_05>": {
+          "n": 64,
+          "errors": 15,
+          "error_rate": 0.2344,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E00_20>": {
+          "n": 64,
+          "errors": 9,
+          "error_rate": 0.1406,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E01_02>": {
+          "n": 64,
+          "errors": 16,
+          "error_rate": 0.25,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E01_06>": {
+          "n": 64,
+          "errors": 19,
+          "error_rate": 0.2969,
+          "dominant_wrong": "bronze road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E02_03>": {
+          "n": 64,
+          "errors": 11,
+          "error_rate": 0.1719,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E02_09>": {
+          "n": 64,
+          "errors": 4,
+          "error_rate": 0.0625,
+          "dominant_wrong": "bronze road",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E03_04>": {
+          "n": 64,
+          "errors": 12,
+          "error_rate": 0.1875,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E03_12>": {
+          "n": 64,
+          "errors": 25,
+          "error_rate": 0.3906,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E04_05>": {
+          "n": 64,
+          "errors": 8,
+          "error_rate": 0.125,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E04_15>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E05_16>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E06_07>": {
+          "n": 64,
+          "errors": 14,
+          "error_rate": 0.2188,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E06_23>": {
+          "n": 64,
+          "errors": 2,
+          "error_rate": 0.0312,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E07_08>": {
+          "n": 64,
+          "errors": 4,
+          "error_rate": 0.0625,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E07_24>": {
+          "n": 64,
+          "errors": 17,
+          "error_rate": 0.2656,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E08_09>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E08_27>": {
+          "n": 64,
+          "errors": 19,
+          "error_rate": 0.2969,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E09_10>": {
+          "n": 64,
+          "errors": 19,
+          "error_rate": 0.2969,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E10_11>": {
+          "n": 64,
+          "errors": 19,
+          "error_rate": 0.2969,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E10_29>": {
+          "n": 64,
+          "errors": 20,
+          "error_rate": 0.3125,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E11_12>": {
+          "n": 64,
+          "errors": 10,
+          "error_rate": 0.1562,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E11_32>": {
+          "n": 64,
+          "errors": 15,
+          "error_rate": 0.2344,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E12_13>": {
+          "n": 64,
+          "errors": 18,
+          "error_rate": 0.2812,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E13_14>": {
+          "n": 64,
+          "errors": 12,
+          "error_rate": 0.1875,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E13_34>": {
+          "n": 64,
+          "errors": 16,
+          "error_rate": 0.25,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E14_15>": {
+          "n": 64,
+          "errors": 11,
+          "error_rate": 0.1719,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E14_37>": {
+          "n": 64,
+          "errors": 36,
+          "error_rate": 0.5625,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E15_17>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E16_18>": {
+          "n": 64,
+          "errors": 7,
+          "error_rate": 0.1094,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E16_21>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E17_18>": {
+          "n": 64,
+          "errors": 21,
+          "error_rate": 0.3281,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E17_39>": {
+          "n": 64,
+          "errors": 39,
+          "error_rate": 0.6094,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E18_40>": {
+          "n": 64,
+          "errors": 7,
+          "error_rate": 0.1094,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E19_20>": {
+          "n": 64,
+          "errors": 10,
+          "error_rate": 0.1562,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E19_21>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E19_46>": {
+          "n": 64,
+          "errors": 13,
+          "error_rate": 0.2031,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E20_22>": {
+          "n": 64,
+          "errors": 19,
+          "error_rate": 0.2969,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E21_43>": {
+          "n": 64,
+          "errors": 30,
+          "error_rate": 0.4688,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E22_23>": {
+          "n": 64,
+          "errors": 16,
+          "error_rate": 0.25,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E22_49>": {
+          "n": 64,
+          "errors": 8,
+          "error_rate": 0.125,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E23_52>": {
+          "n": 64,
+          "errors": 2,
+          "error_rate": 0.0312,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E24_25>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E24_53>": {
+          "n": 64,
+          "errors": 13,
+          "error_rate": 0.2031,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E25_26>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E26_27>": {
+          "n": 64,
+          "errors": 9,
+          "error_rate": 0.1406,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E27_28>": {
+          "n": 64,
+          "errors": 1,
+          "error_rate": 0.0156,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E28_29>": {
+          "n": 64,
+          "errors": 2,
+          "error_rate": 0.0312,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E29_30>": {
+          "n": 64,
+          "errors": 1,
+          "error_rate": 0.0156,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E30_31>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E31_32>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E32_33>": {
+          "n": 64,
+          "errors": 5,
+          "error_rate": 0.0781,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E33_34>": {
+          "n": 64,
+          "errors": 8,
+          "error_rate": 0.125,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E34_35>": {
+          "n": 64,
+          "errors": 6,
+          "error_rate": 0.0938,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E35_36>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E36_37>": {
+          "n": 64,
+          "errors": 16,
+          "error_rate": 0.25,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E37_38>": {
+          "n": 64,
+          "errors": 7,
+          "error_rate": 0.1094,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E38_39>": {
+          "n": 64,
+          "errors": 6,
+          "error_rate": 0.0938,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E39_41>": {
+          "n": 64,
+          "errors": 7,
+          "error_rate": 0.1094,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E40_42>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E40_44>": {
+          "n": 64,
+          "errors": 9,
+          "error_rate": 0.1406,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E41_42>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E43_44>": {
+          "n": 64,
+          "errors": 15,
+          "error_rate": 0.2344,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E43_47>": {
+          "n": 64,
+          "errors": 6,
+          "error_rate": 0.0938,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E45_46>": {
+          "n": 64,
+          "errors": 4,
+          "error_rate": 0.0625,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E45_47>": {
+          "n": 64,
+          "errors": 4,
+          "error_rate": 0.0625,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E46_48>": {
+          "n": 64,
+          "errors": 7,
+          "error_rate": 0.1094,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E48_49>": {
+          "n": 64,
+          "errors": 6,
+          "error_rate": 0.0938,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E49_50>": {
+          "n": 64,
+          "errors": 1,
+          "error_rate": 0.0156,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E50_51>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<E51_52>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "vertical"
+        },
+        "<E52_53>": {
+          "n": 64,
+          "errors": 8,
+          "error_rate": 0.125,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0,
+          "orientation": "slanted"
+        },
+        "<N00>": {
+          "n": 64,
+          "errors": 17,
+          "error_rate": 0.2656,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N01>": {
+          "n": 64,
+          "errors": 5,
+          "error_rate": 0.0781,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N02>": {
+          "n": 64,
+          "errors": 16,
+          "error_rate": 0.25,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N03>": {
+          "n": 64,
+          "errors": 9,
+          "error_rate": 0.1406,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N04>": {
+          "n": 64,
+          "errors": 13,
+          "error_rate": 0.2031,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N05>": {
+          "n": 64,
+          "errors": 5,
+          "error_rate": 0.0781,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N06>": {
+          "n": 64,
+          "errors": 20,
+          "error_rate": 0.3125,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N07>": {
+          "n": 64,
+          "errors": 20,
+          "error_rate": 0.3125,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N08>": {
+          "n": 64,
+          "errors": 21,
+          "error_rate": 0.3281,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N09>": {
+          "n": 64,
+          "errors": 11,
+          "error_rate": 0.1719,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N10>": {
+          "n": 64,
+          "errors": 28,
+          "error_rate": 0.4375,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N11>": {
+          "n": 64,
+          "errors": 7,
+          "error_rate": 0.1094,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N12>": {
+          "n": 64,
+          "errors": 27,
+          "error_rate": 0.4219,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N13>": {
+          "n": 64,
+          "errors": 10,
+          "error_rate": 0.1562,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N14>": {
+          "n": 64,
+          "errors": 33,
+          "error_rate": 0.5156,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N15>": {
+          "n": 64,
+          "errors": 29,
+          "error_rate": 0.4531,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N16>": {
+          "n": 64,
+          "errors": 17,
+          "error_rate": 0.2656,
+          "dominant_wrong": "orange city",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N17>": {
+          "n": 64,
+          "errors": 28,
+          "error_rate": 0.4375,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N18>": {
+          "n": 64,
+          "errors": 37,
+          "error_rate": 0.5781,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N19>": {
+          "n": 64,
+          "errors": 8,
+          "error_rate": 0.125,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N20>": {
+          "n": 64,
+          "errors": 22,
+          "error_rate": 0.3438,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N21>": {
+          "n": 64,
+          "errors": 27,
+          "error_rate": 0.4219,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N22>": {
+          "n": 64,
+          "errors": 2,
+          "error_rate": 0.0312,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N23>": {
+          "n": 64,
+          "errors": 11,
+          "error_rate": 0.1719,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N24>": {
+          "n": 64,
+          "errors": 16,
+          "error_rate": 0.25,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N25>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N26>": {
+          "n": 64,
+          "errors": 5,
+          "error_rate": 0.0781,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N27>": {
+          "n": 64,
+          "errors": 2,
+          "error_rate": 0.0312,
+          "dominant_wrong": "bronze settlement",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N28>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N29>": {
+          "n": 64,
+          "errors": 3,
+          "error_rate": 0.0469,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N30>": {
+          "n": 64,
+          "errors": 8,
+          "error_rate": 0.125,
+          "dominant_wrong": "bronze settlement",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N31>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N32>": {
+          "n": 64,
+          "errors": 11,
+          "error_rate": 0.1719,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N33>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N34>": {
+          "n": 64,
+          "errors": 10,
+          "error_rate": 0.1562,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N35>": {
+          "n": 64,
+          "errors": 5,
+          "error_rate": 0.0781,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N36>": {
+          "n": 64,
+          "errors": 16,
+          "error_rate": 0.25,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N37>": {
+          "n": 64,
+          "errors": 4,
+          "error_rate": 0.0625,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N38>": {
+          "n": 64,
+          "errors": 12,
+          "error_rate": 0.1875,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N39>": {
+          "n": 64,
+          "errors": 9,
+          "error_rate": 0.1406,
+          "dominant_wrong": "mystic blue city",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N40>": {
+          "n": 64,
+          "errors": 12,
+          "error_rate": 0.1875,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N41>": {
+          "n": 64,
+          "errors": 7,
+          "error_rate": 0.1094,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N42>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N43>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N44>": {
+          "n": 64,
+          "errors": 4,
+          "error_rate": 0.0625,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N45>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N46>": {
+          "n": 64,
+          "errors": 3,
+          "error_rate": 0.0469,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N47>": {
+          "n": 64,
+          "errors": 5,
+          "error_rate": 0.0781,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N48>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N49>": {
+          "n": 64,
+          "errors": 11,
+          "error_rate": 0.1719,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N50>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N51>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N52>": {
+          "n": 64,
+          "errors": 5,
+          "error_rate": 0.0781,
+          "dominant_wrong": "empty",
+          "head_flips": 0,
+          "glitches": 0
+        },
+        "<N53>": {
+          "n": 64,
+          "errors": 0,
+          "error_rate": 0.0,
+          "dominant_wrong": null,
+          "head_flips": 0,
+          "glitches": 0
+        }
+      }
+    }
+  },
+  "row_entanglement": null,
+  "baseline": "reports/sft/scorecards/pairs-v2-final-node-edge.json",
+  "deltas": {
+    "node_edge_readout_v1-stage1-validation": {
+      "rows": 0,
+      "errors": -417,
+      "blindness": 786,
+      "neighbor_confusion": -533,
+      "far_false_positive": -646,
+      "other_occupancy_miss": -24,
+      "head_flip": 0,
+      "token_glitch": 0,
+      "orientation_ratio": 0.3366,
+      "colour_dropout_min_recall": -0.4932,
+      "readouts": 0,
+      "readouts_exact": 0,
+      "sequence_skips": 0
+    }
+  }
+}

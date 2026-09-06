@@ -3044,3 +3044,14 @@ scorecards, never loss.
   Modal merge job folding LoRA, rows and vision into a full checkpoint on
   the volume, launcher support for a volume-path model, token-init mode
   that keeps merged rows. About a day; for the rung after 3b.
+- [x] Stage-3 checkpoint-128 on the node-edge validation (scorecard
+  `reports/sft/scorecards/gauss-s3-rw-ck128.json`): node occupancy 0.835,
+  edge owner 0.854, but blindness 1,103, road recall 0.04, settlement 0.03
+  to 0.09, colour min recall 0.0: at step 128 the model answered `empty`
+  almost everywhere and scored 85% because 70% of the rows are empties.
+  By 256: blindness 495, roads 0.42, settlements 0.76. The run was stopped
+  at about step 300 mid-ramp; ck256's blindness is a point on a steep
+  curve, not a plateau. Edge readouts went the other way (items 0.834 ->
+  0.334 with 683 extras) as the model began emitting pieces inside them.
+  The single-set panel run writes to the label root
+  (`gauss-s3-rw-ck128/summary.json`), not a set subdirectory.

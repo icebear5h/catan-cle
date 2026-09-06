@@ -2994,3 +2994,33 @@ scorecards, never loss.
   `empty` became the default answer for unrecognised prompts; token rows
   unchanged. Fix for every later rung: rehearsal of every earlier head in
   the mix, or the combined all-location readout.
+- [ ] Additional possible contributor, recorded 2026-09-05: stage 3
+  continued terrain checkpoint-384's existing rank-8 LoRA; it did not
+  merge the language adapter into frozen base weights and start a fresh
+  rank-8 adapter. Adapter reuse may contribute to interference, but this
+  is untested, not a missing-load bug or a confirmed explanation. Candidate
+  comparison: continuation versus merge-plus-fresh-LoRA from the same
+  parent, matching supervision and other trainable components; measure
+  piece acquisition and terrain/port retention. No run authorized or
+  launched. Evidence, caveats and controls are in
+  `reports/sft/2026-09-05-node-edge-recognition-rung.md`, under
+  "Possible contributor: reusing the same LoRA across stages".
+- [x] Stage-3 checkpoint-256 on the node-edge validation (8,192 rows;
+  scorecard `reports/sft/scorecards/gauss-s3-rw-ck256.json`, baseline
+  pairs_v2): node occupancy 0.924 (pairs_v2 0.749), edge owner 0.881
+  (0.828), errors 937 (1,788). Far false positives 5 (665), neighbor
+  confusion 314 (650), head flips 0, glitches 0, empties 0.95 to 1.00 by
+  kind. But blindness 495 (317): road recall 0.418 (0.565), settlement
+  0.763 (0.842), city 0.913 (0.887); colour recall min 0.429 mystic blue,
+  black 0.54, blue 0.64, red 0.57 (all down), green 0.82 (up). Road recall
+  by density: setup 0.20 / sparse 0.39 / dense 0.52 versus pairs_v2 0.90 /
+  0.57 / 0.44; settlements setup 0.67 (0.98), dense 0.85 (0.71). The
+  reweighted train set is 71% dense-board rows (12,609 of 17,708; setup
+  1,930), so the model learned a density prior: on a sparse board it
+  answers `empty`. Readouts: node 5/64 exact, items 0.854; edge 0/64,
+  items 0.334 with 683 extra items (the 81-row readout budget). Terrain at
+  ck256: port 1/576, number 0.215, resource 0.083, readouts 0/64 with the
+  response `empty port; empty port; ...`.
+  Gate verdict at 256: fails on blindness and colour, passes neighbor, far,
+  head flip, glitch. Mix recipe must stratify by density bin as well as
+  colour x piece, and keep readouts at hundreds of rows.

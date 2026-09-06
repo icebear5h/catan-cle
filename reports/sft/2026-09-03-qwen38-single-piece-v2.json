@@ -231,7 +231,7 @@
       "spec": "reports/sft/2026-09-05-node-edge-recognition-rung.md",
       "data": "node_edge_readout_v1 (train 17,708 rows / 1,024 images; validation, test, color_diagnostic 8,192 rows each, full coverage)",
       "initial_bundle": "/runs/catan-vision-sft/catan-qwen38-gauss-s2-terrain-20260904/398f0a023ec9/checkpoints/checkpoint-384",
-      "run": "catan-qwen38-gauss-s3-nodes-edges-20260905 (not launched yet)",
+      "run": "catan-qwen38-gauss-s3-nodes-edges-rw-20260905 (other session; reweighted mix; stopped by the user at ~step 300 after terrain collapse)",
       "baseline_pairs_v2_on_validation": {
         "scorecard": "reports/sft/scorecards/pairs-v2-final-node-edge.json",
         "exact": 0.7817,
@@ -315,6 +315,62 @@
           "pink": 0.582
         },
         "note": "every colour sits in a 0.43 to 0.58 band; the diagnostic boards are harder than the replay validation, not colour-specific"
+      },
+      "data_actual": "node_edge_readout_reweighted_v1: token-share resample of node_edge_readout_v1 (occupied 0.50 / empty 0.25 / readout 0.25), colour x piece balanced, 81 readout rows, 71% dense-board rows",
+      "checkpoint_256": {
+        "node_edge_validation": {
+          "scorecard": "reports/sft/scorecards/gauss-s3-rw-ck256.json",
+          "node_occupancy": 0.924,
+          "edge_owner": 0.881,
+          "errors": 937,
+          "modes": {
+            "blindness": 495,
+            "neighbor_confusion": 314,
+            "far_false_positive": 5,
+            "other": 0,
+            "head_flip": 0,
+            "glitch": 0
+          },
+          "occupied_recall": {
+            "road": 0.418,
+            "settlement": 0.763,
+            "city": 0.913
+          },
+          "road_recall_by_density": {
+            "setup": 0.2,
+            "sparse": 0.39,
+            "dense": 0.52
+          },
+          "pairs_v2_road_recall_by_density": {
+            "setup": 0.9,
+            "sparse": 0.57,
+            "dense": 0.44
+          },
+          "colour_recall": {
+            "black": 0.541,
+            "blue": 0.637,
+            "bronze": 0.58,
+            "green": 0.822,
+            "mystic blue": 0.429,
+            "orange": 0.566,
+            "red": 0.57
+          },
+          "orientation_error_rate": {
+            "vertical": 0.083,
+            "slanted": 0.137
+          },
+          "readouts": {
+            "node": "5/64 exact, items 0.854",
+            "edge": "0/64 exact, items 0.334, 683 extra items"
+          }
+        },
+        "terrain_validation": {
+          "port_port_type": "1/576",
+          "tile_number": 0.215,
+          "tile_resource": 0.083,
+          "readouts": "0/64, response 'empty port; ...'"
+        },
+        "verdict": "fails blindness and colour; density prior from a 71% dense train mix; terrain forgotten; rehearsal + density stratification needed"
       }
     }
   },

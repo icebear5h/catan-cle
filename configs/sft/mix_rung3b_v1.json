@@ -24,7 +24,7 @@
      "rows": 70, "density": {"empty": 0.2, "setup": 1, "sparse": 1, "dense": 1}}
   ],
   "eval_sample": [
-    {"source": "pieces", "split": "validation", "every": 8},
+    {"source": "pieces", "split": "validation", "every": 7},
     {"source": "terrain", "split": "validation", "every": 6}
   ]
 }

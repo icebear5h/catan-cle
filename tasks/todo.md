@@ -3024,3 +3024,23 @@ scorecards, never loss.
   Gate verdict at 256: fails on blindness and colour, passes neighbor, far,
   head flip, glitch. Mix recipe must stratify by density bin as well as
   colour x piece, and keep readouts at hundreds of rows.
+- [x] Rung 3b built (2026-09-05 evening): `mix_rung_data.py` + recipe
+  `configs/sft/mix_rung3b_v1.json` -> `replay_v1/mixed_rung3b_v1`, 14,770
+  rows over 1,024 images, density near-equal (setup 4,563 / sparse 4,833 /
+  dense 5,024 / empty 350). Estimated token shares: piece short 38% (7,000
+  occupied, colour x piece balanced with 3x oversampling for rare colours,
+  4,500 empties hardest-first), terrain 25% (3,000 short + 120 readouts),
+  node/edge readouts 37% (80 + 70). In-run eval sample 1,683 rows (every
+  7th node-edge validation row incl. node readouts, every 6th terrain row).
+  Source pool `node_edge_readout_pool_v1` (train full coverage, 131,072
+  rows). Launcher dry run clean from stage-3 checkpoint-256, 512 steps,
+  eval/save every 128, run name `catan-qwen38-gauss-s3b-mixed-20260905`.
+  NOT launched: waits for the user.
+- [ ] Hybrid bundles on the volume for the forgetting ablation, eval only:
+  `qwen-series-eval/experiments/hybrid-lora256-vision384` (stage-3 ck256
+  LoRA + rows, terrain ck384 vision) and `hybrid-lora384-vision256`.
+  Terrain + node-edge sets on each, ~55 min and ~$5 each. Waits for the go.
+- [ ] Merge-and-unload path for rank changes (user: LoRA 16 or more):
+  Modal merge job folding LoRA, rows and vision into a full checkpoint on
+  the volume, launcher support for a volume-path model, token-init mode
+  that keeps merged rows. About a day; for the rung after 3b.

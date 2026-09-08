@@ -63,6 +63,10 @@ def trade_response_actions(state, color) -> List[Action]:
         if (
             window.remaining_counter_slots > 0
             and window.round < window.limits.max_negotiation_rounds
+            and sum(
+                active_offer.offered_by == color
+                for active_offer in window.active_offers
+            ) < window.limits.max_offers_per_player
             and sum(get_player_freqdeck(state, color)) > 0
         ):
             actions.append(
@@ -123,7 +127,7 @@ def generate_playable_actions(state) -> List[Action]:
             trade_window = getattr(state, "trade_window", None)
             can_open_trade = (
                 trade_window is None
-                or not trade_window.active_offers
+                or trade_window.status.value == "closed"
                 or (
                     trade_window.remaining_root_slots > 0
                     and trade_window.round < trade_window.limits.max_negotiation_rounds
@@ -326,23 +330,8 @@ def initial_road_possibilities(state, color) -> List[Action]:
 
 
 def discard_possibilities(color) -> List[Action]:
+    """One parameterized choice; None retains explicit engine auto-discard."""
     return [Action(color, ActionType.DISCARD, None)]
-    # TODO: Be robust to high dimensionality of DISCARD
-    # hand = player.resource_deck.to_array()
-    # num_cards = player.resource_deck.num_cards()
-    # num_to_discard = num_cards // 2
-
-    # num_possibilities = ncr(num_cards, num_to_discard)
-    # if num_possibilities > 100:  # if too many, just take first N
-    #     return [Action(player, ActionType.DISCARD, hand[:num_to_discard])]
-
-    # to_discard = itertools.combinations(hand, num_to_discard)
-    # return list(
-    #     map(
-    #         lambda combination: Action(player, ActionType.DISCARD, combination),
-    #         to_discard,
-    #     )
-    # )
 
 
 def ncr(n, r):

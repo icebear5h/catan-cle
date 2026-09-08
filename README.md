@@ -91,6 +91,42 @@ npm run dev
 - LLM decision tracking
 - Probability dots on number tokens
 
+### Live failure handling
+
+The red Step banner contains validation/retry guidance only. Expand **Rejected
+live attempts** in the inspector for final output, provider-native reasoning,
+and provider diagnostics; final output is not the native reasoning channel.
+Rejected attempts persist in SQLite `live_failures` and the saved-game API's
+`failures` field, independently of completed checkpoints. Earlier failures
+from before this change were transient and cannot be reconstructed in full.
+
+If post-action communication fails, the action and agent history remain
+committed and checkpointed. The warning stops auto-play (including other
+connected tabs); the next Step advances the game rather than repeating the
+applied action. The stateful backend intentionally disables source reload;
+restart deliberately and load the latest saved game after backend changes.
+
+Harness validation preserves opaque trade IDs, preflights concurrent trade
+responses before applying them, and prevents overlapping/stale decisions.
+Wildcard trade proposals remain negotiable but cannot execute until an exact
+named-resource offer is agreed. Invalid explicit private audiences fail closed.
+
+Frontend unit checks run with `npm --prefix playground/frontend test`. The
+mounted browser regression (requires local Playwright Chromium) runs with:
+
+```bash
+.venv/bin/python -m pytest \
+  playground/frontend/tests/test_live_autoplay_browser.py
+```
+
+### Known correctness findings
+
+The [deeper correctness audit](reports/correctness-audit-2026-09-08.md) records
+unresolved rule, replay-history, and harness-boundary defects. Passing inventory
+and replay checks do not certify game outcomes. Reproductions in `tests/audits/`
+are strict expected failures, not passing correctness gates; use `--runxfail`
+to expose them as failures. This audit did not change the production runtime.
+
 ## Eval Frontend
 
 The standalone eval suite exposes bucketed agent-decision spot checks and the

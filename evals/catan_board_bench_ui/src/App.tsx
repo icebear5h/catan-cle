@@ -78,7 +78,7 @@ function suiteSubtitle(suite: EvalSuite) {
     return 'board perception / human verification'
   }
   if (suite === 'sft-data') {
-    return 'empty-board spatial grounding / corpus audit'
+    return 'training corpora / board and patch inspection'
   }
   if (suite === 'sft-eval') {
     return 'published checkpoint / held-out generation'

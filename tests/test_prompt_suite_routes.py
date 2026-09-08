@@ -5,7 +5,7 @@ from cle.harness import ModelMessage, ModelRequest, PromptComponent
 from cle.players.baseline import FirstLegalPlayer
 from cle.players.contracts import CommunicationChoice
 from cle.sandbox import CatanSandbox
-from cle.sandbox.communication import CommunicationOpportunity, ReactionReason
+from cle.sandbox.communication import CommunicationAdmission, CommunicationOpportunity, ReactionReason
 from cle.game_engine.events import PlayerEvent
 from cle.game_engine.game import GameEngine
 from cle.game_engine.models.player import Color
@@ -66,13 +66,15 @@ def test_prompt_suite_get_returns_fixed_strings_and_no_store(prompt_app):
     assert response.headers["Cache-Control"] == "no-store"
     payload = response.get_json()
     assert payload["saving_locked"] is False
-    assert payload["decision"]["version"] == "9.0.0"
+    assert payload["decision"]["version"] == "10.0.0"
     assert "Maximizing raw pip count is not the objective" in (
         payload["decision"]["phase_guidance"]["initial_settlement_1"]
     )
     assert payload["decision"]["component_order"] == [
         "environment.strategic_memory",
         "environment.visible_events",
+        "environment.recent_table_talk",
+        "environment.commitments",
         "environment.phase_info",
         "environment.board_state",
         "environment.resources",
@@ -235,7 +237,8 @@ def test_current_decision_preview_is_componentized_and_perspective_safe(prompt_a
     assert "ORE: 4" not in board["content"]
 
 
-def test_latest_communication_preview_uses_traced_component_metadata(prompt_app):
+@pytest.mark.parametrize("accepted", [False, True])
+def test_latest_communication_preview_uses_traced_component_metadata(prompt_app, accepted):
     app, state = prompt_app
     sandbox = _sandbox()
     state.current_sandbox = sandbox
@@ -262,7 +265,10 @@ def test_latest_communication_preview_uses_traced_component_metadata(prompt_app)
         round=0,
     )
     sandbox.communication_trace.append(
-        (opportunity, CommunicationChoice(model_request=request))
+        CommunicationAdmission(
+            opportunity, CommunicationChoice(model_request=request), accepted=accepted,
+            validation_error=None if accepted else "message rejected",
+        )
     )
 
     preview = app.test_client().get("/api/prompt-suite").json["preview"][

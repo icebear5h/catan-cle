@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -99,8 +100,8 @@ def event_from_action(action: Action, sequence: int) -> GameEvent:
         causation_id=f"action:{sequence}",
         actor=action.color,
         event_type=action.action_type.value,
-        public_payload=public_payload,
-        private_overlays=private_overlays,
+        public_payload=deepcopy(public_payload),
+        private_overlays=deepcopy(private_overlays),
     )
 
 
@@ -114,5 +115,5 @@ def project_event(event: GameEvent, color: Color) -> PlayerEvent | None:
         causation_id=event.causation_id,
         actor=event.actor,
         event_type=event.event_type,
-        payload=payload,
+        payload=deepcopy(payload),
     )

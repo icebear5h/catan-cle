@@ -1,0 +1,28 @@
+{
+  "frozen_adapter": {
+    "adapter_sha256": "10affa6b4ff473f49dc769813e66c8f94f9c5583efacd5c4116a1303661c7514",
+    "path": "/__modal/volumes/vo-l8NriucDm0R1tt3D6DJUZj/catan-vision-sft/catan-qwen38-gauss-s2-terrain-20260904/398f0a023ec9/checkpoints/checkpoint-384",
+    "visual_state": {
+      "bytes": 1842963088,
+      "expected_tensors": 333,
+      "path": "/__modal/volumes/vo-l8NriucDm0R1tt3D6DJUZj/catan-vision-sft/catan-qwen38-gauss-s2-terrain-20260904/398f0a023ec9/checkpoints/checkpoint-384/visual_model.safetensors",
+      "sha256": "94534c119727435bc2011fb76a6038c1e71facd120abbf482e71bd80a2d252f2",
+      "tensors": 333
+    }
+  },
+  "new_adapter": {
+    "alpha": 32,
+    "language_targets": 496,
+    "rank": 16,
+    "vision_targets": 110
+  },
+  "optimizer_state_restored": false,
+  "orthogonal_lambda": 0.5,
+  "path": "/__modal/volumes/vo-l8NriucDm0R1tt3D6DJUZj/catan-vision-sft/catan-qwen38-gauss-s2-terrain-20260904/398f0a023ec9/checkpoints/checkpoint-384",
+  "protected_modules": 606,
+  "schema": "catan_trl_frozen_bundle/v1",
+  "unprotected_modules": [],
+  "visual_delta_factors": "/__modal/volumes/vo-JKRzXpknz9ja2PMoxEVuOw/catan-vision-sft/datasets/olora-smoke-20260907/visual_delta_factors.safetensors",
+  "visual_delta_factors_sha256": "9dff0339e8deb54d0ced0af3a05f523fab901cbc369d925644d5f82476f1ae73",
+  "visual_sha256": "94534c119727435bc2011fb76a6038c1e71facd120abbf482e71bd80a2d252f2"
+}

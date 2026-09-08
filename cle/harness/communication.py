@@ -10,6 +10,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from cle.harness.context import ContextAssembler
+from cle.harness.response_xml import parse_response_fields
 from cle.harness.models import (
     ModelMessage,
     ModelRequest,
@@ -226,34 +227,51 @@ def parse_communication_response(
     *,
     speaker: Color,
     participants: tuple[Color, ...],
+    instruction: str = "",
 ) -> CommunicationChoice:
-    text = _tag(response.content, "message")
+    text = response.content or ""
+    if instruction and text.lstrip().startswith(instruction):
+        text = text.lstrip()[len(instruction):]
+    try:
+        fields, _ = parse_response_fields(text, instruction=instruction)
+    except ValueError:
+        return CommunicationChoice()
+    if any(len(values) != 1 for values in fields.values()):
+        return CommunicationChoice()
+    text = fields.get("message", [""])[0]
     if not text or text.strip().upper() == "SILENCE":
         return CommunicationChoice()
 
-    intent = _tag(response.content, "intent").upper()
+    intent = fields.get("intent", [""])[0].upper()
     if intent not in _NEGOTIATION_INTENTS:
         return CommunicationChoice()
 
-    audience_text = _tag(response.content, "audience").upper()
-    if not audience_text or audience_text == "PUBLIC":
+    audience_text = fields.get("audience", ["PUBLIC"])[0].upper()
+    if audience_text == "PUBLIC":
         audience = tuple(color for color in participants if color != speaker)
     else:
-        names = {name.strip() for name in audience_text.split(",") if name.strip()}
+        names = {name.strip() for name in audience_text.split(",")}
+        eligible_names = {color.value for color in participants if color != speaker}
+        if not names.issubset(eligible_names):
+            return CommunicationChoice()
         audience = tuple(
             color
             for color in participants
             if color != speaker and color.value in names
         )
-        if not audience:
-            audience = tuple(color for color in participants if color != speaker)
 
     commitment = None
-    condition = _tag(response.content, "commitment_condition")
-    promise = _tag(response.content, "commitment_promise")
-    expires = _tag(response.content, "commitment_expires_turn")
-    if condition and promise and expires.isdigit():
-        commitment = CommitmentProposal(condition, promise, int(expires))
+    condition = fields.get("commitment_condition", [""])[0]
+    promise = fields.get("commitment_promise", [""])[0]
+    expires = fields.get("commitment_expires_turn", [""])[0]
+    if any(name.startswith("commitment_") for name in fields):
+        if not condition or not promise or not re.fullmatch(r"[0-9]+", expires):
+            return CommunicationChoice()
+        try:
+            expires_turn = int(expires)
+        except ValueError:
+            return CommunicationChoice()
+        commitment = CommitmentProposal(condition, promise, expires_turn)
 
     return CommunicationChoice(
         mode=CommunicationMode.SAY,
@@ -266,12 +284,3 @@ def parse_communication_response(
 
 def _render(template: str, values: dict[str, str]) -> str:
     return ContextAssembler._render_template(template, values)
-
-
-def _tag(text: str, tag: str) -> str:
-    match = re.search(
-        rf"<{re.escape(tag)}>(.*?)</{re.escape(tag)}>",
-        text or "",
-        flags=re.DOTALL | re.IGNORECASE,
-    )
-    return match.group(1).strip() if match else ""

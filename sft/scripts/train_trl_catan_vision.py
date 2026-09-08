@@ -388,7 +388,13 @@ def _message_pair(row: JsonDict, *, line_number: int) -> tuple[str, str]:
         raise ValueError(f"line {line_number} must contain exactly one image placeholder")
     if not prompt or not answer:
         raise ValueError(f"line {line_number} contains an empty prompt or answer")
-    if len(prompt) > MAX_PROMPT_CHARACTERS or len(answer) > MAX_ANSWER_CHARACTERS:
+    answer_limit = MAX_ANSWER_CHARACTERS
+    if row.get("task_type") == "full_board_readout":
+        from sft.board_state_readout import score_board_state
+
+        answer_limit = 4096
+        score_board_state(answer, answer)  # Reject incomplete or repeated target addresses.
+    if len(prompt) > MAX_PROMPT_CHARACTERS or len(answer) > answer_limit:
         raise ValueError(f"line {line_number} exceeds the answer-length contract")
     return prompt, answer
 
@@ -1247,7 +1253,12 @@ def frozen_adapter_files(bundle: Path) -> tuple[Path, ...]:
     return (bundle / "adapter_config.json", bundle / "adapter_model.safetensors")
 
 
-def apply_frozen_adapter(base_model: torch.nn.Module, frozen_dir: Path) -> tuple[torch.nn.Module, JsonDict]:
+def apply_frozen_adapter(
+    base_model: torch.nn.Module,
+    frozen_dir: Path,
+    *,
+    restore_visual: bool = False,
+) -> tuple[torch.nn.Module, JsonDict]:
     """Merge a finished adapter (LoRA and atlas rows) into the base weights and drop its wrappers."""
 
     from peft import PeftModel
@@ -1256,11 +1267,21 @@ def apply_frozen_adapter(base_model: torch.nn.Module, frozen_dir: Path) -> tuple
     if missing:
         raise FileNotFoundError(f"frozen adapter is incomplete: {missing}")
     frozen = PeftModel.from_pretrained(base_model, frozen_dir, is_trainable=False)
+    report = {"path": str(frozen_dir), "adapter_sha256": sha256_file(frozen_dir / "adapter_model.safetensors")}
+    if restore_visual:
+        # Parent bundles save the PEFT-wrapped state_dict names. Restore while
+        # that same wrapper is present, before merging it or adding vision LoRA
+        # (which would introduce base_layer names). Promote before copying so
+        # the parent's FP32 visual weights never round through BF16.
+        components = base_model._catan_components
+        frozen._catan_components = components
+        resolve_wrapped_module(frozen, components.vision).float()
+        report["visual_state"] = load_visual_state(frozen, frozen_dir)
     merged = frozen.merge_and_unload()
     leftover = [name for name, _ in merged.named_parameters() if ".lora_" in name or "trainable_tokens" in name]
     if leftover:
         raise RuntimeError(f"frozen adapter did not merge cleanly: {leftover[:4]}")
-    return merged, {"path": str(frozen_dir), "adapter_sha256": sha256_file(frozen_dir / "adapter_model.safetensors")}
+    return merged, report
 
 
 def freeze_visual_except_lora(model: torch.nn.Module, components: ModelComponents) -> JsonDict:
@@ -1302,10 +1323,11 @@ def load_frozen_bundle(
         raise FileNotFoundError(factors)
 
     base_model._catan_components = components
-    resolve_wrapped_module(base_model, components.vision).float()
-    visual = load_visual_state(base_model, bundle)
-    merged, frozen_report = apply_frozen_adapter(base_model, bundle)
+    merged, frozen_report = apply_frozen_adapter(base_model, bundle, restore_visual=True)
+    visual = frozen_report["visual_state"]
     merged.requires_grad_(False)
+    language_targets = language_linear_targets(merged, components)
+    vision_targets = vision_linear_targets(merged, components)
     token_targets = {
         components.input_embedding: list(setup.token_ids),
         components.output_head: list(setup.token_ids),
@@ -1316,7 +1338,7 @@ def load_frozen_bundle(
         lora_alpha=config.lora_alpha,
         lora_dropout=config.lora_dropout,
         bias="none",
-        target_modules=language_linear_targets(merged, components) + vision_linear_targets(merged, components),
+        target_modules=language_targets + vision_targets,
         trainable_token_indices=token_targets,
     )
     model = get_peft_model(merged, peft_config)
@@ -1339,7 +1361,7 @@ def load_frozen_bundle(
         "visual_sha256": visual["sha256"],
         "visual_delta_factors": str(factors) if factors else None,
         "visual_delta_factors_sha256": sha256_file(factors) if factors else None,
-        "new_adapter": {"rank": config.lora_rank, "alpha": config.lora_alpha, "language_targets": len(language_linear_targets(merged, components)), "vision_targets": len(vision_linear_targets(merged, components))},
+        "new_adapter": {"rank": config.lora_rank, "alpha": config.lora_alpha, "language_targets": len(language_targets), "vision_targets": len(vision_targets)},
         "protected_modules": len(protected),
         "unprotected_modules": unprotected,
         "orthogonal_lambda": config.orthogonal_lambda,
@@ -1391,8 +1413,8 @@ def load_initial_bundle(
     model = PeftModel.from_pretrained(base_model, bundle, is_trainable=True)
     model._catan_components = components
     model._catan_token_setup = setup
-    visual = load_visual_state(model, bundle)
     promoted = promote_visual_master_weights(model, components)
+    visual = load_visual_state(model, bundle)
     model._catan_initialization = {"semantic_rows": None, "visual_master_weights": promoted}
     report = {
         "schema": "catan_trl_initial_bundle/v1",

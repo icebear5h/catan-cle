@@ -1,4 +1,4 @@
-"""SQLite/WAL trace storage for completed live sandbox steps."""
+"""SQLite/WAL trace storage for live sandbox steps and failed attempts."""
 
 from __future__ import annotations
 
@@ -11,16 +11,19 @@ from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any, Iterable, Mapping
+from uuid import uuid4
 
+from cle.game_engine.models.player import Color
 from cle.harness.board_surface import (
     board_presentation_payload,
     sanitize_provider_payload,
 )
 from cle.players.contracts import PlayerAttempt, PlayerChoice, PlayerContext
+from cle.sandbox.communication import CommunicationAdmission
 from cle.sandbox.contracts import SandboxSnapshot, SandboxStepResult
 from cle.game_engine.json import GameEncoder
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 DEFAULT_TRACE_PATH = Path(".cle/live_traces.sqlite3")
 
 
@@ -138,6 +141,11 @@ def _context_payload(context: PlayerContext) -> dict[str, Any]:
         "prompt_key": context.prompt_key,
         "observation": _observation_payload(context),
         "events": [_event_payload(event) for event in context.events],
+        "recent_messages": [
+            _event_payload(event) for event in context.recent_messages
+        ],
+        "active_commitments": context.active_commitments,
+        "discard_count": context.discard_count,
         "legal_actions": list(context.legal_actions),
     }
 
@@ -170,6 +178,30 @@ def _request_payload(request: Any) -> dict[str, Any] | None:
     }
 
 
+def _provider_payload(value: Any, board_presentation: Any = None) -> Any:
+    if isinstance(value, Mapping):
+        return {
+            key: _provider_payload(item, board_presentation)
+            for key, item in value.items()
+            if str(key).lower().replace("-", "").replace("_", "") not in {
+                "authorization",
+                "proxyauthorization",
+                "apikey",
+                "xapikey",
+                "accesstoken",
+                "refreshtoken",
+                "clientsecret",
+                "secret",
+                "password",
+                "cookie",
+                "setcookie",
+            }
+        }
+    if isinstance(value, (list, tuple)):
+        return [_provider_payload(item, board_presentation) for item in value]
+    return sanitize_provider_payload(value, board_presentation)
+
+
 def _response_payload(
     response: Any,
     board_presentation: Any = None,
@@ -188,11 +220,11 @@ def _response_payload(
         "provider_response_id": response.provider_response_id,
         "provider_request_id": response.provider_request_id,
         "provider_native_finish_reason": response.provider_native_finish_reason,
-        "provider_request_payload": sanitize_provider_payload(
+        "provider_request_payload": _provider_payload(
             response.provider_request_payload,
             board_presentation,
         ),
-        "provider_response_payload": sanitize_provider_payload(
+        "provider_response_payload": _provider_payload(
             response.provider_response_payload,
             board_presentation,
         ),
@@ -218,8 +250,8 @@ def _attempt_payload(
     }
 
 
-def _communication_payload(record: Any) -> dict[str, Any]:
-    opportunity, choice = record
+def _communication_payload(record: CommunicationAdmission) -> dict[str, Any]:
+    opportunity, choice = record.opportunity, record.choice
     request = choice.model_request
     return {
         "call_kind": "communication",
@@ -230,8 +262,8 @@ def _communication_payload(record: Any) -> dict[str, Any]:
             f"{opportunity.visible_through_sequence}:{opportunity.round}"
         ),
         "actor": opportunity.player.value,
-        "accepted": True,
-        "validation_error": None,
+        "accepted": record.accepted,
+        "validation_error": record.validation_error,
         "choice": {
             "mode": choice.mode,
             "text": choice.text,
@@ -251,7 +283,7 @@ def _communication_payload(record: Any) -> dict[str, Any]:
 def _result_payload(
     result: SandboxStepResult,
     rejected_attempts: Iterable[PlayerAttempt],
-    communication_attempts: Iterable[Any],
+    communication_attempts: Iterable[CommunicationAdmission],
 ) -> dict[str, Any]:
     return {
         "before_revision": result.before_revision,
@@ -292,7 +324,7 @@ def _result_payload(
 
 
 class SQLiteLiveTraceStore:
-    """Append/query local live traces with one transaction per sandbox step."""
+    """Append/query local live traces with one transaction per step or failure."""
 
     def __init__(self, path: str | Path = DEFAULT_TRACE_PATH) -> None:
         self.path = Path(path).expanduser().resolve()
@@ -356,6 +388,17 @@ class SQLiteLiveTraceStore:
                         REFERENCES live_steps(game_id, step_index)
                 );
 
+                CREATE TABLE IF NOT EXISTS live_failures (
+                    failure_id TEXT PRIMARY KEY NOT NULL,
+                    game_id TEXT NOT NULL,
+                    revision INTEGER NOT NULL,
+                    recorded_at TEXT NOT NULL,
+                    actor TEXT NOT NULL,
+                    validation_error TEXT NOT NULL,
+                    payload_json TEXT NOT NULL,
+                    FOREIGN KEY (game_id) REFERENCES live_games(game_id)
+                );
+
                 CREATE TABLE IF NOT EXISTS game_events (
                     game_id TEXT NOT NULL,
                     sequence INTEGER NOT NULL,
@@ -372,6 +415,8 @@ class SQLiteLiveTraceStore:
                     ON model_calls(game_id, context_id);
                 CREATE INDEX IF NOT EXISTS idx_game_events_step
                     ON game_events(game_id, step_index);
+                CREATE INDEX IF NOT EXISTS idx_live_failures_game
+                    ON live_failures(game_id);
                 """
             )
             live_game_columns = {
@@ -434,7 +479,7 @@ class SQLiteLiveTraceStore:
         rejected_attempts: Iterable[PlayerAttempt],
         public_state: Mapping[str, Any],
         snapshot: SandboxSnapshot,
-        communication_attempts: Iterable[Any] = (),
+        communication_attempts: Iterable[CommunicationAdmission] = (),
     ) -> int:
         rejected = tuple(rejected_attempts)
         communications = tuple(communication_attempts)
@@ -454,6 +499,12 @@ class SQLiteLiveTraceStore:
             if attempt["model_request"] is not None
             or attempt["model_response"] is not None
         ]
+        events = {
+            event.sequence: event
+            for transition in result.transitions
+            for event in transition.events
+        }
+        events.update((event.sequence, event) for event in result.messages)
         now = _utc_now()
 
         with self._connect() as connection:
@@ -519,24 +570,24 @@ class SQLiteLiveTraceStore:
                     ),
                 )
 
-            for transition in result.transitions:
-                for event in transition.events:
-                    connection.execute(
-                        """
-                        INSERT OR REPLACE INTO game_events (
-                            game_id, sequence, step_index, event_type,
-                            actor, event_json
-                        ) VALUES (?, ?, ?, ?, ?, ?)
-                        """,
-                        (
-                            game_id,
-                            event.sequence,
-                            step_index,
-                            event.event_type,
-                            event.actor.value,
-                            _json_text(_event_payload(event)),
-                        ),
-                    )
+            for sequence in sorted(events):
+                event = events[sequence]
+                connection.execute(
+                    """
+                    INSERT OR REPLACE INTO game_events (
+                        game_id, sequence, step_index, event_type,
+                        actor, event_json
+                    ) VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        game_id,
+                        event.sequence,
+                        step_index,
+                        event.event_type,
+                        event.actor.value,
+                        _json_text(_event_payload(event)),
+                    ),
+                )
 
             status = "completed" if winner is not None else "running"
             connection.execute(
@@ -555,6 +606,50 @@ class SQLiteLiveTraceStore:
             )
             connection.commit()
         return step_index
+
+    def record_failure(
+        self,
+        game_id: str,
+        *,
+        revision: int,
+        player: Color,
+        validation_error: str,
+        attempts: Iterable[PlayerAttempt],
+        communication_attempts: Iterable[CommunicationAdmission] = (),
+    ) -> str:
+        """Append failed-attempt diagnostics without advancing the checkpoint."""
+        failure_id = str(uuid4())
+        payload = {
+            "attempts": [
+                _attempt_payload(attempt, accepted=False)
+                for attempt in attempts
+            ],
+            "communication_attempts": [
+                _communication_payload(record)
+                for record in communication_attempts
+            ],
+        }
+        with self._connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            connection.execute(
+                """
+                INSERT INTO live_failures (
+                    failure_id, game_id, revision, recorded_at, actor,
+                    validation_error, payload_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    failure_id,
+                    game_id,
+                    revision,
+                    _utc_now(),
+                    player.value,
+                    validation_error,
+                    _json_text(payload),
+                ),
+            )
+            connection.commit()
+        return failure_id
 
     def mark_game_status(
         self,
@@ -637,6 +732,15 @@ class SQLiteLiveTraceStore:
                 """,
                 (game_id,),
             ).fetchall()
+            # Insertion order is stable even when timestamps tie or clocks move back.
+            failures = connection.execute(
+                """
+                SELECT failure_id, game_id, revision, recorded_at, actor,
+                       validation_error, payload_json
+                FROM live_failures WHERE game_id = ? ORDER BY rowid
+                """,
+                (game_id,),
+            ).fetchall()
         payload = self._game_row(game)
         payload["step_count"] = len(steps)
         payload["steps"] = [
@@ -664,6 +768,18 @@ class SQLiteLiveTraceStore:
         payload["model_calls"] = [
             self._model_call_row(row)
             for row in calls
+        ]
+        payload["failures"] = [
+            {
+                "failure_id": row["failure_id"],
+                "game_id": row["game_id"],
+                "revision": row["revision"],
+                "recorded_at": row["recorded_at"],
+                "actor": row["actor"],
+                "validation_error": row["validation_error"],
+                **json.loads(row["payload_json"]),
+            }
+            for row in failures
         ]
         return payload
 

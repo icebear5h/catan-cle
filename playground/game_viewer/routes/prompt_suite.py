@@ -148,7 +148,8 @@ def _latest_communication_request(state: Any) -> Any:
     sandbox = getattr(state, "current_sandbox", None)
     if sandbox is None:
         return None
-    for _, choice in reversed(sandbox.communication_trace):
+    for record in reversed(sandbox.communication_trace):
+        choice = record.choice
         if choice.model_request is not None:
             return choice.model_request
     return None

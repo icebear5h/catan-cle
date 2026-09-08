@@ -69,10 +69,12 @@ def test_indexed_tile_rows_surface_is_complete_canonical_and_parseable():
 def test_image_surface_is_bounded_unannotated_and_state_paired():
     engine = _engine()
     context = build_decision_context(engine)
-    blue_context = build_decision_context(
-        engine,
+    # Board-only presentation does not advertise another seat's legal actions.
+    blue_context = replace(
+        context,
         actor=Color.BLUE,
-        advertised_actions=tuple(engine.state.playable_actions),
+        observation=engine.observe(Color.BLUE),
+        legal_actions=(),
     )
     text = IndexedTileRowsBoardPresenter().present(context)
     image = ImageBoardPresenter(image_size=512).present(context)

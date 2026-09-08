@@ -293,6 +293,14 @@ for language modules, and the `lora_A` rows of `--visual-delta-factors`
 the protected subspaces) and `orth_unprotected_modules`. Norms, biases,
 patch embedding and position embedding stay frozen.
 
+Loading order matters: the parent's `visual_model.safetensors` is keyed by
+PEFT-wrapped names, so the loader restores it while the parent `PeftModel`
+is still attached, then merges, then adds the fresh adapters; the LoRA
+target lists are taken before `get_peft_model` renames the modules in
+place. The trainer needs peft 0.20 (the Modal image pin), which the `sft`
+extra requires; it is declared as conflicting with the legacy llamafactory
+`pretraining` extra in `[tool.uv]`, so sync one or the other, not both.
+
 A bundle from this profile only reproduces its model on top of the merged
 parent, so every checkpoint and the final carry `frozen_adapter/` (the
 parent's `adapter_config.json` and `adapter_model.safetensors`) and

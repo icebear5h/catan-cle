@@ -1,12 +1,14 @@
 """Core replay_step logic, decomposed from the monolithic function."""
 
-from cle.replay.runtime.access import get_game_engine
+from copy import deepcopy
 import time
 import traceback
 
+from cle.game_engine.events import event_from_action
 from cle.game_engine.models.actions import Action, generate_playable_actions
 from cle.game_engine.models.enums import ActionType, ActionPrompt, ROAD
-from cle.game_engine.state import ensure_trade_window
+from cle.game_engine.state import apply_counter_offer, apply_offer_trade, ensure_trade_window
+from cle.game_engine.state_functions import maintain_longest_road
 from cle.game_engine.models.decks import ROAD_COST_FREQDECK, freqdeck_add
 from cle.game_engine.trading import TradeCandidate, TradeOffer, TradeOfferStatus
 
@@ -15,6 +17,7 @@ from cle.replay.colonist.helpers import (
     colonist_cards_to_freqdeck, get_engine_player_resources, validate_resources_match,
 )
 from cle.replay.colonist.constants import ENGINE_RESOURCES, RESOURCE_EMOJIS
+from cle.replay.runtime.access import get_game_engine
 from cle.replay.runtime.revision import bump_replay_revision
 from .action_matcher import _colonist_xy_to_engine_coord, find_matching_action
 from .checkpoint import ReplayStepCheckpoint, ensure_replay_checkpoint_state
@@ -50,8 +53,8 @@ TURN_OWNER_ACTIONS = {
 
 def _mark_finished_if_needed(state, parsed_actions):
     finished = state.replay_index >= len(parsed_actions)
+    state.game_running = not finished
     if finished:
-        state.game_running = False
         sync_final_replay_state(state)
     return finished
 
@@ -208,6 +211,82 @@ def _regenerate_playable_actions(game_state):
     game_state.playable_actions = generate_playable_actions(game_state)
 
 
+def _publish_replay_action(game, action):
+    """Record an already-applied action using the engine's privacy rules."""
+    event = event_from_action(action, game.revision)
+    game.state.actions.append(deepcopy(action))
+    return game.publish_event(
+        event.event_type,
+        event.actor,
+        event.public_payload,
+        private_overlays=event.private_overlays,
+        visible_to=event.visible_to,
+        causation_id=event.causation_id,
+    )
+
+
+def _publish_trade_overlay(state, action_hint):
+    """Publish source facts even when the typed offer board cannot represent them."""
+    game = get_game_engine(state)
+    player, _ = _engine_color_for_colonist(state, action_hint.get("player"))
+    action_type = action_hint["type"]
+    if action_type in {"OFFER_TRADE", "COUNTER_OFFER"}:
+        give, receive, give_any, receive_any = _trade_tuple_parts(action_hint)
+        # Keep the source parent, not the compatibility board's inferred root.
+        parent_id = action_hint.get("counter_offer_to")
+        audience = frozenset(color for color in game.state.colors if color != player)
+        if action_type == "COUNTER_OFFER":
+            parent = state.replay_trade_ledger.get(parent_id, {})
+            parent_color, _ = _engine_color_for_colonist(state, parent.get("creator"))
+            window = game.state.trade_window
+            if parent_color is None and window is not None:
+                parent_offer = window.offers.get(parent_id)
+                if parent_offer is not None:
+                    parent_color = parent_offer.offered_by
+            if parent_color is None or parent_color == player:
+                # Source-only counteroffers have no authoritative typed audience.
+                game.publish_event(action_type, player, {
+                    "id": action_hint.get("trade_id"),
+                    "offered_by": player.value,
+                    "give": {resource: count for resource, count in zip(ENGINE_RESOURCES, give) if count},
+                    "receive": {resource: count for resource, count in zip(ENGINE_RESOURCES, receive) if count},
+                    "give_any": give_any,
+                    "receive_any": receive_any,
+                    "parent_offer_id": parent_id,
+                })
+                return
+            audience = frozenset({parent_color})
+        value = TradeOffer(
+            id=action_hint.get("trade_id"),
+            offered_by=player,
+            audience=audience,
+            give=give,
+            receive=receive,
+            give_any=give_any,
+            receive_any=receive_any,
+            parent_offer_id=parent_id,
+        )
+        record = state.replay_trade_ledger.get(action_hint.get("trade_id"), {})
+        for responder_id, response in record.get("responses", {}).items():
+            responder, _ = _engine_color_for_colonist(state, responder_id)
+            if responder in value.audience:
+                if response == "accepted":
+                    value.willing_by.add(responder)
+                elif response == "rejected":
+                    value.declined_by.add(responder)
+    elif action_type == "CLEAR_TRADE_RESPONSE":
+        game.publish_event(
+            action_type,
+            player,
+            {"offer_id": action_hint.get("trade_id")},
+            causation_id=f"replay:{state.replay_index}:event:{action_hint.get('index')}",
+        )
+        return
+    else:
+        value = action_hint.get("trade_id")
+    _publish_replay_action(game, Action(player, ActionType[action_type], value))
+
+
 def _force_apply_trade_overlay(action_type, action_hint, state):
     """Apply one authoritative Colonist trade event to the typed offer board."""
     game_state = get_game_engine(state).state
@@ -217,19 +296,18 @@ def _force_apply_trade_overlay(action_type, action_hint, state):
         action_hint.get("creator"),
     )
 
-    if action_type == "OFFER_TRADE":
+    if action_type in {"OFFER_TRADE", "COUNTER_OFFER"}:
         if player is None:
             return None
-        _ensure_root_offer(game_state, player, action_hint)
+        if action_type == "OFFER_TRADE":
+            _ensure_root_offer(game_state, player, action_hint)
+        else:
+            _ensure_counter_offer(game_state, player, action_hint)
+        record = state.replay_trade_ledger.get(action_hint.get("trade_id"))
+        if record is not None:
+            _project_trade_record(state, record)
         _regenerate_playable_actions(game_state)
-        return "Applied OFFER_TRADE to typed trade window"
-
-    if action_type == "COUNTER_OFFER":
-        if player is None:
-            return None
-        _ensure_counter_offer(game_state, player, action_hint)
-        _regenerate_playable_actions(game_state)
-        return "Applied COUNTER_OFFER to typed trade window"
+        return f"Applied {action_type} to typed trade window"
 
     if action_type not in {
         "ACCEPT_TRADE",
@@ -263,6 +341,8 @@ def _force_apply_trade_overlay(action_type, action_hint, state):
 
 
 def _trade_closures_from_hint(action_hint):
+    if action_hint.get("trade_closures_preceded"):
+        return []
     closures = action_hint.get("closed_trades")
     if closures is not None:
         return closures
@@ -273,7 +353,8 @@ def _trade_closures_from_hint(action_hint):
 
 def _apply_trade_closures(action_hint, state):
     """Apply authoritative Colonist offer closures to the typed window."""
-    game_state = get_game_engine(state).state
+    game = get_game_engine(state)
+    game_state = game.state
     window = game_state.trade_window
     applied = []
 
@@ -283,6 +364,28 @@ def _apply_trade_closures(action_hint, state):
         existed = offer is not None and offer.active
         if existed:
             offer.status = TradeOfferStatus.WITHDRAWN
+        creator, _ = _engine_color_for_colonist(state, closure.get("creator"))
+        if creator is None and offer is not None:
+            creator = offer.offered_by
+        if creator is not None:
+            game.publish_event(
+                "CLOSE_TRADE",
+                creator,
+                {
+                    "offer_id": trade_id,
+                    "parent_offer_id": closure.get("counter_offer_to"),
+                    "reason": closure.get("reason"),
+                },
+                causation_id=f"replay:{state.replay_index}:event:{action_hint.get('index')}",
+            )
+        else:
+            record_replay_issue(
+                state,
+                kind="unmapped_trade_closure",
+                action_hint=action_hint,
+                message=f"Could not map creator of closed trade {trade_id}",
+                severity="warning",
+            )
         applied.append({
             "trade_id": trade_id,
             "creator": closure.get("creator"),
@@ -329,24 +432,7 @@ def _force_record_road(game_state, player_color, edge, is_free):
     game_state.board.roads[inverted_edge] = player_color
     game_state.board.buildable_edges_cache = {}
 
-    a, b = edge
-    components = game_state.board.connected_components[player_color]
-    matching_indices = [
-        idx for idx, component in enumerate(components)
-        if a in component or b in component
-    ]
-    if not matching_indices:
-        components.append({a, b})
-    else:
-        merged = {a, b}
-        for idx in reversed(matching_indices):
-            merged.update(components[idx])
-            del components[idx]
-        components.append(merged)
-        game_state.board.road_lengths[player_color] = max(
-            game_state.board.road_lengths[player_color],
-            max(len(merged) - 1, 0),
-        )
+    maintain_longest_road(game_state, *game_state.board.recompute_road_state())
 
     if edge not in game_state.buildings_by_color[player_color][ROAD]:
         game_state.buildings_by_color[player_color][ROAD].append(edge)
@@ -532,6 +618,20 @@ def _handle_confirm_trade(action_hint, state):
                 TradeCandidate(offer_id, creator_color, acceptor_color),
             )
         )
+        # The historical action is a compatibility candidate, not proof of which
+        # offer executed. The public exchange comes only from the recorded log.
+        game.publish_event(
+            "CONFIRM_TRADE",
+            creator_color,
+            {
+                "offer_id": action_hint.get("trade_id"),
+                "turn_player": creator_color.value,
+                "counterparty": acceptor_color.value,
+                "give": {resource: count for resource, count in zip(resources, offered) if count},
+                "receive": {resource: count for resource, count in zip(resources, received) if count},
+            },
+            causation_id=f"replay:{state.replay_index}:event:{action_hint.get('index')}",
+        )
         actions_count = 1
 
         has_rolled_after = game.state.player_state.get(f"P{creator_idx}_HAS_ROLLED", False)
@@ -636,14 +736,6 @@ def _handle_direct_execute(action_type, action_hint, state):
                 f"Could not apply trade closure {action_hint.get('trade_id')}",
             ), True
 
-        creator_color, _ = _engine_color_for_colonist(
-            state, action_hint.get("creator")
-        )
-        if creator_color is not None:
-            game.state.actions.append(
-                Action(creator_color, ActionType.CANCEL_TRADE, None)
-            )
-
         record_replay_issue(
             state,
             kind="replayed_trade_closure",
@@ -654,7 +746,7 @@ def _handle_direct_execute(action_type, action_hint, state):
         )
         return _finish(
             "closed",
-            1,
+            0,
             f"Closed trade {action_hint.get('trade_id')}",
         ), True
 
@@ -678,8 +770,8 @@ def _handle_direct_execute(action_type, action_hint, state):
             else:
                 print(f"[Replay] Executing MARITIME_TRADE: {format_resources(given)} -> {format_resources(received)}")
 
-            game.step(maritime_action, force=True)
             applied_closures = _apply_trade_closures(action_hint, state)
+            game.step(maritime_action, force=True)
             if applied_closures:
                 record_replay_issue(
                     state,
@@ -929,7 +1021,7 @@ def _handle_direct_execute(action_type, action_hint, state):
         if action_type in ["BUILD_SETTLEMENT", "BUILD_CITY"]:
             location = target_node
         elif action_type == "BUILD_ROAD":
-            location = target_edge
+            location = tuple(target_edge) if target_edge is not None else None
 
         if location is not None:
             action_type_enum = {
@@ -941,9 +1033,11 @@ def _handle_direct_execute(action_type, action_hint, state):
             build_action = Action(player_color, action_type_enum, location)
             print(f"[Replay] Executing {action_type}: player={player_color}, location={location}")
 
+            build_checkpoint = ReplayStepCheckpoint.capture(state)
             try:
                 game.step(build_action, force=True)
             except ValueError as e:
+                build_checkpoint.restore(state)
                 error_msg = str(e)
                 if action_type == "BUILD_CITY" and "no player settlement" in error_msg:
                     print(f"[Replay] BUILD_CITY failed with player {player_idx}, searching for correct player...")
@@ -957,6 +1051,7 @@ def _handle_direct_execute(action_type, action_hint, state):
                             print(f"[Replay] BUILD_CITY succeeded with player {try_idx}")
                             break
                         except ValueError:
+                            build_checkpoint.restore(state)
                             continue
                     if found_player is None:
                         raise ValueError(f"Could not find valid player for BUILD_CITY at {location}")
@@ -971,6 +1066,7 @@ def _handle_direct_execute(action_type, action_hint, state):
                         )
                         print(f"[Replay] Forcing BUILD_ROAD record after placement failure: {error_msg}")
                         _force_record_road(game.state, player_color, location, is_free)
+                        _publish_replay_action(game, build_action)
                         _record_forced_overlay(
                             state,
                             action_hint,
@@ -1086,6 +1182,12 @@ def _replay_step_logic(state, broadcast_fn, allow_lookahead=True):
     _sync_turn_owner_from_hint(action_hint, state)
 
     playable = game.state.playable_actions
+    # A recorded road is authoritative even when the engine rejects its topology.
+    # Do not cancel offers, advance turns, or execute future rows to make it legal.
+    if action_type == "BUILD_ROAD" and find_matching_action(playable, action_hint, state=state) is None:
+        result, _ = _handle_direct_execute(action_type, action_hint, state)
+        broadcast_fn()
+        return result
     if not playable:
         state.game_running = False
         return {"error": "No playable actions", "event_index": state.replay_index}, 400
@@ -1324,6 +1426,7 @@ def _replay_step_logic(state, broadcast_fn, allow_lookahead=True):
 
             overlay_msg = _force_apply_trade_overlay(action_type, action_hint, state)
             if overlay_msg:
+                _publish_trade_overlay(state, action_hint)
                 print(f"[Replay] {overlay_msg}: {skip_msg}{skip_reason}")
                 _record_forced_overlay(
                     state,
@@ -1485,12 +1588,19 @@ def _replay_step_logic(state, broadcast_fn, allow_lookahead=True):
     # Execute the action
     try:
         print(f"[Replay] Executing action: {action}")
-        game.step(action, force=True)
+        _apply_trade_closures(action_hint, state)
         if action_type in ("OFFER_TRADE", "COUNTER_OFFER"):
-            trade_record = state.replay_trade_ledger.get(action_hint.get("trade_id"))
-            if trade_record is not None:
-                _project_trade_record(state, trade_record)
-                _regenerate_playable_actions(game.state)
+            # Full source snapshots include responses, unlike a live offer intent.
+            # Materialize and project them before publishing the single offer fact.
+            apply_offer = apply_offer_trade if action_type == "OFFER_TRADE" else apply_counter_offer
+            apply_offer(game.state, action, force=True)
+            record = state.replay_trade_ledger.get(action_hint.get("trade_id"))
+            if record is not None:
+                _project_trade_record(state, record)
+            _regenerate_playable_actions(game.state)
+            _publish_trade_overlay(state, action_hint)
+        else:
+            game.step(action, force=True)
     except Exception as e:
         traceback.print_exc()
         return {"error": f"Action failed: {e}", "action": str(action), "hint": action_hint}, 500
@@ -1558,14 +1668,13 @@ def _replay_step_logic(state, broadcast_fn, allow_lookahead=True):
     state.replay_index += 1
     replay_finished = _mark_finished_if_needed(state, parsed_actions)
 
-    # Check if replay finished or game over
-    winner = game.winning_color()
-    if winner or replay_finished:
+    # Recorded source completion, not the live-game threshold, ends a replay.
+    if replay_finished:
         state.game_running = False
         state.game_log.append({
             "type": "general",
             "timestamp": time.time(),
-            "message": f"Replay complete! Winner: {winner}" if winner else "Replay complete!",
+            "message": "Replay complete!",
         })
 
     broadcast_fn()
@@ -1580,7 +1689,7 @@ def _replay_step_logic(state, broadcast_fn, allow_lookahead=True):
         "event_index": state.replay_index,
         "total_events": len(parsed_actions),
         "action": str(action),
-        "finished": replay_finished or winner is not None,
+        "finished": replay_finished,
         "colonist_event": raw_event,
         "engine_translation": action_hint,
     }
@@ -1613,6 +1722,9 @@ def _replay_step_transaction(state, broadcast_fn, allow_lookahead):
         raise
 
     if state.replay_index == checkpoint.replay_index + 1:
+        state.replay_actions_per_step[-1] = (
+            len(game.state.actions) - len(checkpoint.game_state.actions)
+        )
         state.replay_step_checkpoints.append(checkpoint)
         bump_replay_revision(state)
     else:

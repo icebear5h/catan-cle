@@ -1,0 +1,132 @@
+{
+  "budget": {
+    "absolute_deadline_watchdog": true,
+    "budget_usd": 79,
+    "cpu_core_limit": 16,
+    "evals_auto_launched": false,
+    "excludes": [
+      "prior spending",
+      "shared storage",
+      "workspace subscription"
+    ],
+    "execution_timeout_seconds": 25200,
+    "function_retries": 0,
+    "gpu": "H200",
+    "maximum_training_window_usd_at_list_rates": 45.27280799999999,
+    "memory_gib_limit": 128,
+    "pricing_checked": "2026-09-05",
+    "pricing_source": "https://modal.com/pricing",
+    "rate_per_second": 0.0017547599999999997,
+    "remaining_headroom_usd": 8.72719200000001,
+    "schema": "catan_single_run_budget/v1",
+    "standalone_eval_reserve_usd": 25.0,
+    "startup_timeout_seconds": 600
+  },
+  "config": {
+    "dataloader_num_workers": 2,
+    "eval_image_root": "/data/catan-vision-sft/datasets/bbbc99d8bc8c/images",
+    "eval_jsonl": "/data/catan-vision-sft/datasets/bbbc99d8bc8c/eval.jsonl",
+    "eval_steps": 128,
+    "gradient_accumulation_steps": 2,
+    "hub_model_id": "TetraCorp/catan-qwen3.8-27b-spatial-sft",
+    "image_max_pixels": 1048576,
+    "image_min_pixels": 65536,
+    "image_root": "/data/catan-vision-sft/datasets/bbbc99d8bc8c/images",
+    "initial_bundle": "/runs/catan-vision-sft/catan-qwen38-gauss-s2-terrain-20260904/398f0a023ec9/checkpoints/checkpoint-384",
+    "language_lora_learning_rate": 0.0001,
+    "learning_rate": 0.0005,
+    "lora_alpha": 16,
+    "lora_dropout": 0.05,
+    "lora_rank": 8,
+    "max_steps": 512,
+    "merger_learning_rate": 5e-05,
+    "model_id": "Qwen/Qwen3.8-27B",
+    "num_train_epochs": 1.0,
+    "output_dir": "/runs/catan-vision-sft/catan-qwen38-gauss-s3-nodes-edges-rw-20260905/bbbc99d8bc8c",
+    "patch_loss_weight": 0.0,
+    "patch_temperature": 0.07,
+    "per_device_eval_batch_size": 32,
+    "per_device_train_batch_size": 16,
+    "profile": "vision_tokens_lora",
+    "publish_to_hub": false,
+    "require_curriculum": false,
+    "resume_from_checkpoint": null,
+    "save_steps": 128,
+    "save_total_limit": 2,
+    "seed": 42,
+    "spatial_target_mode": "correct",
+    "token_init": "vocab_gaussian",
+    "token_inventory": "/data/catan-vision-sft/datasets/bbbc99d8bc8c/trainable_tokens.json",
+    "train_jsonl": "/data/catan-vision-sft/datasets/bbbc99d8bc8c/train.jsonl",
+    "vision_learning_rate": 5e-06,
+    "warmup_ratio": 0.1,
+    "weight_decay": 0.01
+  },
+  "dataset": {
+    "eval": {
+      "image_manifest_sha256": "bda04affda2bb4309e54dbd47880a292b7025902cb5820f01089b4c7b933f768",
+      "image_root": "/Users/henry/catan-learning/artifacts/generated/board_recognition/replay_v1/node_edge_readout_reweighted_v1/images",
+      "max_answer_characters": 1255,
+      "max_prompt_characters": 151,
+      "require_curriculum": false,
+      "rows": 8192,
+      "schema": "catan_trl_dataset_contract/v1",
+      "source": "/Users/henry/catan-learning/artifacts/generated/board_recognition/replay_v1/node_edge_readout_reweighted_v1/stage1/validation.jsonl",
+      "source_sha256": "145be89a2e2e661490ee769e01bac46559cbbdbdb8835f769bbe6f2efadf542b",
+      "spatial_target_rows": 0,
+      "spatial_target_types": {},
+      "stages": [
+        {
+          "end_row_exclusive": 8192,
+          "name": "spatial_grounding",
+          "rows": 8192,
+          "start_row": 0
+        }
+      ],
+      "unique_images": 64
+    },
+    "train": {
+      "image_manifest_sha256": "4f698c6fd7de786d66354886e819b437a3f6ab9fd50ef7538af212d7c4645e5e",
+      "image_root": "/Users/henry/catan-learning/artifacts/generated/board_recognition/replay_v1/node_edge_readout_reweighted_v1/images",
+      "max_answer_characters": 1480,
+      "max_prompt_characters": 151,
+      "require_curriculum": false,
+      "rows": 17708,
+      "schema": "catan_trl_dataset_contract/v1",
+      "source": "/Users/henry/catan-learning/artifacts/generated/board_recognition/replay_v1/node_edge_readout_reweighted_v1/stage1/train.jsonl",
+      "source_sha256": "c0be726b243fb306b4bd382d529fe97e18feac34652acc0b82c440d533ef3521",
+      "spatial_target_rows": 0,
+      "spatial_target_types": {},
+      "stages": [
+        {
+          "end_row_exclusive": 17708,
+          "name": "spatial_grounding",
+          "rows": 17708,
+          "start_row": 0
+        }
+      ],
+      "unique_images": 1024
+    }
+  },
+  "dependencies": {
+    "accelerate": "1.14.0",
+    "datasets": "5.0.1",
+    "huggingface_hub": "1.29.0",
+    "peft": "0.20.0",
+    "pillow": "12.3.0",
+    "safetensors": "0.8.0",
+    "torch": "2.13.0",
+    "torchvision": "0.28.0",
+    "transformers": "5.16.1",
+    "trl": "1.12.0"
+  },
+  "dry_run": true,
+  "hardware": "H200",
+  "identity": "514b6b2f798a3dc01d600b1547d529924cbde2ecba62d43027d33da722be978e",
+  "modal_app": "catan-qwen3-8-vision-sft",
+  "modal_secret": "catan-hf",
+  "paid_gpu_requested": false,
+  "resume_latest": false,
+  "schema": "catan_modal_trl_vision_sft_launch/v1",
+  "spawn_training": true
+}

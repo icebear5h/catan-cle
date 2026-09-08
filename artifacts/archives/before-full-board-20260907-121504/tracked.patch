@@ -1,0 +1,926 @@
+diff --git a/cle/game_engine/models/map.py b/cle/game_engine/models/map.py
+index 57dbefa..02153ee 100644
+--- a/cle/game_engine/models/map.py
++++ b/cle/game_engine/models/map.py
+@@ -102,7 +102,9 @@ MINI_MAP_TEMPLATE = MapTemplate(
+     },
+ )
+ 
+-"""Standard 4-player map"""
++# Standard 19-hex inventory: 3 hills (brick), 4 forests (wood),
++# 4 pastures (sheep), 4 fields (wheat), 3 mountains (ore), 1 desert.
++# Random layouts shuffle this inventory; they never sample terrain with replacement.
+ BASE_MAP_TEMPLATE = MapTemplate(
+     [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12],
+     [
+@@ -328,12 +330,13 @@ def initialize_tiles(
+     It first shuffles tiles, ports, and numbers. Then goes satisfying the
+     topology (i.e. placing tiles on coordinates); ensuring to "attach" these to
+     neighbor tiles (so as to not repeat nodes or edges objects).
++    Explicit terrain orders must be permutations of the template's inventory.
+ 
+     Args:
+         map_template (MapTemplate): Template to initialize.
+ 
+     Raises:
+-        ValueError: Invalid tile in topology
++        ValueError: Invalid terrain inventory or tile in topology.
+ 
+     Returns:
+         Dict[Coordinate, Tile]: Coordinate to initialized Tile mapping.
+@@ -342,9 +345,18 @@ def initialize_tiles(
+     shuffled_port_resources = shuffled_port_resources_param or source.sample(
+         map_template.port_resources, len(map_template.port_resources)
+     )
+-    shuffled_tile_resources = shuffled_tile_resources_param or source.sample(
+-        map_template.tile_resources, len(map_template.tile_resources)
++    shuffled_tile_resources = (
++        source.sample(map_template.tile_resources, len(map_template.tile_resources))
++        if shuffled_tile_resources_param is None
++        else list(shuffled_tile_resources_param)
+     )
++    if Counter(shuffled_tile_resources) != Counter(map_template.tile_resources):
++        raise ValueError(
++            "Tile resources must be a permutation of the map template's terrain inventory"
++        )
++    land_tile_count = sum(tile_type is LandTile for tile_type in map_template.topology.values())
++    if len(shuffled_tile_resources) != land_tile_count:
++        raise ValueError("Terrain inventory must contain exactly one resource per land tile")
+     shuffled_numbers = shuffled_numbers_param or source.sample(
+         map_template.numbers, len(map_template.numbers)
+     )
+@@ -493,7 +505,6 @@ TOURNAMENT_MAP_TILES = initialize_tiles(
+         None,
+     ],
+     [
+-        None,
+         WOOD,
+         SHEEP,
+         SHEEP,
+diff --git a/evals/catan_board_bench_ui/src/App.tsx b/evals/catan_board_bench_ui/src/App.tsx
+index 03a8ccd..9caa0b6 100644
+--- a/evals/catan_board_bench_ui/src/App.tsx
++++ b/evals/catan_board_bench_ui/src/App.tsx
+@@ -78,7 +78,7 @@ function suiteSubtitle(suite: EvalSuite) {
+     return 'board perception / human verification'
+   }
+   if (suite === 'sft-data') {
+-    return 'empty-board spatial grounding / corpus audit'
++    return 'training corpora / board and patch inspection'
+   }
+   if (suite === 'sft-eval') {
+     return 'published checkpoint / held-out generation'
+diff --git a/evals/catan_board_bench_ui/src/SftDataExplorer.css b/evals/catan_board_bench_ui/src/SftDataExplorer.css
+index ff1c6e5..5f0bcc4 100644
+--- a/evals/catan_board_bench_ui/src/SftDataExplorer.css
++++ b/evals/catan_board_bench_ui/src/SftDataExplorer.css
+@@ -928,6 +928,16 @@
+ .sft-patch-toggle i { width: 0.65rem; height: 0.65rem; }
+ .sft-patch-toggle i.target { border: 2px solid var(--cyan); }
+ 
++.sft-dataset-select { display: block; margin: 1rem 0; max-width: 36rem; }
++.spatial-board-card::after { content: none; }
++.sft-dataset-select select { width: 100%; }
++.patch-grid-select { display: block; padding: 0.75rem; }
++.patch-grid-select select { width: 100%; margin-top: 0.4rem; }
++.patch-grid-overlay { position: absolute; inset: 0; width: 100%; height: 100%; cursor: crosshair; }
++.patch-inspection { padding: 0.75rem; color: #9baebc; font-size: 0.75rem; line-height: 1.5; }
++.patch-inspection small { display: block; margin-top: 0.5rem; }
++.patch-magnified { width: 192px; height: 192px; margin: 0.75rem 0; image-rendering: pixelated; background-repeat: no-repeat; border: 1px solid #ffcf54; }
++
+ .spatial-distributions {
+   grid-template-columns: minmax(360px, 1.7fr) repeat(3, minmax(220px, 1fr));
+ }
+diff --git a/evals/catan_board_bench_ui/src/SftDataExplorer.tsx b/evals/catan_board_bench_ui/src/SftDataExplorer.tsx
+index 3b4e51d..7537570 100644
+--- a/evals/catan_board_bench_ui/src/SftDataExplorer.tsx
++++ b/evals/catan_board_bench_ui/src/SftDataExplorer.tsx
+@@ -1,5 +1,6 @@
+ import { useEffect, useMemo, useState, type CSSProperties } from 'react'
+ import './SftDataExplorer.css'
++import PatchInspector from './PatchInspector'
+ 
+ const SERVER_URL = 'http://127.0.0.1:5001'
+ const PAGE_SIZE = 80
+@@ -33,6 +34,10 @@ type SpatialRow = {
+   task_type: string
+   entity_type: string
+   target_token: string | null
++  queried_token: string | null
++  piece: string | null
++  color: string | null
++  density_bin: string | null
+   tokens: string[]
+   marker: string | null
+   marker_style: string | null
+@@ -66,6 +71,8 @@ type StageCatalogRow = {
+ }
+ 
+ type SpatialPayload = {
++  dataset: string
++  datasets: { id: string; label: string }[]
+   stage: string
+   split: string
+   rows: SpatialRow[]
+@@ -91,6 +98,7 @@ type SpatialPayload = {
+ }
+ 
+ type Filters = {
++  dataset: string
+   stage: string
+   split: string
+   taskType: string
+@@ -101,6 +109,7 @@ type Filters = {
+ }
+ 
+ const DEFAULT_FILTERS: Filters = {
++  dataset: 'node_edge_readout_reweighted_v1',
+   stage: 'stage1',
+   split: 'train',
+   taskType: 'all',
+@@ -144,6 +153,7 @@ function SftDataExplorer() {
+         setIsLoading(true)
+         setError(null)
+         const params = new URLSearchParams({
++          dataset: filters.dataset,
+           stage: filters.stage,
+           split: filters.split,
+           task_type: filters.taskType,
+@@ -197,7 +207,7 @@ function SftDataExplorer() {
+     setFilters((current) => ({
+       ...current,
+       stage,
+-      split: STAGE_SPLITS[stage][0],
++      split: STAGE_SPLITS[stage]?.[0] || 'train',
+       taskType: 'all',
+       entityType: 'all',
+       relationship: 'all',
+@@ -223,13 +233,13 @@ function SftDataExplorer() {
+       <section className="sft-hero">
+         <div>
+           <div className="sft-overline">
+-            <span>spatial_localization_v1 · generated and frozen</span>
++            <span>{filters.dataset}</span>
+             <span className="sft-live-dot">ready to inspect</span>
+           </div>
+-          <h1>Ground the atlas <em>before the game.</em></h1>
++          <h1>Inspect the board <em>patch by patch.</em></h1>
+           <p>
+-            Empty-board supervision teaches Qwen where every tile, node, edge, and port
+-            token lives—then removes the markers and asks for pure orientation and topology.
++            Browse the actual images, prompts, and labels from each training corpus.
++            Compare 16-pixel input patches with 32-pixel merger groups on boards with pieces.
+           </p>
+         </div>
+         {payload && (
+@@ -245,7 +255,16 @@ function SftDataExplorer() {
+ 
+       {payload && (
+         <>
+-          <CurriculumPanel stages={payload.stages} selectedStage={filters.stage} onSelect={setStage} />
++          <label className="sft-select-wrap sft-dataset-select">
++            <span>Dataset</span>
++            <select value={filters.dataset} onChange={(event) => {
++              setFilters({ ...DEFAULT_FILTERS, dataset: event.target.value })
++              setOffset(0)
++            }}>
++              {payload.datasets.map((dataset) => <option key={dataset.id} value={dataset.id}>{dataset.label}</option>)}
++            </select>
++          </label>
++          {filters.dataset === 'spatial_localization_v1' && <CurriculumPanel stages={payload.stages} selectedStage={filters.stage} onSelect={setStage} />}
+ 
+           <section className="sft-stat-grid" aria-label="Spatial corpus summary">
+             <Stat label="Rows in slice" value={formatInteger(payload.summary.row_count)} note={`${payload.stage} / ${payload.split}`} />
+@@ -278,7 +297,7 @@ function SftDataExplorer() {
+                 {payload.rows.map((row) => (
+                   <button key={row.record_id} className={row.record_id === selectedRow?.record_id ? 'active' : ''} onClick={() => setSelectedRecordId(row.record_id)}>
+                     <span className={`sft-kind ${rowKind(row)}`}>{rowKind(row)}</span>
+-                    <span className="sft-row-token">{row.target_token || row.tokens.join(' ↔ ') || row.task_type}</span>
++                    <span className="sft-row-token">{row.queried_token || row.target_token || row.tokens.join(' ↔ ') || row.task_type}</span>
+                     <small>{cleanPrompt(row.prompt)}</small>
+                   </button>
+                 ))}
+@@ -310,15 +329,14 @@ function SftDataExplorer() {
+ 
+                   <div className="sft-example-grid">
+                     <figure className="sft-board-card spatial-board-card">
+-                      <div className="sft-board-image">
+-                        <img src={SERVER_URL + selectedRow.image_url} alt={`Spatial grounding board ${selectedRow.state_id}`} />
++                      <PatchInspector key={selectedRow.image_url} src={SERVER_URL + selectedRow.image_url} alt={`Board ${selectedRow.state_id}`}>
+                         {showPatchTargets && selectedRow.spatial_target && (
+                           <span className="sft-patch-box target" style={bboxStyle(selectedRow.spatial_target.bbox)} title={`correct patch: ${selectedRow.spatial_target.token}`} />
+                         )}
+-                      </div>
++                      </PatchInspector>
+                       <figcaption>
+                         <span>{selectedRow.image_name}</span>
+-                        <small>{selectedRow.state_id} · exact training image</small>
++                        <small>{selectedRow.state_id} · {filters.split} image</small>
+                         {selectedRow.spatial_target && (
+                           <label className="sft-patch-toggle">
+                             <input type="checkbox" checked={showPatchTargets} onChange={(event) => setShowPatchTargets(event.target.checked)} />
+@@ -329,13 +347,16 @@ function SftDataExplorer() {
+                     </figure>
+ 
+                     <article className="sft-conversation">
+-                      <header><span>Exact training transport</span><code>{selectedRow.row_id}</code></header>
++                      <header><span>Exact dataset row</span><code>{selectedRow.row_id}</code></header>
+                       <div className="sft-message user"><span>user</span><p><i>&lt;image&gt;</i>{cleanPrompt(selectedRow.prompt)}</p></div>
+                       <div className="sft-flow-arrow" aria-hidden="true">↓</div>
+                       <div className="sft-message assistant"><span>assistant</span><p>{selectedRow.answer}</p></div>
+                       <dl className="sft-row-contract">
+                         <Contract label="supervision" value={supervisionLabel(selectedRow)} />
+-                        <Contract label="locations" value={selectedRow.target_token || selectedRow.tokens.join(', ') || 'visual marker only'} mono />
++                        <Contract label="queried location" value={selectedRow.queried_token || selectedRow.tokens.join(', ') || 'see prompt'} mono />
++                        <Contract label="target location" value={selectedRow.target_token || 'see answer'} mono />
++                        <Contract label="piece / color" value={[selectedRow.piece, selectedRow.color].filter(Boolean).join(' / ') || 'none'} />
++                        <Contract label="board density" value={selectedRow.density_bin || 'not specified'} />
+                         <Contract label="marker" value={markerLabel(selectedRow)} />
+                         <Contract label="patch target" value={patchLabel(selectedRow.spatial_target)} mono />
+                         <Contract label="control patch" value={controlLabel(selectedRow.spatial_target)} mono />
+@@ -434,12 +455,15 @@ function bboxStyle(bbox: [number, number, number, number]): CSSProperties {
+ }
+ 
+ function rowKind(row: SpatialRow) {
++  if (row.piece && !['TILE', 'PORT'].includes(row.piece.toUpperCase())) return 'piece'
++  if (['tile', 'port'].includes(row.entity_type) && !row.marker) return row.entity_type
+   if (row.probe_style) return 'probe'
+   if (row.marker || row.replay_source) return 'marked'
+   return 'relation'
+ }
+ 
+ function supervisionLabel(row: SpatialRow) {
++  if (row.piece) return humanize(row.task_type)
+   if (row.task_type === 'marker_to_token') return 'visual marker → atlas token'
+   if (row.task_type === 'token_to_marker') return 'atlas token → visual marker'
+   if (row.task_type === 'neutral_probe_token_return') return 'novel gray dot → atlas token'
+@@ -449,16 +473,16 @@ function supervisionLabel(row: SpatialRow) {
+ 
+ function markerLabel(row: SpatialRow) {
+   if (row.probe_style) return humanize(row.probe_style)
+-  if (!row.marker) return 'none — clean board'
++  if (!row.marker) return 'none'
+   return `${row.marker} · ${humanize(row.marker_style || 'unknown style')}`
+ }
+ 
+ function patchLabel(target: SpatialTarget | null) {
+-  return target ? `${target.token} · [${target.bbox.map(formatCoord).join(', ')}]` : 'not used for this relation row'
++  return target ? `${target.token} · [${target.bbox.map(formatCoord).join(', ')}]` : 'not annotated in this row'
+ }
+ 
+ function controlLabel(target: SpatialTarget | null) {
+-  return target ? `${target.control_token} · [${target.control_bbox.map(formatCoord).join(', ')}]` : 'not used for this relation row'
++  return target?.control_bbox ? `${target.control_token} · [${target.control_bbox.map(formatCoord).join(', ')}]` : 'not annotated in this row'
+ }
+ 
+ function atlasNote(counts: Record<string, number>) {
+diff --git a/playground/game_viewer/routes/bench.py b/playground/game_viewer/routes/bench.py
+index 32e8871..3177d1a 100644
+--- a/playground/game_viewer/routes/bench.py
++++ b/playground/game_viewer/routes/bench.py
+@@ -85,6 +85,28 @@ SFT_SPATIAL_LOCALIZATION_STAGES = {
+     "stage2": ("train", "validation", "test"),
+     "probes": ("validation", "test"),
+ }
++SFT_VIEWER_DATASETS = {
++    "spatial_localization_v1": "Legacy markers and relations",
++    "spatial_localization_v3": "v3 — single pieces",
++    "terrain_readout_v2": "Stage 2 — terrain",
++    "node_edge_readout_v1": "Stage 3 — pieces (original)",
++    "node_edge_readout_reweighted_v1": "Stage 3 — pieces (reweighted training)",
++}
++
++
++def _viewer_dataset(dataset: str) -> tuple[Path, dict[str, tuple[str, ...]]]:
++    if dataset not in SFT_VIEWER_DATASETS:
++        raise ValueError("Unknown SFT dataset")
++    if dataset == "spatial_localization_v1":
++        return SFT_SPATIAL_LOCALIZATION_ROOT, SFT_SPATIAL_LOCALIZATION_STAGES
++    root = SFT_REPLAY_ROOT / dataset
++    splits = tuple(
++        split for split in ("train", "validation", "test", "color_diagnostic")
++        if (root / "stage1" / f"{split}.jsonl").is_file()
++    )
++    return root, {"stage1": splits}
++
++
+ SFT_SPLITS = ("train", "validation", "test", "color_diagnostic")
+ SFT_TOPOLOGY_PATH = (
+     PROJECT_ROOT / "artifacts" / "generated" / "sft" / "atlas_topology"
+@@ -899,19 +921,24 @@ def get_catan_sft_image(image_name: str):
+     "/api/catan-board-bench/spatial-localization-data", methods=["GET"]
+ )
+ def get_catan_spatial_localization_data():
+-    """Return the staged empty-board spatial-localization SFT corpus."""
++    """Return rows from an explicitly allowlisted SFT corpus."""
+ 
++    dataset = request.args.get("dataset", "spatial_localization_v1")
++    try:
++        dataset_root, stages = _viewer_dataset(dataset)
++    except ValueError:
++        return jsonify({"error": "Unknown SFT dataset"}), 400
+     stage = request.args.get("stage", "stage1")
+-    if stage not in SFT_SPATIAL_LOCALIZATION_STAGES:
++    if stage not in stages:
+         return jsonify({"error": f"Unknown spatial-localization stage: {stage}"}), 400
+-    split = request.args.get("split", SFT_SPATIAL_LOCALIZATION_STAGES[stage][0])
+-    if split not in SFT_SPATIAL_LOCALIZATION_STAGES[stage]:
++    split = request.args.get("split", next(iter(stages[stage]), "train"))
++    if split not in stages[stage]:
+         return jsonify(
+             {"error": f"Split {split} is unavailable for spatial-localization {stage}"}
+         ), 400
+ 
+-    data_path = SFT_SPATIAL_LOCALIZATION_ROOT / stage / f"{split}.jsonl"
+-    metadata_path = SFT_SPATIAL_LOCALIZATION_ROOT / "metadata.json"
++    data_path = dataset_root / stage / f"{split}.jsonl"
++    metadata_path = dataset_root / "metadata.json"
+     missing = [
+         str(path.relative_to(PROJECT_ROOT))
+         for path in (data_path, metadata_path)
+@@ -922,7 +949,7 @@ def get_catan_spatial_localization_data():
+             {"error": "Spatial-localization artifacts are missing", "missing": missing}
+         ), 404
+ 
+-    rows = list(_spatial_localization_rows(stage, split))
++    rows = list(_spatial_localization_rows(stage, split, dataset))
+     task_type = request.args.get("task_type", "all")
+     entity_type = request.args.get("entity_type", "all")
+     relationship = request.args.get("relationship", "all")
+@@ -957,13 +984,13 @@ def get_catan_spatial_localization_data():
+     limit = min(200, max(1, _int_arg("limit", 80)))
+     metadata = _read_json(metadata_path)
+     file_key = f"{stage}/{split}.jsonl"
+-    file_metadata = metadata.get("files", {}).get(file_key, {})
++    file_metadata = metadata.get("files", {}).get(
++        file_key, metadata.get("files", {}).get(split, {})
++    )
+     stage_catalog = []
+-    for stage_name, stage_splits in SFT_SPATIAL_LOCALIZATION_STAGES.items():
++    for stage_name, stage_splits in stages.items():
+         split_counts = {
+-            split_name: metadata.get("files", {})
+-            .get(f"{stage_name}/{split_name}.jsonl", {})
+-            .get("rows", 0)
++            split_name: _viewer_row_count(dataset_root / stage_name / f"{split_name}.jsonl")
+             for split_name in stage_splits
+         }
+         stage_catalog.append(
+@@ -977,6 +1004,12 @@ def get_catan_spatial_localization_data():
+     return jsonify(
+         {
+             "schema": "catan_spatial_localization_datavis/v1",
++            "dataset": dataset,
++            "datasets": [
++                {"id": key, "label": label}
++                for key, label in SFT_VIEWER_DATASETS.items()
++                if (_viewer_dataset(key)[0] / "metadata.json").is_file()
++            ],
+             "stage": stage,
+             "split": split,
+             "rows": filtered[offset : offset + limit],
+@@ -988,9 +1021,9 @@ def get_catan_spatial_localization_data():
+                 "state_count": len({row["state_id"] for row in rows}),
+                 "image_count": len({row["image_name"] for row in rows}),
+                 "source_schema": metadata.get("schema"),
+-                "source_sha256": file_metadata.get("sha256"),
+-                "atlas_counts": metadata.get("atlas_counts", {}),
+-                "atlas_tokens": sum(metadata.get("atlas_counts", {}).values()),
++                "source_sha256": file_metadata.get("sha256") or hashlib.sha256(data_path.read_bytes()).hexdigest(),
++                "atlas_counts": metadata.get("atlas_counts") or {"tile": 19, "node": 54, "edge": 72, "port": 9},
++                "atlas_tokens": sum((metadata.get("atlas_counts") or {"all": 154}).values()),
+                 "marker_groups_per_board": metadata.get("marker_groups_per_board"),
+                 "node_edge_sampling_multiplier": metadata.get(
+                     "node_edge_sampling_multiplier"
+@@ -1007,8 +1040,8 @@ def get_catan_spatial_localization_data():
+                 "polarity": _count_by(rows, "polarity"),
+             },
+             "facets": {
+-                "stages": list(SFT_SPATIAL_LOCALIZATION_STAGES),
+-                "splits": list(SFT_SPATIAL_LOCALIZATION_STAGES[stage]),
++                "stages": list(stages),
++                "splits": list(stages[stage]),
+                 "task_types": _unique_values(rows, "task_type"),
+                 "entity_types": _unique_values(rows, "entity_type"),
+                 "relationships": _unique_values(rows, "relationship"),
+@@ -1025,9 +1058,15 @@ def get_catan_spatial_localization_data():
+ def get_catan_spatial_localization_image(image_name: str):
+     """Serve one generated localization image without exposing arbitrary files."""
+ 
+-    path = (SFT_SPATIAL_LOCALIZATION_IMAGE_ROOT / image_name).resolve()
++    dataset = request.args.get("dataset", "spatial_localization_v1")
++    try:
++        root, _ = _viewer_dataset(dataset)
++    except ValueError:
++        return jsonify({"error": "Unknown SFT dataset"}), 400
++    image_root = SFT_SPATIAL_LOCALIZATION_IMAGE_ROOT if dataset == "spatial_localization_v1" else root / "images"
++    path = (image_root / image_name).resolve()
+     try:
+-        path.relative_to(SFT_SPATIAL_LOCALIZATION_IMAGE_ROOT.resolve())
++        path.relative_to(image_root.resolve())
+     except ValueError:
+         return jsonify({"error": "Image path is outside the localization directory"}), 400
+     if not path.is_file():
+@@ -1397,12 +1436,19 @@ def _read_jsonl(path: Path) -> list[dict[str, Any]]:
+     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+ 
+ 
++@lru_cache(maxsize=32)
++def _viewer_row_count(path: Path) -> int:
++    with path.open() as source:
++        return sum(1 for line in source if line.strip())
++
++
+ @lru_cache(maxsize=8)
+ def _spatial_localization_rows(
+-    stage: str, split: str
++    stage: str, split: str, dataset: str = "spatial_localization_v1"
+ ) -> tuple[dict[str, Any], ...]:
++    root, _ = _viewer_dataset(dataset)
+     source_rows = _read_jsonl(
+-        SFT_SPATIAL_LOCALIZATION_ROOT / stage / f"{split}.jsonl"
++        root / stage / f"{split}.jsonl"
+     )
+     combined: list[dict[str, Any]] = []
+     for position, source in enumerate(source_rows):
+@@ -1425,7 +1471,7 @@ def _spatial_localization_rows(
+                 "image_name": image_name,
+                 "image_url": (
+                     "/api/catan-board-bench/spatial-localization-image/"
+-                    f"{image_name}"
++                    f"{image_name}?dataset={dataset}"
+                 ),
+                 "prompt": messages[0].get("content", ""),
+                 "answer": messages[1].get("content", ""),
+@@ -1434,6 +1480,10 @@ def _spatial_localization_rows(
+                 "task_type": source.get("task_type", "unknown"),
+                 "entity_type": source.get("entity_type", "unknown"),
+                 "target_token": source.get("target_token"),
++                "queried_token": source.get("queried_token"),
++                "piece": source.get("piece"),
++                "color": source.get("color"),
++                "density_bin": source.get("density_bin"),
+                 "tokens": tokens,
+                 "marker": source.get("marker"),
+                 "marker_style": source.get("marker_style"),
+diff --git a/pyproject.toml b/pyproject.toml
+index e6b5d49..ea4f9d6 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -54,7 +54,7 @@ sft = [
+     "torch>=2.6.0",
+     "transformers>=4.57.1",
+     "trl>=0.21.0",
+-    "peft>=0.17.0",
++    "peft>=0.20.0",
+     "accelerate>=1.10.0",
+     "datasets>=3.0.0",
+     "bitsandbytes>=0.46.0",
+@@ -91,3 +91,7 @@ target-version = ['py311']
+ [tool.ruff]
+ line-length = 100
+ target-version = "py311"
++
++[tool.uv]
++# llamafactory (pretraining) caps peft at 0.18 while the SFT trainer needs peft 0.20 (the Modal image pin).
++conflicts = [[{ extra = "sft" }, { extra = "pretraining" }]]
+diff --git a/reports/sft/2026-09-05-node-edge-recognition-rung.md b/reports/sft/2026-09-05-node-edge-recognition-rung.md
+index 31516f6..fe013fa 100644
+--- a/reports/sft/2026-09-05-node-edge-recognition-rung.md
++++ b/reports/sft/2026-09-05-node-edge-recognition-rung.md
+@@ -422,6 +422,47 @@ production rungs; a loss on any mode names the fix before anything else
+ launches (blindness or neighbor confusion: caps and quota; colour: colour
+ balance in the sample; head flip or rows: init or row anchoring).
+ 
++## Possible contributor: reusing the same LoRA across stages
++
++Recorded 2026-09-05 at the user's request. **Untested hypothesis, not an
++established cause or an approved training change.**
++
++Verified loading behavior: stage 3 inherited the terrain stage's
++checkpoint-384 through `initial_bundle`. The loader calls
++`PeftModel.from_pretrained(..., is_trainable=True)` and separately restores
++the saved visual state. It does not call `merge_and_unload()` and attach a
++fresh adapter. The existing rank-8 language adapter was continued, with new
++optimizer/scheduler state. The launch receipt and the run's persisted
++`initial_bundle.json` both identify this parent.
++
++- Evidence: [launch receipt](../../artifacts/runs/sft/gauss-s3-nodes-edges-rw-20260905/launch.json)
++  and [initial-bundle loader](../../sft/scripts/train_trl_catan_vision.py).
++- Hypothesis: fitting pieces by modifying the existing rank-8 adapter may
++  have contributed to a compromise with previously learned terrain/port
++  behavior. Merging the old language update into frozen base weights and
++  training a fresh rank-8 adapter would instead provide an additional
++  low-rank update around the stage-2 solution. These are different
++  parameterizations; the existing factors are not confined to a fixed
++  learned subspace as they train.
++- Limits: unmerged does not mean unloaded or inactive. Merging alone does
++  not protect behavior, and a fresh adapter can still counteract the old
++  one. The vision tower, merger and atlas rows are separate possible routes
++  for regression. This hypothesis does not establish rank saturation or
++  rule out data-mix and optimization effects.
++- Candidate comparison, **not launched**: start both arms from exactly the
++  same checkpoint-384; continue the existing adapter in one, versus merge
++  its language update into frozen weights and attach a fresh rank-8
++  adapter in the other. Preserve learned atlas rows. Verify equivalent
++  pre-training evaluation before comparing, allowing numerical tolerance.
++  Match data/order, step budget, optimizer schedule, adapter scaling and
++  visual/token-row trainability across arms. Judge occupied-piece gains
++  against terrain/port retention, not aggregate loss alone. A benefit would
++  support this intervention, but would not distinguish extra cumulative
++  capacity from changed initialization/optimization without further controls.
++
++No merge, adapter reset, configuration change or paid experiment is
++authorized by this note; any test needs a fresh budget decision.
++
+ ## What runs when
+ 
+ | When | What |
+diff --git a/sft/README.md b/sft/README.md
+index bdc5476..c2d85fe 100644
+--- a/sft/README.md
++++ b/sft/README.md
+@@ -293,6 +293,14 @@ for language modules, and the `lora_A` rows of `--visual-delta-factors`
+ the protected subspaces) and `orth_unprotected_modules`. Norms, biases,
+ patch embedding and position embedding stay frozen.
+ 
++Loading order matters: the parent's `visual_model.safetensors` is keyed by
++PEFT-wrapped names, so the loader restores it while the parent `PeftModel`
++is still attached, then merges, then adds the fresh adapters; the LoRA
++target lists are taken before `get_peft_model` renames the modules in
++place. The trainer needs peft 0.20 (the Modal image pin), which the `sft`
++extra requires; it is declared as conflicting with the legacy llamafactory
++`pretraining` extra in `[tool.uv]`, so sync one or the other, not both.
++
+ A bundle from this profile only reproduces its model on top of the merged
+ parent, so every checkpoint and the final carry `frozen_adapter/` (the
+ parent's `adapter_config.json` and `adapter_model.safetensors`) and
+diff --git a/sft/modal_catan_vision_sft.py b/sft/modal_catan_vision_sft.py
+index 4036a51..646895f 100644
+--- a/sft/modal_catan_vision_sft.py
++++ b/sft/modal_catan_vision_sft.py
+@@ -10,6 +10,7 @@ from __future__ import annotations
+ import hashlib
+ import json
+ import math
++import os
+ import tempfile
+ import time
+ from dataclasses import asdict, replace
+@@ -44,7 +45,7 @@ from sft.scripts.train_trl_catan_vision import (
+ 
+ 
+ APP_NAME = "catan-qwen3-8-vision-sft"
+-HF_SECRET_NAME = "catan-hf"
++HF_SECRET_NAME = os.environ.get("CATAN_HF_SECRET_NAME", "catan-hf")
+ REMOTE_CACHE = "/cache"
+ REMOTE_DATA = "/data"
+ REMOTE_RUNS = "/runs"
+diff --git a/sft/scripts/train_trl_catan_vision.py b/sft/scripts/train_trl_catan_vision.py
+index d9f4635..2a1cb79 100644
+--- a/sft/scripts/train_trl_catan_vision.py
++++ b/sft/scripts/train_trl_catan_vision.py
+@@ -1247,7 +1247,12 @@ def frozen_adapter_files(bundle: Path) -> tuple[Path, ...]:
+     return (bundle / "adapter_config.json", bundle / "adapter_model.safetensors")
+ 
+ 
+-def apply_frozen_adapter(base_model: torch.nn.Module, frozen_dir: Path) -> tuple[torch.nn.Module, JsonDict]:
++def apply_frozen_adapter(
++    base_model: torch.nn.Module,
++    frozen_dir: Path,
++    *,
++    restore_visual: bool = False,
++) -> tuple[torch.nn.Module, JsonDict]:
+     """Merge a finished adapter (LoRA and atlas rows) into the base weights and drop its wrappers."""
+ 
+     from peft import PeftModel
+@@ -1256,11 +1261,21 @@ def apply_frozen_adapter(base_model: torch.nn.Module, frozen_dir: Path) -> tuple
+     if missing:
+         raise FileNotFoundError(f"frozen adapter is incomplete: {missing}")
+     frozen = PeftModel.from_pretrained(base_model, frozen_dir, is_trainable=False)
++    report = {"path": str(frozen_dir), "adapter_sha256": sha256_file(frozen_dir / "adapter_model.safetensors")}
++    if restore_visual:
++        # Parent bundles save the PEFT-wrapped state_dict names. Restore while
++        # that same wrapper is present, before merging it or adding vision LoRA
++        # (which would introduce base_layer names). Promote before copying so
++        # the parent's FP32 visual weights never round through BF16.
++        components = base_model._catan_components
++        frozen._catan_components = components
++        resolve_wrapped_module(frozen, components.vision).float()
++        report["visual_state"] = load_visual_state(frozen, frozen_dir)
+     merged = frozen.merge_and_unload()
+     leftover = [name for name, _ in merged.named_parameters() if ".lora_" in name or "trainable_tokens" in name]
+     if leftover:
+         raise RuntimeError(f"frozen adapter did not merge cleanly: {leftover[:4]}")
+-    return merged, {"path": str(frozen_dir), "adapter_sha256": sha256_file(frozen_dir / "adapter_model.safetensors")}
++    return merged, report
+ 
+ 
+ def freeze_visual_except_lora(model: torch.nn.Module, components: ModelComponents) -> JsonDict:
+@@ -1302,10 +1317,11 @@ def load_frozen_bundle(
+         raise FileNotFoundError(factors)
+ 
+     base_model._catan_components = components
+-    resolve_wrapped_module(base_model, components.vision).float()
+-    visual = load_visual_state(base_model, bundle)
+-    merged, frozen_report = apply_frozen_adapter(base_model, bundle)
++    merged, frozen_report = apply_frozen_adapter(base_model, bundle, restore_visual=True)
++    visual = frozen_report["visual_state"]
+     merged.requires_grad_(False)
++    language_targets = language_linear_targets(merged, components)
++    vision_targets = vision_linear_targets(merged, components)
+     token_targets = {
+         components.input_embedding: list(setup.token_ids),
+         components.output_head: list(setup.token_ids),
+@@ -1316,7 +1332,7 @@ def load_frozen_bundle(
+         lora_alpha=config.lora_alpha,
+         lora_dropout=config.lora_dropout,
+         bias="none",
+-        target_modules=language_linear_targets(merged, components) + vision_linear_targets(merged, components),
++        target_modules=language_targets + vision_targets,
+         trainable_token_indices=token_targets,
+     )
+     model = get_peft_model(merged, peft_config)
+@@ -1339,7 +1355,7 @@ def load_frozen_bundle(
+         "visual_sha256": visual["sha256"],
+         "visual_delta_factors": str(factors) if factors else None,
+         "visual_delta_factors_sha256": sha256_file(factors) if factors else None,
+-        "new_adapter": {"rank": config.lora_rank, "alpha": config.lora_alpha, "language_targets": len(language_linear_targets(merged, components)), "vision_targets": len(vision_linear_targets(merged, components))},
++        "new_adapter": {"rank": config.lora_rank, "alpha": config.lora_alpha, "language_targets": len(language_targets), "vision_targets": len(vision_targets)},
+         "protected_modules": len(protected),
+         "unprotected_modules": unprotected,
+         "orthogonal_lambda": config.orthogonal_lambda,
+diff --git a/tasks/lessons.md b/tasks/lessons.md
+index 9405d0e..2a9cc48 100644
+--- a/tasks/lessons.md
++++ b/tasks/lessons.md
+@@ -235,3 +235,5 @@
+ - [gotcha] Readouts are 60 to 100x longer than short rows, so a mix with two
+   readouts per image is >90% readout tokens; balance by estimated completion
+   tokens (the mixer reports shares), keep readouts in the hundreds.
++- [gotcha] `get_peft_model` mutates the module tree in place: targets become `<name>.base_layer` and gain `lora_A/lora_B` children, so any helper that lists targets by module name (`vision_linear_targets`, `language_linear_targets`) must run before wrapping and its result reused; recounting afterwards either returns a different number or raises. Same trap for state files: a `visual_model.safetensors` saved from a wrapped model only loads into an equally wrapped model, so restore before `merge_and_unload`.
++- [gotcha] Match the local peft to the Modal image pin before trusting a local PEFT test. peft 0.17 refuses `trainable_token_indices` on an untied `lm_head` that 0.20 accepts, so a test that passes or fails locally may say nothing about the H200 container.
+diff --git a/tasks/todo.md b/tasks/todo.md
+index ecfa976..fe2e848 100644
+--- a/tasks/todo.md
++++ b/tasks/todo.md
+@@ -3093,3 +3093,33 @@ scorecards, never loss.
+ - [ ] Workspace move to the user's `icebear5h` profile (own account):
+   volumes created, stage-2 checkpoint-384 bundle uploaded to the same path;
+   the base model re-downloads into the new HF cache on the first run.
++  Preflight 2026-09-06 morning: bundle at
++  `/runs/catan-vision-sft/catan-qwen38-gauss-s2-terrain-20260904/398f0a023ec9/checkpoints/checkpoint-384`
++  carries the five files the frozen loader needs (adapter config and
++  weights, visual_model, training_config, trainable_parameters) with sizes
++  matching tetracorp; the optimizer, tokenizer and processor files were not
++  copied and are not needed. Token inventory for `--token-init keep` is
++  `ms_swift_bidirectional_v1/trainable_tokens.json` (sha matches the
++  parent's). 38 trainer and budget tests pass. Dry run on `icebear5h`
++  stops at `Secret 'catan-hf' not found`; the launcher requires that name
++  with key `HF_TOKEN`. `huggingface-secret-2` exists there but its key
++  name is unverified. User's call: fall back to `tetracorp` for this run.
++  Dry run clean there (`MODAL_PROFILE=tetracorp`, run name
++  `catan-qwen38-olora-s3c-mixed-20260906`, plan shows profile
++  olora_frozen_bundle, rank 16 / alpha 32, lambda 0.5, token_init keep,
++  factors uploaded as dataset `c0858f119641`). Awaiting the go for
++  `--no-dry-run --spawn-training` with `modal run --detach`.
++- [x] O-LoRA loader startup fixes (2026-09-06, found by the other session's
++  smoke, finished here): the parent's `visual_model.safetensors` is keyed by
++  PEFT-wrapped names, so it is restored while the parent `PeftModel` is
++  still attached (`apply_frozen_adapter(..., restore_visual=True)`), fp32
++  promoted first; then merge, then fresh adapters. The LoRA target lists are
++  computed once before `get_peft_model`, which renames the targets in place
++  (`base_layer`, `lora_A`), so the report no longer recounts and the vision
++  count no longer hits "no vision linear modules". Covered by a real-PEFT
++  test on a Qwen-shaped tiny model (parent bundle written through PEFT,
++  exact vision restore, merged language and atlas rows, 2 + 6 targets, 2
++  protected modules, smoke forward). Needed peft 0.20 locally (Modal pins
++  0.20.0; 0.17 rejects trainable-token rows on an untied `lm_head`), so the
++  `sft` extra pins `peft>=0.20.0` and `[tool.uv] conflicts` separates it
++  from the llamafactory `pretraining` extra. 39 trainer and budget tests pass.
+diff --git a/tests/test_catan_sft_data_routes.py b/tests/test_catan_sft_data_routes.py
+index ead02c0..77bc3cd 100644
+--- a/tests/test_catan_sft_data_routes.py
++++ b/tests/test_catan_sft_data_routes.py
+@@ -161,6 +161,51 @@ def test_spatial_localization_probes_do_not_accept_train_split():
+     assert "unavailable" in response.get_json()["error"]
+ 
+ 
++def test_piece_viewer_exposes_reweighted_training_and_color_diagnostic():
++    client = _client()
++    for split, expected in (("train", 17_708), ("color_diagnostic", 8_192)):
++        response = client.get(
++            "/api/catan-board-bench/spatial-localization-data",
++            query_string={"dataset": "node_edge_readout_reweighted_v1", "split": split, "limit": 1},
++        )
++        assert response.status_code == 200
++        payload = response.get_json()
++        assert payload["total"] == expected
++        assert len(payload["summary"]["source_sha256"]) == 64
++        row = payload["rows"][0]
++        assert row["queried_token"] in row["prompt"]
++        assert row["piece"]
++        assert client.get(row["image_url"]).content_type == "image/png"
++
++
++def test_v3_viewer_keeps_queried_location_distinct_from_piece_location():
++    client = _client()
++    response = client.get(
++        "/api/catan-board-bench/spatial-localization-data",
++        query_string={"dataset": "spatial_localization_v3", "polarity": "hard_negative", "limit": 1},
++    )
++    assert response.status_code == 200
++    row = response.get_json()["rows"][0]
++    assert row["queried_token"] != row["target_token"]
++    assert row["queried_token"] in row["prompt"]
++    image = client.get(row["image_url"])
++    assert image.status_code == 200
++    assert image.content_type == "image/png"
++
++
++def test_piece_viewer_rejects_unknown_datasets_and_image_traversal():
++    client = _client()
++    assert client.get(
++        "/api/catan-board-bench/spatial-localization-data?dataset=../../.."
++    ).status_code == 400
++    assert client.get(
++        "/api/catan-board-bench/spatial-localization-image/test.png?dataset=../../.."
++    ).status_code == 400
++    assert client.get(
++        "/api/catan-board-bench/spatial-localization-image/../metadata.json?dataset=node_edge_readout_reweighted_v1"
++    ).status_code in {400, 404}
++
++
+ def test_sft_eval_route_exposes_final_checkpoint_results():
+     response = _client().get(
+         "/api/catan-board-bench/sft-eval",
+diff --git a/tests/test_trl_catan_vision.py b/tests/test_trl_catan_vision.py
+index 1d0be32..0c75fea 100644
+--- a/tests/test_trl_catan_vision.py
++++ b/tests/test_trl_catan_vision.py
+@@ -3,9 +3,13 @@ from pathlib import Path
+ 
+ import pytest
+ import torch
++from transformers import PretrainedConfig
+ import torch.nn.functional as F
+ 
+ from sft.scripts.train_trl_catan_vision import (
++    PROFILE_OLORA_FROZEN_BUNDLE,
++    language_linear_targets,
++    load_frozen_bundle,
+     CURRICULUM_STAGES,
+     ModelComponents,
+     PROFILE_VISION_TOKENS_LORA,
+@@ -702,3 +706,151 @@ def test_vision_lora_targets_and_categories():
+     assert parameter_category("base_model.model.model.visual.merger.linear_fc1.lora_B.default.weight", components) == "vision_lora"
+     assert parameter_category("base_model.model.model.language_model.layers.0.mlp.up_proj.lora_A.default.weight", components) == "language_lora"
+     assert parameter_category("base_model.model.model.visual.blocks.0.norm1.weight", components) == "vision"
++
++
++class _TinyVLM(torch.nn.Module):
++    """Qwen-shaped module tree: language layers, a vision tower with the O-LoRA suffixes, tied-shape heads."""
++
++    def __init__(self, vocab: int = 16, hidden: int = 4, seed: int = 0):
++        super().__init__()
++        torch.manual_seed(seed)
++        self.config = PretrainedConfig(tie_word_embeddings=False)
++        self.model = torch.nn.Module()
++        self.model.language_model = torch.nn.Module()
++        self.model.language_model.embed_tokens = torch.nn.Embedding(vocab, hidden)
++        layer = torch.nn.Module()
++        layer.q_proj = torch.nn.Linear(hidden, hidden)
++        layer.down_proj = torch.nn.Linear(hidden, hidden)
++        self.model.language_model.layers = torch.nn.ModuleList([layer])
++        self.model.visual = torch.nn.Module()
++        block = torch.nn.Module()
++        block.attn = torch.nn.Module()
++        block.attn.qkv = torch.nn.Linear(hidden, hidden)
++        block.attn.proj = torch.nn.Linear(hidden, hidden)
++        block.norm1 = torch.nn.LayerNorm(hidden)
++        block.mlp = torch.nn.Module()
++        block.mlp.linear_fc1 = torch.nn.Linear(hidden, hidden)
++        block.mlp.linear_fc2 = torch.nn.Linear(hidden, hidden)
++        self.model.visual.blocks = torch.nn.ModuleList([block])
++        self.model.visual.merger = torch.nn.Module()
++        self.model.visual.merger.linear_fc1 = torch.nn.Linear(hidden, hidden)
++        self.model.visual.merger.linear_fc2 = torch.nn.Linear(hidden, hidden)
++        self.model.visual.patch_embed = torch.nn.Module()
++        self.model.visual.patch_embed.proj = torch.nn.Linear(hidden, hidden)
++        self.lm_head = torch.nn.Linear(hidden, vocab, bias=False)
++
++    def prepare_inputs_for_generation(self, *args, **kwargs):
++        return kwargs
++
++    def forward(self, input_ids=None, pixels=None, **kwargs):
++        block = self.model.visual.blocks[0]
++        visual = block.norm1(block.attn.proj(block.attn.qkv(pixels)))
++        visual = block.mlp.linear_fc2(block.mlp.linear_fc1(visual))
++        visual = self.model.visual.merger.linear_fc2(self.model.visual.merger.linear_fc1(visual))
++        layer = self.model.language_model.layers[0]
++        hidden = self.model.language_model.embed_tokens(input_ids)
++        hidden = hidden + visual.to(hidden.dtype)
++        return self.lm_head(layer.down_proj(layer.q_proj(hidden)))
++
++
++_TINY_COMPONENTS = ModelComponents(
++    input_embedding="model.language_model.embed_tokens",
++    output_head="lm_head",
++    language="model.language_model",
++    vision="model.visual",
++    merger="model.visual.merger",
++    vocab_size=16,
++    hidden_size=4,
++)
++_TINY_SETUP = TokenSetup(tokens=("<a>", "<b>"), token_ids=(14, 15), tokenizer_size=16, model_vocab_size=16, added_tokens=0)
++
++
++def _write_parent_bundle(bundle: Path) -> tuple[dict[str, torch.Tensor], dict[str, torch.Tensor]]:
++    """Train-shaped parent: language LoRA and atlas rows in PEFT, a full-visual file saved from the wrapped model."""
++
++    from peft import LoraConfig, get_peft_model
++
++    parent = _TinyVLM(seed=2)
++    parent.requires_grad_(False)
++    peft_config = LoraConfig(
++        task_type="CAUSAL_LM",
++        r=2,
++        lora_alpha=4,
++        lora_dropout=0.0,
++        bias="none",
++        target_modules=language_linear_targets(parent, _TINY_COMPONENTS),
++        trainable_token_indices={_TINY_COMPONENTS.input_embedding: [14, 15], _TINY_COMPONENTS.output_head: [14, 15]},
++    )
++    wrapped = get_peft_model(parent, peft_config)
++    wrapped._catan_components = _TINY_COMPONENTS
++    with torch.no_grad():
++        for name, parameter in wrapped.named_parameters():
++            if ".lora_B." in name or "trainable_tokens_delta" in name or ".model.visual." in name:
++                parameter.add_(torch.randn_like(parameter))
++    bundle.mkdir(parents=True)
++    wrapped.save_pretrained(str(bundle))
++    save_visual_state(wrapped, _TINY_COMPONENTS, bundle)
++    (bundle / "trainable_parameters.json").write_text(json.dumps({"semantic_tokens": _TINY_SETUP.as_dict()}))
++    merged = wrapped.merge_and_unload()
++    merged_state = {name: tensor.detach().clone() for name, tensor in merged.state_dict().items()}
++    visual_state = {name: tensor for name, tensor in merged_state.items() if name.startswith("model.visual.")}
++    return merged_state, visual_state
++
++
++def test_load_frozen_bundle_restores_vision_merges_parent_and_adds_fresh_adapters(tmp_path: Path):
++    bundle = tmp_path / "checkpoint-384"
++    parent_state, parent_visual = _write_parent_bundle(bundle)
++    config = TrainConfig(
++        train_jsonl="train.jsonl",
++        image_root="images",
++        token_inventory="tokens.json",
++        output_dir=str(tmp_path / "out"),
++        profile=PROFILE_OLORA_FROZEN_BUNDLE,
++        frozen_bundle=str(bundle),
++        token_init="keep",
++        lora_rank=2,
++        lora_alpha=4,
++        lora_dropout=0.0,
++    )
++    config.validate()
++    base = _TinyVLM(seed=2).bfloat16()
++    for name in parent_visual:
++        assert not torch.equal(base.state_dict()[name].float(), parent_visual[name]), name
++
++    model, report = load_frozen_bundle(base, _TINY_SETUP, _TINY_COMPONENTS, config)
++
++    state = model.state_dict()
++    # Vision: the parent's fp32 weights land exactly, no bf16 round trip.
++    for name, expected in parent_visual.items():
++        module, _, leaf = name.rpartition(".")
++        loaded = state.get(f"base_model.model.{name}", state.get(f"base_model.model.{module}.base_layer.{leaf}"))
++        assert loaded is not None, name
++        assert loaded.dtype == torch.float32
++        assert torch.equal(loaded, expected), name
++    # Language and atlas rows: the parent's LoRA and token deltas are merged into the base weights.
++    for name in ("model.language_model.layers.0.q_proj", "model.language_model.layers.0.down_proj"):
++        assert torch.allclose(state[f"base_model.model.{name}.base_layer.weight"].float(), parent_state[f"{name}.weight"], atol=2e-2)
++    embed_key = [name for name in state if "embed_tokens" in name and name.endswith(".weight") and "trainable_tokens" not in name]
++    assert len(embed_key) == 1, embed_key
++    embed = state[embed_key[0]].float()
++    assert torch.allclose(embed[14:], parent_state["model.language_model.embed_tokens.weight"][14:], atol=2e-2)
++    # Fresh adapters on every language linear and every vision projection, counted before PEFT renamed them.
++    assert report["new_adapter"] == {"rank": 2, "alpha": 4, "language_targets": 2, "vision_targets": 6}
++    lora_a = {name for name, parameter in model.named_parameters() if ".lora_A." in name and parameter.requires_grad}
++    assert len(lora_a) == 8
++    assert "base_model.model.model.visual.blocks.0.attn.qkv.lora_A.default.weight" in lora_a
++    assert "base_model.model.model.visual.patch_embed.proj.lora_A.default.weight" not in lora_a
++    assert report["protected_modules"] == 2
++    assert report["unprotected_modules"] == [
++        "model.visual.blocks.0.attn.proj",
++        "model.visual.blocks.0.attn.qkv",
++        "model.visual.blocks.0.mlp.linear_fc1",
++        "model.visual.blocks.0.mlp.linear_fc2",
++        "model.visual.merger.linear_fc1",
++        "model.visual.merger.linear_fc2",
++    ]
++    trainable = {name for name, parameter in model.named_parameters() if parameter.requires_grad}
++    assert all(".lora_" in name or "trainable_tokens_delta" in name for name in trainable)
++    assert not any(".lora_" in name for name in parent_state)
++    logits = model(input_ids=torch.tensor([[1, 14]]), pixels=torch.zeros(1, 2, 4))
++    assert logits.shape == (1, 2, 16)

@@ -17,6 +17,7 @@ from cle.harness.models import (
     PromptComponent,
 )
 from cle.harness.suite import ContextSuite
+from cle.harness.response_xml import parse_response_fields
 from cle.players.contracts import PlayerChoice, PlayerContext
 from cle.game_engine.events import PlayerEvent
 from cle.game_engine.models.enums import ActionType
@@ -184,7 +185,13 @@ class ContextAssembler:
             ),
         )
         action_descriptions = (
-            formatter._format_single_action(action, context.observation)
+            formatter._format_single_action(
+                action,
+                context.observation,
+                discard_count=(
+                    context.discard_count if "discard" in self.suite.response.tags else None
+                ),
+            )
             for action in context.legal_actions
         )
         decision_request = "Choose exactly one zero-based index from VALID ACTIONS."
@@ -197,7 +204,7 @@ class ContextAssembler:
             f"{index}. {description}"
             for index, description in enumerate(action_descriptions)
         )
-        return {
+        values = {
             "strategic_memory": session.strategic_memory,
             "game_events": visible_events,
             "visible_events": visible_events,
@@ -212,6 +219,15 @@ class ContextAssembler:
             "decision_request": decision_request,
             "response_schema": self.suite.response.instruction,
         }
+        if self.suite.context.social_context:
+            values["recent_table_talk"] = self._format_events(context.recent_messages)
+            values["commitments"] = "\n".join(
+                f"{item.id}: {self._color_name(item.proposer)} to "
+                f"{', '.join(self._color_name(color) for color in item.audience)}: "
+                f"{item.condition} -> {item.promise} (expires turn {item.expires_turn})"
+                for item in context.active_commitments
+            )
+        return values
 
     @staticmethod
     def _legacy_section_template(heading: str) -> str:
@@ -263,13 +279,18 @@ class ContextAssembler:
             return values[match.group(1)]
 
         rendered = _TEMPLATE_VARIABLE.sub(replace, template)
-        if _TEMPLATE_VARIABLE.search(rendered):
-            raise ValueError("Context template contains unresolved variables")
         return rendered.strip()
 
 
 class PlayerResponseParseError(ValueError):
     """Raised when model output cannot select the advertised exact menu."""
+
+
+def _parse_json_integer(value: str) -> int:
+    try:
+        return int(value)
+    except ValueError as exc:
+        raise PlayerResponseParseError("JSON integer is too large.") from exc
 
 
 class PlayerResponseParser:
@@ -284,14 +305,17 @@ class PlayerResponseParser:
         response: ModelResponse,
     ) -> PlayerChoice:
         text = response.content or ""
-        game_plan = self._tag(text, "game_plan")
-        action_text = self._tag(text, "action")
-        warning = None
-
-        index = self._first_integer(action_text) if action_text else None
-        if index is None:
-            index = self._first_integer(text)
-            warning = "Missing <action> tag; used the first integer in the response."
+        try:
+            fields, outside_text = parse_response_fields(
+                text, instruction=self.suite.response.instruction
+            )
+        except ValueError as exc:
+            raise PlayerResponseParseError(str(exc)) from exc
+        for name, values in fields.items():
+            if name != "action" and len(values) != 1:
+                raise PlayerResponseParseError(f"Repeated <{name}> field.")
+        game_plan = fields.get("game_plan", [""])[0]
+        index, warning = self._parse_action_index(fields.get("action", []), outside_text)
         if index is None or index < 0 or index >= len(context.legal_actions):
             raise PlayerResponseParseError(
                 f"Choose an action index from 0 to {len(context.legal_actions) - 1}; "
@@ -300,12 +324,16 @@ class PlayerResponseParser:
 
         selected_action = context.legal_actions[index]
         trade_offer = None
+        offer_text = fields.get("trade_offer", [""])[0]
+        if "trade_offer" in fields and selected_action.action_type not in {
+            ActionType.OFFER_TRADE, ActionType.COUNTER_OFFER
+        }:
+            raise PlayerResponseParseError("<trade_offer> is only valid for trade actions.")
         if (
             selected_action.action_type
             in {ActionType.OFFER_TRADE, ActionType.COUNTER_OFFER}
             and isinstance(selected_action.value, str)
         ):
-            offer_text = self._tag(text, "trade_offer")
             if not offer_text:
                 raise PlayerResponseParseError(
                     "Selected trade action requires <trade_offer>."
@@ -316,6 +344,17 @@ class PlayerResponseParser:
                 selected_action.action_type,
                 selected_action.value,
             )
+
+        discard_cards = None
+        if "discard" in fields:
+            if selected_action.action_type != ActionType.DISCARD:
+                raise PlayerResponseParseError("<discard> is only valid for DISCARD.")
+            discard_cards = self._parse_discard(fields["discard"][0], context)
+        elif (
+            selected_action.action_type == ActionType.DISCARD
+            and "discard" in self.suite.response.tags
+        ):
+            raise PlayerResponseParseError("Selected DISCARD action requires <discard>.")
 
         return PlayerChoice(
             action_index=index,
@@ -332,16 +371,40 @@ class PlayerResponseParser:
             provider_response_id=response.provider_response_id,
             provider_request_id=response.provider_request_id,
             provider_native_finish_reason=response.provider_native_finish_reason,
+            discard_cards=discard_cards,
         )
 
     @staticmethod
-    def _tag(text: str, tag: str) -> str:
-        match = re.search(
-            rf"<{re.escape(tag)}>(.*?)</{re.escape(tag)}>",
-            text,
-            flags=re.DOTALL | re.IGNORECASE,
+    def _parse_discard(value: str, context: PlayerContext) -> tuple[str, ...]:
+        def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+            result = {}
+            for resource, count in pairs:
+                resource = resource.upper()
+                if resource in result:
+                    raise PlayerResponseParseError(f"Duplicate discard resource: {resource}")
+                result[resource] = count
+            return result
+
+        try:
+            payload = json.loads(
+                value, object_pairs_hook=unique_object, parse_int=_parse_json_integer
+            )
+        except json.JSONDecodeError as exc:
+            raise PlayerResponseParseError(f"discard must contain valid JSON: {exc}") from exc
+        if not isinstance(payload, dict):
+            raise PlayerResponseParseError("discard must be a named resource-count JSON object.")
+        for resource, count in payload.items():
+            if resource not in RESOURCE_NAMES:
+                raise PlayerResponseParseError(f"Unknown discard resource: {resource}")
+            if isinstance(count, bool) or not isinstance(count, int) or count <= 0:
+                raise PlayerResponseParseError("Named discard counts must be positive integers.")
+            if count > context.observation.my_resources.get(resource, 0):
+                raise PlayerResponseParseError(f"Discard exceeds your {resource} holdings.")
+        if sum(payload.values()) != context.discard_count:
+            raise PlayerResponseParseError(f"Discard exactly {context.discard_count} cards.")
+        return tuple(
+            resource for resource in RESOURCE_NAMES for _ in range(payload.get(resource, 0))
         )
-        return match.group(1).strip() if match else ""
 
     @staticmethod
     def _parse_trade_offer(
@@ -350,8 +413,20 @@ class PlayerResponseParser:
         action_type: ActionType,
         action_value: str,
     ) -> TradeOffer:
+        def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+            result = {}
+            for key, item in pairs:
+                if key in result:
+                    raise PlayerResponseParseError(
+                        f"Duplicate trade_offer JSON key: {key}"
+                    )
+                result[key] = item
+            return result
+
         try:
-            payload = json.loads(value)
+            payload = json.loads(
+                value, object_pairs_hook=unique_object, parse_int=_parse_json_integer
+            )
         except json.JSONDecodeError as exc:
             raise PlayerResponseParseError(
                 "trade_offer must contain valid JSON."
@@ -409,7 +484,9 @@ class PlayerResponseParser:
             parent_offer_id = None
             audience = frozenset(context.observation.opponent_resource_counts)
             if action_type == ActionType.COUNTER_OFFER:
-                parent_offer_id = action_value.split(":", 2)[1]
+                parent_offer_id = action_value.removeprefix("COUNTER_OFFER:").rsplit(
+                    ":", 1
+                )[0]
                 audience = frozenset({context.observation.turn_player_color})
             return TradeOffer(
                 offered_by=context.actor,
@@ -423,7 +500,36 @@ class PlayerResponseParser:
         except ValueError as exc:
             raise PlayerResponseParseError(str(exc)) from exc
 
-    @staticmethod
-    def _first_integer(text: str) -> int | None:
-        match = re.search(r"\b\d+\b", text)
-        return int(match.group(0)) if match else None
+    def _parse_action_index(
+        self, tagged_values: list[str], outside_text: str
+    ) -> tuple[int | None, str | None]:
+        # An exact authored placeholder echo is not a selection; numeric examples are.
+        tagged_values = [
+            value for value in tagged_values
+            if not value
+            or re.fullmatch(r"[0-9]+", value)
+            or f"<action>{value}</action>" not in self.suite.response.instruction
+        ]
+        remaining = outside_text.strip()
+        named_values = re.findall(
+            r"\b(?:action|move)(?:_index)?\s*[:=]\s*([^\r\n]*)",
+            remaining,
+            flags=re.IGNORECASE,
+        )
+        values = tagged_values + [value.strip() for value in named_values]
+        if re.fullmatch(r"[0-9]+", remaining):
+            values.append(remaining)
+        if any(re.fullmatch(r"[0-9]+", value) is None for value in values):
+            raise PlayerResponseParseError(
+                "Action selections must be whole non-negative integers."
+            )
+        try:
+            indices = {int(value) for value in values}
+        except ValueError as exc:
+            raise PlayerResponseParseError("Action index is too large.") from exc
+        if len(indices) > 1:
+            raise PlayerResponseParseError("Response contains conflicting action selections.")
+        warning = None
+        if indices and not tagged_values:
+            warning = "Missing numeric <action> tag; used an explicit index fallback."
+        return next(iter(indices), None), warning

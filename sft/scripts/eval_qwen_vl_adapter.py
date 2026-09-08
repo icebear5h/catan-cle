@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from sft.behavior_diagnostics import summarize_behaviors
+from sft.board_state_readout import TASK as FULL_BOARD_TASK, score_board_state, summarize_board_states
 from sft.paths import resolve_dataset_asset, resolve_dataset_image
 from sft.scripts.train_trl_catan_vision import (
     VISUAL_STATE_FILE,
@@ -53,7 +54,7 @@ def expected_text(row: dict[str, Any]) -> str:
 
 
 LONG_ANSWER_CHARACTERS = 48
-LONG_ANSWER_TASK_TYPES = {"terrain_readout", "node_readout", "edge_readout"}
+LONG_ANSWER_TASK_TYPES = {"terrain_readout", "node_readout", "edge_readout", FULL_BOARD_TASK}
 
 
 def is_long_answer(row: dict[str, Any]) -> bool:
@@ -129,6 +130,8 @@ def score_readout(expected: str, response: str) -> dict[str, Any]:
 def score_response(expected: str, response: str) -> dict[str, Any]:
     expected_norm = normalize_text(expected)
     response_norm = normalize_text(response)
+    if "; robber " in expected_norm and len(readout_items(expected_norm)) >= 154:
+        return score_board_state(expected_norm, response_norm)
     if len(readout_items(expected_norm)) >= 4:
         return score_readout(expected_norm, response_norm)
 
@@ -312,6 +315,7 @@ def generate_responses(
     image_variant: str = "original",
     shuffled_images: dict[str, str] | None = None,
     occlusion_margin: float = 0.03,
+    return_first_logits: bool = True,
 ) -> tuple[list[str], Any]:
     """Generate answers and return the raw first-step logits per row."""
 
@@ -349,13 +353,13 @@ def generate_responses(
             **inputs,
             do_sample=False,
             max_new_tokens=max_new_tokens,
-            output_logits=True,
+            output_logits=return_first_logits,
             return_dict_in_generate=True,
         )
 
     input_width = inputs.input_ids.shape[1]
     trimmed = [output_ids[input_width:] for output_ids in generated.sequences]
-    first_logits = generated.logits[0].detach().float().cpu()
+    first_logits = generated.logits[0].detach().float().cpu() if return_first_logits else None
     texts = list(processor.batch_decode(
         trimmed,
         skip_special_tokens=False,
@@ -611,6 +615,9 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
     summary["categories"] = summary["by_category"]
     summary["occupancy_classes"] = summarize_occupancy_classes(attempted)
     summary["readout_items"] = summarize_readout_items(attempted)
+    board_records = [r for r in attempted if r["score"].get("scoring") == FULL_BOARD_TASK]
+    if board_records:
+        summary["full_board"] = summarize_board_states(board_records)
     summary["neighbor_confusion"] = summarize_neighbor_confusion(attempted)
     summary["by_behavior"] = summarize_behaviors(attempted)
     return summary
@@ -874,6 +881,7 @@ def run_eval_job(
                 image_variant=image_variant,
                 shuffled_images=shuffled_images,
                 occlusion_margin=args.occlusion_margin,
+                return_first_logits=args.candidate_scoring,
             )
             for offset, (row, response) in enumerate(zip(batch, responses, strict=True)):
                 index = batch_start + offset + 1

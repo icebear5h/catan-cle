@@ -106,51 +106,12 @@ class Board:
 
         self.buildings[node_id] = (color, SETTLEMENT)
 
-        previous_road_color = self.road_color
-        if initial_build_phase:
-            self.connected_components[color].append({node_id})
-        else:
-            # Maybe cut connected components.
-            edges_by_color = defaultdict(list)
-            for edge in STATIC_GRAPH.edges(node_id):
-                edges_by_color[self.roads.get(edge, None)].append(edge)
-
-            for edge_color, edges in edges_by_color.items():
-                if edge_color == color or edge_color is None:
-                    continue  # ignore
-                if len(edges) == 2:  # rip, edge_color has been plowed
-                    # consider cut was at b=node_id for edges (a, b) and (b, c)
-                    a = [n for n in edges[0] if n != node_id].pop()
-                    c = [n for n in edges[1] if n != node_id].pop()
-
-                    # do dfs from a adding all encountered nodes
-                    a_nodeset = self.dfs_walk(a, edge_color)
-                    c_nodeset = self.dfs_walk(c, edge_color)
-
-                    # split this components on here.
-                    b_index = self._get_connected_component_index(node_id, edge_color)
-                    del self.connected_components[edge_color][b_index]
-                    self.connected_components[edge_color].append(a_nodeset)
-                    self.connected_components[edge_color].append(c_nodeset)
-
-                    # Update longest road by plowed player. Compare again with all
-                    self.road_lengths[edge_color] = max(
-                        *[
-                            len(longest_acyclic_path(self, component, edge_color))
-                            for component in self.connected_components[edge_color]
-                        ]
-                    )
-                    self.road_color, self.road_length = max(
-                        self.road_lengths.items(), key=lambda e: e[1]
-                    )
-
         self.board_buildable_ids.discard(node_id)
         for n in STATIC_GRAPH.neighbors(node_id):
             self.board_buildable_ids.discard(n)
 
-        self.buildable_edges_cache = {}  # Reset buildable_edges
         self.player_port_resources_cache = {}  # Reset port resources
-        return previous_road_color, self.road_color, self.road_lengths
+        return self.recompute_road_state()
 
     def dfs_walk(self, node_id, color):
         """Generates set of nodes that are "connected" to given node.
@@ -193,41 +154,66 @@ class Board:
         self.roads[edge] = color
         self.roads[inverted_edge] = color
 
-        # Find connected components corresponding to edge nodes (buildings).
-        a, b = edge
-        a_index = self._get_connected_component_index(a, color)
-        b_index = self._get_connected_component_index(b, color)
+        return self.recompute_road_state()
 
-        # Extend or merge components
-        if a_index is None and not self.is_enemy_node(a, color):
-            component = self.connected_components[color][b_index]
-            component.add(a)
-        elif b_index is None and not self.is_enemy_node(b, color):
-            component = self.connected_components[color][a_index]
-            component.add(b)
-        elif a_index is not None and b_index is not None and a_index != b_index:
-            # Merge both components into one and delete the other.
-            component = set.union(
-                self.connected_components[color][a_index],
-                self.connected_components[color][b_index],
-            )
-            self.connected_components[color][a_index] = component
-            del self.connected_components[color][b_index]
-        else:
-            # In this case, a_index == b_index, which means that the edge
-            # is already part of one component. No actions needed.
-            chosen_index = a_index if a_index is not None else b_index
-            component = self.connected_components[color][chosen_index]
+    def recompute_road_state(self):
+        """Rebuild road components, edge-simple lengths, and award ownership.
 
-        # find longest path on component under question
+        Enemy vertices can be endpoints shared by multiple components, but
+        never join roads through that vertex. Also used after replay overlays.
+        """
         previous_road_color = self.road_color
-        candidate_length = len(longest_acyclic_path(self, component, color))
-        self.road_lengths[color] = max(self.road_lengths[color], candidate_length)
-        if candidate_length >= 5 and candidate_length > self.road_length:
-            self.road_color = color
-            self.road_length = candidate_length
+        colors = (
+            set(self.connected_components)
+            | set(self.road_lengths)
+            | set(self.roads.values())
+            | {owner for owner, _ in self.buildings.values()}
+        )
+        components = defaultdict(list)
+        lengths = defaultdict(int)
+        for color in sorted(colors, key=lambda item: item.value):
+            remaining = {
+                tuple(sorted(edge)) for edge, owner in self.roads.items() if owner == color
+            }
+            road_nodes = {node for edge in remaining for node in edge}
+            while remaining:
+                agenda = [min(remaining)]
+                nodes = set()
+                while agenda:
+                    edge = agenda.pop()
+                    if edge not in remaining:
+                        continue
+                    remaining.remove(edge)
+                    nodes.update(edge)
+                    for node in edge:
+                        if self.is_enemy_node(node, color):
+                            continue
+                        for neighbor in STATIC_GRAPH.neighbors(node):
+                            candidate = tuple(sorted((node, neighbor)))
+                            if candidate in remaining:
+                                agenda.append(candidate)
+                components[color].append(nodes)
+            components[color].extend(
+                {node}
+                for node, (owner, _) in self.buildings.items()
+                if owner == color and node not in road_nodes
+            )
+            lengths[color] = max(
+                (len(longest_acyclic_path(self, nodes, color)) for nodes in components[color]),
+                default=0,
+            )
 
-        self.buildable_edges_cache = {}  # Reset buildable_edges
+        self.connected_components = components
+        self.road_lengths = lengths
+        self.road_length = max(lengths.values(), default=0)
+        leaders = [
+            color for color, length in lengths.items() if length == self.road_length and length >= 5
+        ]
+        if previous_road_color in leaders:
+            self.road_color = previous_road_color
+        else:
+            self.road_color = leaders[0] if len(leaders) == 1 else None
+        self.buildable_edges_cache = {}
         return previous_road_color, self.road_color, self.road_lengths
 
     def build_city(self, color, node_id):
@@ -252,12 +238,12 @@ class Board:
 
         expandable = set()
 
-        # All nodes for this color.
-        # TODO(tonypr): Explore caching for 'expandable_nodes'?
-        # The 'expandable_nodes' set should only increase in size monotonically I think.
-        # We can take advantage of that.
-        expandable_nodes = set()
-        expandable_nodes = expandable_nodes.union(*self.connected_components[color])
+        expandable_nodes = {
+            node
+            for component in self.connected_components[color]
+            for node in component
+            if not self.is_enemy_node(node, color)
+        }
 
         candidate_edges = self.buildable_subgraph.edges(expandable_nodes)
         for edge in candidate_edges:
@@ -348,33 +334,20 @@ class Board:
 
 
 def longest_acyclic_path(board: Board, node_set: Set[int], color: Color):
-    paths = []
-    for start_node in node_set:
-        # do DFS when reach leaf node, stop and add to paths
-        paths_from_this_node = []
+    """Return a longest trail: vertices may repeat, undirected edges may not."""
+    longest = []
+    for start_node in sorted(node_set):
         agenda: List[Tuple[int, Any]] = [(start_node, [])]
         while len(agenda) > 0:
             node, path_thus_far = agenda.pop()
-
-            able_to_navigate = False
+            if len(path_thus_far) > len(longest):
+                longest = path_thus_far
+            if path_thus_far and board.is_enemy_node(node, color):
+                continue
             for neighbor_node in STATIC_GRAPH.neighbors(node):
+                if neighbor_node not in node_set:
+                    continue
                 edge = tuple(sorted((node, neighbor_node)))
-
-                # Must travel on a friendly road.
-                if not board.is_friendly_road(edge, color):
-                    continue
-
-                # Can't expand past an enemy node.
-                if board.is_enemy_node(neighbor_node, color):
-                    continue
-
-                if edge not in path_thus_far:
+                if board.is_friendly_road(edge, color) and edge not in path_thus_far:
                     agenda.append((neighbor_node, path_thus_far + [edge]))
-                    able_to_navigate = True
-
-            if not able_to_navigate:  # then it is leaf node
-                paths_from_this_node.append(path_thus_far)
-
-        paths.extend(paths_from_this_node)
-
-    return max(paths, key=len)
+    return longest

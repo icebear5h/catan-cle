@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Iterable
 
-from cle.sandbox.catan import CatanSandbox
+from cle.sandbox.catan import CatanSandbox, _gather_or_cancel
 from cle.sandbox.contracts import SandboxStepResult
 
 
@@ -16,9 +16,7 @@ class SandboxPool:
         if max_concurrent_steps is not None and max_concurrent_steps < 1:
             raise ValueError("max_concurrent_steps must be positive")
         self._semaphore = (
-            asyncio.Semaphore(max_concurrent_steps)
-            if max_concurrent_steps is not None
-            else None
+            asyncio.Semaphore(max_concurrent_steps) if max_concurrent_steps is not None else None
         )
         self._active: set[int] = set()
 
@@ -32,15 +30,14 @@ class SandboxPool:
             raise ValueError("A sandbox may appear only once in one scheduler batch")
         if any(identity in self._active for identity in identities):
             raise RuntimeError("A sandbox already has a step in flight")
-        return tuple(await asyncio.gather(*(self._step_one(item) for item in items)))
+        self._active.update(identities)
+        try:
+            return tuple(await _gather_or_cancel(self._step_one(item) for item in items))
+        finally:
+            self._active.difference_update(identities)
 
     async def _step_one(self, sandbox: CatanSandbox) -> SandboxStepResult:
-        identity = id(sandbox)
-        self._active.add(identity)
-        try:
-            if self._semaphore is None:
-                return await sandbox.step()
-            async with self._semaphore:
-                return await sandbox.step()
-        finally:
-            self._active.remove(identity)
+        if self._semaphore is None:
+            return await sandbox.step()
+        async with self._semaphore:
+            return await sandbox.step()

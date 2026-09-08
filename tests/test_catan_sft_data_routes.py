@@ -161,6 +161,51 @@ def test_spatial_localization_probes_do_not_accept_train_split():
     assert "unavailable" in response.get_json()["error"]
 
 
+def test_piece_viewer_exposes_reweighted_training_and_color_diagnostic():
+    client = _client()
+    for split, expected in (("train", 17_708), ("color_diagnostic", 8_192)):
+        response = client.get(
+            "/api/catan-board-bench/spatial-localization-data",
+            query_string={"dataset": "node_edge_readout_reweighted_v1", "split": split, "limit": 1},
+        )
+        assert response.status_code == 200
+        payload = response.get_json()
+        assert payload["total"] == expected
+        assert len(payload["summary"]["source_sha256"]) == 64
+        row = payload["rows"][0]
+        assert row["queried_token"] in row["prompt"]
+        assert row["piece"]
+        assert client.get(row["image_url"]).content_type == "image/png"
+
+
+def test_v3_viewer_keeps_queried_location_distinct_from_piece_location():
+    client = _client()
+    response = client.get(
+        "/api/catan-board-bench/spatial-localization-data",
+        query_string={"dataset": "spatial_localization_v3", "polarity": "hard_negative", "limit": 1},
+    )
+    assert response.status_code == 200
+    row = response.get_json()["rows"][0]
+    assert row["queried_token"] != row["target_token"]
+    assert row["queried_token"] in row["prompt"]
+    image = client.get(row["image_url"])
+    assert image.status_code == 200
+    assert image.content_type == "image/png"
+
+
+def test_piece_viewer_rejects_unknown_datasets_and_image_traversal():
+    client = _client()
+    assert client.get(
+        "/api/catan-board-bench/spatial-localization-data?dataset=../../.."
+    ).status_code == 400
+    assert client.get(
+        "/api/catan-board-bench/spatial-localization-image/test.png?dataset=../../.."
+    ).status_code == 400
+    assert client.get(
+        "/api/catan-board-bench/spatial-localization-image/../metadata.json?dataset=node_edge_readout_reweighted_v1"
+    ).status_code in {400, 404}
+
+
 def test_sft_eval_route_exposes_final_checkpoint_results():
     response = _client().get(
         "/api/catan-board-bench/sft-eval",

@@ -54,7 +54,7 @@ sft = [
     "torch>=2.6.0",
     "transformers>=4.57.1",
     "trl>=0.21.0",
-    "peft>=0.17.0",
+    "peft>=0.20.0",
     "accelerate>=1.10.0",
     "datasets>=3.0.0",
     "bitsandbytes>=0.46.0",
@@ -91,3 +91,7 @@ target-version = ['py311']
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+
+[tool.uv]
+# llamafactory (pretraining) caps peft at 0.18 while the SFT trainer needs peft 0.20 (the Modal image pin).
+conflicts = [[{ extra = "sft" }, { extra = "pretraining" }]]

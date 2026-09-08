@@ -6,7 +6,7 @@ import copy
 import uuid
 import random
 import sys
-from typing import Sequence, Union, Optional
+from typing import Any, Sequence, Union, Optional
 
 from cle.game_engine.communication import (
     CommitmentStatus,
@@ -21,57 +21,70 @@ from cle.game_engine.events import (
     event_from_action,
     project_event,
 )
-from cle.game_engine.models.actions import trade_response_actions
+from cle.game_engine.models.actions import generate_playable_actions, trade_response_actions
 from cle.game_engine.models.enums import Action, ActionPrompt, ActionType
-from cle.game_engine.state import GameState, apply_action, assert_forced_action_is_explicit
+from cle.game_engine.state import (
+    GameState,
+    apply_action,
+    assert_forced_action_is_explicit,
+    new_trade_window,
+    validate_discard,
+)
 from cle.game_engine.state_functions import (
     get_player_freqdeck,
+    maintain_longest_road,
     player_key,
     player_has_rolled,
 )
 from cle.game_engine.models.map import CatanMap
 from cle.game_engine.observation import PlayerObservation, observe_state
-from cle.game_engine.trading import TradeLimits, TradeOffer
+from cle.game_engine.trading import TradeLimits, TradeOffer, TradeWindowStatus
 from cle.game_engine.models.player import Color
 
 
 def is_valid_action(state, action):
     """True if its a valid action right now. An action is valid
     if its in playable_actions or if its a OFFER_TRADE/COUNTER_OFFER in the right time."""
-    if action.action_type == ActionType.OFFER_TRADE:
-        return (
-            state.current_color() == action.color
+    if not isinstance(action, Action) or action.color not in state.colors:
+        return False
+    if action.action_type == ActionType.DISCARD and action.value is not None:
+        try:
+            validate_discard(state, action)
+        except ValueError:
+            return False
+        return True
+    if action.action_type in {ActionType.OFFER_TRADE, ActionType.COUNTER_OFFER}:
+        if not (
+            is_valid_trade(action.value)
+            and action.value.id is None
             and state.current_prompt == ActionPrompt.PLAY_TURN
-            and player_has_rolled(state, action.color)
-            and is_valid_trade(action.value)
-            and action.value.parent_offer_id is None
             and action.value.offered_by == action.color
-            and can_fund_offer(state, action.value)
-        )
+        ):
+            return False
+        window = state.trade_window
+        if action.action_type == ActionType.OFFER_TRADE:
+            if not (
+                state.current_color() == action.color
+                and player_has_rolled(state, action.color)
+                and action.value.parent_offer_id is None
+            ):
+                return False
+            if window is None or window.status == TradeWindowStatus.CLOSED:
+                # Match ensure_trade_window without installing a window during validation.
+                window = new_trade_window(state)
+        elif window is None or action.value.parent_offer_id is None:
+            return False
+        try:
+            window.validate_offer(action.value)
+        except ValueError:
+            return False
+        return can_fund_offer(state, action.value)
 
     if action.action_type in {
         ActionType.ACCEPT_TRADE,
         ActionType.REJECT_TRADE,
     } and action in trade_response_actions(state, action.color):
         return True
-
-    if action.action_type == ActionType.COUNTER_OFFER:
-        window = state.trade_window
-        if window is None or not isinstance(action.value, TradeOffer):
-            return False
-        parent = window.offers.get(action.value.parent_offer_id)
-        valid_prompt = state.current_prompt == ActionPrompt.PLAY_TURN
-        return (
-            parent is not None
-            and parent.active
-            and parent.parent_offer_id is None
-            and action.value.offered_by == action.color
-            and action.color != parent.offered_by
-            and action.color in parent.audience
-            and can_fund_offer(state, action.value)
-            and valid_prompt
-            and is_valid_trade(action.value)
-        )
 
     return action in state.playable_actions
 
@@ -139,6 +152,11 @@ class GameEngine:
         force: bool = False,
     ) -> EngineTransition:
         """Strictly apply one already-selected legal game action."""
+        if not isinstance(action, Action):
+            raise ValueError("Expected one typed engine Action")
+        action = copy.deepcopy(action)
+        if not force and self.winning_color() is not None:
+            raise ValueError("Cannot step a terminal game")
         if force:
             assert_forced_action_is_explicit(action)
             validate_action = False
@@ -149,27 +167,35 @@ class GameEngine:
             )
 
         before_revision = self.revision
+        history_entry = None
         if self.capture_history:
-            self.history.append(
-                (
-                    self.state.copy(),
-                    action,
-                    before_revision,
-                    tuple(copy.deepcopy(self.commitments)),
-                )
+            history_entry = (
+                copy.deepcopy(self.state),
+                copy.deepcopy(action),
+                before_revision,
+                tuple(copy.deepcopy(self.commitments)),
             )
 
         resolved_action = apply_action(self.state, action, force=force)
-        event = event_from_action(resolved_action, before_revision)
-        self.events.append(event)
+        if history_entry is not None:
+            self.history.append(history_entry)
+        action_event = event_from_action(resolved_action, before_revision)
+        event = self.publish_event(
+            action_event.event_type,
+            action_event.actor,
+            action_event.public_payload,
+            private_overlays=action_event.private_overlays,
+            visible_to=action_event.visible_to,
+            causation_id=action_event.causation_id,
+        )
         for commitment in self.commitments:
             if commitment.active and commitment.expires_turn <= self.state.num_turns:
                 commitment.status = CommitmentStatus.EXPIRED
         return EngineTransition(
             before_revision=before_revision,
             after_revision=self.revision,
-            requested_action=action,
-            resolved_action=resolved_action,
+            requested_action=copy.deepcopy(action),
+            resolved_action=copy.deepcopy(resolved_action),
             events=(event,),
             winner=self.winning_color(),
         )
@@ -199,10 +225,41 @@ class GameEngine:
         return len(self.events)
 
     def observe(self, color: Color) -> PlayerObservation:
-        return observe_state(self.state, color)
+        observation = observe_state(self.state, color)
+        if self.winning_color() is not None:
+            observation.valid_actions = []
+        return observation
 
     def is_action_valid(self, action: Action) -> bool:
-        return is_valid_action(self.state, action)
+        return self.winning_color() is None and is_valid_action(self.state, action)
+
+    def publish_event(
+        self,
+        event_type: str,
+        actor: Color,
+        public_payload: Any,
+        *,
+        private_overlays: tuple[tuple[Color, Any], ...] = (),
+        visible_to: tuple[Color, ...] | None = None,
+        causation_id: str | None = None,
+    ) -> GameEvent:
+        """Publish one already-resolved fact without applying a gameplay action."""
+        if actor not in self.state.colors:
+            raise ValueError("Event actor must be a participant")
+        if not isinstance(event_type, str) or not event_type:
+            raise ValueError("Event type must be a nonempty string")
+        sequence = self.revision
+        event = copy.deepcopy(GameEvent(
+            sequence=sequence,
+            causation_id=causation_id if causation_id is not None else f"action:{sequence}",
+            actor=actor,
+            event_type=event_type,
+            public_payload=public_payload,
+            private_overlays=private_overlays,
+            visible_to=visible_to,
+        ))
+        self.events.append(event)
+        return copy.deepcopy(event)
 
     def project_events(self, color: Color) -> tuple[PlayerEvent, ...]:
         if color not in self.state.colors:
@@ -227,8 +284,10 @@ class GameEngine:
             for event in self.project_events(color)
             if event.event_type == "MESSAGE_SENT"
         )
-        maximum = limit or self.communication_limits.recent_message_window
-        return messages[-maximum:]
+        maximum = self.communication_limits.recent_message_window if limit is None else limit
+        if isinstance(maximum, bool) or not isinstance(maximum, int) or maximum < 0:
+            raise ValueError("Message limit must be a non-negative integer")
+        return messages[-maximum:] if maximum else ()
 
     def append_message(
         self,
@@ -242,10 +301,40 @@ class GameEngine:
     ) -> GameEvent:
         if speaker not in self.state.colors:
             raise ValueError(f"Speaker {speaker} is not a participant")
+        if not isinstance(text, str) or not text.strip():
+            raise ValueError("Message text must be a nonempty string")
+        if not isinstance(audience, (tuple, list)):
+            raise ValueError("Message audience must be a sequence of participants")
+        if intent is not None and not isinstance(intent, str):
+            raise ValueError("Message intent must be a string or None")
+        if not isinstance(causation_id, str) or not causation_id:
+            raise ValueError("Message causation ID must be a nonempty string")
+        audience = tuple(audience)
+        if any(not isinstance(color, Color) for color in audience):
+            raise ValueError("Message audience must contain participant colors")
         recipients = tuple(dict.fromkeys((speaker, *audience)))
         if any(color not in self.state.colors for color in recipients):
             raise ValueError("Message audience contains a non-participant")
         sequence = self.revision
+        proposed_commitment = None
+        if commitment is not None:
+            if not isinstance(commitment, (tuple, list)) or len(commitment) != 3:
+                raise ValueError("Commitment must contain condition, promise, and expiry")
+            condition, promise, expires_turn = commitment
+            if not all(isinstance(value, str) and value.strip() for value in (condition, promise)):
+                raise ValueError("Commitment condition and promise must be nonempty strings")
+            if type(expires_turn) is not int or expires_turn < 0:
+                raise ValueError("Commitment expiry must be a non-negative integer")
+            proposed_commitment = SocialCommitment(
+                id=f"commitment:{sequence}",
+                proposer=speaker,
+                audience=audience,
+                condition=condition,
+                promise=promise,
+                created_sequence=sequence,
+                expires_turn=expires_turn,
+                source_message_sequence=sequence,
+            )
         payload = {
             "speaker": speaker,
             "text": text,
@@ -253,12 +342,11 @@ class GameEngine:
             "intent": intent,
         }
         is_public = set(recipients) == set(self.state.colors)
-        event = GameEvent(
-            sequence=sequence,
+        event = self.publish_event(
+            "MESSAGE_SENT",
+            speaker,
+            payload if is_public else None,
             causation_id=causation_id,
-            actor=speaker,
-            event_type="MESSAGE_SENT",
-            public_payload=payload if is_public else None,
             private_overlays=(
                 ()
                 if is_public
@@ -266,26 +354,13 @@ class GameEngine:
             ),
             visible_to=None if is_public else recipients,
         )
-        self.events.append(event)
-        if commitment is not None:
-            condition, promise, expires_turn = commitment
-            self.commitments.append(
-                SocialCommitment(
-                    id=f"commitment:{sequence}",
-                    proposer=speaker,
-                    audience=audience,
-                    condition=condition,
-                    promise=promise,
-                    created_sequence=sequence,
-                    expires_turn=expires_turn,
-                    source_message_sequence=sequence,
-                )
-            )
+        if proposed_commitment is not None:
+            self.commitments.append(proposed_commitment)
         return event
 
     def active_commitments(self, color: Color) -> tuple[SocialCommitment, ...]:
         return tuple(
-            commitment
+            copy.deepcopy(commitment)
             for commitment in self.commitments
             if commitment.active
             and (commitment.proposer == color or color in commitment.audience)
@@ -296,15 +371,15 @@ class GameEngine:
             engine_id=self.id,
             seed=self.seed,
             vps_to_win=self.vps_to_win,
-            state=self.state.copy(),
-            events=tuple(self.events),
+            state=copy.deepcopy(self.state),
+            events=tuple(copy.deepcopy(self.events)),
             capture_history=self.capture_history,
             communication_limits=self.communication_limits,
             commitments=tuple(copy.deepcopy(self.commitments)),
             history=tuple(
                 (
-                    state.copy(),
-                    action,
+                    copy.deepcopy(state),
+                    copy.deepcopy(action),
                     event_count,
                     tuple(copy.deepcopy(commitments)),
                 )
@@ -316,16 +391,66 @@ class GameEngine:
         self.id = snapshot.engine_id
         self.seed = snapshot.seed
         self.vps_to_win = snapshot.vps_to_win
-        self.state = snapshot.state.copy()
+        self.state = copy.deepcopy(snapshot.state)
+        # Pre-fix saves can retain enemy-crossing candidates and road awards.
+        # Probe only derived board fields, keeping the saved holder as the tie input.
+        board = self.state.board
+        rebuilt = copy.copy(board)
+        road_result = rebuilt.recompute_road_state()
+        road_changed = (
+            rebuilt.road_color != board.road_color
+            or rebuilt.road_length != board.road_length
+        )
+        for color in self.state.colors:
+            key = player_key(self.state, color)
+            length = rebuilt.road_lengths.get(color, 0)
+            if (
+                length != board.road_lengths.get(color, 0)
+                or length != self.state.player_state[f"{key}_LONGEST_ROAD_LENGTH"]
+                or (color == rebuilt.road_color) != self.state.player_state[f"{key}_HAS_ROAD"]
+                or {frozenset(nodes) for nodes in rebuilt.connected_components.get(color, [])}
+                != {frozenset(nodes) for nodes in board.connected_components.get(color, [])}
+            ):
+                road_changed = True
+                break
+        if (
+            road_changed
+            or any(
+                set(edges) != set(rebuilt.buildable_edges(color))
+                for color, edges in board.buildable_edges_cache.items()
+            )
+            or any(
+                action.action_type == ActionType.BUILD_ROAD
+                and action.value not in rebuilt.buildable_edges(action.color)
+                for action in self.state.playable_actions
+            )
+        ):
+            for color, edges in board.buildable_edges_cache.items():
+                if set(edges) == set(rebuilt.buildable_edges(color)):
+                    rebuilt.buildable_edges_cache[color] = edges
+            self.state.board = rebuilt
+            maintain_longest_road(self.state, *road_result)
+            playable_actions = generate_playable_actions(self.state)
+            # Keep saved menu indices only for an exact multiset match; values can be mutable.
+            unmatched = self.state.playable_actions.copy()
+            for action in playable_actions:
+                try:
+                    unmatched.remove(action)
+                except ValueError:
+                    break
+            else:
+                if not unmatched:
+                    playable_actions = self.state.playable_actions
+            self.state.playable_actions = playable_actions
         self.rng = self.state.rng
-        self.events = list(snapshot.events)
+        self.events = list(copy.deepcopy(snapshot.events))
         self.capture_history = snapshot.capture_history
         self.communication_limits = snapshot.communication_limits
         self.commitments = list(copy.deepcopy(snapshot.commitments))
         self.history = [
             (
-                state.copy(),
-                action,
+                copy.deepcopy(state),
+                copy.deepcopy(action),
                 event_count,
                 tuple(copy.deepcopy(commitments)),
             )
@@ -338,16 +463,11 @@ class GameEngine:
         Returns:
             Union[Color, None]: Might be None if game truncated by TURNS_LIMIT
         """
-        result = None
-        for color in self.state.colors:
-            key = player_key(self.state, color)
-            if (
-                self.state.player_state[f"{key}_ACTUAL_VICTORY_POINTS"]
-                >= self.vps_to_win
-            ):
-                result = color
-
-        return result
+        color = self.state.colors[self.state.current_turn_index]
+        key = player_key(self.state, color)
+        if self.state.player_state[f"{key}_ACTUAL_VICTORY_POINTS"] >= self.vps_to_win:
+            return color
+        return None
 
     def copy(self) -> "GameEngine":
         """Creates a copy of this GameEngine, that can be modified without
@@ -360,17 +480,17 @@ class GameEngine:
         game_copy.seed = self.seed
         game_copy.id = self.id
         game_copy.vps_to_win = self.vps_to_win
-        game_copy.state = self.state.copy()
+        game_copy.state = copy.deepcopy(self.state)
         game_copy.rng = game_copy.state.rng
-        game_copy.events = list(self.events)
+        game_copy.events = copy.deepcopy(self.events)
         game_copy.communication_limits = self.communication_limits
         game_copy.commitments = list(copy.deepcopy(self.commitments))
         game_copy.capture_history = self.capture_history
         game_copy.history = (
             [
                 (
-                    state.copy(),
-                    action,
+                    copy.deepcopy(state),
+                    copy.deepcopy(action),
                     event_count,
                     tuple(copy.deepcopy(commitments)),
                 )

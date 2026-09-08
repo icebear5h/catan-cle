@@ -1,5 +1,37 @@
 # Lessons
 
+- [harness] Barrier failure must retain completed sibling calls as withheld,
+  not just the failing actor's rejected attempts. Remove a pending attempt on
+  rejection and replace it after retry so no call is lost or recorded twice.
+- [privacy] Trusted schema-echo parsing must receive authored response-schema
+  text, never a rendered prompt containing player messages or other dynamic data.
+
+- [verification] Conservation and replay reconstruction are not independent
+  Catan rule oracles. Check blocked-road legality, award minimum/tie ownership,
+  own-turn victory, shortages, and player choice separately before trusting
+  full-game outcomes as training labels.
+- [testing] Known-defect audit xfails must catch a dedicated exception raised
+  only after normal fixture/precondition assertions. Strict xfail alone can
+  hide a broken setup. Count failing cases separately from unique bugs and
+  proposed extension-boundary policy, and label reduced versus reachable states.
+- [arch] Checkpoint completeness includes causal events, RNG binding, and
+  commitments, not just material GameState. Freeze or detach nested mutable
+  observations and event payloads; frozen outer dataclasses do not isolate them.
+
+- [harness] Treat menu IDs as opaque and parse only explicit whole action
+  indices, never numbers in plans or historical rationale. Validate authored
+  template references before substitution so model text remains inert data.
+- [trade] Independently legal concurrent replies need batch admission against
+  shared trade capacity before any live mutation. Unresolved wildcard bundles
+  are negotiable proposals, not executable resource exchanges.
+- [harness] Commit accepted agent history immediately after engine application,
+  before optional speech awaits. Persist rejected/withheld communication as
+  such, distinguish post-action warnings from unapplied failures, and stop
+  autoplay on runtime WebSocket warnings as well as HTTP errors.
+- [privacy] An explicit but malformed audience tag is not a missing audience.
+  Whitespace, self-closing/duplicate tags, unknown colors, and self-only private
+  recipients must never silently become public broadcasts.
+
 - [gotcha] Live public development-card payloads intentionally omit `in_hand` and expose only `total_in_hand` plus public `played` counts. Frontend rendering must treat the exact breakdown as optional, show only the total when redacted, and test the first nonzero hidden-card case; zero totals can otherwise mask an `Object.entries(undefined)` crash.
 
 - [workflow] A stateful live-game server must not enable Werkzeug's source reloader by default. Any watched frontend, test, or documentation edit can restart the process, erase the in-memory sandbox, and surface as a transient browser `Failed to fetch`. Make reload explicitly opt-in, restart intentionally, then restore the latest persisted checkpoint before handing control back.
@@ -67,7 +99,10 @@
 - [research] Treat SDFT as a serious cold-start alternative to vanilla reasoning SFT: put the engine-verified expert action and frontier-generated Catan explanation in teacher-only privileged context, then distill corrections on the student's own rollouts. The external frontier model supplies demonstrations, not logits; SDFT's actual teacher is the student/EMA checkpoint conditioned on those demonstrations.
 - [research] Classify GRPO by where its actions come from, not where prompts live: freshly sampling the current/frozen-old policy against the engine is online near-on-policy RL even when anchor states or queries come from a fixed dataset. Logged trajectories reused without fresh policy sampling are offline.
 - [arch] Do not apply TL-GRPO's name or max-over-turn objective directly to Catan. TL-GRPO assumes a fixed single-state evaluator and independently scored proposals; Catan is a stochastic partially observed multi-agent Markov game. Same-state Catan branching with continuation returns is a counterfactual decision-state or tree/grouped GRPO variant.
-- [gotcha] Counterfactual Catan branches require per-game, event-keyed RNG state. The current engine seeds and consumes Python's process-global `random`, while `Game.copy()` does not clone RNG state, so common-random-number comparisons are not yet valid or concurrency-safe.
+- [gotcha] The engine now owns per-game RNG and copies it with state; ordinary
+  snapshot continuation tests pass. Replay undo/goto and shared mutable event
+  payloads still break full branch equivalence. Verify complete causal state
+  and event-keyed common-random-number semantics, not only RNG ownership.
 - [rl] A huge continuation-outcome space is not itself the statistical problem; Monte Carlo estimates expectations without enumerating outcomes. The real problem is high return variance relative to small action-value gaps. In Catan, one or a few terminal branch rollouts can mostly label dice/opponent luck, so use multiple scenario seeds or uncertainty-aware filtering rather than assuming `K=1` terminal branches are informative; do not assume a learned value bootstrap until it wins a held-out ranking/calibration ablation.
 - [research] “Value model” covers materially different mechanisms. Keep separate: a training-only action-independent critic baseline, a search leaf evaluator, a learned reward/shaping model, and a deployed action-ranking oracle. Evidence that one role works does not validate the others. Catan’s closest precedents show value usefulness only inside specific systems and restricted rules, not a trustworthy universal scalar oracle.
 - [process] When the user points to Qwen3-VL video understanding, do not collapse the idea into an assumed 8B checkpoint. Separate the family capability from checkpoint size and inspect the supplied capability source before evaluating the design.
@@ -235,3 +270,5 @@
 - [gotcha] Readouts are 60 to 100x longer than short rows, so a mix with two
   readouts per image is >90% readout tokens; balance by estimated completion
   tokens (the mixer reports shares), keep readouts in the hundreds.
+- [gotcha] `get_peft_model` mutates the module tree in place: targets become `<name>.base_layer` and gain `lora_A/lora_B` children, so any helper that lists targets by module name (`vision_linear_targets`, `language_linear_targets`) must run before wrapping and its result reused; recounting afterwards either returns a different number or raises. Same trap for state files: a `visual_model.safetensors` saved from a wrapped model only loads into an equally wrapped model, so restore before `merge_and_unload`.
+- [gotcha] Match the local peft to the Modal image pin before trusting a local PEFT test. peft 0.17 refuses `trainable_token_indices` on an untied `lm_head` that 0.20 accepts, so a test that passes or fails locally may say nothing about the H200 container.

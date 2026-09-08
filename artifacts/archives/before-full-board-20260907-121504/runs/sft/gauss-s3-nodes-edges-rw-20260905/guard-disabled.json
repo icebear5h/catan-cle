@@ -1,0 +1,14 @@
+{
+  "function_call_id": "fc-01M1SQEX7D43F1JGWZSMA6YKVT",
+  "budget_guard_call_id": "fc-01M1SQEXBHVSB8Y4ZNHCX2RF7X",
+  "deadline_unix": 1788669403.527276,
+  "started_at": "2026-09-05T21:27:12.397394+00:00",
+  "status": "disabled_by_user",
+  "recorded_at": "2026-09-05T21:35:07+00:00",
+  "reason": "User requested removal of budget watchdog",
+  "watchdog_call_cancelled": true,
+  "training_call_observed_running": true,
+  "training_restarted": false,
+  "native_training_timeout_seconds": 25200,
+  "absolute_deadline_watchdog_active": false
+}

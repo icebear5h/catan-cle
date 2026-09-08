@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Literal, Protocol
 
@@ -95,7 +96,7 @@ class PlayerSession:
             messages=tuple(self.messages),
             strategic_memory=self.strategic_memory,
             event_cursor=self.event_cursor,
-            receipts=tuple(self.receipts.items()),
+            receipts=deepcopy(tuple(self.receipts.items())),
         )
 
     def restore(self, snapshot: PlayerSessionSnapshot) -> None:
@@ -104,4 +105,4 @@ class PlayerSession:
         self.messages = list(snapshot.messages)
         self.strategic_memory = snapshot.strategic_memory
         self.event_cursor = snapshot.event_cursor
-        self.receipts = dict(snapshot.receipts)
+        self.receipts = deepcopy(dict(snapshot.receipts))

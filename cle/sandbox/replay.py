@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from contextlib import nullcontext
+from copy import deepcopy
 from typing import Any, Callable, Mapping
 
 from cle.replay.runtime.navigation import (
@@ -57,12 +58,25 @@ class ReplaySandbox:
     def replay_index(self) -> int:
         return self._state.replay_index
 
+    @property
+    def source_ongoing(self) -> bool:
+        replay_data = getattr(self._state, "replay_data", None) or {}
+        return 0 <= self.replay_index < len(replay_data.get("parsed_actions", ()))
+
     def view(self, observer: Color | None = None):
         """Return a pure player projection at the replay revision."""
         engine = self.game_engine
         observer = observer or engine.state.current_color()
         observation = engine.observe(observer)
         current_actor = engine.state.current_color()
+        source_ongoing = self.source_ongoing
+        winner = None if source_ongoing else engine.winning_color()
+        legal_actions = (
+            tuple(deepcopy(engine.state.playable_actions))
+            if observer == current_actor and winner is None
+            else ()
+        )
+        observation.valid_actions = list(legal_actions)
         return SandboxView(
             revision=self.revision,
             observer=observer,
@@ -71,12 +85,8 @@ class ReplaySandbox:
             phase=observation.current_phase,
             observation=observation,
             events=engine.project_events(observer),
-            legal_actions=(
-                tuple(engine.state.playable_actions)
-                if observer == current_actor and engine.winning_color() is None
-                else ()
-            ),
-            winner=engine.winning_color(),
+            legal_actions=legal_actions,
+            winner=winner,
         )
 
     def step(
@@ -145,6 +155,7 @@ class ReplaySandbox:
             context = build_decision_context(
                 game,
                 context_revision=replay_revision,
+                allow_terminal=self.source_ongoing,
             )
             identity = {
                 "game": game,

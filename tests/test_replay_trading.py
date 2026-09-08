@@ -11,7 +11,7 @@ from cle.game_engine.game import GameEngine
 from cle.game_engine.models.actions import generate_playable_actions
 from cle.game_engine.models.enums import Action, ActionPrompt, ActionType
 from cle.game_engine.models.player import Color
-from cle.game_engine.trading import TradeOffer, TradeWindow
+from cle.game_engine.trading import TradeLimits, TradeOffer, TradeWindow
 from playground.game_viewer.app import app
 from cle.replay.colonist.event_parser import parse_colonist_events_to_actions
 from cle.replay.colonist.helpers import validate_resources_match
@@ -126,6 +126,7 @@ def engine_snapshot(state):
         "current_prompt": game_state.current_prompt,
         "playable_actions": list(game_state.playable_actions),
         "actions": list(game_state.actions),
+        "events": deepcopy(state.current_game.events),
         "player_state": dict(game_state.player_state),
         "game_history_length": len(state.current_game.history),
     }
@@ -150,6 +151,13 @@ def test_confirm_trade_undo_restores_the_complete_pre_step_transaction():
     assert state.current_game.state.player_state["P0_BRICK_IN_HAND"] == 1
     assert state.current_game.state.player_state["P1_WOOD_IN_HAND"] == 1
     assert state.current_game.state.player_state["P1_BRICK_IN_HAND"] == 0
+    for color in state.current_game.state.colors:
+        event = state.current_game.project_events(color)[-1]
+        assert event.event_type == "CONFIRM_TRADE"
+        assert event.payload == {
+            "offer_id": None, "turn_player": "RED", "counterparty": "BLUE",
+            "give": {"WOOD": 1}, "receive": {"BRICK": 1},
+        }
     after_first_confirmation = engine_snapshot(state)
 
     undo_result = replay_undo_logic(state, lambda: None)
@@ -236,6 +244,16 @@ def test_standalone_trade_closure_is_parsed_executed_and_undoable():
     assert close_result["status"] == "closed"
     assert not state.current_game.state.trade_window.offers["trade-1"].active
     assert engine_snapshot(state)["hands"] == resources_before
+    assert [event.event_type for event in state.current_game.events] == [
+        "OFFER_TRADE", "CLOSE_TRADE",
+    ]
+    assert state.current_game.events[-1].public_payload == {
+        "offer_id": "trade-1", "parent_offer_id": None, "reason": "cancelled",
+    }
+    assert [action.action_type for action in state.current_game.state.actions] == [
+        ActionType.OFFER_TRADE,
+    ]
+    assert state.replay_actions_per_step == [1, 0]
     assert any(
         issue["kind"] == "replayed_trade_closure"
         for issue in state.replay_semantic_issues
@@ -249,6 +267,9 @@ def test_standalone_trade_closure_is_parsed_executed_and_undoable():
         issue["kind"] == "replayed_trade_closure"
         for issue in state.replay_semantic_issues
     )
+    assert [event.event_type for event in state.current_game.events] == ["OFFER_TRADE"]
+    assert replay_step_logic(state, lambda: None)["status"] == "closed"
+    assert [event.sequence for event in state.current_game.events] == [0, 1]
 
 
 @pytest.mark.parametrize(
@@ -297,6 +318,243 @@ def test_resource_trade_actions_follow_one_deterministic_closure(
     assert actions[1]["reason"] == "transaction_closed"
     assert actions[1]["expected_resources"] == {}
     assert actions[2]["trade_closures_preceded"] is True
+
+
+@pytest.mark.parametrize("action_type", ["CONFIRM_TRADE", "MARITIME_TRADE"])
+@pytest.mark.parametrize("attached", [False, True])
+def test_resource_trade_publishes_one_exact_closure_before_exchange(action_type, attached):
+    state = make_confirmation_state()
+    game = state.current_game
+    game.state.player_state["P0_WOOD_IN_HAND"] = 5
+    closure = {
+        "index": 0, "type": "CLOSE_TRADE", "player": 1, "creator": 1,
+        "trade_id": "trade-red", "reason": "transaction_closed",
+    }
+    exchange = {
+        "index": 0, "type": action_type, "player": 1, "acceptor": 2,
+        "offered": (1, 0, 0, 0, 0), "given": (4, 0, 0, 0, 0),
+        "received": (0, 1, 0, 0, 0),
+        "expected_resources": {"private-oracle": "MUST_NOT_PUBLISH"},
+    }
+    if attached:
+        exchange["closed_trades"] = [closure]
+        actions = [exchange]
+    else:
+        exchange["trade_closures_preceded"] = True
+        # Older projections may retain this metadata after emitting a closure row.
+        exchange["closed_trades"] = [closure]
+        actions = [closure, exchange]
+    state.replay_data["parsed_actions"] = actions
+    for _ in actions:
+        result = replay_step_logic(state, lambda: None, allow_lookahead=False)
+        assert isinstance(result, dict), result
+    assert [event.event_type for event in game.events] == ["CLOSE_TRADE", action_type]
+    assert [event.sequence for event in game.events] == [0, 1]
+    assert game.events[0].public_payload == {
+        "offer_id": "trade-red", "parent_offer_id": None, "reason": "transaction_closed",
+    }
+    assert "MUST_NOT_PUBLISH" not in repr(game.events)
+    assert "expected_resources" not in repr(game.events)
+    assert game.state.trade_window.offers["trade-orange"].active
+    assert game.state.trade_window.offers["counter-white"].active
+    assert len(game.state.actions) == 1
+    assert game.state.actions[0].action_type == ActionType[action_type]
+    expected_wood = 4 if action_type == "CONFIRM_TRADE" else 1
+    assert game.state.player_state["P0_WOOD_IN_HAND"] == expected_wood
+    assert game.state.player_state["P0_BRICK_IN_HAND"] == 1
+    expected_events = deepcopy(game.events)
+    assert replay_undo_logic(state, lambda: None)["status"] == "ok"
+    assert len(game.events) == (0 if attached else 1)
+    replay_step_logic(state, lambda: None, allow_lookahead=False)
+    assert game.events == expected_events
+
+
+def test_forced_road_repairs_caches_and_publishes_an_undoable_action():
+    state = ServerState()
+    game = GameEngine(
+        (Color.RED, Color.BLUE, Color.WHITE, Color.ORANGE),
+        seed=4, shuffle_players=False, capture_history=True,
+    )
+    state.current_game = game
+    state.replay_mode = state.game_running = True
+    edge = tuple(sorted(next(iter(game.state.board.buildable_subgraph.edges))))
+    state.edge_to_edge_map = {"_forced": list(edge)}
+    state.replay_data = {
+        "parsed_actions": [{
+            "index": 0, "type": "BUILD_ROAD", "player": 1,
+            "colonist_edge": "forced",
+        }],
+        "events": [{}], "colonist_color_to_engine_idx": {"1": 0},
+        "end_game_state": {},
+    }
+    before = engine_snapshot(state)
+    assert replay_step_logic(state, lambda: None)["status"] == "ok"
+    assert game.state.board.roads[edge] == Color.RED
+    assert game.state.board.roads[edge[::-1]] == Color.RED
+    assert game.state.board.road_lengths[Color.RED] == 1
+    assert game.state.player_state["P0_LONGEST_ROAD_LENGTH"] == 1
+    assert game.state.board.connected_components[Color.RED] == [set(edge)]
+    assert game.state.player_state["P0_ROADS_AVAILABLE"] == 14
+    assert game.state.board.road_color is None
+    assert game.state.actions == [Action(Color.RED, ActionType.BUILD_ROAD, edge)]
+    assert game.events[0].event_type == "BUILD_ROAD"
+    assert game.project_events(Color.BLUE)[0].payload == edge
+    assert state.replay_actions_per_step == [1]
+    assert any(issue["kind"] == "forced_replay_overlay" for issue in state.replay_semantic_issues)
+    assert replay_undo_logic(state, lambda: None)["actions_undone"] == 1
+    assert engine_snapshot(state) == before
+    assert game.state.board.roads == {}
+    assert game.state.board.connected_components[Color.RED] == []
+    assert game.rng is game.state.rng
+
+
+def test_main_game_road_mismatch_does_not_cancel_offers_or_advance_turn():
+    state = ServerState()
+    game = GameEngine(
+        (Color.RED, Color.BLUE, Color.WHITE, Color.ORANGE),
+        seed=4, shuffle_players=False, capture_history=True,
+    )
+    for _ in range(16):
+        game.step(game.state.playable_actions[0])
+    game.step(Action(Color.RED, ActionType.ROLL, (1, 1)), force=True)
+    for resource in ("WOOD", "BRICK"):
+        amount = max(0, 2 - game.state.player_state[f"P0_{resource}_IN_HAND"])
+        game.state.player_state[f"P0_{resource}_IN_HAND"] += amount
+        game.state.resource_freqdeck[RESOURCES.index(resource)] -= amount
+    game.step(Action(Color.RED, ActionType.OFFER_TRADE, TradeOffer(
+        offered_by=Color.RED,
+        audience=frozenset(game.state.colors[1:]),
+        give=(1, 0, 0, 0, 0), receive=(0, 0, 0, 0, 1),
+    )))
+    buildable = {tuple(sorted(edge)) for edge in game.state.board.buildable_edges(Color.RED)}
+    edge = next(
+        tuple(sorted(edge)) for edge in game.state.board.buildable_subgraph.edges
+        if edge not in game.state.board.roads and tuple(sorted(edge)) not in buildable
+    )
+    assert not game.state.is_initial_build_phase
+    assert any(action.action_type == ActionType.CANCEL_TRADE for action in game.state.playable_actions)
+    assert any(action.action_type == ActionType.END_TURN for action in game.state.playable_actions)
+    state.current_game = game
+    state.replay_mode = state.game_running = True
+    state.edge_to_edge_map = {"_mismatch": list(edge)}
+    state.replay_data = {
+        "parsed_actions": [{
+            "index": 0, "type": "BUILD_ROAD", "player": 1,
+            "colonist_edge": "mismatch",
+        }],
+        "events": [{}], "colonist_color_to_engine_idx": {"1": 0},
+        "end_game_state": {},
+    }
+    offer_id = game.state.actions[-1].value.id
+    state.replay_trade_ledger = {offer_id: {"creator": 1, "responses": {}}}
+    before = engine_snapshot(state)
+    before_roads = deepcopy(game.state.board.roads)
+    before_ledger = deepcopy(state.replay_trade_ledger)
+    before_turn = game.state.num_turns
+    before_rng = game.rng.getstate()
+    before_bank = game.state.resource_freqdeck.copy()
+    assert replay_step_logic(state, lambda: None)["status"] == "ok"
+    assert game.state.actions[len(before["actions"]):] == [Action(Color.RED, ActionType.BUILD_ROAD, edge)]
+    assert [event.event_type for event in game.events[len(before["events"]):]] == ["BUILD_ROAD"]
+    assert state.replay_actions_per_step == [1]
+    assert game.state.trade_window == before["trade_window"]
+    assert state.replay_trade_ledger == before_ledger
+    assert game.state.current_player_index == before["current_player_index"]
+    assert game.state.current_turn_index == before["current_turn_index"]
+    assert game.state.num_turns == before_turn
+    assert game.rng.getstate() == before_rng
+    for index, resource in enumerate(RESOURCES):
+        cost = int(resource in {"WOOD", "BRICK"})
+        assert game.state.player_state[f"P0_{resource}_IN_HAND"] == before["hands"][0][index] - cost
+        assert game.state.resource_freqdeck[index] == before_bank[index] + cost
+    assert [issue["kind"] for issue in state.replay_semantic_issues] == ["forced_replay_overlay"]
+    assert "END_TURN" not in repr(state.game_log)
+    assert "CANCEL_TRADE" not in repr(state.game_log)
+    after = engine_snapshot(state)
+    assert replay_undo_logic(state, lambda: None)["actions_undone"] == 1
+    assert engine_snapshot(state) == before
+    assert game.state.board.roads == before_roads
+    assert state.replay_trade_ledger == before_ledger
+    assert replay_step_logic(state, lambda: None)["status"] == "ok"
+    assert engine_snapshot(state) == after
+
+
+@pytest.mark.parametrize("overflow", [False, True])
+def test_full_offer_snapshot_projects_responses_before_publication(overflow, monkeypatch):
+    state = ServerState()
+    game = GameEngine(
+        (Color.RED, Color.BLUE, Color.WHITE, Color.ORANGE),
+        seed=4, shuffle_players=False, capture_history=True,
+        trade_limits=TradeLimits(max_active_root_offers=1, max_offers_per_player=1),
+    )
+    for _ in range(16):
+        game.step(game.state.playable_actions[0])
+    game.step(Action(Color.RED, ActionType.ROLL, (1, 1)), force=True)
+    for player, resource in ((0, "WOOD"), (1, "BRICK")):
+        amount = max(0, 1 - game.state.player_state[f"P{player}_{resource}_IN_HAND"])
+        game.state.player_state[f"P{player}_{resource}_IN_HAND"] += amount
+        game.state.resource_freqdeck[RESOURCES.index(resource)] -= amount
+    game.state.playable_actions = generate_playable_actions(game.state)
+    if overflow:
+        game.step(Action(Color.RED, ActionType.OFFER_TRADE, TradeOffer(
+            offered_by=Color.RED, audience=frozenset(game.state.colors[1:]),
+            give=(1, 0, 0, 0, 0), receive=(0, 0, 0, 0, 1),
+        )))
+    assert any(action.action_type == ActionType.OFFER_TRADE for action in game.state.playable_actions) is not overflow
+    raw = trade_offer_event("full-snapshot")
+    raw["stateChange"]["tradeState"]["activeOffers"]["full-snapshot"]["playerResponses"] = {
+        "2": 1, "3": 2, "4": 0,
+    }
+    parsed = parse_colonist_events_to_actions([raw])
+    assert [action["type"] for action in parsed] == ["OFFER_TRADE"]
+    state.current_game = game
+    state.replay_mode = state.game_running = True
+    state.replay_data = {
+        "events": [raw], "parsed_actions": parsed, "end_game_state": {},
+        "colonist_color_to_engine_idx": {"1": 0, "2": 1, "3": 2, "4": 3},
+    }
+    before = engine_snapshot(state)
+    original_publish = game.publish_event
+    publication_states = []
+
+    def publish(event_type, actor, public_payload, **kwargs):
+        if event_type == "OFFER_TRADE":
+            publication_states.append(deepcopy(game.state.trade_window.offers["full-snapshot"]))
+        return original_publish(event_type, actor, public_payload, **kwargs)
+
+    monkeypatch.setattr(game, "publish_event", publish)
+    expected_status = "overlay_applied" if overflow else "ok"
+    for attempt in range(2):
+        assert replay_step_logic(state, lambda: None)["status"] == expected_status
+        offer = game.state.trade_window.offers["full-snapshot"]
+        event = game.events[-1]
+        assert offer.willing_by == publication_states[-1].willing_by == {Color.BLUE}
+        assert offer.declined_by == publication_states[-1].declined_by == {Color.WHITE}
+        assert event.public_payload == offer.to_payload()
+        assert event.public_payload["willing_by"] == ["BLUE"]
+        assert event.public_payload["declined_by"] == ["WHITE"]
+        assert state.replay_trade_ledger["full-snapshot"]["responses"] == {
+            "2": "accepted", "3": "rejected",
+        }
+        assert [event.event_type for event in game.events[len(before["events"]):]] == ["OFFER_TRADE"]
+        assert state.replay_actions_per_step == [1]
+        candidates = [
+            action for action in game.state.playable_actions
+            if action.action_type == ActionType.CONFIRM_TRADE
+            and action.value.offer_id == "full-snapshot"
+        ]
+        assert len(candidates) == 1
+        assert candidates[0].value.counterparty == Color.BLUE
+        assert game.is_action_valid(candidates[0])
+        for color in game.state.colors:
+            assert game.project_events(color)[-1].payload == offer.to_payload()
+        if attempt == 0:
+            after = engine_snapshot(state)
+            assert replay_undo_logic(state, lambda: None)["actions_undone"] == 1
+            assert engine_snapshot(state) == before
+            assert state.replay_trade_ledger == {}
+        else:
+            assert engine_snapshot(state) == after
 
 
 def test_mixed_trade_logs_still_emit_each_source_closure_once():
@@ -698,6 +956,18 @@ def test_trade_response_transitions_replace_and_clear_previous_state():
     assert offer.willing_by == set()
     assert offer.declined_by == set()
     assert state.replay_trade_ledger["trade-1"]["responses"] == {}
+    assert [event.event_type for event in state.current_game.events] == [
+        "OFFER_TRADE", "ACCEPT_TRADE", "REJECT_TRADE", "ACCEPT_TRADE",
+        "CLEAR_TRADE_RESPONSE",
+    ]
+    assert state.current_game.events[-1].public_payload == {"offer_id": "trade-1"}
+    assert len(state.current_game.state.actions) == 4
+    events_after_clear = deepcopy(state.current_game.events)
+    assert replay_undo_logic(state, lambda: None)["actions_undone"] == 0
+    assert state.current_game.state.trade_window.offers["trade-1"].willing_by == {Color.BLUE}
+    assert len(state.current_game.events) == 4
+    replay_step_logic(state, lambda: None)
+    assert state.current_game.events == events_after_clear
 
 
 def test_full_offer_zero_responses_then_independent_rejections_are_preserved():
@@ -920,6 +1190,14 @@ def test_counter_only_replay_state_does_not_broadcast_fake_legacy_offer():
     assert source_offer["creator"] == 2
     assert source_offer["offered"] == [0, 1, 0, 0, 0]
     assert source_offer["wanted"] == [1, 0, 0, 0, 0]
+    events = state.current_game.project_events(Color.WHITE)
+    assert len(events) == 1
+    assert events[0].event_type == "COUNTER_OFFER"
+    assert events[0].actor == Color.BLUE
+    assert events[0].payload["parent_offer_id"] == "trade-1"
+    assert events[0].payload["give"] == {"BRICK": 1}
+    assert events[0].payload["receive"] == {"WOOD": 1}
+    assert "audience" not in events[0].payload
 
 
 def raw_active_offers_by_event(events):

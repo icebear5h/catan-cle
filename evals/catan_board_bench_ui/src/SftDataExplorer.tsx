@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import './SftDataExplorer.css'
+import PatchInspector from './PatchInspector'
 
 const SERVER_URL = 'http://127.0.0.1:5001'
 const PAGE_SIZE = 80
@@ -33,6 +34,10 @@ type SpatialRow = {
   task_type: string
   entity_type: string
   target_token: string | null
+  queried_token: string | null
+  piece: string | null
+  color: string | null
+  density_bin: string | null
   tokens: string[]
   marker: string | null
   marker_style: string | null
@@ -66,6 +71,8 @@ type StageCatalogRow = {
 }
 
 type SpatialPayload = {
+  dataset: string
+  datasets: { id: string; label: string }[]
   stage: string
   split: string
   rows: SpatialRow[]
@@ -91,6 +98,7 @@ type SpatialPayload = {
 }
 
 type Filters = {
+  dataset: string
   stage: string
   split: string
   taskType: string
@@ -101,6 +109,7 @@ type Filters = {
 }
 
 const DEFAULT_FILTERS: Filters = {
+  dataset: 'node_edge_readout_reweighted_v1',
   stage: 'stage1',
   split: 'train',
   taskType: 'all',
@@ -144,6 +153,7 @@ function SftDataExplorer() {
         setIsLoading(true)
         setError(null)
         const params = new URLSearchParams({
+          dataset: filters.dataset,
           stage: filters.stage,
           split: filters.split,
           task_type: filters.taskType,
@@ -197,7 +207,7 @@ function SftDataExplorer() {
     setFilters((current) => ({
       ...current,
       stage,
-      split: STAGE_SPLITS[stage][0],
+      split: STAGE_SPLITS[stage]?.[0] || 'train',
       taskType: 'all',
       entityType: 'all',
       relationship: 'all',
@@ -223,13 +233,13 @@ function SftDataExplorer() {
       <section className="sft-hero">
         <div>
           <div className="sft-overline">
-            <span>spatial_localization_v1 · generated and frozen</span>
+            <span>{filters.dataset}</span>
             <span className="sft-live-dot">ready to inspect</span>
           </div>
-          <h1>Ground the atlas <em>before the game.</em></h1>
+          <h1>Inspect the board <em>patch by patch.</em></h1>
           <p>
-            Empty-board supervision teaches Qwen where every tile, node, edge, and port
-            token lives—then removes the markers and asks for pure orientation and topology.
+            Browse the actual images, prompts, and labels from each training corpus.
+            Compare 16-pixel input patches with 32-pixel merger groups on boards with pieces.
           </p>
         </div>
         {payload && (
@@ -245,7 +255,16 @@ function SftDataExplorer() {
 
       {payload && (
         <>
-          <CurriculumPanel stages={payload.stages} selectedStage={filters.stage} onSelect={setStage} />
+          <label className="sft-select-wrap sft-dataset-select">
+            <span>Dataset</span>
+            <select value={filters.dataset} onChange={(event) => {
+              setFilters({ ...DEFAULT_FILTERS, dataset: event.target.value })
+              setOffset(0)
+            }}>
+              {payload.datasets.map((dataset) => <option key={dataset.id} value={dataset.id}>{dataset.label}</option>)}
+            </select>
+          </label>
+          {filters.dataset === 'spatial_localization_v1' && <CurriculumPanel stages={payload.stages} selectedStage={filters.stage} onSelect={setStage} />}
 
           <section className="sft-stat-grid" aria-label="Spatial corpus summary">
             <Stat label="Rows in slice" value={formatInteger(payload.summary.row_count)} note={`${payload.stage} / ${payload.split}`} />
@@ -278,7 +297,7 @@ function SftDataExplorer() {
                 {payload.rows.map((row) => (
                   <button key={row.record_id} className={row.record_id === selectedRow?.record_id ? 'active' : ''} onClick={() => setSelectedRecordId(row.record_id)}>
                     <span className={`sft-kind ${rowKind(row)}`}>{rowKind(row)}</span>
-                    <span className="sft-row-token">{row.target_token || row.tokens.join(' ↔ ') || row.task_type}</span>
+                    <span className="sft-row-token">{row.queried_token || row.target_token || row.tokens.join(' ↔ ') || row.task_type}</span>
                     <small>{cleanPrompt(row.prompt)}</small>
                   </button>
                 ))}
@@ -310,15 +329,14 @@ function SftDataExplorer() {
 
                   <div className="sft-example-grid">
                     <figure className="sft-board-card spatial-board-card">
-                      <div className="sft-board-image">
-                        <img src={SERVER_URL + selectedRow.image_url} alt={`Spatial grounding board ${selectedRow.state_id}`} />
+                      <PatchInspector key={selectedRow.image_url} src={SERVER_URL + selectedRow.image_url} alt={`Board ${selectedRow.state_id}`}>
                         {showPatchTargets && selectedRow.spatial_target && (
                           <span className="sft-patch-box target" style={bboxStyle(selectedRow.spatial_target.bbox)} title={`correct patch: ${selectedRow.spatial_target.token}`} />
                         )}
-                      </div>
+                      </PatchInspector>
                       <figcaption>
                         <span>{selectedRow.image_name}</span>
-                        <small>{selectedRow.state_id} · exact training image</small>
+                        <small>{selectedRow.state_id} · {filters.split} image</small>
                         {selectedRow.spatial_target && (
                           <label className="sft-patch-toggle">
                             <input type="checkbox" checked={showPatchTargets} onChange={(event) => setShowPatchTargets(event.target.checked)} />
@@ -329,13 +347,16 @@ function SftDataExplorer() {
                     </figure>
 
                     <article className="sft-conversation">
-                      <header><span>Exact training transport</span><code>{selectedRow.row_id}</code></header>
+                      <header><span>Exact dataset row</span><code>{selectedRow.row_id}</code></header>
                       <div className="sft-message user"><span>user</span><p><i>&lt;image&gt;</i>{cleanPrompt(selectedRow.prompt)}</p></div>
                       <div className="sft-flow-arrow" aria-hidden="true">↓</div>
                       <div className="sft-message assistant"><span>assistant</span><p>{selectedRow.answer}</p></div>
                       <dl className="sft-row-contract">
                         <Contract label="supervision" value={supervisionLabel(selectedRow)} />
-                        <Contract label="locations" value={selectedRow.target_token || selectedRow.tokens.join(', ') || 'visual marker only'} mono />
+                        <Contract label="queried location" value={selectedRow.queried_token || selectedRow.tokens.join(', ') || 'see prompt'} mono />
+                        <Contract label="target location" value={selectedRow.target_token || 'see answer'} mono />
+                        <Contract label="piece / color" value={[selectedRow.piece, selectedRow.color].filter(Boolean).join(' / ') || 'none'} />
+                        <Contract label="board density" value={selectedRow.density_bin || 'not specified'} />
                         <Contract label="marker" value={markerLabel(selectedRow)} />
                         <Contract label="patch target" value={patchLabel(selectedRow.spatial_target)} mono />
                         <Contract label="control patch" value={controlLabel(selectedRow.spatial_target)} mono />
@@ -434,12 +455,15 @@ function bboxStyle(bbox: [number, number, number, number]): CSSProperties {
 }
 
 function rowKind(row: SpatialRow) {
+  if (row.piece && !['TILE', 'PORT'].includes(row.piece.toUpperCase())) return 'piece'
+  if (['tile', 'port'].includes(row.entity_type) && !row.marker) return row.entity_type
   if (row.probe_style) return 'probe'
   if (row.marker || row.replay_source) return 'marked'
   return 'relation'
 }
 
 function supervisionLabel(row: SpatialRow) {
+  if (row.piece) return humanize(row.task_type)
   if (row.task_type === 'marker_to_token') return 'visual marker → atlas token'
   if (row.task_type === 'token_to_marker') return 'atlas token → visual marker'
   if (row.task_type === 'neutral_probe_token_return') return 'novel gray dot → atlas token'
@@ -449,16 +473,16 @@ function supervisionLabel(row: SpatialRow) {
 
 function markerLabel(row: SpatialRow) {
   if (row.probe_style) return humanize(row.probe_style)
-  if (!row.marker) return 'none — clean board'
+  if (!row.marker) return 'none'
   return `${row.marker} · ${humanize(row.marker_style || 'unknown style')}`
 }
 
 function patchLabel(target: SpatialTarget | null) {
-  return target ? `${target.token} · [${target.bbox.map(formatCoord).join(', ')}]` : 'not used for this relation row'
+  return target ? `${target.token} · [${target.bbox.map(formatCoord).join(', ')}]` : 'not annotated in this row'
 }
 
 function controlLabel(target: SpatialTarget | null) {
-  return target ? `${target.control_token} · [${target.control_bbox.map(formatCoord).join(', ')}]` : 'not used for this relation row'
+  return target?.control_bbox ? `${target.control_token} · [${target.control_bbox.map(formatCoord).join(', ')}]` : 'not annotated in this row'
 }
 
 function atlasNote(counts: Record<string, number>) {

@@ -1,10 +1,13 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 import pytest
 from flask import Flask
 
 from cle.harness import ModelResponse, default_suite_path
 from cle.harness.providers import OpenRouterTransport
+from cle.players.contracts import CommunicationChoice, CommunicationMode, PlayerAttempt, PlayerChoice
+from cle.sandbox.catan import PlayerResponseError
+from cle.sandbox.communication import CommunicationAdmission, CommunicationOpportunity, ReactionReason
 from cle.sandbox.factory import (
     DEFAULT_LIVE_MAX_DECISION_ATTEMPTS,
     DEFAULT_LIVE_MODEL,
@@ -14,6 +17,7 @@ from cle.sandbox.factory import (
     resolve_live_model,
 )
 from cle.traces import SQLiteLiveTraceStore
+from cle.game_engine.events import PlayerEvent
 from cle.game_engine.models.player import Color
 from playground.game_viewer.routes.live_game import (
     _config_from_stored_payload,
@@ -33,9 +37,12 @@ class DummySocket:
 @dataclass
 class FixedTransport:
     requests: list = field(default_factory=list)
+    response: ModelResponse | None = None
 
     async def complete(self, request):
         self.requests.append(request)
+        if self.response is not None:
+            return self.response
         return ModelResponse(
             content=(
                 "<game_plan>build a balanced opening</game_plan>"
@@ -252,6 +259,25 @@ def test_stored_games_without_board_contract_restore_legacy_semantic_mode():
     assert config.board_surface == "legacy_semantic"
 
 
+@pytest.mark.parametrize(
+    ("payload", "expected"),
+    [
+        ({}, {"effort": "high", "exclude": False}),
+        ({"reasoning": None}, {"effort": "high", "exclude": False}),
+        ({"reasoning": {"enabled": False}}, {"enabled": False}),
+        (
+            {"reasoning": {"effort": "xhigh", "exclude": False}},
+            {"effort": "xhigh", "exclude": False},
+        ),
+        ({"reasoning": {}}, {}),
+    ],
+)
+def test_stored_reasoning_defaults_only_when_missing_or_none(payload, expected):
+    config = _config_from_stored_payload({"mode": "llm_vs_random", **payload})
+
+    assert config.reasoning == expected
+
+
 def test_live_model_defaults_to_qwen_and_preserves_explicit_overrides(monkeypatch):
     monkeypatch.delenv("CATAN_LLM_MODEL", raising=False)
 
@@ -464,7 +490,7 @@ def test_llm_live_route_uses_yaml_agent_player_without_legacy_llm_player(
     }
     assert stored["config"]["max_tokens"] is None
     assert stored["config"]["decision_suite"]["id"] == "catan-agent"
-    assert stored["config"]["decision_suite"]["version"] == "9.0.0"
+    assert stored["config"]["decision_suite"]["version"] == "10.0.0"
     assert len(stored["config"]["decision_suite"]["sha256"]) == 64
     assert "environment.board_state" in {
         component["id"]
@@ -544,7 +570,7 @@ def test_loaded_live_game_surfaces_first_invalid_model_attempt_without_retries(
     assert first_step.status_code == 200
     assert loaded.status_code == 200, loaded.get_json()
     assert loaded.json["reasoning_request"] == {
-        "effort": "high",
+        "effort": "xhigh",
         "exclude": False,
     }
     assert loaded.json["max_tokens"] is None
@@ -564,6 +590,7 @@ def test_loaded_live_game_surfaces_first_invalid_model_attempt_without_retries(
     assert failed_step.json["attempt_count"] == 1
     assert failed_step.json["attempts"] == [
         {
+            "context_id": transport.requests[-1].decision_id,
             "action_index": None,
             "final_response": (
                 "<game_plan>continue</game_plan><action>999</action>"
@@ -571,7 +598,10 @@ def test_loaded_live_game_surfaces_first_invalid_model_attempt_without_retries(
             "finish_reason": "length",
             "latency_ms": 25,
             "model": "test/model",
+            "native_reasoning": "private reasoning",
+            "native_reasoning_details": [],
             "native_reasoning_chars": 17,
+            "reasoning_request": {},
             "provider_native_finish_reason": "max_tokens",
             "provider_request_id": "req-invalid-test",
             "provider_response_id": "gen-invalid-test",
@@ -586,6 +616,8 @@ def test_loaded_live_game_surfaces_first_invalid_model_attempt_without_retries(
         }
     ]
     assert failed_step.json["retryable"] is True
+    assert failed_step.json["player"] == "RED"
+    assert failed_step.json["trace_game_id"] == started.json["trace_game_id"]
     failure_event, failure_state = socket.emissions[1]
     assert failure_event == "game_state"
     assert failure_state["last_live_step_error"] == failed_step.json
@@ -594,11 +626,259 @@ def test_loaded_live_game_surfaces_first_invalid_model_attempt_without_retries(
         "max_decision_attempts": 1,
         "max_tokens": None,
         "model": DEFAULT_LIVE_MODEL,
-        "reasoning": {"effort": "high", "exclude": False},
+        "reasoning": {"effort": "xhigh", "exclude": False},
     }
     assert len(transport.requests) == 2
     assert state.current_sandbox.revision == before_revision
     assert state.step_processing is False
+    stored = client.get(f"/api/live-traces/{started.json['trace_game_id']}").json
+    assert stored["step_count"] == 1
+    assert stored["config"]["reasoning"] == {"effort": "xhigh", "exclude": False}
+    assert stored["config"]["max_tokens"] == 8_192
+    assert stored["config"]["max_decision_attempts"] == 3
+    assert len(stored["failures"]) == 1
+    failure = stored["failures"][0]
+    assert failure["failure_id"] == failed_step.json["trace_failure_id"]
+    assert failure["revision"] == before_revision
+    assert failure["actor"] == "RED"
+    assert failure["attempts"][0]["model_response"]["content"] == (
+        failed_step.json["attempts"][0]["final_response"]
+    )
+
+
+@pytest.mark.parametrize(
+    ("final_output", "native_reasoning", "native_details"),
+    [
+        ("<game_plan>final output</game_plan>" * 200, "native analysis", ()),
+        ("", "native analysis without a final answer", ()),
+        ("<action>1</action>", "", ({"type": "reasoning.text", "text": "native detail"},)),
+    ],
+)
+def test_off_turn_failure_preserves_distinct_diagnostics_over_http_and_ws(
+    live_app,
+    monkeypatch,
+    final_output,
+    native_reasoning,
+    native_details,
+):
+    app, state, socket = live_app
+    client = app.test_client()
+    started = client.post(
+        "/api/start-game",
+        json={"mode": "random", "seed": 5, "shuffle_players": False, "palette": "canonical_four"},
+    )
+    assert started.status_code == 200
+    sandbox = state.current_sandbox
+    assert sandbox.current_actor() == Color.RED
+    before_revision = sandbox.revision
+    original_step = sandbox.step
+    validation_error = "The selected action parameters are no longer legal or affordable."
+    attempt = PlayerAttempt(
+        context_id="off-turn-blue",
+        choice=PlayerChoice(action_index=1),
+        validation_error=validation_error,
+        model_response=ModelResponse(
+            content=final_output,
+            native_reasoning=native_reasoning,
+            native_reasoning_details=native_details,
+            reasoning_request=(("effort", "high"), ("exclude", False)),
+            usage=(("completion_tokens", 123),),
+            finish_reason="stop",
+            provider_request_payload={"headers": {"Authorization": "secret-request-header"}},
+            provider_response_payload={"internal": "unexposed-provider-payload"},
+        ),
+    )
+    earlier_attempt = replace(attempt, context_id="off-turn-white")
+    sandbox.decision_trace.append(replace(attempt, context_id="previous-failure"))
+    opportunity = CommunicationOpportunity(
+        player=Color.BLUE,
+        cause=PlayerEvent(0, "pre-action", Color.BLUE, "PRE_ACTION", None),
+        visible_through_sequence=0,
+        reason=ReactionReason.PRE_ACTION,
+        round=0,
+    )
+    sandbox.communication_trace.append(
+        CommunicationAdmission(opportunity, CommunicationChoice(), accepted=True)
+    )
+
+    async def reject_off_turn():
+        sandbox.decision_trace.extend((earlier_attempt, attempt))
+        sandbox.communication_trace.append(
+            CommunicationAdmission(replace(opportunity, round=1), CommunicationChoice(), accepted=True)
+        )
+        raise PlayerResponseError(Color.BLUE, (attempt,), validation_error)
+
+    monkeypatch.setattr(sandbox, "step", reject_off_turn)
+    failed = client.post("/api/step")
+
+    assert failed.status_code == 422
+    payload = failed.get_json()
+    assert payload["player"] == "BLUE"
+    assert payload["trace_game_id"] == started.json["trace_game_id"]
+    assert payload["attempt_count"] == 1
+    assert payload["retryable"] is True
+    diagnostic = payload["attempts"][0]
+    assert diagnostic["context_id"] == "off-turn-blue"
+    assert diagnostic["action_index"] == 1
+    assert diagnostic["validation_error"] == validation_error
+    assert diagnostic["final_response"] == final_output
+    assert diagnostic["native_reasoning"] == native_reasoning
+    assert diagnostic["native_reasoning_details"] == list(native_details)
+    assert diagnostic["native_reasoning_chars"] == len(native_reasoning)
+    assert diagnostic["reasoning_request"] == {"effort": "high", "exclude": False}
+    assert diagnostic["usage"] == {"completion_tokens": 123}
+    assert "secret-request-header" not in failed.get_data(as_text=True)
+    assert "unexposed-provider-payload" not in failed.get_data(as_text=True)
+    assert "provider_request_payload" not in diagnostic
+    assert "provider_response_payload" not in diagnostic
+    assert socket.emissions[-1][0] == "game_state"
+    assert socket.emissions[-1][1]["last_live_step_error"] == payload
+    assert state.last_live_step_error == payload
+    assert sandbox.revision == before_revision
+    assert state.step_processing is False
+    trace = client.get(f"/api/live-traces/{started.json['trace_game_id']}").json
+    assert trace["step_count"] == 0
+    assert trace["model_calls"] == []
+    assert len(trace["failures"]) == 1
+    failure = trace["failures"][0]
+    assert failure["failure_id"] == payload["trace_failure_id"]
+    assert failure["revision"] == before_revision
+    assert failure["actor"] == "BLUE"
+    assert failure["validation_error"] == validation_error
+    assert [item["context_id"] for item in failure["attempts"]] == [
+        "off-turn-white", "off-turn-blue"
+    ]
+    assert all(item["accepted"] is False for item in failure["attempts"])
+    assert failure["attempts"][-1]["model_response"]["native_reasoning"] == native_reasoning
+    assert len(failure["communication_attempts"]) == 1
+    assert failure["communication_attempts"][0]["opportunity"]["round"] == 1
+    assert state.live_trace_store.load_resume_point(started.json["trace_game_id"]).step_index is None
+
+    monkeypatch.setattr(sandbox, "step", original_step)
+    continued = client.post("/api/step")
+    assert continued.status_code == 200
+    assert continued.json["state"]["last_live_step_error"] is None
+    assert state.last_live_step_error is None
+    trace = client.get(f"/api/live-traces/{started.json['trace_game_id']}").json
+    assert trace["step_count"] == 1
+    assert len(trace["failures"]) == 1
+
+
+@pytest.mark.parametrize("partial_message", [False, True])
+def test_post_action_communication_failure_checkpoints_applied_result(
+    live_app, monkeypatch, partial_message
+):
+    app, state, socket = live_app
+    response = ModelResponse(
+        content=f"<game_plan>{'opening plan ' * 400}</game_plan><action>0</action>",
+        model="test/model",
+        native_reasoning="native accepted analysis " * 250,
+        native_reasoning_details=({"type": "reasoning.text", "text": "native detail"},),
+        reasoning_request=(("effort", "high"), ("exclude", False)),
+    )
+    transport = FixedTransport(response=response)
+    monkeypatch.setattr("cle.sandbox.factory.create_text_transport", lambda config: transport)
+    client = app.test_client()
+    started = client.post(
+        "/api/start-game",
+        json={
+            "mode": "llm_vs_random", "seed": 5,
+            "shuffle_players": False, "palette": "canonical_four",
+        },
+    )
+    assert started.status_code == 200
+    game_id = started.json["trace_game_id"]
+    sandbox = state.current_sandbox
+    before_revision = sandbox.revision
+    red = sandbox.players[Color.RED]
+
+    async def blue_speech(context):
+        assert sandbox.revision == before_revision + 1
+        assert len(red.session.receipts) == 1
+        if partial_message:
+            return CommunicationChoice(
+                mode=CommunicationMode.SAY,
+                text="One message was emitted before speech failed.",
+                audience=tuple(
+                    color for color in sandbox.game_engine.state.colors if color != Color.BLUE
+                ),
+            )
+        raise RuntimeError("private speech transport failure details")
+
+    async def invalid_white_speech(context):
+        return CommunicationChoice(
+            mode=CommunicationMode.SAY, text="Invalid recipient", audience=(Color.BLACK,)
+        )
+
+    monkeypatch.setattr(sandbox.players[Color.BLUE], "communicate", blue_speech)
+    if partial_message:
+        monkeypatch.setattr(sandbox.players[Color.WHITE], "communicate", invalid_white_speech)
+    stepped = client.post("/api/step")
+
+    assert stepped.status_code == 200, stepped.get_json()
+    payload = stepped.get_json()
+    warning = payload["warning"]
+    assert payload["status"] == "ok"
+    assert payload["trace_step_index"] == 0
+    assert payload["state"]["running"] is True
+    assert payload["state"]["last_live_step_error"] == warning
+    assert warning["action_applied"] is True
+    assert warning["retryable"] is False
+    assert warning["details"].startswith(
+        "Game action was applied, but post-action communication failed."
+    )
+    assert "Do not retry the applied action" in warning["details"]
+    assert "the next Step advances the game" in warning["details"]
+    assert "private speech transport failure details" not in warning["details"]
+    assert "attempts" not in warning
+    assert "trace_failure_id" not in warning
+    assert sandbox.revision == before_revision + 1 + int(partial_message)
+    assert sandbox.game_engine.events[0].event_type == "BUILD_SETTLEMENT"
+    assert len(red.session.receipts) == 1
+    assert red.session.messages[-1].content == response.content
+    assert len(transport.requests) == 1
+    assert payload["reasoning_traces"][0]["native_reasoning"] == response.native_reasoning
+    assert payload["reasoning_traces"][0]["native_reasoning_details"] == list(
+        response.native_reasoning_details
+    )
+    assert any(entry["type"] == "building" for entry in payload["state"]["game_log"])
+    assert socket.emissions == [("game_state", payload["state"])]
+    assert state.last_live_step_error == warning
+    assert state.step_processing is False
+
+    stored = client.get(f"/api/live-traces/{game_id}").json
+    assert stored["step_count"] == 1
+    assert stored["failures"] == []
+    assert len(stored["model_calls"]) == 1
+    call = stored["model_calls"][0]
+    assert call["accepted"] is True
+    assert call["response"]["content"] == response.content
+    assert call["response"]["native_reasoning"] == response.native_reasoning
+    assert stored["steps"][0]["after_revision"] == before_revision + 1
+    assert len(stored["steps"][0]["result"]["message_events"]) == int(partial_message)
+    assert [event["event_type"] for event in stored["events"]] == (
+        ["BUILD_SETTLEMENT", "MESSAGE_SENT"]
+        if partial_message else ["BUILD_SETTLEMENT"]
+    )
+    if partial_message:
+        assert stored["events"][-1]["event"] == (
+            stored["steps"][0]["result"]["message_events"][0]
+        )
+    checkpoint = client.get(f"/api/live-traces/{game_id}/steps/0").json
+    assert checkpoint["step"]["public_state"] == payload["state"]
+    assert checkpoint["model_calls"] == stored["model_calls"]
+
+    loaded = client.post(f"/api/live-traces/{game_id}/load")
+    assert loaded.status_code == 200
+    assert state.current_sandbox.revision == sandbox.revision
+    assert len(state.current_sandbox.players[Color.RED].session.receipts) == 1
+    assert len(transport.requests) == 1
+    continued = client.post("/api/step")
+    assert continued.status_code == 200
+    assert continued.json["warning"] is None
+    assert continued.json["trace_step_index"] == 1
+    assert state.current_sandbox.game_engine.events[-1].event_type == "BUILD_ROAD"
+    assert len(state.current_sandbox.players[Color.RED].session.receipts) == 2
 
 
 def test_saved_game_restores_recorded_suite_after_source_file_changes(
@@ -669,7 +949,7 @@ def test_saved_game_restores_recorded_suite_after_source_file_changes(
 
 
 def test_llm_live_route_preserves_explicit_reasoning_off(live_app, monkeypatch):
-    app, _, _ = live_app
+    app, state, socket = live_app
     transport = FixedTransport()
     configs = []
 
@@ -682,7 +962,8 @@ def test_llm_live_route_preserves_explicit_reasoning_off(live_app, monkeypatch):
         create_transport,
     )
 
-    response = app.test_client().post(
+    client = app.test_client()
+    response = client.post(
         "/api/start-game",
         json={
             "mode": "llm_vs_random",
@@ -694,3 +975,17 @@ def test_llm_live_route_preserves_explicit_reasoning_off(live_app, monkeypatch):
     assert response.status_code == 200
     assert response.get_json()["reasoning_request"] == {"enabled": False}
     assert dict(configs[0].reasoning) == {"enabled": False}
+    game_id = response.json["trace_game_id"]
+    stored_config = state.live_trace_store.get_game(game_id)["config"]
+
+    loaded = client.post(f"/api/live-traces/{game_id}/load")
+
+    assert loaded.status_code == 200, loaded.get_json()
+    assert loaded.json["reasoning_request"] == {"enabled": False}
+    assert loaded.json["max_tokens"] is None
+    assert loaded.json["max_decision_attempts"] == 1
+    assert loaded.json["state"]["live_inference"]["reasoning"] == {"enabled": False}
+    assert socket.emissions[-1][1] == loaded.json["state"]
+    assert dict(configs[-1].reasoning) == {"enabled": False}
+    assert transport.requests == []
+    assert state.live_trace_store.get_game(game_id)["config"] == stored_config

@@ -9,7 +9,7 @@ from cle.harness.prompt_store import (
     reset_prompt_suite_overrides,
     save_prompt_suite_overrides,
 )
-from cle.harness.suite import default_suite_path
+from cle.harness.suite import default_suite_path, parse_context_suite
 from cle.sandbox.factory import (
     LiveSandboxConfig,
     create_live_sandbox,
@@ -46,6 +46,8 @@ def _edited_sources():
 
 def test_static_prompt_overrides_save_reset_and_detect_stale_edits(tmp_path):
     current = load_active_prompt_suites(tmp_path)
+    assert current.decision.version == "10.0.0"
+    assert current.communication.version == "5"
     decision_source, communication_source = _edited_sources()
 
     saved = save_prompt_suite_overrides(
@@ -193,3 +195,35 @@ def test_factory_prefers_explicit_suite_path_over_local_override(
     assert "TEST OVERRIDE: resolve the required discard." in (
         sandbox.players[Color.RED].suite.phase_guidance["discarding"]
     )
+
+
+def test_persisted_v9_override_and_recorded_source_are_not_upgraded(tmp_path, monkeypatch):
+    monkeypatch.setenv("CATAN_PROMPT_SUITE_DIR", str(tmp_path))
+    monkeypatch.delenv("CATAN_CONTEXT_SUITE", raising=False)
+    monkeypatch.delenv("CATAN_COMMUNICATION_SUITE", raising=False)
+    builtins = load_active_prompt_suites()
+    old_source = default_suite_path().with_name("catan_v9.yaml").read_text(encoding="utf-8")
+    saved = save_prompt_suite_overrides(
+        decision_source=old_source,
+        communication_source=builtins.communication.source,
+        expected_decision_sha256=builtins.decision.sha256,
+        expected_communication_sha256=builtins.communication.sha256,
+    )
+    assert load_active_prompt_suites().decision.source == old_source
+    frozen = materialize_live_prompt_suites(LiveSandboxConfig())
+    assert frozen.decision_suite.version == "9.0.0"
+    assert frozen.decision_suite.sha256 == saved.decision.sha256
+    assert parse_context_suite(frozen.decision_suite.source).context.social_context is False
+    assert "discard" not in parse_context_suite(frozen.decision_suite.source).response.tags
+
+    reset_prompt_suite_overrides(
+        expected_decision_sha256=saved.decision.sha256,
+        expected_communication_sha256=saved.communication.sha256,
+    )
+    current = materialize_live_prompt_suites(LiveSandboxConfig())
+    assert current.decision_suite.version == "10.0.0"
+    assert parse_context_suite(current.decision_suite.source).context.social_context is True
+    assert "discard" in parse_context_suite(current.decision_suite.source).response.tags
+    restored = materialize_live_prompt_suites(frozen)
+    assert restored.decision_suite == frozen.decision_suite
+    assert restored.decision_suite.source == old_source

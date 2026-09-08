@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from collections import deque
 from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable
@@ -14,6 +15,9 @@ from cle.players.contracts import (
     PlayerContext,
 )
 from cle.game_engine.models.player import Color
+from cle.game_engine.models.enums import ActionType
+from cle.game_engine.trading import RESOURCE_NAMES
+from cle.players.validation import action_from_choice
 
 
 @dataclass
@@ -31,11 +35,23 @@ class FirstLegalPlayer:
             raise ValueError(
                 f"Player {self.color} cannot answer a context for {context.actor}"
             )
+        discard_cards = None
+        action = context.action_at(0)
+        if action.action_type == ActionType.DISCARD:
+            if action.value is not None:
+                discard_cards = tuple(action.value)
+            else:
+                discard_cards = tuple(
+                    resource
+                    for resource in RESOURCE_NAMES
+                    for _ in range(context.observation.my_resources.get(resource, 0))
+                )[:context.discard_count]
         return PlayerAttempt(
             context_id=context.context_id,
             choice=PlayerChoice(
                 action_index=0,
                 game_plan="deterministic first-legal baseline",
+                discard_cards=discard_cards,
             ),
         )
 
@@ -71,11 +87,11 @@ class FirstLegalPlayer:
 
 @dataclass
 class ScriptedPlayer(FirstLegalPlayer):
-    """A deterministic player driven by preselected action indices."""
+    """A deterministic player driven by typed choices or legacy action indices."""
 
-    choices: deque[int] = field(default_factory=deque)
+    choices: deque[PlayerChoice | int] = field(default_factory=deque)
 
-    def __init__(self, color: Color, choices: Iterable[int] = ()) -> None:
+    def __init__(self, color: Color, choices: Iterable[PlayerChoice | int] = ()) -> None:
         super().__init__(color)
         self.choices = deque(choices)
 
@@ -84,10 +100,10 @@ class ScriptedPlayer(FirstLegalPlayer):
         context: PlayerContext,
         feedback: str | None = None,
     ) -> PlayerAttempt:
-        index = self.choices.popleft() if self.choices else 0
+        choice = self.choices.popleft() if self.choices else 0
         return PlayerAttempt(
             context_id=context.context_id,
-            choice=PlayerChoice(action_index=index),
+            choice=choice if isinstance(choice, PlayerChoice) else PlayerChoice(action_index=choice),
         )
 
     def status(self) -> dict[str, Any]:
@@ -96,10 +112,10 @@ class ScriptedPlayer(FirstLegalPlayer):
         status["queued_choices"] = len(self.choices)
         return status
 
-    def snapshot(self) -> tuple[int, int, tuple[int, ...]]:
+    def snapshot(self) -> tuple[int, int, tuple[PlayerChoice | int, ...]]:
         return self.event_cursor, self.accepted_choices, tuple(self.choices)
 
-    def restore(self, snapshot: tuple[int, int, tuple[int, ...]]) -> None:
+    def restore(self, snapshot: tuple[int, int, tuple[PlayerChoice | int, ...]]) -> None:
         self.event_cursor, self.accepted_choices, choices = snapshot
         self.choices = deque(choices)
 
@@ -123,17 +139,59 @@ class HumanPlayer(FirstLegalPlayer):
         for index, action in enumerate(context.legal_actions):
             print(f"{index}: {action}")
 
-        def read_index() -> int:
+        def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+            result = {}
+            for resource, count in pairs:
+                resource = resource.upper()
+                if resource in result:
+                    raise ValueError(f"Duplicate discard resource: {resource}")
+                result[resource] = count
+            return result
+
+        def read_choice() -> PlayerChoice:
             while True:
                 try:
                     selected = int(self.input_fn(">>> "))
                 except ValueError:
                     continue
                 if 0 <= selected < len(context.legal_actions):
-                    return selected
+                    break
+            if context.action_at(selected).action_type != ActionType.DISCARD:
+                return PlayerChoice(action_index=selected)
+            print(f"Your resources: {json.dumps(dict(context.observation.my_resources))}")
+            while True:
+                try:
+                    payload = json.loads(
+                        self.input_fn(
+                            f"Discard exactly {context.discard_count} cards as named JSON "
+                            '(e.g. {"WOOD":4}): '
+                        ),
+                        object_pairs_hook=unique_object,
+                    )
+                    if not isinstance(payload, dict):
+                        raise ValueError("Discard must be a named resource-count JSON object.")
+                    for resource, count in payload.items():
+                        if resource not in RESOURCE_NAMES:
+                            raise ValueError(f"Unknown discard resource: {resource}")
+                        if isinstance(count, bool) or not isinstance(count, int) or count <= 0:
+                            raise ValueError("Discard counts must be positive integers.")
+                        if count > context.observation.my_resources.get(resource, 0):
+                            raise ValueError(f"Discard exceeds your {resource} holdings.")
+                    choice = PlayerChoice(
+                        action_index=selected,
+                        discard_cards=tuple(
+                            resource
+                            for resource in RESOURCE_NAMES
+                            for _ in range(payload.get(resource, 0))
+                        ),
+                    )
+                    action_from_choice(context, choice)
+                    return choice
+                except ValueError as exc:
+                    print(str(exc))
 
-        index = await asyncio.to_thread(read_index)
+        choice = await asyncio.to_thread(read_choice)
         return PlayerAttempt(
             context_id=context.context_id,
-            choice=PlayerChoice(action_index=index),
+            choice=choice,
         )

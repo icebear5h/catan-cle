@@ -928,6 +928,16 @@
 .sft-patch-toggle i { width: 0.65rem; height: 0.65rem; }
 .sft-patch-toggle i.target { border: 2px solid var(--cyan); }
 
+.sft-dataset-select { display: block; margin: 1rem 0; max-width: 36rem; }
+.spatial-board-card::after { content: none; }
+.sft-dataset-select select { width: 100%; }
+.patch-grid-select { display: block; padding: 0.75rem; }
+.patch-grid-select select { width: 100%; margin-top: 0.4rem; }
+.patch-grid-overlay { position: absolute; inset: 0; width: 100%; height: 100%; cursor: crosshair; }
+.patch-inspection { padding: 0.75rem; color: #9baebc; font-size: 0.75rem; line-height: 1.5; }
+.patch-inspection small { display: block; margin-top: 0.5rem; }
+.patch-magnified { width: 192px; height: 192px; margin: 0.75rem 0; image-rendering: pixelated; background-repeat: no-repeat; border: 1px solid #ffcf54; }
+
 .spatial-distributions {
   grid-template-columns: minmax(360px, 1.7fr) repeat(3, minmax(220px, 1fr));
 }

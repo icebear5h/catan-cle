@@ -5,6 +5,7 @@ Converts Catanatron game state into semantic text descriptions
 following the FLE (Factorio Learning Environment) pattern.
 """
 
+from collections import defaultdict
 from dataclasses import dataclass
 from typing import List, Dict, Any, Optional
 from cle.game_engine.state_functions import (
@@ -406,7 +407,13 @@ class CatanObservationFormatter:
 
         return f"{'/'.join(tile_descs)} [{total_pips}pips]{port_str}"
 
-    def _format_single_action(self, action: Action, obs: CatanObservation) -> str:
+    def _format_single_action(
+        self,
+        action: Action,
+        obs: CatanObservation,
+        *,
+        discard_count: int | None = None,
+    ) -> str:
         """Format a single action in Catan lingo."""
         at = action.action_type
 
@@ -516,10 +523,12 @@ class CatanObservationFormatter:
             return "Play knight card"
 
         if at == ActionType.PLAY_YEAR_OF_PLENTY:
-            if isinstance(action.value, tuple) and len(action.value) == 2:
-                r1 = action.value[0].name if hasattr(action.value[0], 'name') else str(action.value[0])
-                r2 = action.value[1].name if hasattr(action.value[1], 'name') else str(action.value[1])
-                return f"Year of Plenty: take {r1} and {r2}"
+            if isinstance(action.value, tuple) and len(action.value) in {1, 2}:
+                resources = " and ".join(
+                    resource.name if hasattr(resource, "name") else str(resource)
+                    for resource in action.value
+                )
+                return f"Year of Plenty: take {resources}"
             return "Play Year of Plenty"
 
         if at == ActionType.PLAY_MONOPOLY:
@@ -539,6 +548,11 @@ class CatanObservationFormatter:
             return "Steal (no targets)"
 
         if at == ActionType.DISCARD:
+            if discard_count is not None:
+                return (
+                    f"Discard exactly {discard_count} resource cards; "
+                    "specify named resource counts in <discard>."
+                )
             return "Discard resources"
 
         # Default
@@ -619,7 +633,6 @@ class CatanObservationFormatter:
         Summing their integer cube coordinates gives a unique integer cube
         coordinate for every node, e.g. '(1, 1, -2)'.
         """
-        from collections import defaultdict
         node_coords_accum: Dict[int, List[tuple]] = defaultdict(list)
 
         for coord, tile in board_map.tiles.items():

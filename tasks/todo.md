@@ -1,3 +1,141 @@
+# Harness boundary review follow-up (2026-09-08)
+
+- [x] Inspect acquisition/staged failure tracing, communication schema metadata,
+  and the terminal observation/menu boundary.
+- [x] Retain pending barrier replies without changing the failing actor's API;
+  wire authored communication instructions and explicit terminal preview opt-in.
+- [x] Verify capacity/retry/cancellation evidence, private schema echoes, and
+  terminal preview menu isolation with offline tests and Ruff.
+
+Review: 363 targeted offline tests passed, including all boundary-audit cases.
+Ruff and targeted diff whitespace checks passed. No hosted models, live-game
+operations, corpus runs, or production database writes were performed.
+
+# Correctness remediation (2026-09-08)
+
+## Approved scope and implementation plan
+User approved implementing the deeper audit findings. Keep unrelated changes
+and the live game intact; verify with local transports and temporary databases.
+
+- [x] Review failing audit cases and coordinate engine/replay/harness ownership.
+- [ ] Correct road connectivity/longest-road awards, own-turn victory, terminal
+  boundaries, shortage payouts, discard limits/exact bundles, and trade IDs.
+- [ ] Restore complete replay checkpoints and publish canonical replay lifecycle
+  events; index speech and preserve compatible saved inference settings.
+- [ ] Structurally parse control fields, detach mutable player inputs/results,
+  validate typed outputs/commitments, and preflight whole trade batches.
+- [ ] Version action-visible talk/commitments and named discard parameters in a
+  new suite, retaining actual persisted-suite and pickle compatibility.
+- [ ] Convert repaired audit xfails into ordinary regressions and run combined
+  tests, full-game checks, then one consolidated local corpus audit.
+- [ ] Obtain independent review, resolve findings, document evidence, and
+  intentionally restart/restore the backend only after verification.
+
+## Design boundaries
+Use the existing typed engine action/event contracts, not a parallel runtime.
+Ordinary live actions fail closed after victory; replay retains explicit forced
+outcomes. Preserve historical prompt source bytes and resolved discard-card
+serialization. A new suite owns added social context and exact-discard output;
+do not silently rewrite saved prompts or infer hidden state from table talk.
+
+---
+
+# Deeper correctness checks (2026-09-08)
+
+## Scope
+Verification and executable reproductions only. Do not silently change game
+rules, prompt/action contracts, or the running live game during this audit.
+
+## Plan
+- [x] Run isolated full-game inventory/continuity probes and adversarial
+  parser/typed-player/provider checks.
+- [x] Run the full existing local replay corpus audit once for this code state.
+- [x] Preserve confirmed defects as strict expected-failure audit tests, with
+  positive controls and opt-in full-game sweeps.
+- [x] Independently review the reproductions and run the combined audit suite.
+- [x] Record evidence, rule references, coverage limitations, and fix priority.
+
+## Initial findings
+- Inventory conservation passed across 288 engine games plus six sandbox
+  games, but independent checks found road-legality, Longest Road scoring,
+  turn-owned victory, payout, and discard-contract errors. Conservation is
+  not a rule-correctness oracle.
+- Full local corpus: 66/66 replays, 31,506 actions, 15,460 trade-lifecycle
+  actions, no fatal issues or asserted resource/trade mismatches. That audit
+  allows replay force paths and final-score sync; it does not certify undo,
+  causal event history, RNG continuation, or live game rules.
+- Further confirmed defects concern replay event restoration/publication,
+  shared mutable observations/events, malformed control tags/typed outputs,
+  decision-invisible table talk, vLLM resume, and speech indexing.
+
+## Review
+- Added guarded audit tests only; no production fixes, live actions, hosted
+  model calls, restart, or real `.cle` database writes in this follow-up.
+- Existing targeted suite: 395 passed, one opt-in corpus skip (run separately
+  in full above). Combined new audit with four full-game seeds: 10 passed,
+  35 strict expected failures. Of those, 31 reproduce correctness cases and
+  four explicitly propose custom-player robustness policy, not 35 unique bugs.
+- Independent review verified each failure at its intended comparison. Tightened
+  xfail exception types so fixture/inventory/I/O errors cannot satisfy them;
+  reduced unit positions are distinguished from natural full-game evidence.
+- Audit Ruff and independent re-review passed. Detailed findings, sources,
+  rerun commands, caveats, and priority order:
+  `reports/correctness-audit-2026-09-08.md`.
+- Follow-up implementation needs separate scope for game-rule fixes versus
+  shared context/action contract changes. Existing-award revocation below five
+  remains an additional coverage gap, not a verified extra failing case.
+
+---
+
+# Live harness correctness audit (2026-09-07)
+
+## Scope and plan
+- [x] Trace the reported rejected counteroffer and red response dump; audit
+  parsing, engine trade admission, decision lifecycle, and viewer diagnostics.
+- [x] Preserve opaque counteroffer IDs; reject ambiguous indices and duplicate
+  JSON keys; keep literal template-like model text as data; fail closed on
+  invalid private recipients; identify singleton Year of Plenty choices.
+- [x] Prevent unresolved wildcard trade execution and share non-mutating trade
+  admission checks with action validation.
+- [x] Protect step ownership/freshness, preflight trade barriers, commit applied
+  decisions before communication, cancel sibling inference on failure, and
+  refresh round-dependent menus and reaction cutoffs.
+- [x] Keep concise live errors and show rejected attempts in collapsed inspector
+  diagnostics with correct responder attribution and final/native separation.
+- [x] Run focused regressions, frontend checks, and independent code review.
+- [x] Preserve and restore the live checkpoint for a verified backend restart;
+  do not advance the user's game or call hosted models during verification.
+
+## Review
+Implementation and safe restart complete.
+Existing unrelated worktree changes are outside this audit. Exhausted attempts
+now persist in independent schema-v4 failure rows without changing checkpoints.
+Communication admission records distinguish accepted, rejected, and withheld
+responses; applied-action speech failures still persist the committed step and
+stop auto-play rather than inviting a duplicate retry.
+
+- Combined verification: 375 Python/browser tests passed, one opt-in local
+  replay-corpus audit skipped; 20 frontend tests passed; production build,
+  targeted Ruff/ESLint, and git diff whitespace checks passed.
+- Two independent reviews were rerun after fixing audience-tag whitespace,
+  inert legacy rationale, broadcast-triggered autoplay stopping, and rejected
+  communication attribution. No remaining blockers in the reviewed changes.
+- Actual localhost UI: concise banner, collapsed rejected final-output
+  diagnostics, no page errors or mutations at desktop; mobile loads without
+  horizontal overflow. Existing 390px panel sizing prevents opening the
+  inspector; follow up separately without silently redesigning styles.
+- Backed up SQLite and the pre-fix API error under the approved OpenCode temp
+  directory. Restarted listener 53580 as 69015; schema migrated to v4. Restored
+  game `27886234-8ae9-4529-8801-6399e42ac412`, checkpoint 43, revision 50.
+  GET state game/resources/dev cards/inference match exactly; WebSocket restore
+  delivery verified. Stored calls remain 183; no model calls or actions added.
+- Limits: no full local replay-corpus run, no rollback for arbitrary engine or
+  custom player.accept exceptions, and no guarantee that cancelling a local
+  provider task stops already-running remote inference/billing. Pre-fix native
+  reasoning omitted by the old error API cannot be recovered from its preview.
+
+---
+
 # SFT run fixes after catan-qwen38-spatial-sft-b32-20260901
 
 ## Findings
@@ -3093,3 +3231,52 @@ scorecards, never loss.
 - [ ] Workspace move to the user's `icebear5h` profile (own account):
   volumes created, stage-2 checkpoint-384 bundle uploaded to the same path;
   the base model re-downloads into the new HF cache on the first run.
+  Preflight 2026-09-06 morning: bundle at
+  `/runs/catan-vision-sft/catan-qwen38-gauss-s2-terrain-20260904/398f0a023ec9/checkpoints/checkpoint-384`
+  carries the five files the frozen loader needs (adapter config and
+  weights, visual_model, training_config, trainable_parameters) with sizes
+  matching tetracorp; the optimizer, tokenizer and processor files were not
+  copied and are not needed. Token inventory for `--token-init keep` is
+  `ms_swift_bidirectional_v1/trainable_tokens.json` (sha matches the
+  parent's). 38 trainer and budget tests pass. Dry run on `icebear5h`
+  stops at `Secret 'catan-hf' not found`; the launcher requires that name
+  with key `HF_TOKEN`. `huggingface-secret-2` exists there but its key
+  name is unverified. User's call: fall back to `tetracorp` for this run.
+  Dry run clean there (`MODAL_PROFILE=tetracorp`, run name
+  `catan-qwen38-olora-s3c-mixed-20260906`, plan shows profile
+  olora_frozen_bundle, rank 16 / alpha 32, lambda 0.5, token_init keep,
+  factors uploaded as dataset `c0858f119641`). Awaiting the go for
+  `--no-dry-run --spawn-training` with `modal run --detach`.
+- [x] O-LoRA loader startup fixes (2026-09-06, found by the other session's
+  smoke, finished here): the parent's `visual_model.safetensors` is keyed by
+  PEFT-wrapped names, so it is restored while the parent `PeftModel` is
+  still attached (`apply_frozen_adapter(..., restore_visual=True)`), fp32
+  promoted first; then merge, then fresh adapters. The LoRA target lists are
+  computed once before `get_peft_model`, which renames the targets in place
+  (`base_layer`, `lora_A`), so the report no longer recounts and the vision
+  count no longer hits "no vision linear modules". Covered by a real-PEFT
+  test on a Qwen-shaped tiny model (parent bundle written through PEFT,
+  exact vision restore, merged language and atlas rows, 2 + 6 targets, 2
+  protected modules, smoke forward). Needed peft 0.20 locally (Modal pins
+  0.20.0; 0.17 rejects trainable-token rows on an untied `lm_head`), so the
+  `sft` extra pins `peft>=0.20.0` and `[tool.uv] conflicts` separates it
+  from the llamafactory `pretraining` extra. 39 trainer and budget tests pass.
+
+---
+
+# Pi Minecraft sounds in global OpenCode (2026-09-07)
+
+- [x] Inspect Pi's active sounds and OpenCode's supported TUI plugin API;
+  user approved the full port, with model-switch audio on next submission.
+- [x] Copy the nine active assets and register one global TUI plugin under
+  `~/.config/opencode`, preserving 0.65 volume, 30-second long-task timing,
+  serialized subagent cues, and parent completion suppression.
+- [x] Verify event handling, config/plugin loading, audio, and independent review.
+- Scope: leave Pi, permission policies, desktop notifications, and project
+  runtime code untouched. Manual `!` exit failures and pre-start background
+  cancellations lack reliable public events in OpenCode 1.18.29.
+- Review: 29 tests / 226 assertions pass; strict TypeScript passes. The real
+  isolated TUI Plugins dialog reports `minecraft-sounds` active. All nine
+  copied files are byte-identical and pass real `afplay` playback; completion
+  was also played at 0.65 volume. Independent review found no remaining blockers.
+  Setup/limitations are documented in `~/.config/opencode/README.md`.

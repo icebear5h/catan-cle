@@ -15,6 +15,7 @@ from cle.harness.reasoning import (
     reasoning_token_count,
 )
 from cle.players.contracts import PlayerAttempt, PlayerContext
+from cle.players.validation import action_from_choice
 from cle.sandbox.replay import ReplaySandbox
 
 TransportFactory = Callable[..., CompletionTransport]
@@ -112,8 +113,8 @@ def serialize_decision_preview(
 
     action_index = choice.action_index if choice is not None else None
     selected_action = (
-        context.legal_actions[action_index]
-        if action_index is not None and 0 <= action_index < len(context.legal_actions)
+        action_from_choice(context, choice)
+        if choice is not None and attempt.validation_error is None
         else None
     )
     formatter = CatanObservationFormatter()

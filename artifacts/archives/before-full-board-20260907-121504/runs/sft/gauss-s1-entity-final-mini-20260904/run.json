@@ -1,0 +1,33 @@
+{
+  "status": "completed",
+  "error": null,
+  "elapsed_seconds": 192.183975343,
+  "adapter": "/runs/catan-vision-sft/catan-qwen38-gauss-s1-markers-entity-20260904/73b1c523741d/final",
+  "output_dir": "/runs/qwen-series-eval/gauss-s1-entity-final-mini-20260904",
+  "command": [
+    "python",
+    "-m",
+    "sft.scripts.eval_qwen_vl_adapter",
+    "--eval-jsonl",
+    "/runs/qwen-series-eval/gauss-s1-entity-final-mini-20260904/selected.jsonl",
+    "--output-dir",
+    "/runs/qwen-series-eval/gauss-s1-entity-final-mini-20260904",
+    "--adapter-dir",
+    "/runs/catan-vision-sft/catan-qwen38-gauss-s1-markers-entity-20260904/73b1c523741d/final",
+    "--model-id",
+    "Qwen/Qwen3.8-27B",
+    "--token-inventory",
+    "/data/catan-vision-sft/datasets/73b1c523741d/trainable_tokens.json",
+    "--bits",
+    "16",
+    "--batch-size",
+    "48",
+    "--max-new-tokens",
+    "16",
+    "--image-variant",
+    "original"
+  ],
+  "timeout_seconds": 600,
+  "retries": 0,
+  "expected_row_ids_sha256": "f39faa76104de225600fffe988cad004b5514bc6fece42e35fc60d54bcc782e4"
+}

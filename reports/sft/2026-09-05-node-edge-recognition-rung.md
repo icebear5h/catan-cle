@@ -422,6 +422,47 @@ production rungs; a loss on any mode names the fix before anything else
 launches (blindness or neighbor confusion: caps and quota; colour: colour
 balance in the sample; head flip or rows: init or row anchoring).
 
+## Possible contributor: reusing the same LoRA across stages
+
+Recorded 2026-09-05 at the user's request. **Untested hypothesis, not an
+established cause or an approved training change.**
+
+Verified loading behavior: stage 3 inherited the terrain stage's
+checkpoint-384 through `initial_bundle`. The loader calls
+`PeftModel.from_pretrained(..., is_trainable=True)` and separately restores
+the saved visual state. It does not call `merge_and_unload()` and attach a
+fresh adapter. The existing rank-8 language adapter was continued, with new
+optimizer/scheduler state. The launch receipt and the run's persisted
+`initial_bundle.json` both identify this parent.
+
+- Evidence: [launch receipt](../../artifacts/runs/sft/gauss-s3-nodes-edges-rw-20260905/launch.json)
+  and [initial-bundle loader](../../sft/scripts/train_trl_catan_vision.py).
+- Hypothesis: fitting pieces by modifying the existing rank-8 adapter may
+  have contributed to a compromise with previously learned terrain/port
+  behavior. Merging the old language update into frozen base weights and
+  training a fresh rank-8 adapter would instead provide an additional
+  low-rank update around the stage-2 solution. These are different
+  parameterizations; the existing factors are not confined to a fixed
+  learned subspace as they train.
+- Limits: unmerged does not mean unloaded or inactive. Merging alone does
+  not protect behavior, and a fresh adapter can still counteract the old
+  one. The vision tower, merger and atlas rows are separate possible routes
+  for regression. This hypothesis does not establish rank saturation or
+  rule out data-mix and optimization effects.
+- Candidate comparison, **not launched**: start both arms from exactly the
+  same checkpoint-384; continue the existing adapter in one, versus merge
+  its language update into frozen weights and attach a fresh rank-8
+  adapter in the other. Preserve learned atlas rows. Verify equivalent
+  pre-training evaluation before comparing, allowing numerical tolerance.
+  Match data/order, step budget, optimizer schedule, adapter scaling and
+  visual/token-row trainability across arms. Judge occupied-piece gains
+  against terrain/port retention, not aggregate loss alone. A benefit would
+  support this intervention, but would not distinguish extra cumulative
+  capacity from changed initialization/optimization without further controls.
+
+No merge, adapter reset, configuration change or paid experiment is
+authorized by this note; any test needs a fresh budget decision.
+
 ## What runs when
 
 | When | What |

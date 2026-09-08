@@ -29,6 +29,7 @@ from cle.harness.reasoning import (
     reasoning_token_count,
 )
 from cle.harness.suite import load_context_suite
+from cle.players.validation import action_from_choice
 from cle.sandbox.decision import build_decision_context
 from evals.decision_buckets import (
     classify_decision_records,
@@ -54,6 +55,7 @@ COMPOUND_ACTIONS = {
 }
 COMPOUND_FOLLOWUPS = set(COMPOUND_ACTIONS.values())
 ASYNC_TRADE_RESPONSES = {"ACCEPT_TRADE", "REJECT_TRADE"}
+# Historical comparisons stay index-only; exact new payloads do not relabel old decisions.
 COARSE_ACTIONS = {
     "OFFER_TRADE": "trade terms are not represented by the indexed meta-action",
     "COUNTER_OFFER": "counter-offer terms are not represented by the indexed meta-action",
@@ -984,8 +986,8 @@ def _query_model(
     ]
     action_index = choice.action_index if choice is not None else None
     selected = (
-        available_actions[action_index]
-        if action_index is not None and 0 <= action_index < len(available_actions)
+        action_from_choice(context, choice)
+        if choice is not None and attempt.validation_error is None
         else None
     )
     native_returned = native_reasoning_returned(
@@ -998,8 +1000,12 @@ def _query_model(
         "context_version": f"{suite.id}@{suite.version}",
         "game_plan": choice.game_plan if choice is not None else "",
         "action_index": action_index,
-        "action": selected.get("action") if selected else None,
-        "action_description": selected.get("description") if selected else None,
+        "action": str(selected) if selected is not None else None,
+        "action_description": (
+            formatter._format_single_action(selected, context.observation)
+            if selected is not None
+            else None
+        ),
         "parse_error": attempt.validation_error,
         "finish_reason": response.finish_reason,
         "provider_native_finish_reason": response.provider_native_finish_reason,

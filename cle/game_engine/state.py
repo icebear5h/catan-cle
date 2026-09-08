@@ -222,7 +222,7 @@ class GameState:
         state_copy.board = self.board.copy()
 
         state_copy.player_state = self.player_state.copy()
-        state_copy.color_to_index = self.color_to_index
+        state_copy.color_to_index = self.color_to_index.copy()
         state_copy.colors = self.colors  # immutable
 
         state_copy.resource_freqdeck = self.resource_freqdeck.copy()
@@ -231,7 +231,12 @@ class GameState:
         state_copy.buildings_by_color = pickle.loads(
             pickle.dumps(self.buildings_by_color)
         )
-        state_copy.actions = self.actions.copy()
+        # Action records are immutable, but replay dice and trade payloads are not.
+        payload_memo = {}
+        state_copy.actions = [
+            Action(action.color, action.action_type, copy.deepcopy(action.value, payload_memo))
+            for action in self.actions
+        ]
         state_copy.num_turns = self.num_turns
 
         # Current prompt / player
@@ -247,11 +252,14 @@ class GameState:
         state_copy.free_roads_available = self.free_roads_available
 
         state_copy.trade_limits = self.trade_limits
-        state_copy.trade_window = copy.deepcopy(self.trade_window)
+        state_copy.trade_window = copy.deepcopy(self.trade_window, payload_memo)
 
-        state_copy.last_dice_roll = self.last_dice_roll
+        state_copy.last_dice_roll = copy.deepcopy(self.last_dice_roll, payload_memo)
 
-        state_copy.playable_actions = self.playable_actions.copy()
+        state_copy.playable_actions = [
+            Action(action.color, action.action_type, copy.deepcopy(action.value, payload_memo))
+            for action in self.playable_actions
+        ]
         return state_copy
 
 
@@ -272,8 +280,8 @@ def yield_resources(board: Board, resource_freqdeck, number):
     Returns:
         (dict, List[int]): 2-tuple.
             First element is color => freqdeck mapping. e.g. {Color.RED: [0,0,0,3,0]}.
-            Second is an array of resources that couldn't be yieleded
-            because they depleted.
+            Second lists resources whose demand exceeded the bank, including
+            partial payouts to a sole entitled player.
     """
     intented_payout: Dict[Color, Dict[FastResource, int]] = defaultdict(
         lambda: defaultdict(int)
@@ -308,8 +316,14 @@ def yield_resources(board: Board, resource_freqdeck, number):
         payout[player] = [0, 0, 0, 0, 0]
 
         for resource, count in player_payout.items():
-            if resource not in depleted:
-                freqdeck_replenish(payout[player], count, resource)
+            if resource in depleted:
+                # Multiple buildings still count as one entitled player.
+                count = (
+                    resource_freqdeck[RESOURCES.index(resource)]
+                    if count == resource_totals[resource]
+                    else 0
+                )
+            freqdeck_replenish(payout[player], count, resource)
 
     return payout, depleted
 
@@ -433,15 +447,20 @@ def apply_action(state: GameState, action: Action, force: bool = False):
     return executed_action
 
 
+def new_trade_window(state: GameState) -> TradeWindow:
+    """Preview a new window without mutating state or consuming an identity."""
+    return TradeWindow(
+        id=f"turn-{state.num_turns}-trade-{len(state.actions)}",
+        turn_player=state.colors[state.current_turn_index],
+        participants=state.colors,
+        limits=state.trade_limits,
+    )
+
+
 def ensure_trade_window(state: GameState) -> TradeWindow:
     window = state.trade_window
     if window is None or window.status == TradeWindowStatus.CLOSED:
-        window = TradeWindow(
-            id=f"turn-{state.num_turns}-trade",
-            turn_player=state.colors[state.current_turn_index],
-            participants=state.colors,
-            limits=state.trade_limits,
-        )
+        window = new_trade_window(state)
         state.trade_window = window
     return window
 
@@ -526,8 +545,9 @@ def apply_build_settlement(state: GameState, action: Action, force: bool = False
         )
     node_id = action.value
     if state.is_initial_build_phase:
-        state.board.build_settlement(action.color, node_id, True)
+        result = state.board.build_settlement(action.color, node_id, True)
         build_settlement(state, action.color, node_id, True)
+        maintain_longest_road(state, *result)
         buildings = state.buildings_by_color[action.color][SETTLEMENT]
 
         # yield resources if second settlement
@@ -568,8 +588,9 @@ def apply_build_road(state: GameState, action: Action, force: bool = False):
         require_build_resources(state, action.color, ROAD_COST_FREQDECK, "road")
     edge = action.value
     if state.is_initial_build_phase:
-        state.board.build_road(action.color, edge)
+        result = state.board.build_road(action.color, edge)
         build_road(state, action.color, edge, True)
+        maintain_longest_road(state, *result)
 
         # state.current_player_index depend on what index are we
         # state.current_prompt too
@@ -706,21 +727,50 @@ def apply_roll(state: GameState, action: Action, force: bool = False):
     return action
 
 
+def validate_discard(
+    state: GameState, action: Action, *, force: bool = False
+) -> tuple[str, ...]:
+    """Validate exact cards without mutation; replay force skips turn/phase eligibility."""
+    if not isinstance(action, Action) or action.action_type != ActionType.DISCARD:
+        raise ValueError("Expected a DISCARD action")
+    if action.color not in state.colors:
+        raise ValueError("Discard player must be a participant")
+    if not force and (
+        state.current_prompt != ActionPrompt.DISCARD or action.color != state.current_color()
+    ):
+        raise ValueError("Discard is not requested from this player right now")
+    if not isinstance(action.value, (list, tuple)):
+        raise ValueError("Discard cards must be a list or tuple of resource names")
+    if any(not isinstance(resource, str) or resource not in RESOURCES for resource in action.value):
+        raise ValueError("Discard cards must contain only recognized resource names")
+    hand_size = player_num_resource_cards(state, action.color)
+    if not force and hand_size <= state.discard_limit:
+        raise ValueError("Player's hand does not exceed the discard limit")
+    num_to_discard = hand_size // 2
+    if len(action.value) != num_to_discard:
+        raise ValueError(f"Must discard exactly {num_to_discard} resource cards")
+    discarded = tuple(action.value)
+    if not player_resource_freqdeck_contains(
+        state, action.color, freqdeck_from_listdeck(discarded)
+    ):
+        raise ValueError("Cannot discard resource cards the player does not hold")
+    return discarded
+
+
 def apply_discard(state: GameState, action: Action, force: bool = False):
-    hand = player_deck_to_array(state, action.color)
-    num_to_discard = len(hand) // 2
     if action.value is None:
         if force:
             raise ValueError("Forced DISCARD requires explicit discarded cards")
-        # TODO: Forcefully discard randomly so that decision tree doesnt explode in possibilities.
-        discarded = state.rng.sample(hand, k=num_to_discard)
+        if action.color not in state.colors:
+            raise ValueError("Discard player must be a participant")
+        hand = player_deck_to_array(state, action.color)
+        num_to_discard = len(hand) // 2
+        # Check the request before consuming randomness for the shipped auto path.
+        validate_discard(state, Action(action.color, action.action_type, hand[:num_to_discard]))
+        discarded = tuple(state.rng.sample(hand, k=num_to_discard))
     else:
-        discarded = action.value  # for replay functionality
-    if len(discarded) != num_to_discard:
-        raise ValueError(f"Must discard exactly {num_to_discard} resource cards")
+        discarded = validate_discard(state, action, force=force)
     to_discard = freqdeck_from_listdeck(discarded)
-    if not player_resource_freqdeck_contains(state, action.color, to_discard):
-        raise ValueError("Cannot discard resource cards the player does not hold")
 
     player_freqdeck_subtract(state, action.color, to_discard)
     state.resource_freqdeck = freqdeck_add(state.resource_freqdeck, to_discard)
@@ -728,12 +778,13 @@ def apply_discard(state: GameState, action: Action, force: bool = False):
 
     # Advance turn
     discarders_left = [
-        player_num_resource_cards(state, color) > 7 for color in state.colors
+        player_num_resource_cards(state, color) > state.discard_limit for color in state.colors
     ][state.current_player_index + 1 :]
     if any(discarders_left):
         to_skip = discarders_left.index(True)
         state.current_player_index = state.current_player_index + 1 + to_skip
-        # state.current_prompt stays the same
+        state.current_prompt = ActionPrompt.DISCARD
+        state.is_discarding = True
     else:
         state.current_player_index = state.current_turn_index
         state.current_prompt = ActionPrompt.MOVE_ROBBER
@@ -883,6 +934,8 @@ def apply_offer_trade(state: GameState, action: Action, force: bool = False):
     offer = action.value
     if not isinstance(offer, TradeOffer) or offer.parent_offer_id is not None:
         raise ValueError("OFFER_TRADE requires one root TradeOffer")
+    if not force and offer.id is not None:
+        raise ValueError("Trade offer IDs are assigned by the engine")
     materialized = ensure_trade_window(state).create_offer(
         offer,
         allow_duplicate=force,
@@ -944,6 +997,8 @@ def apply_counter_offer(state: GameState, action: Action, force: bool = False):
     offer = action.value
     if not isinstance(offer, TradeOffer) or offer.parent_offer_id is None:
         raise ValueError("COUNTER_OFFER requires one counter TradeOffer")
+    if not force and offer.id is not None:
+        raise ValueError("Trade offer IDs are assigned by the engine")
     window = ensure_trade_window(state)
     if offer.parent_offer_id not in window.offers:
         raise ValueError(f"No active root offer {offer.parent_offer_id!r}")

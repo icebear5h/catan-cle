@@ -1,11 +1,7 @@
 """Replay navigation: undo, goto_fast, goto_sequential, goto_divergence."""
 
-from cle.replay.runtime.access import get_game_engine, set_game_engine
-import time
-
-from cle.game_engine.game import GameEngine
-
 from cle.replay.colonist.helpers import validate_resources_match
+from cle.replay.runtime.access import get_game_engine
 from cle.replay.runtime.revision import bump_replay_revision
 from .checkpoint import ensure_replay_checkpoint_state
 from .audit import (
@@ -113,7 +109,7 @@ def _replay_goto_sequential_transaction(
     game = get_game_engine(state)
     replay_data = state.replay_data
 
-    if not state.replay_mode or not replay_data:
+    if not state.replay_mode or not replay_data or not game:
         print(f"[Goto Sequential] No replay loaded: replay_mode={state.replay_mode}, replay_data={'set' if replay_data else None}")
         return {"error": "No replay loaded"}, 400
 
@@ -124,42 +120,25 @@ def _replay_goto_sequential_transaction(
     if target_step < 0 or target_step > total:
         return {"error": f"Step must be between 0 and {total}"}, 400
 
-    # If target is before current position, reset game from scratch
     if target_step < state.replay_index:
-        print(f"[Replay] Target {target_step} < current {state.replay_index}, resetting game...")
-        catan_map = game.state.board.map
-        colors = list(game.state.colors)
-        set_game_engine(
-            state,
-            GameEngine(
-                colors,
-                catan_map=catan_map,
-                shuffle_players=False,
-                capture_history=True,
-            ),
-        )
-        state.replay_index = 0
-        state.replay_actions_per_step = []
-        state.first_divergence_step = {}
-        state.replay_semantic_issues = []
-        state.replay_final_state_synced = False
-        state.replay_pending_dev_card = None
-        state.replay_step_checkpoints = []
-        state.replay_trade_ledger = {}
+        ensure_replay_checkpoint_state(state)
+        checkpoints = state.replay_step_checkpoints
+        if not checkpoints or checkpoints[0].replay_index != 0:
+            return {"error": "Initial replay checkpoint is unavailable"}, 409
+        if checkpoints[0].game is not game:
+            return {"error": "Initial replay checkpoint belongs to another engine"}, 409
+        checkpoints[0].restore(state)
+        checkpoints.clear()
         bump_replay_revision(state)
-        state.game_log = [{
-            "type": "general",
-            "timestamp": time.time(),
-            "message": f"Reset to step 0 for goto {target_step}"
-        }]
 
     errors = []
     steps_taken = 0
 
     while state.replay_index < target_step and state.replay_index < total:
+        before_index = state.replay_index
         result = replay_step_fn()
 
-        if isinstance(result, tuple):
+        if isinstance(result, tuple) or state.replay_index <= before_index:
             errors.append(f"Step {state.replay_index}: Error")
             break
 

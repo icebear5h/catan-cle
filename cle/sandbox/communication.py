@@ -9,6 +9,7 @@ from cle.game_engine.events import GameEvent, PlayerEvent, project_event
 from cle.game_engine.game import GameEngine
 from cle.game_engine.models.enums import ActionType
 from cle.game_engine.models.player import Color
+from cle.players.contracts import CommunicationChoice
 
 
 class ReactionReason(str, Enum):
@@ -26,6 +27,16 @@ class CommunicationOpportunity:
     visible_through_sequence: int
     reason: ReactionReason
     round: int
+
+
+@dataclass(frozen=True, slots=True)
+class CommunicationAdmission:
+    """The sandbox's outcome for one acquired communication choice."""
+
+    opportunity: CommunicationOpportunity
+    choice: CommunicationChoice
+    accepted: bool
+    validation_error: str | None = None
 
 
 class CommunicationPolicy:

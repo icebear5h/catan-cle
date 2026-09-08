@@ -22,24 +22,15 @@ from cle.game_engine.models.enums import (
 
 
 def maintain_longest_road(state, previous_road_color, road_color, road_lengths):
-    for color, length in road_lengths.items():
+    """Synchronize lengths and award VP, including revocation without a successor."""
+    for color in state.colors:
         key = player_key(state, color)
-        state.player_state[f"{key}_LONGEST_ROAD_LENGTH"] = length
-
-    # If road_color is not set or is the same as before, do nothing.
-    if road_color is None or (previous_road_color == road_color):
-        return
-
-    # Set new longest road player and unset previous if any.
-    winner_key = player_key(state, road_color)
-    state.player_state[f"{winner_key}_HAS_ROAD"] = True
-    state.player_state[f"{winner_key}_VICTORY_POINTS"] += 2
-    state.player_state[f"{winner_key}_ACTUAL_VICTORY_POINTS"] += 2
-    if previous_road_color is not None:
-        loser_key = player_key(state, previous_road_color)
-        state.player_state[f"{loser_key}_HAS_ROAD"] = False
-        state.player_state[f"{loser_key}_VICTORY_POINTS"] -= 2
-        state.player_state[f"{loser_key}_ACTUAL_VICTORY_POINTS"] -= 2
+        state.player_state[f"{key}_LONGEST_ROAD_LENGTH"] = road_lengths.get(color, 0)
+        has_road = color == road_color
+        delta = 2 * (int(has_road) - int(state.player_state[f"{key}_HAS_ROAD"]))
+        state.player_state[f"{key}_HAS_ROAD"] = has_road
+        state.player_state[f"{key}_VICTORY_POINTS"] += delta
+        state.player_state[f"{key}_ACTUAL_VICTORY_POINTS"] += delta
 
 
 def maintain_largest_army(state, color, previous_army_color, previous_army_size):
@@ -142,7 +133,7 @@ def get_dev_cards_in_hand(state, color, dev_card=None):
 
 
 def get_player_buildings(state, color_param, building_type_param):
-    return state.buildings_by_color[color_param][building_type_param]
+    return state.buildings_by_color.get(color_param, {}).get(building_type_param, [])
 
 
 def get_player_freqdeck(state, color):

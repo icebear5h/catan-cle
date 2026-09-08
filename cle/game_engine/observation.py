@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -93,7 +94,7 @@ def observe_state(
         None,
     )
     turn_player_color = game_state.colors[game_state.current_turn_index]
-    return PlayerObservation(
+    return deepcopy(PlayerObservation(
         my_color=player_color,
         my_settlements=get_player_buildings(game_state, player_color, SETTLEMENT),
         my_cities=get_player_buildings(game_state, player_color, CITY),
@@ -144,4 +145,4 @@ def observe_state(
         is_my_turn=player_color == turn_player_color,
         turn_player_color=turn_player_color,
         recent_events=list(recent_events or ()),
-    )
+    ))

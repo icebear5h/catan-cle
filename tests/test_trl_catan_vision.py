@@ -3,9 +3,13 @@ from pathlib import Path
 
 import pytest
 import torch
+from transformers import PretrainedConfig
 import torch.nn.functional as F
 
 from sft.scripts.train_trl_catan_vision import (
+    PROFILE_OLORA_FROZEN_BUNDLE,
+    language_linear_targets,
+    load_frozen_bundle,
     CURRICULUM_STAGES,
     ModelComponents,
     PROFILE_VISION_TOKENS_LORA,
@@ -190,6 +194,36 @@ def test_visual_state_round_trip_is_complete(tmp_path):
 
     assert saved["tensors"] == loaded["expected_tensors"] == loaded["tensors"]
     assert torch.equal(model.base_model.model.model.visual[0].weight, expected_weight)
+
+
+def test_initial_bundle_preserves_fp32_deltas_when_base_is_bf16(tmp_path, monkeypatch):
+    import peft
+    from dataclasses import asdict
+    from sft.scripts.train_trl_catan_vision import load_initial_bundle, RUN_CONFIG_FILE, TRAINABLE_SCOPE_FILE
+
+    model = _NestedModel()
+    components = ModelComponents(
+        input_embedding="model.language_model.embed_tokens", output_head="lm_head",
+        language="model.language_model", vision="model.visual", merger="model.visual.merger",
+        vocab_size=128, hidden_size=16,
+    )
+    expected = torch.full_like(model.base_model.model.model.visual[0].weight, 1.0001)
+    model.base_model.model.model.visual[0].weight.data.copy_(expected)
+    save_visual_state(model, components, tmp_path)
+    config = TrainConfig(train_jsonl="train", image_root="images", token_inventory="tokens",
+                         output_dir="output", initial_bundle=str(tmp_path), token_init="keep")
+    (tmp_path / RUN_CONFIG_FILE).write_text(json.dumps(asdict(config)))
+    (tmp_path / TRAINABLE_SCOPE_FILE).write_text(json.dumps({"semantic_tokens": {"token_ids": [10]}}))
+    (tmp_path / "adapter_config.json").write_text("{}")
+    (tmp_path / "adapter_model.safetensors").write_bytes(b"mock adapter")
+    model.bfloat16()
+    assert not torch.equal(model.base_model.model.model.visual[0].weight.float(), expected)
+    monkeypatch.setattr(peft.PeftModel, "from_pretrained", lambda *args, **kwargs: model)
+    setup = TokenSetup(tokens=("<N00>",), token_ids=(10,), tokenizer_size=128,
+                       model_vocab_size=128, added_tokens=1)
+    loaded, report = load_initial_bundle(model, setup, components, config)
+    assert torch.equal(loaded.base_model.model.model.visual[0].weight, expected)
+    assert not report["optimizer_state_restored"]
 
 
 class _OptimizerModel(torch.nn.Module):
@@ -702,3 +736,151 @@ def test_vision_lora_targets_and_categories():
     assert parameter_category("base_model.model.model.visual.merger.linear_fc1.lora_B.default.weight", components) == "vision_lora"
     assert parameter_category("base_model.model.model.language_model.layers.0.mlp.up_proj.lora_A.default.weight", components) == "language_lora"
     assert parameter_category("base_model.model.model.visual.blocks.0.norm1.weight", components) == "vision"
+
+
+class _TinyVLM(torch.nn.Module):
+    """Qwen-shaped module tree: language layers, a vision tower with the O-LoRA suffixes, tied-shape heads."""
+
+    def __init__(self, vocab: int = 16, hidden: int = 4, seed: int = 0):
+        super().__init__()
+        torch.manual_seed(seed)
+        self.config = PretrainedConfig(tie_word_embeddings=False)
+        self.model = torch.nn.Module()
+        self.model.language_model = torch.nn.Module()
+        self.model.language_model.embed_tokens = torch.nn.Embedding(vocab, hidden)
+        layer = torch.nn.Module()
+        layer.q_proj = torch.nn.Linear(hidden, hidden)
+        layer.down_proj = torch.nn.Linear(hidden, hidden)
+        self.model.language_model.layers = torch.nn.ModuleList([layer])
+        self.model.visual = torch.nn.Module()
+        block = torch.nn.Module()
+        block.attn = torch.nn.Module()
+        block.attn.qkv = torch.nn.Linear(hidden, hidden)
+        block.attn.proj = torch.nn.Linear(hidden, hidden)
+        block.norm1 = torch.nn.LayerNorm(hidden)
+        block.mlp = torch.nn.Module()
+        block.mlp.linear_fc1 = torch.nn.Linear(hidden, hidden)
+        block.mlp.linear_fc2 = torch.nn.Linear(hidden, hidden)
+        self.model.visual.blocks = torch.nn.ModuleList([block])
+        self.model.visual.merger = torch.nn.Module()
+        self.model.visual.merger.linear_fc1 = torch.nn.Linear(hidden, hidden)
+        self.model.visual.merger.linear_fc2 = torch.nn.Linear(hidden, hidden)
+        self.model.visual.patch_embed = torch.nn.Module()
+        self.model.visual.patch_embed.proj = torch.nn.Linear(hidden, hidden)
+        self.lm_head = torch.nn.Linear(hidden, vocab, bias=False)
+
+    def prepare_inputs_for_generation(self, *args, **kwargs):
+        return kwargs
+
+    def forward(self, input_ids=None, pixels=None, **kwargs):
+        block = self.model.visual.blocks[0]
+        visual = block.norm1(block.attn.proj(block.attn.qkv(pixels)))
+        visual = block.mlp.linear_fc2(block.mlp.linear_fc1(visual))
+        visual = self.model.visual.merger.linear_fc2(self.model.visual.merger.linear_fc1(visual))
+        layer = self.model.language_model.layers[0]
+        hidden = self.model.language_model.embed_tokens(input_ids)
+        hidden = hidden + visual.to(hidden.dtype)
+        return self.lm_head(layer.down_proj(layer.q_proj(hidden)))
+
+
+_TINY_COMPONENTS = ModelComponents(
+    input_embedding="model.language_model.embed_tokens",
+    output_head="lm_head",
+    language="model.language_model",
+    vision="model.visual",
+    merger="model.visual.merger",
+    vocab_size=16,
+    hidden_size=4,
+)
+_TINY_SETUP = TokenSetup(tokens=("<a>", "<b>"), token_ids=(14, 15), tokenizer_size=16, model_vocab_size=16, added_tokens=0)
+
+
+def _write_parent_bundle(bundle: Path) -> tuple[dict[str, torch.Tensor], dict[str, torch.Tensor]]:
+    """Train-shaped parent: language LoRA and atlas rows in PEFT, a full-visual file saved from the wrapped model."""
+
+    from peft import LoraConfig, get_peft_model
+
+    parent = _TinyVLM(seed=2)
+    parent.requires_grad_(False)
+    peft_config = LoraConfig(
+        task_type="CAUSAL_LM",
+        r=2,
+        lora_alpha=4,
+        lora_dropout=0.0,
+        bias="none",
+        target_modules=language_linear_targets(parent, _TINY_COMPONENTS),
+        trainable_token_indices={_TINY_COMPONENTS.input_embedding: [14, 15], _TINY_COMPONENTS.output_head: [14, 15]},
+    )
+    wrapped = get_peft_model(parent, peft_config)
+    wrapped._catan_components = _TINY_COMPONENTS
+    with torch.no_grad():
+        for name, parameter in wrapped.named_parameters():
+            if ".lora_B." in name or "trainable_tokens_delta" in name or ".model.visual." in name:
+                parameter.add_(torch.randn_like(parameter))
+    bundle.mkdir(parents=True)
+    wrapped.save_pretrained(str(bundle))
+    save_visual_state(wrapped, _TINY_COMPONENTS, bundle)
+    (bundle / "trainable_parameters.json").write_text(json.dumps({"semantic_tokens": _TINY_SETUP.as_dict()}))
+    merged = wrapped.merge_and_unload()
+    merged_state = {name: tensor.detach().clone() for name, tensor in merged.state_dict().items()}
+    visual_state = {name: tensor for name, tensor in merged_state.items() if name.startswith("model.visual.")}
+    return merged_state, visual_state
+
+
+def test_load_frozen_bundle_restores_vision_merges_parent_and_adds_fresh_adapters(tmp_path: Path):
+    bundle = tmp_path / "checkpoint-384"
+    parent_state, parent_visual = _write_parent_bundle(bundle)
+    config = TrainConfig(
+        train_jsonl="train.jsonl",
+        image_root="images",
+        token_inventory="tokens.json",
+        output_dir=str(tmp_path / "out"),
+        profile=PROFILE_OLORA_FROZEN_BUNDLE,
+        frozen_bundle=str(bundle),
+        token_init="keep",
+        lora_rank=2,
+        lora_alpha=4,
+        lora_dropout=0.0,
+    )
+    config.validate()
+    base = _TinyVLM(seed=2).bfloat16()
+    for name in parent_visual:
+        assert not torch.equal(base.state_dict()[name].float(), parent_visual[name]), name
+
+    model, report = load_frozen_bundle(base, _TINY_SETUP, _TINY_COMPONENTS, config)
+
+    state = model.state_dict()
+    # Vision: the parent's fp32 weights land exactly, no bf16 round trip.
+    for name, expected in parent_visual.items():
+        module, _, leaf = name.rpartition(".")
+        loaded = state.get(f"base_model.model.{name}", state.get(f"base_model.model.{module}.base_layer.{leaf}"))
+        assert loaded is not None, name
+        assert loaded.dtype == torch.float32
+        assert torch.equal(loaded, expected), name
+    # Language and atlas rows: the parent's LoRA and token deltas are merged into the base weights.
+    for name in ("model.language_model.layers.0.q_proj", "model.language_model.layers.0.down_proj"):
+        assert torch.allclose(state[f"base_model.model.{name}.base_layer.weight"].float(), parent_state[f"{name}.weight"], atol=2e-2)
+    embed_key = [name for name in state if "embed_tokens" in name and name.endswith(".weight") and "trainable_tokens" not in name]
+    assert len(embed_key) == 1, embed_key
+    embed = state[embed_key[0]].float()
+    assert torch.allclose(embed[14:], parent_state["model.language_model.embed_tokens.weight"][14:], atol=2e-2)
+    # Fresh adapters on every language linear and every vision projection, counted before PEFT renamed them.
+    assert report["new_adapter"] == {"rank": 2, "alpha": 4, "language_targets": 2, "vision_targets": 6}
+    lora_a = {name for name, parameter in model.named_parameters() if ".lora_A." in name and parameter.requires_grad}
+    assert len(lora_a) == 8
+    assert "base_model.model.model.visual.blocks.0.attn.qkv.lora_A.default.weight" in lora_a
+    assert "base_model.model.model.visual.patch_embed.proj.lora_A.default.weight" not in lora_a
+    assert report["protected_modules"] == 2
+    assert report["unprotected_modules"] == [
+        "model.visual.blocks.0.attn.proj",
+        "model.visual.blocks.0.attn.qkv",
+        "model.visual.blocks.0.mlp.linear_fc1",
+        "model.visual.blocks.0.mlp.linear_fc2",
+        "model.visual.merger.linear_fc1",
+        "model.visual.merger.linear_fc2",
+    ]
+    trainable = {name for name, parameter in model.named_parameters() if parameter.requires_grad}
+    assert all(".lora_" in name or "trainable_tokens_delta" in name for name in trainable)
+    assert not any(".lora_" in name for name in parent_state)
+    logits = model(input_ids=torch.tensor([[1, 14]]), pixels=torch.zeros(1, 2, 4))
+    assert logits.shape == (1, 2, 16)

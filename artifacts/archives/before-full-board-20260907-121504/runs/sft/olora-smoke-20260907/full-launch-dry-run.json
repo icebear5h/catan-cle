@@ -1,0 +1,113 @@
+{
+  "config": {
+    "dataloader_num_workers": 2,
+    "eval_image_root": "/data/catan-vision-sft/datasets/c0858f119641/images",
+    "eval_jsonl": "/data/catan-vision-sft/datasets/c0858f119641/eval.jsonl",
+    "eval_steps": 128,
+    "frozen_bundle": "/runs/catan-vision-sft/catan-qwen38-gauss-s2-terrain-20260904/398f0a023ec9/checkpoints/checkpoint-384",
+    "gradient_accumulation_steps": 2,
+    "hub_model_id": "TetraCorp/catan-qwen3.8-27b-spatial-sft",
+    "image_max_pixels": 1048576,
+    "image_min_pixels": 65536,
+    "image_root": "/data/catan-vision-sft/datasets/c0858f119641/images",
+    "initial_bundle": null,
+    "language_lora_learning_rate": 0.0001,
+    "learning_rate": 0.0005,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "lora_rank": 16,
+    "max_steps": 512,
+    "merger_learning_rate": 5e-05,
+    "model_id": "Qwen/Qwen3.8-27B",
+    "num_train_epochs": 1.0,
+    "orthogonal_lambda": 0.5,
+    "output_dir": "/runs/catan-vision-sft/catan-qwen38-olora-s3c-mixed-20260907/c0858f119641",
+    "patch_loss_weight": 0.0,
+    "patch_temperature": 0.07,
+    "per_device_eval_batch_size": 32,
+    "per_device_train_batch_size": 16,
+    "profile": "olora_frozen_bundle",
+    "publish_to_hub": false,
+    "require_curriculum": false,
+    "resume_from_checkpoint": null,
+    "save_steps": 128,
+    "save_total_limit": 2,
+    "seed": 42,
+    "spatial_target_mode": "correct",
+    "token_init": "keep",
+    "token_inventory": "/data/catan-vision-sft/datasets/c0858f119641/trainable_tokens.json",
+    "train_jsonl": "/data/catan-vision-sft/datasets/c0858f119641/train.jsonl",
+    "vision_learning_rate": 5e-06,
+    "vision_lora_learning_rate": 0.0001,
+    "visual_delta_factors": "/data/catan-vision-sft/datasets/c0858f119641/visual_delta_factors.safetensors",
+    "warmup_ratio": 0.1,
+    "weight_decay": 0.01
+  },
+  "dataset": {
+    "eval": {
+      "image_manifest_sha256": "bda04affda2bb4309e54dbd47880a292b7025902cb5820f01089b4c7b933f768",
+      "image_root": "/Users/henry/catan-learning/artifacts/generated/board_recognition/replay_v1/mixed_rung3b_v1/images",
+      "max_answer_characters": 1247,
+      "max_prompt_characters": 151,
+      "require_curriculum": false,
+      "rows": 887,
+      "schema": "catan_trl_dataset_contract/v1",
+      "source": "/Users/henry/catan-learning/artifacts/generated/board_recognition/replay_v1/mixed_rung3b_v1/stage1/eval_sample.jsonl",
+      "source_sha256": "bb5b76e579b435b42c68de2cdb72de01d7a7879cb118c9fb9de1afc0a9eed019",
+      "spatial_target_rows": 0,
+      "spatial_target_types": {},
+      "stages": [
+        {
+          "end_row_exclusive": 887,
+          "name": "spatial_grounding",
+          "rows": 887,
+          "start_row": 0
+        }
+      ],
+      "unique_images": 64
+    },
+    "train": {
+      "image_manifest_sha256": "4f698c6fd7de786d66354886e819b437a3f6ab9fd50ef7538af212d7c4645e5e",
+      "image_root": "/Users/henry/catan-learning/artifacts/generated/board_recognition/replay_v1/mixed_rung3b_v1/images",
+      "max_answer_characters": 1525,
+      "max_prompt_characters": 151,
+      "require_curriculum": false,
+      "rows": 14770,
+      "schema": "catan_trl_dataset_contract/v1",
+      "source": "/Users/henry/catan-learning/artifacts/generated/board_recognition/replay_v1/mixed_rung3b_v1/stage1/train.jsonl",
+      "source_sha256": "28c945b0c8922b7de6782cf8f43922b5ffcd4a7ff38b8e8c2095620e243afdd5",
+      "spatial_target_rows": 0,
+      "spatial_target_types": {},
+      "stages": [
+        {
+          "end_row_exclusive": 14770,
+          "name": "spatial_grounding",
+          "rows": 14770,
+          "start_row": 0
+        }
+      ],
+      "unique_images": 1024
+    }
+  },
+  "dependencies": {
+    "accelerate": "1.14.0",
+    "datasets": "5.0.1",
+    "huggingface_hub": "1.29.0",
+    "peft": "0.20.0",
+    "pillow": "12.3.0",
+    "safetensors": "0.8.0",
+    "torch": "2.13.0",
+    "torchvision": "0.28.0",
+    "transformers": "5.16.1",
+    "trl": "1.12.0"
+  },
+  "dry_run": true,
+  "hardware": "H200",
+  "identity": "3e7800bbb10edb8fe87876840db954f52be66024138077b897bd86b14388acc4",
+  "modal_app": "catan-qwen3-8-vision-sft",
+  "modal_secret": "huggingface-secret-2",
+  "paid_gpu_requested": false,
+  "resume_latest": false,
+  "schema": "catan_modal_trl_vision_sft_launch/v1",
+  "spawn_training": false
+}

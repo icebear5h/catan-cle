@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from enum import Enum
 from typing import Any, Mapping, Protocol, runtime_checkable
 
+from cle.game_engine.communication import SocialCommitment
 from cle.game_engine.events import PlayerEvent
 from cle.game_engine.models.enums import Action
 from cle.game_engine.models.player import Color
@@ -25,6 +26,9 @@ class PlayerContext:
     events: tuple[PlayerEvent, ...]
     legal_actions: tuple[Action, ...]
     prompt_key: str
+    recent_messages: tuple[PlayerEvent, ...] = ()
+    active_commitments: tuple[SocialCommitment, ...] = ()
+    discard_count: int = 0
 
     def action_at(self, index: int) -> Action:
         if index < 0 or index >= len(self.legal_actions):
@@ -54,6 +58,14 @@ class PlayerChoice:
     provider_response_id: str | None = None
     provider_request_id: str | None = None
     provider_native_finish_reason: str | None = None
+    discard_cards: tuple[str, ...] | None = None
+
+    def __setstate__(self, state: list[Any]) -> None:
+        # Persisted pre-discard receipts contain the original 15 positional slots.
+        if len(state) == 15:
+            state = [*state, None]
+        for item, value in zip(fields(self), state, strict=True):
+            object.__setattr__(self, item.name, value)
 
 
 @dataclass(frozen=True, slots=True)

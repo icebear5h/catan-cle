@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
 import tempfile
 import time
 from dataclasses import asdict, replace
@@ -44,7 +45,7 @@ from sft.scripts.train_trl_catan_vision import (
 
 
 APP_NAME = "catan-qwen3-8-vision-sft"
-HF_SECRET_NAME = "catan-hf"
+HF_SECRET_NAME = os.environ.get("CATAN_HF_SECRET_NAME", "catan-hf")
 REMOTE_CACHE = "/cache"
 REMOTE_DATA = "/data"
 REMOTE_RUNS = "/runs"

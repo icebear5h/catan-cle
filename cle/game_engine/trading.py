@@ -11,6 +11,10 @@ ResourceBundle = tuple[int, int, int, int, int]
 RESOURCE_NAMES = ("WOOD", "BRICK", "SHEEP", "WHEAT", "ORE")
 
 
+class _TradeCapError(ValueError):
+    """A lifecycle limit failure, counted only when creation is attempted."""
+
+
 class TradeOfferStatus(str, Enum):
     ACTIVE = "active"
     WITHDRAWN = "withdrawn"
@@ -151,14 +155,15 @@ class TradeWindow:
         )
         return max(0, self.limits.max_active_counteroffers - used)
 
-    def create_offer(
+    def validate_offer(
         self,
         offer: TradeOffer,
         *,
         supersedes_offer_id: str | None = None,
         offer_id: str | None = None,
         allow_duplicate: bool = False,
-    ) -> TradeOffer:
+    ) -> None:
+        """Raise ValueError if creation would fail, without changing window or offer."""
         self._require_open()
         if offer.offered_by not in self.participants:
             raise ValueError("Trade offerer must be a window participant")
@@ -168,9 +173,8 @@ class TradeWindow:
             not allow_duplicate
             and self.round >= self.limits.max_negotiation_rounds
         ):
-            self._hit_cap("maximum negotiation rounds reached")
+            raise _TradeCapError("maximum negotiation rounds reached")
 
-        parent = None
         if offer.parent_offer_id is not None:
             parent = self._active(offer.parent_offer_id)
             if parent.parent_offer_id is not None:
@@ -181,14 +185,15 @@ class TradeWindow:
                 )
             if offer.offered_by == parent.offered_by:
                 raise ValueError("A player cannot counter its own offer")
+            self._require_audience(parent, offer.offered_by)
             if not allow_duplicate and self.remaining_counter_slots == 0:
-                self._hit_cap("maximum active counteroffers reached")
+                raise _TradeCapError("maximum active counteroffers reached")
         elif (
             not allow_duplicate
             and self.remaining_root_slots == 0
             and supersedes_offer_id is None
         ):
-            self._hit_cap("maximum active root offers reached")
+            raise _TradeCapError("maximum active root offers reached")
 
         active_for_player = [
             active_offer
@@ -200,24 +205,44 @@ class TradeWindow:
             not allow_duplicate
             and len(active_for_player) >= self.limits.max_offers_per_player
         ):
-            self._hit_cap("maximum active offers for player reached")
+            raise _TradeCapError("maximum active offers for player reached")
 
-        deal_key = self._deal_key(offer)
-        if not allow_duplicate and deal_key in self._seen_deals:
+        if not allow_duplicate and self._deal_key(offer) in self._seen_deals:
             raise ValueError("Equivalent offer already appeared in this trade window")
 
         if supersedes_offer_id is not None:
             old = self._active(supersedes_offer_id)
             if old.offered_by != offer.offered_by:
                 raise ValueError("Only an offer's creator may supersede it")
-            old.status = TradeOfferStatus.WITHDRAWN
 
         materialized_id = offer_id or offer.id or (
             f"{self.id}:o{self._next_offer_number}"
         )
         if materialized_id in self.offers:
             raise ValueError(f"Offer {materialized_id!r} already exists")
-        self._next_offer_number += 1
+
+    def create_offer(
+        self,
+        offer: TradeOffer,
+        *,
+        supersedes_offer_id: str | None = None,
+        offer_id: str | None = None,
+        allow_duplicate: bool = False,
+    ) -> TradeOffer:
+        try:
+            self.validate_offer(
+                offer,
+                supersedes_offer_id=supersedes_offer_id,
+                offer_id=offer_id,
+                allow_duplicate=allow_duplicate,
+            )
+        except _TradeCapError:
+            self.cap_hits += 1
+            raise
+
+        materialized_id = offer_id or offer.id or (
+            f"{self.id}:o{self._next_offer_number}"
+        )
         materialized = TradeOffer(
             id=materialized_id,
             offered_by=offer.offered_by,
@@ -226,14 +251,18 @@ class TradeWindow:
             receive=offer.receive,
             give_any=offer.give_any,
             receive_any=offer.receive_any,
-            parent_offer_id=parent.id if parent is not None else None,
+            parent_offer_id=offer.parent_offer_id,
             created_round=self.round,
         )
+        if supersedes_offer_id is not None:
+            self.offers[supersedes_offer_id].status = TradeOfferStatus.WITHDRAWN
+        self._next_offer_number += 1
         self.offers[materialized_id] = materialized
-        if parent is not None:
+        if offer.parent_offer_id is not None:
+            parent = self.offers[offer.parent_offer_id]
             parent.willing_by.discard(offer.offered_by)
             parent.declined_by.add(offer.offered_by)
-        self._seen_deals.add(deal_key)
+        self._seen_deals.add(self._deal_key(offer))
         return materialized
 
     def signal_willingness(self, offer_id: str, player: Color) -> None:
@@ -257,6 +286,9 @@ class TradeWindow:
     def executable_candidates(self) -> tuple[TradeCandidate, ...]:
         candidates = []
         for offer in self.active_offers:
+            # Wildcards are proposals only; execution requires an exact counteroffer.
+            if offer.give_any or offer.receive_any:
+                continue
             if offer.parent_offer_id is None and offer.offered_by == self.turn_player:
                 candidates.extend(
                     TradeCandidate(offer.id, self.turn_player, player)
@@ -371,7 +403,3 @@ class TradeWindow:
             offer.receive,
             offer.receive_any,
         )
-
-    def _hit_cap(self, message: str) -> None:
-        self.cap_hits += 1
-        raise ValueError(message)

@@ -85,6 +85,28 @@ SFT_SPATIAL_LOCALIZATION_STAGES = {
     "stage2": ("train", "validation", "test"),
     "probes": ("validation", "test"),
 }
+SFT_VIEWER_DATASETS = {
+    "spatial_localization_v1": "Legacy markers and relations",
+    "spatial_localization_v3": "v3 — single pieces",
+    "terrain_readout_v2": "Stage 2 — terrain",
+    "node_edge_readout_v1": "Stage 3 — pieces (original)",
+    "node_edge_readout_reweighted_v1": "Stage 3 — pieces (reweighted training)",
+}
+
+
+def _viewer_dataset(dataset: str) -> tuple[Path, dict[str, tuple[str, ...]]]:
+    if dataset not in SFT_VIEWER_DATASETS:
+        raise ValueError("Unknown SFT dataset")
+    if dataset == "spatial_localization_v1":
+        return SFT_SPATIAL_LOCALIZATION_ROOT, SFT_SPATIAL_LOCALIZATION_STAGES
+    root = SFT_REPLAY_ROOT / dataset
+    splits = tuple(
+        split for split in ("train", "validation", "test", "color_diagnostic")
+        if (root / "stage1" / f"{split}.jsonl").is_file()
+    )
+    return root, {"stage1": splits}
+
+
 SFT_SPLITS = ("train", "validation", "test", "color_diagnostic")
 SFT_TOPOLOGY_PATH = (
     PROJECT_ROOT / "artifacts" / "generated" / "sft" / "atlas_topology"
@@ -899,19 +921,24 @@ def get_catan_sft_image(image_name: str):
     "/api/catan-board-bench/spatial-localization-data", methods=["GET"]
 )
 def get_catan_spatial_localization_data():
-    """Return the staged empty-board spatial-localization SFT corpus."""
+    """Return rows from an explicitly allowlisted SFT corpus."""
 
+    dataset = request.args.get("dataset", "spatial_localization_v1")
+    try:
+        dataset_root, stages = _viewer_dataset(dataset)
+    except ValueError:
+        return jsonify({"error": "Unknown SFT dataset"}), 400
     stage = request.args.get("stage", "stage1")
-    if stage not in SFT_SPATIAL_LOCALIZATION_STAGES:
+    if stage not in stages:
         return jsonify({"error": f"Unknown spatial-localization stage: {stage}"}), 400
-    split = request.args.get("split", SFT_SPATIAL_LOCALIZATION_STAGES[stage][0])
-    if split not in SFT_SPATIAL_LOCALIZATION_STAGES[stage]:
+    split = request.args.get("split", next(iter(stages[stage]), "train"))
+    if split not in stages[stage]:
         return jsonify(
             {"error": f"Split {split} is unavailable for spatial-localization {stage}"}
         ), 400
 
-    data_path = SFT_SPATIAL_LOCALIZATION_ROOT / stage / f"{split}.jsonl"
-    metadata_path = SFT_SPATIAL_LOCALIZATION_ROOT / "metadata.json"
+    data_path = dataset_root / stage / f"{split}.jsonl"
+    metadata_path = dataset_root / "metadata.json"
     missing = [
         str(path.relative_to(PROJECT_ROOT))
         for path in (data_path, metadata_path)
@@ -922,7 +949,7 @@ def get_catan_spatial_localization_data():
             {"error": "Spatial-localization artifacts are missing", "missing": missing}
         ), 404
 
-    rows = list(_spatial_localization_rows(stage, split))
+    rows = list(_spatial_localization_rows(stage, split, dataset))
     task_type = request.args.get("task_type", "all")
     entity_type = request.args.get("entity_type", "all")
     relationship = request.args.get("relationship", "all")
@@ -957,13 +984,13 @@ def get_catan_spatial_localization_data():
     limit = min(200, max(1, _int_arg("limit", 80)))
     metadata = _read_json(metadata_path)
     file_key = f"{stage}/{split}.jsonl"
-    file_metadata = metadata.get("files", {}).get(file_key, {})
+    file_metadata = metadata.get("files", {}).get(
+        file_key, metadata.get("files", {}).get(split, {})
+    )
     stage_catalog = []
-    for stage_name, stage_splits in SFT_SPATIAL_LOCALIZATION_STAGES.items():
+    for stage_name, stage_splits in stages.items():
         split_counts = {
-            split_name: metadata.get("files", {})
-            .get(f"{stage_name}/{split_name}.jsonl", {})
-            .get("rows", 0)
+            split_name: _viewer_row_count(dataset_root / stage_name / f"{split_name}.jsonl")
             for split_name in stage_splits
         }
         stage_catalog.append(
@@ -977,6 +1004,12 @@ def get_catan_spatial_localization_data():
     return jsonify(
         {
             "schema": "catan_spatial_localization_datavis/v1",
+            "dataset": dataset,
+            "datasets": [
+                {"id": key, "label": label}
+                for key, label in SFT_VIEWER_DATASETS.items()
+                if (_viewer_dataset(key)[0] / "metadata.json").is_file()
+            ],
             "stage": stage,
             "split": split,
             "rows": filtered[offset : offset + limit],
@@ -988,9 +1021,9 @@ def get_catan_spatial_localization_data():
                 "state_count": len({row["state_id"] for row in rows}),
                 "image_count": len({row["image_name"] for row in rows}),
                 "source_schema": metadata.get("schema"),
-                "source_sha256": file_metadata.get("sha256"),
-                "atlas_counts": metadata.get("atlas_counts", {}),
-                "atlas_tokens": sum(metadata.get("atlas_counts", {}).values()),
+                "source_sha256": file_metadata.get("sha256") or hashlib.sha256(data_path.read_bytes()).hexdigest(),
+                "atlas_counts": metadata.get("atlas_counts") or {"tile": 19, "node": 54, "edge": 72, "port": 9},
+                "atlas_tokens": sum((metadata.get("atlas_counts") or {"all": 154}).values()),
                 "marker_groups_per_board": metadata.get("marker_groups_per_board"),
                 "node_edge_sampling_multiplier": metadata.get(
                     "node_edge_sampling_multiplier"
@@ -1007,8 +1040,8 @@ def get_catan_spatial_localization_data():
                 "polarity": _count_by(rows, "polarity"),
             },
             "facets": {
-                "stages": list(SFT_SPATIAL_LOCALIZATION_STAGES),
-                "splits": list(SFT_SPATIAL_LOCALIZATION_STAGES[stage]),
+                "stages": list(stages),
+                "splits": list(stages[stage]),
                 "task_types": _unique_values(rows, "task_type"),
                 "entity_types": _unique_values(rows, "entity_type"),
                 "relationships": _unique_values(rows, "relationship"),
@@ -1025,9 +1058,15 @@ def get_catan_spatial_localization_data():
 def get_catan_spatial_localization_image(image_name: str):
     """Serve one generated localization image without exposing arbitrary files."""
 
-    path = (SFT_SPATIAL_LOCALIZATION_IMAGE_ROOT / image_name).resolve()
+    dataset = request.args.get("dataset", "spatial_localization_v1")
     try:
-        path.relative_to(SFT_SPATIAL_LOCALIZATION_IMAGE_ROOT.resolve())
+        root, _ = _viewer_dataset(dataset)
+    except ValueError:
+        return jsonify({"error": "Unknown SFT dataset"}), 400
+    image_root = SFT_SPATIAL_LOCALIZATION_IMAGE_ROOT if dataset == "spatial_localization_v1" else root / "images"
+    path = (image_root / image_name).resolve()
+    try:
+        path.relative_to(image_root.resolve())
     except ValueError:
         return jsonify({"error": "Image path is outside the localization directory"}), 400
     if not path.is_file():
@@ -1397,12 +1436,19 @@ def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
 
 
+@lru_cache(maxsize=32)
+def _viewer_row_count(path: Path) -> int:
+    with path.open() as source:
+        return sum(1 for line in source if line.strip())
+
+
 @lru_cache(maxsize=8)
 def _spatial_localization_rows(
-    stage: str, split: str
+    stage: str, split: str, dataset: str = "spatial_localization_v1"
 ) -> tuple[dict[str, Any], ...]:
+    root, _ = _viewer_dataset(dataset)
     source_rows = _read_jsonl(
-        SFT_SPATIAL_LOCALIZATION_ROOT / stage / f"{split}.jsonl"
+        root / stage / f"{split}.jsonl"
     )
     combined: list[dict[str, Any]] = []
     for position, source in enumerate(source_rows):
@@ -1425,7 +1471,7 @@ def _spatial_localization_rows(
                 "image_name": image_name,
                 "image_url": (
                     "/api/catan-board-bench/spatial-localization-image/"
-                    f"{image_name}"
+                    f"{image_name}?dataset={dataset}"
                 ),
                 "prompt": messages[0].get("content", ""),
                 "answer": messages[1].get("content", ""),
@@ -1434,6 +1480,10 @@ def _spatial_localization_rows(
                 "task_type": source.get("task_type", "unknown"),
                 "entity_type": source.get("entity_type", "unknown"),
                 "target_token": source.get("target_token"),
+                "queried_token": source.get("queried_token"),
+                "piece": source.get("piece"),
+                "color": source.get("color"),
+                "density_bin": source.get("density_bin"),
                 "tokens": tokens,
                 "marker": source.get("marker"),
                 "marker_style": source.get("marker_style"),

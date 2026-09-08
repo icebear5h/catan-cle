@@ -11,6 +11,8 @@ import {
 import type { PanelSize } from 'react-resizable-panels';
 import { runAutoPlayLoop } from './autoPlay';
 import type { AutoPlayStepResult } from './autoPlay';
+import { liveStepAutoPlayResult, liveStepErrorUpdate } from './liveStepErrors';
+import type { LiveStepFailure, LiveStepWarning } from './liveStepErrors';
 import type { AllPlayerDevCards } from './playerDevCards';
 import type {
   GameState,
@@ -30,6 +32,7 @@ import GameLog from './components/GameLog';
 import ReplayResponseCard from './components/ReplayResponseCard';
 import LiveReasoningTrace from './components/LiveReasoningTrace';
 import SavedStepReasoningTrace from './components/SavedStepReasoningTrace';
+import RejectedLiveAttempts from './components/RejectedLiveAttempts';
 import TableTalkLog from './components/TableTalkLog';
 import ReplayTranscriptPanel from './components/ReplayTranscriptPanel';
 import SavedLiveGamesBar, {
@@ -103,18 +106,12 @@ interface LiveInferenceState {
   max_decision_attempts: number;
 }
 
-interface LiveStepErrorState {
-  error?: string;
-  details?: string;
-  attempts?: Array<Record<string, unknown>>;
-}
-
 interface StateSnapshot {
   game: GameState | null;
   running: boolean;
   live_trace_game_id?: string | null;
   live_inference?: LiveInferenceState | null;
-  last_live_step_error?: LiveStepErrorState | null;
+  last_live_step_error?: LiveStepFailure | LiveStepWarning | null;
   game_log?: GameLogEntry[];
   all_player_resources?: AllPlayerResources | null;
   all_player_dev_cards?: AllPlayerDevCards | null;
@@ -136,43 +133,6 @@ function getApiError(payload: unknown, fallback: string): string {
     }
   }
   return fallback;
-}
-
-function liveStepErrorMessage(payload: unknown): string {
-  const message = getApiError(payload, 'Sandbox step failed');
-  if (typeof payload !== 'object' || payload === null) {
-    return message;
-  }
-  const attempts = (payload as LiveStepErrorState).attempts;
-  const attempt = attempts?.at(-1);
-  if (!attempt) {
-    return message;
-  }
-  const usage = typeof attempt.usage === 'object' && attempt.usage !== null
-    ? attempt.usage as Record<string, unknown>
-    : {};
-  const diagnostics = [
-    typeof attempt.finish_reason === 'string'
-      ? `finish=${attempt.finish_reason}`
-      : null,
-    typeof usage.completion_tokens === 'number'
-      ? `completion=${usage.completion_tokens}`
-      : null,
-    typeof attempt.reasoning_tokens === 'number'
-      ? `reasoning=${attempt.reasoning_tokens}`
-      : null,
-    typeof attempt.latency_ms === 'number'
-      ? `latency=${(attempt.latency_ms / 1000).toFixed(1)}s`
-      : null,
-  ].filter(Boolean);
-  const finalResponse = typeof attempt.final_response === 'string'
-    ? attempt.final_response.trim().slice(0, 500)
-    : '';
-  const suffix = [
-    diagnostics.length > 0 ? diagnostics.join(', ') : null,
-    `final=${finalResponse || '(empty)'}`,
-  ].filter(Boolean).join('; ');
-  return `${message} [${suffix}]`;
 }
 
 async function readApiObject(response: Response): Promise<Record<string, unknown>> {
@@ -199,6 +159,7 @@ function App() {
   const [hasActiveGame, setHasActiveGame] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [liveError, setLiveError] = useState<string | null>(null);
+  const [liveStepFailure, setLiveStepFailure] = useState<LiveStepFailure | null>(null);
   const [liveInference, setLiveInference] = useState<LiveInferenceState | null>(null);
   const [liveTraceGameId, setLiveTraceGameId] = useState<string | null>(null);
   const [liveTraceDatabase, setLiveTraceDatabase] = useState<string | null>(null);
@@ -270,20 +231,28 @@ function App() {
     };
   }, []);
 
-  const applyStateSnapshot = useCallback((data: StateSnapshot) => {
+  const applyLiveStepError = useCallback((
+    payload: unknown,
+    source: 'runtime' | 'checkpoint' = 'runtime',
+  ) => {
+    const update = liveStepErrorUpdate(payload, source);
+    if (update === undefined) return;
+    if (update.message !== null) stopAutoPlay();
+    setLiveError(update.message);
+    setLiveStepFailure(update.failure);
+  }, [stopAutoPlay]);
+
+  const applyStateSnapshot = useCallback((
+    data: StateSnapshot,
+    source: 'runtime' | 'checkpoint' = 'runtime',
+  ) => {
     setGameState(data.game);
     setIsRunning(data.running);
     setGameLog(data.game_log || []);
     if (data.live_inference !== undefined) {
       setLiveInference(data.live_inference);
     }
-    if (data.last_live_step_error !== undefined) {
-      setLiveError(
-        data.last_live_step_error
-          ? liveStepErrorMessage(data.last_live_step_error)
-          : null,
-      );
-    }
+    applyLiveStepError(data.last_live_step_error, source);
     setAllPlayerResources(data.all_player_resources || null);
     setAllPlayerDevCards(data.all_player_dev_cards || null);
     if (data.player_types !== undefined) {
@@ -340,7 +309,7 @@ function App() {
     if (data.last_dice_roll !== undefined) {
       setLastDiceRoll(data.last_dice_roll);
     }
-  }, []);
+  }, [applyLiveStepError]);
 
   const refreshSavedGames = useCallback(async () => {
     const requestId = ++savedGamesRequestRef.current;
@@ -403,7 +372,7 @@ function App() {
       setBrowsedTraceStep(detail);
       setSelectedSavedGameId(gameId);
       setLiveReasoningTraces([]);
-      applyStateSnapshot(detail.step.public_state as StateSnapshot);
+      applyStateSnapshot(detail.step.public_state as StateSnapshot, 'checkpoint');
     } catch (error) {
       if (requestId === traceBrowseRequestRef.current) {
         const message = error instanceof Error ? error.message : String(error);
@@ -471,7 +440,7 @@ function App() {
   const startGame = async (mode: string = 'random') => {
     traceBrowseRequestRef.current += 1;
     setTraceBrowseBusy(false);
-    setLiveError(null);
+    applyLiveStepError(null);
     setBrowsedTraceStep(null);
     setTraceBrowseError(null);
     setLiveReasoningTraces([]);
@@ -529,6 +498,7 @@ function App() {
 
     stepInFlightRef.current = true;
     try {
+      // Keep rejected diagnostics available while the retry is in flight.
       setLiveError(null);
       const startTime = performance.now();
       console.log('[FRONTEND] Step game - sending request...');
@@ -543,7 +513,8 @@ function App() {
       console.log(`[FRONTEND] Step game - response received (${(duration / 1000).toFixed(3)}s):`, data);
 
       if (!response.ok) {
-        throw new Error(liveStepErrorMessage(data));
+        applyLiveStepError(data);
+        return { ok: false, running: false, gameOver: false };
       }
       if (!data.state) {
         throw new Error('Live step response did not include authoritative state');
@@ -573,11 +544,7 @@ function App() {
         ].slice(-12));
       }
       void refreshSavedGames();
-      return {
-        ok: true,
-        running: snapshot.running,
-        gameOver: data.game_over === true || snapshot.game?.winning_color != null,
-      };
+      return liveStepAutoPlayResult(data, snapshot);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       setLiveError(message);
@@ -589,12 +556,12 @@ function App() {
         setIsLlmProcessing(false);
       }
     }
-  }, [applyStateSnapshot, browseSavedStep, refreshSavedGames]);
+  }, [applyLiveStepError, applyStateSnapshot, browseSavedStep, refreshSavedGames]);
 
   const resetGame = async () => {
     traceBrowseRequestRef.current += 1;
     setTraceBrowseBusy(false);
-    setLiveError(null);
+    applyLiveStepError(null);
     setBrowsedTraceStep(null);
     setTraceBrowseError(null);
     setLiveReasoningTraces([]);
@@ -666,7 +633,7 @@ function App() {
       setBrowsedTraceStep(null);
       setTraceBrowseError(null);
       setSavedGamesError(null);
-      setLiveError(null);
+      applyLiveStepError(null);
       setLiveReasoningTraces([]);
       const response = await fetch(
         `${SERVER_URL}/api/live-traces/${gameId}/load`,
@@ -705,7 +672,7 @@ function App() {
     setReplayLlmResponse(null);
     setReplayLlmError(null);
     setReplayPlaybackError(null);
-    setLiveError(null);
+    applyLiveStepError(null);
     setIsReplayPlaybackProcessing(true);
     try {
       console.log('[FRONTEND] Loading replay:', gameId);
@@ -987,6 +954,7 @@ function App() {
 
   const hasInspectorContent = gameState !== null && (
     gameLog.length > 0
+    || liveStepFailure !== null
     || liveReasoningTraces.length > 0
     || browsedTraceStep !== null
     || replayLlmResponse !== null
@@ -1396,6 +1364,10 @@ function App() {
                 </summary>
                 <GameLog entries={gameLog} showHeading={false} />
               </details>
+            )}
+
+            {!replayMode && liveStepFailure && (
+              <RejectedLiveAttempts failure={liveStepFailure} />
             )}
 
             {!replayMode && browsedTraceStep && (

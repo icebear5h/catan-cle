@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass, replace
 from typing import Any
 
@@ -78,10 +79,11 @@ class AgentPlayer:
             )
         accepted = self.session.receipts.get(context.context_id)
         if accepted is not None:
-            return PlayerAttempt(context_id=context.context_id, choice=accepted.choice)
+            return PlayerAttempt(context_id=context.context_id, choice=deepcopy(accepted.choice))
 
+        context = deepcopy(context)
         model_request = self._assembler.assemble(context, self.session, feedback)
-        model_response = await self.transport.complete(model_request)
+        model_response = deepcopy(await self.transport.complete(deepcopy(model_request)))
         try:
             choice = self._parser.parse(context, model_response)
         except PlayerResponseParseError as exc:
@@ -107,11 +109,18 @@ class AgentPlayer:
             self.session.session_id,
             self.communication_suite,
         )
-        response = await self.transport.complete(request)
+        response = deepcopy(await self.transport.complete(deepcopy(request)))
         choice = parse_communication_response(
             response,
             speaker=self.color,
             participants=context.participants,
+            instruction=next(
+                (
+                    component.template for component in request.components
+                    if component.id == "environment.response_schema"
+                ),
+                "",
+            ),
         )
         return replace(
             choice,
@@ -128,7 +137,7 @@ class AgentPlayer:
         if attempt.model_request is not None and attempt.model_response is not None:
             self.session.messages.extend(
                 (
-                    attempt.model_request.messages[-1],
+                    deepcopy(attempt.model_request.messages[-1]),
                     ModelMessage(
                         role="assistant",
                         content=attempt.model_response.content,
@@ -148,7 +157,7 @@ class AgentPlayer:
             transitions = getattr(result, "transitions", ())
             after_revision = transitions[-1].after_revision if transitions else 0
         self.session.receipts[attempt.context_id] = ChoiceReceipt(
-            choice=choice,
+            choice=deepcopy(choice),
             after_revision=after_revision,
         )
 

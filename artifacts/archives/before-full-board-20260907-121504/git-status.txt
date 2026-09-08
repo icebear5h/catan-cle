@@ -1,0 +1,37 @@
+ M cle/game_engine/models/map.py
+ M evals/catan_board_bench_ui/src/App.tsx
+ M evals/catan_board_bench_ui/src/SftDataExplorer.css
+ M evals/catan_board_bench_ui/src/SftDataExplorer.tsx
+ M playground/game_viewer/routes/bench.py
+ M pyproject.toml
+ M reports/sft/2026-09-05-node-edge-recognition-rung.md
+ M sft/README.md
+ M sft/modal_catan_vision_sft.py
+ M sft/scripts/train_trl_catan_vision.py
+ M tasks/lessons.md
+ M tasks/todo.md
+ M tests/test_catan_sft_data_routes.py
+ M tests/test_trl_catan_vision.py
+?? artifacts/archives/
+?? data_pipeline/board_recognition/reweight_node_edge.py
+?? evals/catan_board_bench_ui/src/PatchInspector.tsx
+?? output/
+?? reports/sft/2026-09-04-gaussian-entity-marker-mini.md
+?? reports/sft/2026-09-05-visual-delta-svd.md
+?? reports/sft/2026-09-05-vlm-sft-reading-guide.md
+?? reports/sft/2026-09-06-visual-rank-mini-eval.md
+?? reports/sft/2026-09-07-olora-smoke.md
+?? sft/marker_diagnostics.py
+?? sft/modal_marker_mini_eval.py
+?? sft/modal_olora_smoke.py
+?? sft/modal_visual_delta.py
+?? sft/modal_visual_rank_eval.py
+?? sft/scripts/extract_visual_delta.py
+?? sft/visual_rank_eval.py
+?? tests/test_extract_visual_delta.py
+?? tests/test_map_terrain_inventory.py
+?? tests/test_marker_diagnostics.py
+?? tests/test_modal_catan_budget.py
+?? tests/test_olora_bundle_integration.py
+?? tests/test_reweight_node_edge.py
+?? tests/test_visual_rank_eval.py

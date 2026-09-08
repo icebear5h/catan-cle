@@ -11,7 +11,7 @@ from cle.harness.reasoning import (
     reasoning_token_count,
     validate_native_reasoning_request,
 )
-from cle.sandbox.catan import PlayerResponseError
+from cle.sandbox.catan import PlayerResponseError, PostActionCommunicationError
 from cle.sandbox.factory import (
     DEFAULT_LIVE_MAX_DECISION_ATTEMPTS,
     DEFAULT_LIVE_REASONING_EFFORT,
@@ -88,6 +88,7 @@ def _optional_max_tokens(value: Any) -> int | None:
 def _config_from_stored_payload(payload: Mapping[str, Any]) -> LiveSandboxConfig:
     seed = payload.get("seed")
     mode = payload.get("mode", "random")
+    reasoning = payload.get("reasoning")
     return LiveSandboxConfig(
         mode=mode,
         model=(
@@ -97,7 +98,11 @@ def _config_from_stored_payload(payload: Mapping[str, Any]) -> LiveSandboxConfig
         ),
         temperature=float(payload.get("temperature", 0.3)),
         max_tokens=_optional_max_tokens(payload.get("max_tokens")),
-        reasoning=payload.get("reasoning"),
+        reasoning=(
+            native_reasoning_request(DEFAULT_LIVE_REASONING_EFFORT)
+            if reasoning is None
+            else reasoning
+        ),
         seed=int(seed) if seed is not None else None,
         shuffle_players=bool(payload.get("shuffle_players", True)),
         palette=payload.get("palette", "random_all"),
@@ -268,9 +273,10 @@ def _failed_attempt_payload(attempt):
     final_response = getattr(response, "content", "") if response is not None else ""
     usage = dict(getattr(response, "usage", ())) if response is not None else {}
     return {
+        "context_id": attempt.context_id,
         "validation_error": attempt.validation_error,
         "action_index": choice.action_index if choice is not None else None,
-        "final_response": final_response[:4_000],
+        "final_response": final_response,
         "model": getattr(response, "model", None),
         "latency_ms": getattr(response, "latency_ms", None),
         "finish_reason": getattr(response, "finish_reason", None),
@@ -281,6 +287,11 @@ def _failed_attempt_payload(attempt):
         ),
         "usage": usage,
         "reasoning_tokens": reasoning_token_count(usage),
+        "native_reasoning": getattr(response, "native_reasoning", ""),
+        "native_reasoning_details": list(
+            getattr(response, "native_reasoning_details", ())
+        ),
+        "reasoning_request": dict(getattr(response, "reasoning_request", ())),
         "native_reasoning_chars": len(
             getattr(response, "native_reasoning", "")
         ) if response is not None else 0,
@@ -311,6 +322,8 @@ def _step_game_transaction(state):
     pre_game_state = sandbox.game_engine.state.copy()
     rejected_attempt_cursor = len(sandbox.decision_trace)
     communication_cursor = len(sandbox.communication_trace)
+    trace_store = getattr(state, "live_trace_store", None)
+    warning = None
 
     state.step_processing = True
     state.last_live_step_error = None
@@ -323,13 +336,25 @@ def _step_game_transaction(state):
             len(exc.attempts),
             exc.validation_error,
         )
+        trace_failure_id = None
+        if trace_store is not None and state.live_trace_game_id is not None:
+            trace_failure_id = trace_store.record_failure(
+                state.live_trace_game_id,
+                revision=sandbox.revision,
+                player=exc.player,
+                validation_error=exc.validation_error,
+                attempts=sandbox.decision_trace[rejected_attempt_cursor:],
+                communication_attempts=sandbox.communication_trace[communication_cursor:],
+            )
         error_payload = {
             "error": "Model returned no valid action",
             "details": (
                 f"{exc.validation_error} No gameplay action was applied. "
                 "Press Step to ask the model again."
             ),
-            "player": str(actor),
+            "player": exc.player.value,
+            "trace_game_id": state.live_trace_game_id,
+            "trace_failure_id": trace_failure_id,
             "attempt_count": len(exc.attempts),
             "attempts": [
                 _failed_attempt_payload(attempt)
@@ -340,6 +365,20 @@ def _step_game_transaction(state):
         state.last_live_step_error = error_payload
         broadcast_game_state(current_app.config["SOCKETIO"], state)
         return jsonify(error_payload), 422
+    except PostActionCommunicationError as exc:
+        current_app.logger.warning("Post-action communication failed", exc_info=True)
+        result = exc.result
+        warning = {
+            "details": (
+                "Game action was applied, but post-action communication failed. "
+                "Auto-play stopped. Do not retry the applied action; "
+                "the next Step advances the game."
+            ),
+            "action_applied": True,
+            "retryable": False,
+            "trace_game_id": state.live_trace_game_id,
+        }
+        state.last_live_step_error = warning
     except Exception as exc:
         current_app.logger.exception("Live sandbox step failed")
         return (
@@ -370,7 +409,6 @@ def _step_game_transaction(state):
     reasoning_traces = build_live_reasoning_traces(sandbox, result)
     state_snapshot = build_game_state_snapshot(state)
     trace_step_index = None
-    trace_store = getattr(state, "live_trace_store", None)
     if trace_store is not None and state.live_trace_game_id is not None:
         trace_step_index = trace_store.record_step(
             state.live_trace_game_id,
@@ -380,9 +418,12 @@ def _step_game_transaction(state):
             public_state=state_snapshot,
             snapshot=sandbox.snapshot(),
         )
+    if warning is not None:
+        state_snapshot = broadcast_game_state(current_app.config["SOCKETIO"], state)
     return jsonify(
         {
             "status": "ok",
+            "warning": warning,
             "action": format_action_for_display(
                 transition.requested_action,
                 include_actor=True,
@@ -492,7 +533,6 @@ def _load_live_trace_transaction(state, game_id):
     try:
         config = replace(
             _config_from_stored_payload(resume_point.config),
-            reasoning=native_reasoning_request(DEFAULT_LIVE_REASONING_EFFORT),
             max_tokens=None,
             max_decision_attempts=DEFAULT_LIVE_MAX_DECISION_ATTEMPTS,
         )

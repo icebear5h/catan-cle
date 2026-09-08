@@ -102,7 +102,9 @@ MINI_MAP_TEMPLATE = MapTemplate(
     },
 )
 
-"""Standard 4-player map"""
+# Standard 19-hex inventory: 3 hills (brick), 4 forests (wood),
+# 4 pastures (sheep), 4 fields (wheat), 3 mountains (ore), 1 desert.
+# Random layouts shuffle this inventory; they never sample terrain with replacement.
 BASE_MAP_TEMPLATE = MapTemplate(
     [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12],
     [
@@ -328,12 +330,13 @@ def initialize_tiles(
     It first shuffles tiles, ports, and numbers. Then goes satisfying the
     topology (i.e. placing tiles on coordinates); ensuring to "attach" these to
     neighbor tiles (so as to not repeat nodes or edges objects).
+    Explicit terrain orders must be permutations of the template's inventory.
 
     Args:
         map_template (MapTemplate): Template to initialize.
 
     Raises:
-        ValueError: Invalid tile in topology
+        ValueError: Invalid terrain inventory or tile in topology.
 
     Returns:
         Dict[Coordinate, Tile]: Coordinate to initialized Tile mapping.
@@ -342,9 +345,18 @@ def initialize_tiles(
     shuffled_port_resources = shuffled_port_resources_param or source.sample(
         map_template.port_resources, len(map_template.port_resources)
     )
-    shuffled_tile_resources = shuffled_tile_resources_param or source.sample(
-        map_template.tile_resources, len(map_template.tile_resources)
+    shuffled_tile_resources = (
+        source.sample(map_template.tile_resources, len(map_template.tile_resources))
+        if shuffled_tile_resources_param is None
+        else list(shuffled_tile_resources_param)
     )
+    if Counter(shuffled_tile_resources) != Counter(map_template.tile_resources):
+        raise ValueError(
+            "Tile resources must be a permutation of the map template's terrain inventory"
+        )
+    land_tile_count = sum(tile_type is LandTile for tile_type in map_template.topology.values())
+    if len(shuffled_tile_resources) != land_tile_count:
+        raise ValueError("Terrain inventory must contain exactly one resource per land tile")
     shuffled_numbers = shuffled_numbers_param or source.sample(
         map_template.numbers, len(map_template.numbers)
     )
@@ -493,7 +505,6 @@ TOURNAMENT_MAP_TILES = initialize_tiles(
         None,
     ],
     [
-        None,
         WOOD,
         SHEEP,
         SHEEP,

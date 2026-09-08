@@ -1,0 +1,1665 @@
+{
+  "schema": "catan_marker_mini_failures/v1",
+  "complete": true,
+  "expected_rows": 308,
+  "scored_rows": 308,
+  "missing_ids": [],
+  "by": {
+    "overall": {
+      "all": {
+        "n": 308,
+        "errors": 5,
+        "candidate_n": 308,
+        "candidate_errors": 4,
+        "accuracy": 0.9837662337662337,
+        "candidate_accuracy": 0.987012987012987
+      }
+    },
+    "direction": {
+      "marker_to_token": {
+        "n": 154,
+        "errors": 5,
+        "candidate_n": 154,
+        "candidate_errors": 4,
+        "accuracy": 0.9675324675324676,
+        "candidate_accuracy": 0.974025974025974
+      },
+      "token_to_marker": {
+        "n": 154,
+        "errors": 0,
+        "candidate_n": 154,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      }
+    },
+    "entity": {
+      "edge": {
+        "n": 144,
+        "errors": 1,
+        "candidate_n": 144,
+        "candidate_errors": 1,
+        "accuracy": 0.9930555555555556,
+        "candidate_accuracy": 0.9930555555555556
+      },
+      "node": {
+        "n": 108,
+        "errors": 3,
+        "candidate_n": 108,
+        "candidate_errors": 2,
+        "accuracy": 0.9722222222222222,
+        "candidate_accuracy": 0.9814814814814815
+      },
+      "port": {
+        "n": 18,
+        "errors": 1,
+        "candidate_n": 18,
+        "candidate_errors": 1,
+        "accuracy": 0.9444444444444444,
+        "candidate_accuracy": 0.9444444444444444
+      },
+      "tile": {
+        "n": 38,
+        "errors": 0,
+        "candidate_n": 38,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      }
+    },
+    "direction_entity": {
+      "marker_to_token/edge": {
+        "n": 72,
+        "errors": 1,
+        "candidate_n": 72,
+        "candidate_errors": 1,
+        "accuracy": 0.9861111111111112,
+        "candidate_accuracy": 0.9861111111111112
+      },
+      "token_to_marker/edge": {
+        "n": 72,
+        "errors": 0,
+        "candidate_n": 72,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "marker_to_token/node": {
+        "n": 54,
+        "errors": 3,
+        "candidate_n": 54,
+        "candidate_errors": 2,
+        "accuracy": 0.9444444444444444,
+        "candidate_accuracy": 0.962962962962963
+      },
+      "token_to_marker/node": {
+        "n": 54,
+        "errors": 0,
+        "candidate_n": 54,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "marker_to_token/port": {
+        "n": 9,
+        "errors": 1,
+        "candidate_n": 9,
+        "candidate_errors": 1,
+        "accuracy": 0.8888888888888888,
+        "candidate_accuracy": 0.8888888888888888
+      },
+      "token_to_marker/port": {
+        "n": 9,
+        "errors": 0,
+        "candidate_n": 9,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "marker_to_token/tile": {
+        "n": 19,
+        "errors": 0,
+        "candidate_n": 19,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "token_to_marker/tile": {
+        "n": 19,
+        "errors": 0,
+        "candidate_n": 19,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      }
+    },
+    "token": {
+      "<E00_01>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E00_05>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E00_20>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E01_02>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E01_06>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E02_03>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E02_09>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E03_04>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E03_12>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E04_05>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E04_15>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E05_16>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E06_07>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E06_23>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E07_08>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E07_24>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E08_09>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E08_27>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E09_10>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E10_11>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E10_29>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E11_12>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E11_32>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E12_13>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E13_14>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E13_34>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E14_15>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E14_37>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E15_17>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E16_18>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E16_21>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E17_18>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E17_39>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E18_40>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E19_20>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E19_21>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E19_46>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E20_22>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E21_43>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E22_23>": {
+        "n": 2,
+        "errors": 1,
+        "candidate_n": 2,
+        "candidate_errors": 1,
+        "accuracy": 0.5,
+        "candidate_accuracy": 0.5
+      },
+      "<E22_49>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E23_52>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E24_25>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E24_53>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E25_26>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E26_27>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E27_28>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E28_29>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E29_30>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E30_31>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E31_32>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E32_33>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E33_34>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E34_35>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E35_36>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E36_37>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E37_38>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E38_39>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E39_41>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E40_42>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E40_44>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E41_42>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E43_44>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E43_47>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E45_46>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E45_47>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E46_48>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E48_49>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E49_50>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E50_51>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E51_52>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<E52_53>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N00>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N01>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N02>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N03>": {
+        "n": 2,
+        "errors": 1,
+        "candidate_n": 2,
+        "candidate_errors": 1,
+        "accuracy": 0.5,
+        "candidate_accuracy": 0.5
+      },
+      "<N04>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N05>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N06>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N07>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N08>": {
+        "n": 2,
+        "errors": 1,
+        "candidate_n": 2,
+        "candidate_errors": 1,
+        "accuracy": 0.5,
+        "candidate_accuracy": 0.5
+      },
+      "<N09>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N10>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N11>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N12>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N13>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N14>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N15>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N16>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N17>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N18>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N19>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N20>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N21>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N22>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N23>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N24>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N25>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N26>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N27>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N28>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N29>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N30>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N31>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N32>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N33>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N34>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N35>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N36>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N37>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N38>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N39>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N40>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N41>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N42>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N43>": {
+        "n": 2,
+        "errors": 1,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 0.5,
+        "candidate_accuracy": 1.0
+      },
+      "<N44>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N45>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N46>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N47>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N48>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N49>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N50>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N51>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N52>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<N53>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<P00>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<P01>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<P02>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<P03>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<P04>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<P05>": {
+        "n": 2,
+        "errors": 1,
+        "candidate_n": 2,
+        "candidate_errors": 1,
+        "accuracy": 0.5,
+        "candidate_accuracy": 0.5
+      },
+      "<P06>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<P07>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<P08>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<T00>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<T01>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<T02>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<T03>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<T04>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<T05>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<T06>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<T07>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<T08>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<T09>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<T10>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<T11>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<T12>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<T13>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<T14>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<T15>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<T16>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<T17>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "<T18>": {
+        "n": 2,
+        "errors": 0,
+        "candidate_n": 2,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      }
+    },
+    "board": {
+      "r_replay_189649315_s000000": {
+        "n": 62,
+        "errors": 3,
+        "candidate_n": 62,
+        "candidate_errors": 2,
+        "accuracy": 0.9516129032258065,
+        "candidate_accuracy": 0.967741935483871
+      },
+      "r_replay_193008240_s000000": {
+        "n": 62,
+        "errors": 1,
+        "candidate_n": 62,
+        "candidate_errors": 1,
+        "accuracy": 0.9838709677419355,
+        "candidate_accuracy": 0.9838709677419355
+      },
+      "r_replay_193905959_s000000": {
+        "n": 62,
+        "errors": 0,
+        "candidate_n": 62,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "r_replay_194198328_s000000": {
+        "n": 62,
+        "errors": 0,
+        "candidate_n": 62,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "r_replay_194209320_s000000": {
+        "n": 60,
+        "errors": 1,
+        "candidate_n": 60,
+        "candidate_errors": 1,
+        "accuracy": 0.9833333333333333,
+        "candidate_accuracy": 0.9833333333333333
+      }
+    },
+    "orientation": {
+      "slanted": {
+        "n": 96,
+        "errors": 1,
+        "candidate_n": 96,
+        "candidate_errors": 1,
+        "accuracy": 0.9895833333333334,
+        "candidate_accuracy": 0.9895833333333334
+      },
+      "vertical": {
+        "n": 48,
+        "errors": 0,
+        "candidate_n": 48,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      }
+    },
+    "direction_orientation": {
+      "marker_to_token/slanted": {
+        "n": 48,
+        "errors": 1,
+        "candidate_n": 48,
+        "candidate_errors": 1,
+        "accuracy": 0.9791666666666666,
+        "candidate_accuracy": 0.9791666666666666
+      },
+      "token_to_marker/slanted": {
+        "n": 48,
+        "errors": 0,
+        "candidate_n": 48,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "marker_to_token/vertical": {
+        "n": 24,
+        "errors": 0,
+        "candidate_n": 24,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      },
+      "token_to_marker/vertical": {
+        "n": 24,
+        "errors": 0,
+        "candidate_n": 24,
+        "candidate_errors": 0,
+        "accuracy": 1.0,
+        "candidate_accuracy": 1.0
+      }
+    }
+  },
+  "failure_modes": {
+    "wrong_location": 4,
+    "wrong_entity_type": 1
+  },
+  "failures": [
+    {
+      "row_id": "r_replay_194209320_s000000_g15_E22_23_marker_to_token",
+      "task_type": "marker_to_token",
+      "entity_type": "edge",
+      "target_token": "<E22_23>",
+      "orientation": "slanted",
+      "mode": "wrong_location",
+      "expected": "<E22_23>",
+      "response": "<E02_09>",
+      "raw_response": "<E02_09><|im_end|>",
+      "candidate_score": {
+        "candidates": 72,
+        "correct": false,
+        "expected_logprob": -0.7641163468360901,
+        "expected_rank": 2,
+        "predicted": "<E02_09>",
+        "scoring": "first_token_candidates",
+        "top": [
+          {
+            "answer": "<E02_09>",
+            "logprob": -0.6391163468360901
+          },
+          {
+            "answer": "<E22_23>",
+            "logprob": -0.7641163468360901
+          },
+          {
+            "answer": "<E20_22>",
+            "logprob": -6.826616287231445
+          }
+        ]
+      },
+      "predicted_location": "<E02_09>",
+      "other_marked_location": false,
+      "distance_px_1024": 257.0,
+      "image": "/data/catan-vision-sft/datasets/73b1c523741d/images/001895.png",
+      "state_id": "r_replay_194209320_s000000"
+    },
+    {
+      "row_id": "r_replay_189649315_s000000_g01_N03_marker_to_token",
+      "task_type": "marker_to_token",
+      "entity_type": "node",
+      "target_token": "<N03>",
+      "orientation": null,
+      "mode": "wrong_location",
+      "expected": "<N03>",
+      "response": "<N00>",
+      "raw_response": "<N00><|im_end|>",
+      "candidate_score": {
+        "candidates": 54,
+        "correct": false,
+        "expected_logprob": -1.7396581172943115,
+        "expected_rank": 2,
+        "predicted": "<N00>",
+        "scoring": "first_token_candidates",
+        "top": [
+          {
+            "answer": "<N00>",
+            "logprob": -0.23965805768966675
+          },
+          {
+            "answer": "<N03>",
+            "logprob": -1.7396581172943115
+          },
+          {
+            "answer": "<N20>",
+            "logprob": -7.427157878875732
+          }
+        ]
+      },
+      "predicted_location": "<N00>",
+      "other_marked_location": false,
+      "distance_px_1024": 172.0,
+      "image": "/data/catan-vision-sft/datasets/73b1c523741d/images/001721.png",
+      "state_id": "r_replay_189649315_s000000"
+    },
+    {
+      "row_id": "r_replay_189649315_s000000_g04_N08_marker_to_token",
+      "task_type": "marker_to_token",
+      "entity_type": "node",
+      "target_token": "<N08>",
+      "orientation": null,
+      "mode": "wrong_location",
+      "expected": "<N08>",
+      "response": "<N02>",
+      "raw_response": "<N02><|im_end|>",
+      "candidate_score": {
+        "candidates": 54,
+        "correct": false,
+        "expected_logprob": -2.4143857955932617,
+        "expected_rank": 2,
+        "predicted": "<N02>",
+        "scoring": "first_token_candidates",
+        "top": [
+          {
+            "answer": "<N02>",
+            "logprob": -0.1643858104944229
+          },
+          {
+            "answer": "<N08>",
+            "logprob": -2.4143857955932617
+          },
+          {
+            "answer": "<N20>",
+            "logprob": -5.789385795593262
+          }
+        ]
+      },
+      "predicted_location": "<N02>",
+      "other_marked_location": false,
+      "distance_px_1024": 149.0,
+      "image": "/data/catan-vision-sft/datasets/73b1c523741d/images/001724.png",
+      "state_id": "r_replay_189649315_s000000"
+    },
+    {
+      "row_id": "r_replay_189649315_s000000_g12_N43_marker_to_token",
+      "task_type": "marker_to_token",
+      "entity_type": "node",
+      "target_token": "<N43>",
+      "orientation": null,
+      "mode": "wrong_entity_type",
+      "expected": "<N43>",
+      "response": "<E43_47>",
+      "raw_response": "<E43_47><|im_end|>",
+      "candidate_score": {
+        "candidates": 54,
+        "correct": true,
+        "expected_logprob": -1.0052902698516846,
+        "expected_rank": 1,
+        "predicted": "<N43>",
+        "scoring": "first_token_candidates",
+        "top": [
+          {
+            "answer": "<N43>",
+            "logprob": -1.0052902698516846
+          },
+          {
+            "answer": "<N20>",
+            "logprob": -2.6302902698516846
+          },
+          {
+            "answer": "<N47>",
+            "logprob": -7.3177900314331055
+          }
+        ]
+      },
+      "predicted_location": "<E43_47>",
+      "other_marked_location": false,
+      "distance_px_1024": 43.0,
+      "image": "/data/catan-vision-sft/datasets/73b1c523741d/images/001732.png",
+      "state_id": "r_replay_189649315_s000000"
+    },
+    {
+      "row_id": "r_replay_193008240_s000000_g39_P05_marker_to_token",
+      "task_type": "marker_to_token",
+      "entity_type": "port",
+      "target_token": "<P05>",
+      "orientation": null,
+      "mode": "wrong_location",
+      "expected": "<P05>",
+      "response": "<P04>",
+      "raw_response": "<P04><|im_end|>",
+      "candidate_score": {
+        "candidates": 9,
+        "correct": false,
+        "expected_logprob": -2.0398292541503906,
+        "expected_rank": 2,
+        "predicted": "<P04>",
+        "scoring": "first_token_candidates",
+        "top": [
+          {
+            "answer": "<P04>",
+            "logprob": -0.28982922434806824
+          },
+          {
+            "answer": "<P05>",
+            "logprob": -2.0398292541503906
+          },
+          {
+            "answer": "<P00>",
+            "logprob": -3.9148292541503906
+          }
+        ]
+      },
+      "predicted_location": "<P04>",
+      "other_marked_location": false,
+      "distance_px_1024": 258.0,
+      "image": "/data/catan-vision-sft/datasets/73b1c523741d/images/001799.png",
+      "state_id": "r_replay_193008240_s000000"
+    }
+  ],
+  "free_candidate_disagreement_ids": [
+    "r_replay_189649315_s000000_g12_N43_marker_to_token"
+  ],
+  "limitations": "One image per token; marker localization only, not actual-piece transfer or causal shape/init attribution."
+}

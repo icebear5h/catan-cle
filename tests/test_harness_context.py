@@ -7,15 +7,23 @@ from cle.harness import (
     ContextAssembler,
     ContextSuite,
     ModelResponse,
+    PlayerResponseParseError,
+    PlayerResponseParser,
     PlayerSession,
     default_suite_path,
     load_context_suite,
 )
 from cle.players.agent import AgentPlayer
-from cle.players.baseline import FirstLegalPlayer
+from cle.players.baseline import FirstLegalPlayer, HumanPlayer, ScriptedPlayer
+from cle.players.contracts import PlayerChoice
+from cle.players.validation import action_from_choice
+from cle.harness.response_xml import parse_response_fields
 from cle.sandbox import CatanSandbox
 from cle.game_engine.game import GameEngine
+from cle.game_engine.models.actions import generate_playable_actions, trade_response_actions
+from cle.game_engine.models.enums import Action, ActionType
 from cle.game_engine.models.player import Color
+from cle.game_engine.state_functions import player_freqdeck_add
 
 
 COLORS = (Color.RED, Color.BLUE, Color.WHITE, Color.ORANGE)
@@ -68,6 +76,24 @@ def _sandbox_and_player(responses):
     )
 
 
+@pytest.fixture
+def trade_sandbox():
+    sandbox, _, _ = _sandbox_and_player([])
+    engine = sandbox.game_engine
+    for _ in range(16):
+        engine.step(engine.state.playable_actions[0])
+    engine.step(Action(Color.RED, ActionType.ROLL, (1, 1)), force=True)
+    for color, bundle in (
+        (Color.RED, (2, 0, 0, 0, 0)),
+        (Color.BLUE, (0, 0, 0, 0, 2)),
+    ):
+        player_freqdeck_add(engine.state, color, bundle)
+        for index, count in enumerate(bundle):
+            engine.state.resource_freqdeck[index] -= count
+    engine.state.playable_actions = generate_playable_actions(engine.state)
+    return sandbox
+
+
 def test_default_yaml_suite_is_strict_and_separately_loadable():
     first = load_context_suite()
     second = load_context_suite()
@@ -75,13 +101,16 @@ def test_default_yaml_suite_is_strict_and_separately_loadable():
     assert first == second
     assert first is not second
     assert first.id == "catan-agent"
-    assert first.version == "9.0.0"
+    assert first.version == "10.0.0"
     assert first.context.mode == "components"
+    assert first.context.social_context is True
     assert first.context.initial_placement_order == "both_rounds"
     assert first.context.order == (
         "trajectory",
         "strategic_memory",
         "visible_events",
+        "recent_table_talk",
+        "commitments",
         "phase_info",
         "board_state",
         "resources",
@@ -93,6 +122,9 @@ def test_default_yaml_suite_is_strict_and_separately_loadable():
         "response_schema",
     )
     assert first.context.trajectory.max_messages is None
+    response_fields, _ = parse_response_fields(first.response.instruction)
+    assert set(response_fields) == set(first.response.tags)
+    assert all(len(values) == 1 for values in response_fields.values())
 
     guidance_word_counts = {
         key: len(value.split())
@@ -229,6 +261,8 @@ async def test_agent_player_keeps_full_conversation_and_full_visible_events():
         "system.identity",
         "environment.strategic_memory",
         "environment.visible_events",
+        "environment.recent_table_talk",
+        "environment.commitments",
         "environment.phase_info",
         "environment.board_state",
         "environment.resources",
@@ -342,7 +376,8 @@ def test_every_phase_key_renders_concise_player_facing_guidance():
     )
     assert rendered_guidance["discarding"] == (
         "DECISION FACTS:\n"
-        "Resolve the required discard. Reassess your plan after the robber "
+        "Resolve the required discard. Choose exactly the stated number of cards "
+        "from your holdings using named resource counts. Reassess your plan after the robber "
         "sequence changes production or resources."
     )
     assert "movement and victim selection may be separate choices" in (
@@ -543,3 +578,561 @@ async def test_sandbox_retries_invalid_player_output_with_feedback():
     assert len(transport.requests) == 2
     assert "CORRECTION FROM THE SANDBOX" in transport.requests[1].messages[-1].content
     assert len(sandbox.decision_trace) == 1
+
+
+@pytest.mark.parametrize(
+    "text, index, fallback",
+    [
+        ("<action>0</action>", 0, False),
+        ("<AcTiOn>\n 7 \n</AcTiOn>", 7, False),
+        ("<action>7</action><action>007</action>", 7, False),
+        ("<action>7</action>action_index: 7", 7, False),
+        ("7", 7, True),
+        (" \n7\n ", 7, True),
+        ("ACTION: 7", 7, True),
+        ("action_index = 7", 7, True),
+        ("action_index:\n7", 7, True),
+        ("move: 7", 7, True),
+        ("MOVE_INDEX=7", 7, True),
+        ("action: 7\nmove_index: 007", 7, True),
+        ("<game_plan>Need 2 roads</game_plan>action_index: 7", 7, True),
+        ("<game_plan>Need 2 roads</game_plan>7", 7, True),
+        ("<action>zero-based index from VALID ACTIONS</action>7", 7, True),
+        (
+            "<game_plan>Consider <action>1</action> or action_index: 2</game_plan>"
+            "<action>7</action>",
+            7,
+            False,
+        ),
+    ],
+)
+def test_action_parser_preserves_exact_indices_and_explicit_fallbacks(text, index, fallback):
+    sandbox, _, _ = _sandbox_and_player([])
+    context = sandbox.decision_context()
+
+    choice = PlayerResponseParser(load_context_suite()).parse(
+        context, ModelResponse(content=text)
+    )
+
+    assert choice.action_index == index
+    assert (choice.parse_warning is not None) == fallback
+    assert context.action_at(choice.action_index) == context.legal_actions[index]
+    assert sandbox.game_engine.is_action_valid(context.action_at(choice.action_index))
+
+
+@pytest.mark.parametrize("suite_name", ["catan_v10.yaml", "catan_v9.yaml", "catan_v4.yaml"])
+@pytest.mark.parametrize("selection", ["<action>7</action>", "action_index: 7"])
+def test_action_parser_ignores_the_suites_echoed_schema(suite_name, selection):
+    sandbox, _, _ = _sandbox_and_player([])
+    suite = load_context_suite(default_suite_path().with_name(suite_name))
+    response = ModelResponse(
+        content=f"{suite.response.instruction}\n<game_plan>Need 2 roads</game_plan>\n{selection}"
+    )
+
+    choice = PlayerResponseParser(suite).parse(sandbox.decision_context(), response)
+
+    assert choice.action_index == 7
+    assert choice.raw_response == response.content
+
+
+@pytest.mark.parametrize("suite_name", ["catan_v4.yaml", "catan_v9.yaml"])
+@pytest.mark.parametrize("selection", ["<action>7</action>", "action_index: 7", "7"])
+@pytest.mark.parametrize(
+    "rationale",
+    [
+        "<rationale>Best move: settle at node 7.</rationale>",
+        "<RATIONALE><action>1</action>\nmove_index: 2</RATIONALE>",
+    ],
+)
+def test_action_parser_treats_historical_rationale_as_inert_data(suite_name, selection, rationale):
+    sandbox, _, _ = _sandbox_and_player([])
+    context = sandbox.decision_context()
+    suite = load_context_suite(default_suite_path().with_name(suite_name))
+    text = f"<game_plan>Expand...</game_plan>{rationale}{selection}"
+
+    choice = PlayerResponseParser(suite).parse(context, ModelResponse(content=text))
+
+    assert choice.action_index == 7
+    assert context.action_at(choice.action_index) == context.legal_actions[7]
+    assert choice.game_plan == "Expand..."
+    assert choice.rationale == ""
+    assert choice.native_reasoning == ""
+    assert choice.raw_response == text
+
+
+@pytest.mark.parametrize(
+    "instruction",
+    [
+        "<game_plan>plan</game_plan><action>0</action>",
+        "Return a zero-based action index.",
+    ],
+)
+def test_action_parser_keeps_real_selections_when_schema_has_no_placeholder(instruction):
+    sandbox, _, _ = _sandbox_and_player([])
+    suite_data = load_context_suite().model_dump(mode="python")
+    suite_data["response"]["instruction"] = instruction
+    parser = PlayerResponseParser(ContextSuite.model_validate(suite_data))
+    context = sandbox.decision_context()
+
+    assert parser.parse(context, _response(action=0)).action_index == 0
+    with pytest.raises(PlayerResponseParseError, match="conflicting"):
+        parser.parse(context, ModelResponse(content="<action>0</action><action>1</action>"))
+    with pytest.raises(PlayerResponseParseError, match="whole non-negative integers"):
+        parser.parse(context, ModelResponse(content="<action></action>action_index: 7"))
+
+
+@pytest.mark.parametrize("template", ["<action>{}</action>", "action_index: {}", "{}"])
+@pytest.mark.parametrize(
+    "value",
+    ["-1", "+1", "1.9", "0/1", "1e1", "1 2", "1,2", "0x1", "", "999"],
+)
+def test_action_parser_rejects_non_integer_or_out_of_range_indices(template, value):
+    sandbox, _, _ = _sandbox_and_player([])
+
+    with pytest.raises(PlayerResponseParseError):
+        PlayerResponseParser(load_context_suite()).parse(
+            sandbox.decision_context(), ModelResponse(content=template.format(value))
+        )
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "<game_plan>Need 2 roads</game_plan>",
+        "<game_plan>action_index: 7</game_plan>",
+        "<game_plan><action>7</action></game_plan>",
+        "<rationale><action>7</action></rationale>",
+        "<rationale>move_index: 7</rationale>",
+        '<trade_offer>{"give":{"WOOD":1},"receive":{"ORE":2}}</trade_offer>',
+        '<trade_offer>{"note":"action_index: 7"}</trade_offer>',
+        "I need 2 roads and will decide later.",
+        "I need 2 roads.\n7",
+        "<game_plan>Need 2 roads</game_plan><action>not sure</action>",
+        "<action>-1</action><action>2</action>",
+    ],
+)
+def test_action_parser_does_not_infer_an_index_from_plan_trade_or_prose(text):
+    sandbox, _, _ = _sandbox_and_player([])
+
+    with pytest.raises(PlayerResponseParseError):
+        PlayerResponseParser(load_context_suite()).parse(
+            sandbox.decision_context(), ModelResponse(content=text)
+        )
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "<action>1</action><action>2</action>",
+        "action: 1\nmove_index: 2",
+        "<action>1</action>action_index: 2",
+        "<action>1</action>2",
+    ],
+)
+def test_action_parser_rejects_conflicting_selections(text):
+    sandbox, _, _ = _sandbox_and_player([])
+
+    with pytest.raises(PlayerResponseParseError, match="conflicting"):
+        PlayerResponseParser(load_context_suite()).parse(
+            sandbox.decision_context(), ModelResponse(content=text)
+        )
+
+
+def test_counteroffer_parser_preserves_engine_generated_parent_id(trade_sandbox):
+    engine = trade_sandbox.game_engine
+    parser = PlayerResponseParser(load_context_suite())
+    context = trade_sandbox.decision_context()
+    index = next(
+        i
+        for i, action in enumerate(context.legal_actions)
+        if action.action_type == ActionType.OFFER_TRADE
+    )
+    root_choice = parser.parse(
+        context,
+        ModelResponse(
+            content=(
+                f"<action>{index}</action>"
+                '<trade_offer>{"give":{"WOOD":1},"receive":{"ORE":1}}</trade_offer>'
+            )
+        ),
+    )
+    selected = context.action_at(root_choice.action_index)
+    root = engine.step(
+        Action(selected.color, selected.action_type, root_choice.trade_offer)
+    ).resolved_action.value
+    context = replace(
+        context,
+        context_id=f"{engine.id}:{engine.revision}:BLUE",
+        actor=Color.BLUE,
+        observation=engine.observe(Color.BLUE),
+        events=engine.project_events(Color.BLUE),
+        legal_actions=tuple(trade_response_actions(engine.state, Color.BLUE)),
+    )
+    index = next(
+        i
+        for i, action in enumerate(context.legal_actions)
+        if action.action_type == ActionType.COUNTER_OFFER
+    )
+
+    choice = parser.parse(
+        context,
+        ModelResponse(
+            content=(
+                f"<action>{index}</action>"
+                '<trade_offer>{"give":{"ORE":1},"receive":{"WOOD":2}}</trade_offer>'
+            )
+        ),
+    )
+
+    assert ":o1" in root.id
+    assert choice.trade_offer.parent_offer_id == root.id
+    assert choice.trade_offer.audience == frozenset({Color.RED})
+    selected = context.action_at(choice.action_index)
+    action = Action(selected.color, selected.action_type, choice.trade_offer)
+    assert engine.is_action_valid(action)
+    assert engine.step(action).resolved_action.value.parent_offer_id == root.id
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        '{"give":{"WOOD":2,"WOOD":1},"receive":{"ORE":1}}',
+        '{"give":{"WOOD":1},"receive":{"ORE":2,"ORE":1}}',
+        '{"give":{"WOOD":2},"give":{"WOOD":1},"receive":{"ORE":1}}',
+        '{"give":{"WOOD":1},"receive":{"ORE":1},"receive":{"ORE":2}}',
+        '{"give":{"WOOD":1},"receive":{"ORE":1},"give_any":0,"give_any":1}',
+        '{"give":{"WOOD":1},"receive":{"ORE":1},"receive_any":0,"receive_any":1}',
+        '{"give":{"WOOD":2,"wood":1},"receive":{"ORE":1}}',
+    ],
+)
+def test_trade_parser_rejects_duplicate_json_keys(trade_sandbox, payload):
+    context = trade_sandbox.decision_context()
+    index = next(
+        i
+        for i, action in enumerate(context.legal_actions)
+        if action.action_type == ActionType.OFFER_TRADE
+    )
+
+    with pytest.raises(PlayerResponseParseError, match="Duplicate"):
+        PlayerResponseParser(load_context_suite()).parse(
+            context,
+            ModelResponse(content=f"<action>{index}</action><trade_offer>{payload}</trade_offer>"),
+        )
+
+
+def test_template_rendering_preserves_template_syntax_in_plan_data():
+    sandbox, player, _ = _sandbox_and_player([])
+    suite = load_context_suite()
+    context = sandbox.decision_context()
+    plan = "Save {{ wood }} and {{ value }} for a road"
+    choice = PlayerResponseParser(suite).parse(context, _response(plan=plan))
+    player.session.strategic_memory = choice.game_plan
+
+    components = ContextAssembler(suite).render_components(context, player.session)
+
+    memory = next(item for item in components if item.id == "environment.strategic_memory")
+    assert memory.rendered == f"YOUR CURRENT GAME PLAN:\n{plan}"
+    with pytest.raises(ValueError, match="Template variables have no values"):
+        ContextAssembler._render_template("{{ missing }}", {"value": plan})
+
+
+def test_year_of_plenty_menu_names_singleton_resources(trade_sandbox):
+    engine = trade_sandbox.game_engine
+    engine.state.development_listdeck.remove("YEAR_OF_PLENTY")
+    engine.state.player_state["P0_YEAR_OF_PLENTY_IN_HAND"] = 1
+    engine.state.player_state["P0_YEAR_OF_PLENTY_OWNED_AT_START"] = True
+    bank = [1, 1, 0, 0, 0]
+    player_freqdeck_add(
+        engine.state,
+        Color.BLUE,
+        [held - remaining for held, remaining in zip(engine.state.resource_freqdeck, bank)],
+    )
+    engine.state.resource_freqdeck[:] = bank
+    engine.state.playable_actions = generate_playable_actions(engine.state)
+    context = trade_sandbox.decision_context()
+    suite = load_context_suite()
+    components = ContextAssembler(suite).render_components(
+        context, PlayerSession(context.actor, "year-of-plenty")
+    )
+    menu = next(item.value for item in components if item.id == "environment.legal_actions")
+    expected = {
+        ("WOOD",): "Year of Plenty: take WOOD",
+        ("BRICK",): "Year of Plenty: take BRICK",
+        ("WOOD", "BRICK"): "Year of Plenty: take WOOD and BRICK",
+    }
+    seen = set()
+
+    for index, action in enumerate(context.legal_actions):
+        if action.action_type != ActionType.PLAY_YEAR_OF_PLENTY:
+            continue
+        assert f"{index}. {expected[action.value]}" in menu
+        choice = PlayerResponseParser(suite).parse(context, _response(action=index))
+        assert context.action_at(choice.action_index) == action
+        assert engine.is_action_valid(action)
+        seen.add(action.value)
+    assert seen == set(expected)
+
+
+def test_v10_social_sections_use_only_supplied_perspective_and_leave_game_history_complete():
+    sandbox, player, _ = _sandbox_and_player([])
+    engine = sandbox.game_engine
+    engine.step(engine.state.playable_actions[0])
+    for index in range(15):
+        engine.append_message(
+            speaker=Color.BLUE,
+            text=f"visible-offer-{index}",
+            audience=(Color.RED,),
+            intent="TRADE",
+            causation_id=f"offer:{index}",
+            commitment=("RED avoids BLUE", "BLUE offers ORE", 5) if index == 0 else None,
+        )
+    engine.append_message(
+        speaker=Color.WHITE,
+        text="private-white-orange",
+        audience=(Color.ORANGE,),
+        intent="TRADE",
+        causation_id="private",
+        commitment=("private condition", "private promise", 5),
+    )
+    context = replace(
+        sandbox.decision_context(),
+        recent_messages=engine.project_messages(Color.RED),
+        active_commitments=engine.active_commitments(Color.RED),
+    )
+    suite = load_context_suite()
+    request = ContextAssembler(suite).assemble(context, player.session)
+    components = {item.id: item for item in request.components}
+    talk = components["environment.recent_table_talk"].value
+    assert "visible-offer-3" in talk
+    assert "visible-offer-14" in talk
+    assert "visible-offer-0" not in talk
+    assert "BLUE to RED: RED avoids BLUE -> BLUE offers ORE (expires turn 5)" in (
+        components["environment.commitments"].value
+    )
+    assert "private-white-orange" not in request.messages[-1].content
+    assert "private promise" not in request.messages[-1].content
+    assert components["environment.visible_events"].value == ContextAssembler._format_events(
+        context.events
+    )
+    assert "0. RED: BUILD_SETTLEMENT" in components["environment.visible_events"].value
+
+    empty_context = replace(context, recent_messages=(), active_commitments=())
+    empty = ContextAssembler(suite).assemble(empty_context, player.session)
+    assert "visible-offer-14" not in empty.messages[-1].content
+    assert "BLUE offers ORE" not in empty.messages[-1].content
+
+    historical = load_context_suite(default_suite_path().with_name("catan_v9.yaml"))
+    assert historical.context.social_context is False
+    legacy_components = ContextAssembler(historical).render_components(context, player.session)
+    assert all(item.id not in {
+        "environment.recent_table_talk", "environment.commitments"
+    } for item in legacy_components)
+    assert "visible-offer-14" not in "\n".join(item.rendered for item in legacy_components)
+
+
+@pytest.mark.parametrize("suite_name", ["catan_v9.yaml", "catan_v10.yaml"])
+def test_component_order_requires_explicit_social_policy(suite_name):
+    suite = load_context_suite(default_suite_path().with_name(suite_name))
+    data = suite.model_dump(mode="python")
+    data["context"]["social_context"] = not suite.context.social_context
+    with pytest.raises(ValueError, match="fixed component order"):
+        ContextSuite.model_validate(data)
+
+
+@pytest.fixture
+def discard_sandbox():
+    sandbox, _, _ = _sandbox_and_player([])
+    engine = sandbox.game_engine
+    for _ in range(16):
+        engine.step(engine.state.playable_actions[0])
+    player_freqdeck_add(engine.state, Color.RED, (4, 0, 0, 0, 4))
+    engine.state.resource_freqdeck[0] -= 4
+    engine.state.resource_freqdeck[4] -= 4
+    engine.step(Action(Color.RED, ActionType.ROLL, (3, 4)), force=True)
+    context = sandbox.decision_context()
+    assert context.legal_actions[0].action_type == ActionType.DISCARD
+    return sandbox
+
+
+@pytest.fixture
+def discard_context(discard_sandbox):
+    context = discard_sandbox.decision_context()
+    # Supply the engine's exact required count independently of context assembly.
+    return replace(context, discard_count=sum(context.observation.my_resources.values()) // 2)
+
+
+def test_v10_discard_parser_and_menu_use_exact_named_bundle(discard_context):
+    context = discard_context
+    count = context.discard_count
+    payload = f'{{"ore":{count - 2},"wood":2}}'
+    text = f"<game_plan>Keep building cards</game_plan><action>0</action><discard>{payload}</discard>"
+    suite = load_context_suite()
+    choice = PlayerResponseParser(suite).parse(context, ModelResponse(content=text))
+
+    assert choice.discard_cards == ("WOOD", "WOOD") + ("ORE",) * (count - 2)
+    assert choice.raw_response == text
+    assert action_from_choice(context, choice) == Action(
+        context.actor, ActionType.DISCARD, choice.discard_cards
+    )
+    components = ContextAssembler(suite).render_components(
+        context, PlayerSession(context.actor, "discard:RED")
+    )
+    menu = next(item.value for item in components if item.id == "environment.legal_actions")
+    assert f"Discard exactly {count} resource cards" in menu
+    assert "<discard>" in menu
+
+
+def test_parsed_discard_bundle_is_the_exact_engine_action(discard_sandbox, discard_context):
+    context = discard_context
+    engine = discard_sandbox.game_engine
+    before = dict(engine.observe(context.actor).my_resources)
+    choice = PlayerResponseParser(load_context_suite()).parse(
+        context,
+        ModelResponse(content=(
+            '<action>0</action><discard>{"WOOD":2,"ORE":'
+            f'{context.discard_count - 2}'
+            '}</discard>'
+        )),
+    )
+    transition = engine.step(action_from_choice(context, choice))
+    after = engine.observe(context.actor).my_resources
+    assert transition.resolved_action.value == choice.discard_cards
+    assert after == {
+        resource: count - choice.discard_cards.count(resource)
+        for resource, count in before.items()
+    }
+
+
+@pytest.mark.parametrize("payload", [
+    "", "null", "[]", '["WOOD"]', '"WOOD"', "{}", '{"WOOD":true}',
+    '{"WOOD":-1}', '{"WOOD":0}', '{"WOOD":1.5}', '{"WOOD":1e1}',
+    '{"WOOD":"4"}', '{"WOOD":NaN}', '{"WOOD":{}}', '{"WOOD":[]}',
+    '{"ANY":4}', '{"wood":2,"WOOD":2}', '{"WOOD":2,"WOOD":2}',
+    '{"WOOD":999}', '{"WOOD":1}', '{"ORE":100000000000000000000}',
+])
+def test_discard_parser_rejects_invalid_json_resources_counts_and_holdings(discard_context, payload):
+    with pytest.raises(PlayerResponseParseError):
+        PlayerResponseParser(load_context_suite()).parse(
+            discard_context, ModelResponse(content=f"<action>0</action><discard>{payload}</discard>")
+        )
+
+
+def test_discard_requirement_is_suite_opt_in_and_old_menu_is_unchanged(discard_context):
+    context = discard_context
+    parser = PlayerResponseParser(load_context_suite())
+    with pytest.raises(PlayerResponseParseError, match="requires <discard>"):
+        parser.parse(context, _response())
+    historical = load_context_suite(default_suite_path().with_name("catan_v9.yaml"))
+    legacy_choice = PlayerResponseParser(historical).parse(context, _response())
+    assert legacy_choice.discard_cards is None
+    assert action_from_choice(context, legacy_choice) == context.legal_actions[0]
+    components = ContextAssembler(historical).render_components(
+        context, PlayerSession(context.actor, "historical:RED")
+    )
+    assert next(item.value for item in components if item.id == "environment.legal_actions") == (
+        "0. Discard resources"
+    )
+    data = load_context_suite().model_dump(mode="python")
+    data["response"]["tags"] = tuple(tag for tag in data["response"]["tags"] if tag != "discard")
+    assert PlayerResponseParser(ContextSuite.model_validate(data)).parse(
+        context, _response()
+    ).discard_cards is None
+
+
+def test_legacy_suite_keeps_automatic_discard_execution(discard_sandbox, discard_context):
+    suite = load_context_suite(default_suite_path().with_name("catan_v9.yaml"))
+    choice = PlayerResponseParser(suite).parse(discard_context, _response())
+    transition = discard_sandbox.game_engine.step(action_from_choice(discard_context, choice))
+    assert choice.discard_cards is None
+    assert len(transition.resolved_action.value) == discard_context.discard_count
+
+
+@pytest.mark.parametrize("parameter", [
+    '<discard>{"WOOD":4}</discard>',
+    '<trade_offer>{"give":{"WOOD":1},"receive":{"ORE":1}}</trade_offer>',
+])
+def test_parser_rejects_parameters_on_wrong_action(parameter):
+    sandbox, _, _ = _sandbox_and_player([])
+    with pytest.raises(PlayerResponseParseError, match="only valid"):
+        PlayerResponseParser(load_context_suite()).parse(
+            sandbox.decision_context(), ModelResponse(content=f"<action>0</action>{parameter}")
+        )
+
+
+@pytest.mark.parametrize("text", [
+    "<!-- <action>0</action> -->",
+    "<!-- action_index: 0 -->",
+    "<action index='0'>0</action>",
+    "<action>0</action><action/>",
+    "<action>0</action><action>1",
+    "<action><action>0</action></action>",
+    "<game_plan>one</game_plan><game_plan>two</game_plan><action>0</action>",
+    '<action>0</action><discard>{"WOOD":4}</discard><discard>{"WOOD":4}</discard>',
+])
+def test_decision_parser_rejects_malformed_repeated_and_comment_only_controls(text):
+    sandbox, _, _ = _sandbox_and_player([])
+    with pytest.raises(PlayerResponseParseError):
+        PlayerResponseParser(load_context_suite()).parse(
+            sandbox.decision_context(), ModelResponse(content=text)
+        )
+
+
+def test_decision_parser_keeps_xml_escaped_prose_and_raw_output_separate():
+    sandbox, _, _ = _sandbox_and_player([])
+    text = (
+        "<!-- <action>2</action> action_index: 3 -->"
+        "<game_plan>ORE &gt; WOOD &amp; wheat &lt; sheep</game_plan><action>0</action>"
+    )
+    choice = PlayerResponseParser(load_context_suite()).parse(
+        sandbox.decision_context(), ModelResponse(content=text)
+    )
+    assert choice.action_index == 0
+    assert choice.game_plan == "ORE > WOOD & wheat < sheep"
+    assert choice.raw_response == text
+
+
+@pytest.mark.asyncio
+async def test_first_legal_discards_deterministically_and_scripted_preserves_typed_choice(discard_context):
+    context = discard_context
+    player = FirstLegalPlayer(context.actor)
+    first = await player.choose(context)
+    second = await player.choose(context)
+    assert first == second
+    assert len(first.choice.discard_cards) == context.discard_count
+    assert first.choice.discard_cards[:4] == ("WOOD",) * 4
+    assert action_from_choice(context, first.choice).value == first.choice.discard_cards
+    exact_cards = ("ORE",) * (context.discard_count - 2) + ("WOOD",) * 2
+    concrete = replace(context, legal_actions=(Action(context.actor, ActionType.DISCARD, exact_cards),))
+    assert (await player.choose(concrete)).choice.discard_cards == exact_cards
+
+    scripted = ScriptedPlayer(context.actor, [first.choice, 0])
+    saved = scripted.snapshot()
+    assert (await scripted.choose(context)).choice is first.choice
+    assert (await scripted.choose(context)).choice == PlayerChoice(0)
+    scripted.restore(saved)
+    assert (await scripted.choose(context)).choice == first.choice
+    scripted.restore((3, 4, (0,)))
+    assert scripted.event_cursor == 3
+    assert scripted.accepted_choices == 4
+    assert (await scripted.choose(context)).choice == PlayerChoice(0)
+
+
+@pytest.mark.asyncio
+async def test_human_discard_asks_for_exact_cards_and_retries_invalid_bundles(discard_context):
+    context = discard_context
+    valid_payload = f'{{"WOOD":2,"ORE":{context.discard_count - 2}}}'
+    answers = iter([
+        "0", "not JSON", "[]", '{"WOOD":true}', '{"WOOD":100}',
+        '{"WOOD":2,"WOOD":2}', '{"WOOD":1}', valid_payload,
+    ])
+    prompts = []
+
+    def answer(prompt):
+        prompts.append(prompt)
+        return next(answers)
+
+    choice = (await HumanPlayer(context.actor, input_fn=answer).choose(context)).choice
+    assert choice.discard_cards == ("WOOD",) * 2 + ("ORE",) * (context.discard_count - 2)
+    assert len(prompts) == 8
+    assert all(f"exactly {context.discard_count}" in prompt for prompt in prompts[1:])
+    assert action_from_choice(context, choice).value == choice.discard_cards

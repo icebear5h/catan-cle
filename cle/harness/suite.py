@@ -47,6 +47,7 @@ class ContextConfig(_StrictModel):
     mode: Literal["legacy", "components"] = "legacy"
     initial_placement_order: Literal["omit", "both_rounds"] = "omit"
     trajectory: TrajectoryConfig = TrajectoryConfig()
+    social_context: bool = False
 
 
 class SectionConfig(_StrictModel):
@@ -90,12 +91,22 @@ class ContextSuite(_StrictModel):
         if unknown:
             raise ValueError(f"context.order references unknown sections: {sorted(unknown)}")
 
+        if self.context.social_context and self.context.mode != "components":
+            raise ValueError("social_context requires component mode")
         if self.context.mode == "components":
-            if order != _COMPONENT_ORDER:
+            component_order = _COMPONENT_ORDER
+            if self.context.social_context:
+                component_order = (
+                    *_COMPONENT_ORDER[:3],
+                    "recent_table_talk",
+                    "commitments",
+                    *_COMPONENT_ORDER[3:],
+                )
+            if order != component_order:
                 raise ValueError(
                     "component context.order must equal the fixed component order"
                 )
-            if set(self.sections) != set(_COMPONENT_ORDER[1:]):
+            if set(self.sections) != set(component_order[1:]):
                 raise ValueError(
                     "component sections must exactly match the fixed component order"
                 )
@@ -146,7 +157,7 @@ class ContextSuite(_StrictModel):
 
 def default_suite_path() -> Path:
     """Return the built-in text-only Catan suite path."""
-    return Path(__file__).resolve().parent / "suites" / "catan_v9.yaml"
+    return Path(__file__).resolve().parent / "suites" / "catan_v10.yaml"
 
 
 def parse_context_suite(

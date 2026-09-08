@@ -120,8 +120,12 @@ def create_live_sandbox(
     if snapshot is not None:
         engine.restore(snapshot.engine)
     realized_colors = tuple(engine.state.colors)
-    llm_colors = set(realized_colors if config.mode == "llm" else (realized_colors[0],))
-    active_transport = transport
+    llm_colors = (
+        set(realized_colors)
+        if config.mode == "llm"
+        else {realized_colors[0]} if config.mode == "llm_vs_random" else set()
+    )
+    active_transport = transport if llm_colors else None
     if config.mode in ("llm", "llm_vs_random") and active_transport is None:
         active_transport = create_text_transport(config)
 

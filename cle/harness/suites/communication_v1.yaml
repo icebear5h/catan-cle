@@ -1,5 +1,7 @@
+# DEPRECATED: superseded by communication_v5.yaml (legacy pair); the active bundle is shared_v1.yaml.
 id: catan-communication
 version: 1
+status: deprecated
 system_template: |-
   You are the {{color}} player in a live game of Catan.
   Decide whether this moment genuinely benefits from table talk.

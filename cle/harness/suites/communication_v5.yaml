@@ -1,5 +1,7 @@
+# LEGACY: historical communication half of the legacy pair (with catan_v11.yaml). New games use shared_v1.yaml.
 id: catan-communication
 version: 5
+status: legacy
 system_template: |-
   You are playing a game of Catan. You are playing as {{ color }}.
 order:
@@ -42,9 +44,8 @@ sections:
       or:
       <message>concise, strategically actionable table-talk message</message>
       <audience>PUBLIC or comma-separated colors</audience>
-      <intent>TRADE, QUESTION, WARNING, or BRIBE</intent>
 
-      Optional exact non-binding commitment fields:
+      Optional exact commitment fields:
       <commitment_condition>condition</commitment_condition>
       <commitment_promise>promise</commitment_promise>
       <commitment_expires_turn>integer turn</commitment_expires_turn>

@@ -1,5 +1,7 @@
+# DEPRECATED: superseded by communication_v5.yaml (legacy pair); the active bundle is shared_v1.yaml.
 id: catan-communication
 version: 3
+status: deprecated
 system_template: |-
   Use table talk only when it creates an actionable strategic choice for another player.
   Default to SILENCE.

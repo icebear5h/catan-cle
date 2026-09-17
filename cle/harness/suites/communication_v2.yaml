@@ -1,5 +1,7 @@
+# DEPRECATED: superseded by communication_v5.yaml (legacy pair); the active bundle is shared_v1.yaml.
 id: catan-communication
 version: 2
+status: deprecated
 system_template: |-
   Choose whether to send table talk in response to the supplied event.
   Return only the XML fields in the response schema.

@@ -1,7 +1,7 @@
-# DEPRECATED: superseded by catan_v11.yaml (legacy pair); the active bundle is shared_v1.yaml.
+# LEGACY: historical decision half of the legacy pair (with communication_v5.yaml). New games use shared_v1.yaml.
 id: catan-agent
-version: 9.0.0
-status: deprecated
+version: 11.0.0
+status: legacy
 
 system:
   template: |-
@@ -10,10 +10,13 @@ system:
 context:
   mode: components
   initial_placement_order: both_rounds
+  social_context: true
   order:
     - trajectory
     - strategic_memory
     - visible_events
+    - recent_table_talk
+    - commitments
     - phase_info
     - board_state
     - resources
@@ -40,6 +43,18 @@ sections:
       {{ value }}
     empty: include
     empty_text: No visible game events have occurred yet.
+  recent_table_talk:
+    template: |-
+      RECENT VISIBLE TABLE TALK:
+      {{ value }}
+    empty: include
+    empty_text: No recent visible table talk.
+  commitments:
+    template: |-
+      ACTIVE NON-BINDING COMMITMENTS:
+      {{ value }}
+    empty: include
+    empty_text: No active visible commitments.
   phase_info:
     template: |-
       CURRENT PHASE:
@@ -77,7 +92,7 @@ sections:
     empty_text: No phase-specific facts are available.
   legal_actions:
     template: |-
-      VALID ACTIONS:
+      AVAILABLE ACTION TOOLS:
       {{ value }}
     empty: include
     empty_text: No legal actions are available.
@@ -100,10 +115,9 @@ phase_guidance:
     - Maximizing raw pip count is not the objective. Resource diversity is not the objective either. Use production and coverage only when they support a coherent opening plan.
     - Evaluate the first and plausible second settlements as one coupled portfolio. You place the second settlement after every opponent has placed once, so identify multiple complementary backups rather than assuming one node will remain available.
     - Choose and justify a board-specific opening archetype. Examples include an expansion engine built around WOOD, BRICK, and WHEAT; a development-card/city engine built around ORE, WHEAT, and SHEEP; or a credible scarcity/port conversion plan. Do not force all five resources when a focused engine has better conversion ratios.
-    - Compare whether the combined production can repeatedly pay for the intended build sequence. Look for bottlenecks: roads need WOOD+BRICK, settlements need WOOD+BRICK+WHEAT+SHEEP, cities need ORE+WHEAT, and development cards need ORE+WHEAT+SHEEP. Duplicate resource production can be intentional; nominal diversity without buildable combinations can be weak.
     - Account for the starting cards from the second settlement, realistic port timing, resource scarcity, number correlation, robber exposure, opponent contention, road direction, and at least two reachable expansion targets.
     - Tie the selected first settlement to a concrete early-game sequence and state what the second settlement must complement. Prefer a slightly lower-pip coherent engine over a higher-pip collection that lacks synergy or a credible route to builds.
-    - The first settlement gives no starting cards. The second settlement is independent of the first road and gives one card from each adjacent non-desert tile.
+    - This placement gives no starting cards. Your opening hand comes only from your second settlement: one card from each adjacent non-desert tile, placed independently of this road.
   initial_settlement_2: |-
     - Reassess the board as it now stands rather than committing to the original plan.
     - Complement your first settlement's production, cover missing resources and dice numbers, and preserve room to expand.
@@ -120,27 +134,32 @@ phase_guidance:
   initial_placement: |-
     Build a coherent two-settlement opening: reliable production, broad resource and number coverage, and room to expand. The first settlement gives no starting cards; the independently placed second settlement gives one card from each adjacent non-desert tile. Point each road toward useful future settlement locations.
   discarding: |-
-    Resolve the required discard. Reassess your plan after the robber sequence changes production or resources.
+    Resolve the required discard. Choose exactly the stated number of cards from your holdings using named resource counts. Reassess your plan after the robber sequence changes production or resources.
+    Resource maps use WOOD, BRICK, SHEEP, WHEAT, and ORE with positive integer counts and no duplicate keys, including different casing. Example: {"tool":"discard","arguments":{"cards":{"WOOD":2,"SHEEP":2}}}
   robber: |-
     - Balance blocking valuable opponent production against blocking your own tiles and inviting retaliation.
     - Use visible production, public VP, and opponent hand sizes to judge the strongest target without assuming hidden cards.
     - Robber movement and victim selection may be separate choices. If victim selection follows, the victim is chosen but the stolen card is random.
+    - play_knight includes the robber destination: the sandbox plays the card and moves the robber from this one decision. If the Knight wins immediately through Largest Army, the game ends before movement. Any victim selection follows separately; the stolen resource is random and cannot be specified. move_robber handles a pending move after a seven or a historical unbundled Knight. Examples: {"tool":"play_knight","arguments":{"tile":"<T05>"}} {"tool":"move_robber","arguments":{"tile":"<T05>"}} {"tool":"steal_from","arguments":{"player":"BLUE"}}
   main_game: |-
     - Check first for an action that wins immediately or prevents a visible immediate threat.
     - Choose the next action as part of a sequence: trade or convert resources before spending them, then build, buy, or end the turn as the position requires.
     - Compare progress through production, settlement access, cities, development cards, Largest Army, Longest Road, and ports rather than counting only immediate VP.
     - Treat opponent resource types and unplayed development cards as unknown.
     - Trade acceptance is non-binding until the turn player confirms a candidate; the turn player may instead continue or end the turn.
+    - Resource maps use WOOD, BRICK, SHEEP, WHEAT, and ORE with positive integer counts and no duplicate keys, including different casing. Year of Plenty takes two bank cards, or a singleton only when the engine permits it. Maritime trades give one resource type at the current best 4:1, 3:1, or 2:1 rate for exactly one different bank card. Example: {"tool":"play_year_of_plenty","arguments":{"take":{"WOOD":1,"ORE":1}}} {"tool":"play_monopoly","arguments":{"resource":"WHEAT"}} {"tool":"maritime_trade","arguments":{"give":{"WOOD":4},"receive":{"ORE":1}}}
+    - Offer IDs are opaque: copy them exactly. offer_trade and counter_offer also accept optional non-negative give_any and receive_any counts; wildcards are proposals, not executable exchanges. Counteroffers address root offers and only the turn player. Acceptance signals willingness, never transfers cards; the turn player chooses the final offer and counterparty with confirm_trade. cancel_trade withdraws only the named offer. Never offer cards you do not hold. Examples: {"tool":"offer_trade","arguments":{"give":{"WOOD":1},"receive":{"ORE":1}}} {"tool":"confirm_trade","arguments":{"offer_id":"exact visible ID","counterparty":"BLUE"}}
+    - Parameterless tools use an empty arguments object, for example {"tool":"end_turn","arguments":{}}. Other parameterless tools are roll_dice, buy_development_card, and play_road_building; follow the current availability list. Road Building's road placements remain subsequent build_road decisions.
 
 response:
-  format: xml
+  format: json
   tags:
     - game_plan
-    - action
-    - trade_offer
+    - tool
+    - arguments
   fallback: first_legal
   instruction: |-
-    Return only these XML elements:
-    <game_plan>brief information useful for later decisions</game_plan>
-    <action>zero-based index from VALID ACTIONS</action>
-    For OFFER_TRADE or COUNTER_OFFER, also return <trade_offer> containing a JSON object with named give and receive resource-count objects and optional non-negative give_any or receive_any counts. Example: <trade_offer>{"give":{"WOOD":1},"receive":{"ORE":1}}</trade_offer>. Do not return <trade_offer> for other actions.
+    Return exactly one JSON object with tool and arguments, and optionally game_plan containing brief information useful for later decisions. No XML, markdown fences, extra fields, repeated keys, action indices, or batches of calls.
+    Spatial arguments are literal trained board tokens: <N00> through <N53>, canonical endpoint edge tokens such as <E00_01>, and <T00> through <T18>. These strings are data, not XML tags. Do not remove or escape their angle brackets, use raw integer IDs, or invent sequential edge tokens.
+    Choose only a currently available tool and its exact named arguments. Examples illustrate syntax, not current legality: {"game_plan":"Expand toward the port.","tool":"build_road","arguments":{"edge":"<E00_01>"}} {"tool":"build_settlement","arguments":{"node":"<N00>"}}
+    Invalid calls change no gameplay state and receive corrective feedback within the bounded retry policy; exhausting the attempt limit leaves the decision unapplied.

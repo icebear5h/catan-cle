@@ -1,5 +1,7 @@
+# DEPRECATED: superseded by catan_v11.yaml (legacy pair); the active bundle is shared_v1.yaml.
 id: catan-agent
 version: 5.0.0
+status: deprecated
 
 system:
   template: |-

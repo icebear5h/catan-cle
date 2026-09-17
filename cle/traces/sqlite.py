@@ -5,8 +5,9 @@ from __future__ import annotations
 import io
 import json
 import pickle
+import zlib
 import sqlite3
-from dataclasses import dataclass, fields, is_dataclass
+from dataclasses import asdict, dataclass, fields, is_dataclass
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
@@ -23,7 +24,7 @@ from cle.sandbox.communication import CommunicationAdmission
 from cle.sandbox.contracts import SandboxSnapshot, SandboxStepResult
 from cle.game_engine.json import GameEncoder
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 DEFAULT_TRACE_PATH = Path(".cle/live_traces.sqlite3")
 
 
@@ -93,6 +94,46 @@ def _json_text(value: Any) -> str:
     )
 
 
+# Large columns are stored zlib-packed behind this prefix. Legacy rows hold raw
+# pickle (starts 0x80) or JSON text (starts "{"), so the prefix is unambiguous
+# and unpack_blob passes them through unchanged. Columns that SQL inspects with
+# json_extract/json_each (model_calls.response_json, live_failures.payload_json)
+# stay plain text.
+PACKED_MAGIC = b"\x00clz1\x00"
+
+
+def pack_blob(data: bytes) -> bytes:
+    return PACKED_MAGIC + zlib.compress(data, 6)
+
+
+def is_packed(value: Any) -> bool:
+    return isinstance(value, (bytes, memoryview)) and bytes(value[: len(PACKED_MAGIC)]) == PACKED_MAGIC
+
+
+def unpack_blob(value: bytes | str | memoryview | None) -> bytes | None:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        return value.encode("utf-8")
+    raw = bytes(value)
+    if raw.startswith(PACKED_MAGIC):
+        return zlib.decompress(raw[len(PACKED_MAGIC):])
+    return raw
+
+
+def _json_blob(value: Any) -> bytes:
+    return pack_blob(_json_text(value).encode("utf-8"))
+
+
+def _load_json(value: bytes | str | memoryview | None) -> Any:
+    raw = unpack_blob(value)
+    return None if raw is None else json.loads(raw.decode("utf-8"))
+
+
+def _snapshot_blob(snapshot: SandboxSnapshot) -> bytes:
+    return pack_blob(pickle.dumps(snapshot, protocol=pickle.HIGHEST_PROTOCOL))
+
+
 class _SnapshotUnpickler(pickle.Unpickler):
     """Load trusted local snapshots written before the engine namespace move."""
 
@@ -103,7 +144,7 @@ class _SnapshotUnpickler(pickle.Unpickler):
 
 
 def _decode_snapshot(payload: bytes) -> SandboxSnapshot:
-    snapshot = _SnapshotUnpickler(io.BytesIO(payload)).load()
+    snapshot = _SnapshotUnpickler(io.BytesIO(unpack_blob(payload))).load()
     if not isinstance(snapshot, SandboxSnapshot):
         raise TypeError("Stored live trace snapshot has an invalid type")
     return snapshot
@@ -147,6 +188,10 @@ def _context_payload(context: PlayerContext) -> dict[str, Any]:
         "active_commitments": context.active_commitments,
         "discard_count": context.discard_count,
         "legal_actions": list(context.legal_actions),
+        "visible_through_sequence": getattr(context, "visible_through_sequence", None),
+        "visible_messages": [
+            _event_payload(event) for event in getattr(context, "visible_messages", ())
+        ],
     }
 
 
@@ -156,6 +201,12 @@ def _request_payload(request: Any) -> dict[str, Any] | None:
     return {
         "decision_id": request.decision_id,
         "session_id": request.session_id,
+        "context_policy": getattr(request, "context_policy", None),
+        "memory_revision": getattr(request, "memory_revision", None),
+        "input_next_sequence": getattr(request, "input_next_sequence", None),
+        "prompt_sources": [asdict(source) for source in getattr(request, "prompt_sources", ())],
+        "channel": getattr(request, "channel", None),
+        "trigger_reason": getattr(request, "trigger_reason", None),
         "messages": [
             {"role": message.role, "content": message.content}
             for message in request.messages
@@ -265,11 +316,14 @@ def _communication_payload(record: CommunicationAdmission) -> dict[str, Any]:
         "accepted": record.accepted,
         "validation_error": record.validation_error,
         "choice": {
+            "trigger_reason": opportunity.reason.value,
             "mode": choice.mode,
             "text": choice.text,
             "audience": choice.audience,
-            "intent": choice.intent,
+            "respondents": choice.respondents,
             "commitment": choice.commitment,
+            "notes_update": getattr(choice, "notes_update", None),
+            "validation_error": getattr(choice, "validation_error", None),
         },
         "model_request": _request_payload(request),
         "model_response": _response_payload(
@@ -289,6 +343,7 @@ def _result_payload(
         "before_revision": result.before_revision,
         "after_revision": result.after_revision,
         "winner": result.winner,
+        "automatic_action": result.automatic_action.to_payload() if result.automatic_action else None,
         "contexts": [_context_payload(context) for context in result.contexts],
         "rejected_attempts": [
             _attempt_payload(attempt, accepted=False)
@@ -396,6 +451,9 @@ class SQLiteLiveTraceStore:
                     actor TEXT NOT NULL,
                     validation_error TEXT NOT NULL,
                     payload_json TEXT NOT NULL,
+                    sandbox_snapshot BLOB,
+                    base_step_index INTEGER,
+                    public_state_json TEXT,
                     FOREIGN KEY (game_id) REFERENCES live_games(game_id)
                 );
 
@@ -438,6 +496,19 @@ class SQLiteLiveTraceStore:
                     ADD COLUMN call_kind TEXT NOT NULL DEFAULT 'decision'
                     """
                 )
+            failure_columns = {
+                row["name"]
+                for row in connection.execute("PRAGMA table_info(live_failures)")
+            }
+            for name, column_type in (
+                ("sandbox_snapshot", "BLOB"),
+                ("base_step_index", "INTEGER"),
+                ("public_state_json", "TEXT"),
+            ):
+                if name not in failure_columns:
+                    connection.execute(
+                        f"ALTER TABLE live_failures ADD COLUMN {name} {column_type}"
+                    )
             connection.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
 
     def start_game(
@@ -466,7 +537,7 @@ class SQLiteLiveTraceStore:
                     now,
                     now,
                     _json_text(config),
-                    pickle.dumps(snapshot, protocol=pickle.HIGHEST_PROTOCOL),
+                    _snapshot_blob(snapshot),
                 ),
             )
             connection.commit()
@@ -533,9 +604,9 @@ class SQLiteLiveTraceStore:
                     result.before_revision,
                     result.after_revision,
                     winner,
-                    _json_text(result_payload),
-                    _json_text(public_state),
-                    pickle.dumps(snapshot, protocol=pickle.HIGHEST_PROTOCOL),
+                    _json_blob(result_payload),
+                    _json_blob(public_state),
+                    _snapshot_blob(snapshot),
                 ),
             )
 
@@ -558,7 +629,7 @@ class SQLiteLiveTraceStore:
                         or context_actors.get(attempt["context_id"]),
                         int(attempt["accepted"]),
                         attempt["validation_error"],
-                        _json_text(attempt["model_request"])
+                        _json_blob(attempt["model_request"])
                         if attempt["model_request"] is not None
                         else None,
                         _json_text(attempt["model_response"])
@@ -570,14 +641,31 @@ class SQLiteLiveTraceStore:
                     ),
                 )
 
+            # Resumed decisions omit speech already admitted before a failure.
+            # Recover its evidence without replaying the initial checkpoint.
+            last_sequence = connection.execute(
+                "SELECT MAX(sequence) FROM game_events WHERE game_id = ?",
+                (game_id,),
+            ).fetchone()[0]
+            if last_sequence is None:
+                initial = connection.execute(
+                    "SELECT initial_snapshot FROM live_games WHERE game_id = ?",
+                    (game_id,),
+                ).fetchone()
+                last_sequence = len(_decode_snapshot(initial["initial_snapshot"]).engine.events) - 1
+            for event in snapshot.engine.events:
+                if event.sequence > last_sequence:
+                    events.setdefault(event.sequence, event)
+
             for sequence in sorted(events):
                 event = events[sequence]
                 connection.execute(
                     """
-                    INSERT OR REPLACE INTO game_events (
+                    INSERT INTO game_events (
                         game_id, sequence, step_index, event_type,
                         actor, event_json
                     ) VALUES (?, ?, ?, ?, ?, ?)
+                    ON CONFLICT (game_id, sequence) DO NOTHING
                     """,
                     (
                         game_id,
@@ -607,6 +695,29 @@ class SQLiteLiveTraceStore:
             connection.commit()
         return step_index
 
+    def update_step_public_state(
+        self,
+        game_id: str,
+        step_index: int,
+        public_state: Mapping[str, Any],
+    ) -> bool:
+        """Replace one recorded step's public state; True when a row changed.
+
+        Labels that only exist once the step index is known - the trace step
+        stamped onto table-talk log rows - are written back through here.
+        """
+        with self._connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            cursor = connection.execute(
+                """
+                UPDATE live_steps SET public_state_json = ?
+                WHERE game_id = ? AND step_index = ?
+                """,
+                (_json_blob(public_state), game_id, step_index),
+            )
+            connection.commit()
+            return cursor.rowcount > 0
+
     def record_failure(
         self,
         game_id: str,
@@ -616,8 +727,16 @@ class SQLiteLiveTraceStore:
         validation_error: str,
         attempts: Iterable[PlayerAttempt],
         communication_attempts: Iterable[CommunicationAdmission] = (),
+        snapshot: SandboxSnapshot | None = None,
+        public_state: dict[str, Any] | None = None,
     ) -> str:
-        """Append failed-attempt diagnostics without advancing the checkpoint."""
+        """Append diagnostics and optionally checkpoint already-admitted side effects.
+
+        The snapshot/public view must describe the same paused sandbox. A failure
+        checkpoint supersedes earlier failures on this successful-step baseline,
+        but never a subsequent successful step. Without a snapshot, this remains
+        a diagnostic-only record.
+        """
         failure_id = str(uuid4())
         payload = {
             "attempts": [
@@ -631,12 +750,24 @@ class SQLiteLiveTraceStore:
         }
         with self._connect() as connection:
             connection.execute("BEGIN IMMEDIATE")
+            base_step_index = None
+            if snapshot is not None:
+                if snapshot.engine.engine_id != game_id:
+                    raise ValueError("Failure snapshot game identity does not match game_id")
+                base_step_index = connection.execute(
+                    """
+                    SELECT COALESCE(MAX(step_index), -1)
+                    FROM live_steps WHERE game_id = ?
+                    """,
+                    (game_id,),
+                ).fetchone()[0]
             connection.execute(
                 """
                 INSERT INTO live_failures (
                     failure_id, game_id, revision, recorded_at, actor,
-                    validation_error, payload_json
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                    validation_error, payload_json, sandbox_snapshot,
+                    base_step_index, public_state_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     failure_id,
@@ -646,6 +777,9 @@ class SQLiteLiveTraceStore:
                     player.value,
                     validation_error,
                     _json_text(payload),
+                    _snapshot_blob(snapshot) if snapshot is not None else None,
+                    base_step_index,
+                    _json_blob(public_state) if public_state is not None else None,
                 ),
             )
             connection.commit()
@@ -700,6 +834,56 @@ class SQLiteLiveTraceStore:
             ).fetchall()
         return [self._game_row(row) for row in rows]
 
+    def get_usage(self, game_id: str) -> dict[str, Any] | None:
+        """Project canonical usage only; never load checkpoints or request blobs.
+
+        Failure batches have their own cursor slices and are not copied into the
+        subsequent successful step. Do not also count result_json attempts.
+        """
+        with self._connect() as connection:
+            connection.execute("BEGIN")
+            game = connection.execute(
+                "SELECT game_id FROM live_games WHERE game_id = ?", (game_id,),
+            ).fetchone()
+            if game is None:
+                return None
+            count = connection.execute(
+                "SELECT COUNT(*) FROM live_steps WHERE game_id = ?", (game_id,),
+            ).fetchone()[0]
+            calls = connection.execute(
+                """
+                SELECT step_index, call_index, call_kind, accepted,
+                       json_extract(response_json, '$.usage') AS usage
+                FROM model_calls WHERE game_id = ?
+                  AND (request_json IS NOT NULL OR response_json IS NOT NULL)
+                ORDER BY step_index, call_index
+                """, (game_id,),
+            ).fetchall()
+            failures = connection.execute(
+                """
+                SELECT failure_id, json_extract(j.value, '$.model_response.usage') AS usage,
+                       j.key AS call_index,
+                       json_extract(j.value, '$.call_kind') AS call_kind,
+                       json_extract(j.value, '$.accepted') AS accepted
+                FROM live_failures, json_each(payload_json, '$.attempts') AS j
+                WHERE game_id = ? AND (json_extract(j.value, '$.model_request') IS NOT NULL
+                                      OR json_extract(j.value, '$.model_response') IS NOT NULL)
+                UNION ALL
+                SELECT failure_id, json_extract(j.value, '$.model_response.usage'),
+                       j.key, 'communication', json_extract(j.value, '$.accepted')
+                FROM live_failures, json_each(payload_json, '$.communication_attempts') AS j
+                WHERE game_id = ? AND (json_extract(j.value, '$.model_request') IS NOT NULL
+                                      OR json_extract(j.value, '$.model_response') IS NOT NULL)
+                """, (game_id, game_id),
+            ).fetchall()
+        def usage_row(row):
+            return {**dict(row), "usage": json.loads(row["usage"]) if row["usage"] else None}
+        return {
+            "game_id": game_id, "step_count": count,
+            "calls": [usage_row(row) for row in calls],
+            "failure_calls": [usage_row(row) for row in failures],
+        }
+
     def get_game(self, game_id: str) -> dict[str, Any] | None:
         with self._connect() as connection:
             game = connection.execute(
@@ -750,8 +934,8 @@ class SQLiteLiveTraceStore:
                 "before_revision": row["before_revision"],
                 "after_revision": row["after_revision"],
                 "winner": row["winner"],
-                "result": json.loads(row["result_json"]),
-                "public_state": json.loads(row["public_state_json"]),
+                "result": _load_json(row["result_json"]),
+                "public_state": _load_json(row["public_state_json"]),
             }
             for row in steps
         ]
@@ -820,6 +1004,24 @@ class SQLiteLiveTraceStore:
                 """,
                 (game_id, step_index),
             ).fetchall()
+            result = _load_json(step["result_json"])
+            origin_calls = []
+            automatic = result.get("automatic_action") if isinstance(result, dict) else None
+            if isinstance(automatic, dict) and automatic.get("origin_context_id"):
+                origin_calls = [
+                    self._model_call_row(row)
+                    for row in connection.execute(
+                        """
+                        SELECT step_index, call_index, call_kind, context_id, actor,
+                               accepted, validation_error, request_json, response_json,
+                               choice_json
+                        FROM model_calls
+                        WHERE game_id = ? AND context_id = ?
+                        ORDER BY step_index, call_index
+                        """,
+                        (game_id, automatic["origin_context_id"]),
+                    ).fetchall()
+                ]
         step_count = int(game["step_count"])
         return {
             "game_id": game_id,
@@ -832,14 +1034,17 @@ class SQLiteLiveTraceStore:
                 "before_revision": step["before_revision"],
                 "after_revision": step["after_revision"],
                 "winner": step["winner"],
-                "result": json.loads(step["result_json"]),
-                "public_state": json.loads(step["public_state_json"]),
+                "result": result,
+                "public_state": _load_json(step["public_state_json"]),
             },
             "model_calls": [self._model_call_row(row) for row in calls],
+            "origin_calls": origin_calls,
         }
 
     def load_resume_point(self, game_id: str) -> LiveTraceResumePoint:
         with self._connect() as connection:
+            # Read game metadata, the successful baseline, and failures together.
+            connection.execute("BEGIN")
             game = connection.execute(
                 """
                 SELECT display_name, status, winner, config_json,
@@ -859,17 +1064,28 @@ class SQLiteLiveTraceStore:
                 """,
                 (game_id,),
             ).fetchone()
+            failure = connection.execute(
+                """
+                SELECT sandbox_snapshot, public_state_json
+                FROM live_failures
+                WHERE game_id = ? AND base_step_index = ?
+                    AND sandbox_snapshot IS NOT NULL
+                ORDER BY rowid DESC LIMIT 1
+                """,
+                (game_id, step["step_index"] if step is not None else -1),
+            ).fetchone()
+        checkpoint = failure if failure is not None else step
         snapshot_payload = (
-            step["sandbox_snapshot"]
-            if step is not None
+            checkpoint["sandbox_snapshot"]
+            if checkpoint is not None
             else game["initial_snapshot"]
         )
         return LiveTraceResumePoint(
             config=json.loads(game["config_json"]),
             snapshot=_decode_snapshot(snapshot_payload),
             public_state=(
-                json.loads(step["public_state_json"])
-                if step is not None
+                _load_json(checkpoint["public_state_json"])
+                if checkpoint is not None and checkpoint["public_state_json"] is not None
                 else None
             ),
             step_index=step["step_index"] if step is not None else None,
@@ -884,28 +1100,16 @@ class SQLiteLiveTraceStore:
         *,
         step_index: int | None = None,
     ) -> SandboxSnapshot:
+        if step_index is None:
+            return self.load_resume_point(game_id).snapshot
         with self._connect() as connection:
-            if step_index is None:
-                row = connection.execute(
-                    """
-                    SELECT sandbox_snapshot FROM live_steps
-                    WHERE game_id = ? ORDER BY step_index DESC LIMIT 1
-                    """,
-                    (game_id,),
-                ).fetchone()
-                if row is None:
-                    row = connection.execute(
-                        "SELECT initial_snapshot AS sandbox_snapshot FROM live_games WHERE game_id = ?",
-                        (game_id,),
-                    ).fetchone()
-            else:
-                row = connection.execute(
-                    """
-                    SELECT sandbox_snapshot FROM live_steps
-                    WHERE game_id = ? AND step_index = ?
-                    """,
-                    (game_id, step_index),
-                ).fetchone()
+            row = connection.execute(
+                """
+                SELECT sandbox_snapshot FROM live_steps
+                WHERE game_id = ? AND step_index = ?
+                """,
+                (game_id, step_index),
+            ).fetchone()
         if row is None:
             raise KeyError(f"No trace snapshot for game {game_id!r}")
         return _decode_snapshot(row["sandbox_snapshot"])
@@ -921,7 +1125,7 @@ class SQLiteLiveTraceStore:
             "accepted": bool(row["accepted"]),
             "validation_error": row["validation_error"],
             "request": (
-                json.loads(row["request_json"])
+                _load_json(row["request_json"])
                 if row["request_json"]
                 else None
             ),

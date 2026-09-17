@@ -12,8 +12,11 @@ from cle.harness import (
     ModelRequest,
     ModelResponse,
     PromptComponent,
+    default_suite_path,
+    load_context_suite,
 )
 from cle.harness.catan_board_surface import ImageBoardPresenter
+from cle.harness.communication import default_communication_suite_path, load_communication_suite
 from cle.players.agent import AgentPlayer
 from cle.players.baseline import FirstLegalPlayer
 from cle.players.contracts import (
@@ -27,6 +30,7 @@ from cle.sandbox.catan import PlayerResponseError, PostActionCommunicationError
 from cle.sandbox.communication import CommunicationAdmission, CommunicationOpportunity, ReactionReason
 from cle.sandbox.contracts import RetryPolicy
 from cle.traces import SQLiteLiveTraceStore
+from cle.traces.sqlite import is_packed, unpack_blob
 from cle.game_engine.events import PlayerEvent
 from cle.game_engine.game import GameEngine
 from cle.game_engine.models.actions import generate_playable_actions
@@ -74,7 +78,11 @@ def test_sqlite_trace_store_persists_full_attempts_and_restorable_snapshot(tmp_p
     )
     transport = SequenceTransport([invalid, accepted])
     engine = GameEngine(COLORS, seed=4, shuffle_players=False)
-    red = AgentPlayer(Color.RED, transport, session_id=f"{engine.id}:RED")
+    red = AgentPlayer(
+        Color.RED, transport, session_id=f"{engine.id}:RED",
+        suite=load_context_suite(default_suite_path().with_name("catan_v10.yaml")),
+        communication_suite=load_communication_suite(default_communication_suite_path()),
+    )
     players = {Color.RED: red}
     players.update({color: FirstLegalPlayer(color) for color in COLORS[1:]})
     sandbox = CatanSandbox(engine, players)
@@ -155,6 +163,18 @@ def test_sqlite_trace_store_persists_full_attempts_and_restorable_snapshot(tmp_p
         True,
     ]
     rejected, completed, communication = trace["model_calls"]
+    usage = store.get_usage(game_id)
+    assert usage["step_count"] == 1
+    assert usage["failure_calls"] == []
+    assert [row["accepted"] for row in usage["calls"]] == [0, 1, 1]
+    assert usage["calls"][1]["usage"] == {"completion_tokens_details": {"reasoning_tokens": 7}}
+    assert all(set(row) == {"step_index", "call_index", "call_kind", "accepted", "usage"}
+               for row in usage["calls"])
+    for call in (rejected, completed, communication):
+        assert call["request"]["context_policy"] is None
+        assert call["request"]["memory_revision"] is None
+        assert call["request"]["input_next_sequence"] is None
+        assert call["request"]["channel"] is None
     assert rejected["validation_error"].startswith("Choose an action index")
     assert rejected["response"]["provider_response_payload"] == {
         "id": "gen-invalid"
@@ -219,6 +239,13 @@ def test_sqlite_trace_store_persists_full_attempts_and_restorable_snapshot(tmp_p
     assert resume_point.config["mode"] == "llm_vs_random"
 
     snapshot = store.load_snapshot(game_id, step_index=0)
+    assert snapshot.pending_decision_revision is None
+    session = dict(snapshot.player_states)[Color.RED].session
+    assert session.context_policy == "legacy"
+    assert session.action_next_sequence == 0
+    assert session.talk_next_sequence == 0
+    assert session.memory_revision == 0
+    assert session.communication_receipts == ()
     sandbox.restore(snapshot)
     assert sandbox.revision == 1
     assert red.session.strategic_memory == "expand toward ore"
@@ -234,7 +261,7 @@ def test_sqlite_trace_store_persists_full_attempts_and_restorable_snapshot(tmp_p
 
     with sqlite3.connect(store.path) as connection:
         assert connection.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 4
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 5
 
 
 @pytest.mark.parametrize("model_backed", [False, True])
@@ -252,7 +279,7 @@ def test_communication_admission_outcomes_survive_all_trace_serializers(
         async def communicate(self, context):
             return CommunicationChoice(
                 mode=CommunicationMode.SAY, text="I can offer WOOD.",
-                audience=(Color.RED,), intent="TRADE",
+                audience=(Color.RED,),
             )
 
     if model_backed:
@@ -265,6 +292,8 @@ def test_communication_admission_outcomes_survive_all_trace_serializers(
                     else replace(response, provider_response_id=f"speech-{color.value}")
                 ]),
                 session_id=f"{engine.id}:{color.value}",
+                suite=load_context_suite(default_suite_path().with_name("catan_v10.yaml")),
+                communication_suite=load_communication_suite(default_communication_suite_path()),
             )
             for color in COLORS
         }
@@ -348,12 +377,12 @@ def test_trace_event_index_merges_ordered_unique_events_without_backfilling(tmp_
     first = asyncio.run(sandbox.step())
     private = engine.append_message(
         speaker=Color.BLUE, text="Private offer", audience=(Color.RED,),
-        intent="TRADE", causation_id="private-offer",
+        causation_id="private-offer",
     )
     second = asyncio.run(sandbox.step())
     public = engine.append_message(
         speaker=Color.RED, text="Public reply", audience=COLORS,
-        intent=None, causation_id="public-reply",
+        causation_id="public-reply",
     )
     # Exercise overlapping event sources and non-sequential batch enumeration.
     result = replace(
@@ -401,7 +430,7 @@ def test_trace_event_index_merges_ordered_unique_events_without_backfilling(tmp_
     with sqlite3.connect(store.path) as connection:
         assert connection.execute("SELECT * FROM live_steps").fetchall() == stored_step
         assert connection.execute("SELECT COUNT(*) FROM game_events").fetchone()[0] == 2
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 4
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 5
 
 
 @pytest.mark.parametrize("discarding", [False, True])
@@ -418,12 +447,12 @@ def test_stored_context_retains_only_visible_messages_commitments_and_discard_fa
         engine.state.playable_actions = generate_playable_actions(engine.state)
     visible = engine.append_message(
         speaker=Color.BLUE, text="Visible promise", audience=(Color.RED,),
-        intent="TRADE", causation_id="visible",
+        causation_id="visible",
         commitment=("if you offer ore", "I will give wood", 3),
     )
     engine.append_message(
         speaker=Color.WHITE, text="Private to orange", audience=(Color.ORANGE,),
-        intent="TRADE", causation_id="hidden",
+        causation_id="hidden",
         commitment=("hidden condition", "hidden promise", 3),
     )
     players = {color: FirstLegalPlayer(color) for color in COLORS}
@@ -434,6 +463,8 @@ def test_stored_context_retains_only_visible_messages_commitments_and_discard_fa
             if discarding else "<action>0</action>",
         )]),
         session_id=f"{engine.id}:RED",
+        suite=load_context_suite(default_suite_path().with_name("catan_v10.yaml")),
+        communication_suite=load_communication_suite(default_communication_suite_path()),
     )
     sandbox = CatanSandbox(engine, players, retry_policy=RetryPolicy(1))
     store = SQLiteLiveTraceStore(tmp_path / "context.sqlite3")
@@ -449,11 +480,13 @@ def test_stored_context_retains_only_visible_messages_commitments_and_discard_fa
     assert context["actor"] == "RED"
     assert context["events"] == []
     assert context["discard_count"] == (4 if discarding else 0)
+    assert context["visible_through_sequence"] == 1
     assert len(context["recent_messages"]) == 1
     message = context["recent_messages"][0]
     assert message["sequence"] == visible.sequence
     assert message["payload"]["text"] == "Visible promise"
     assert message["private_overlays"] == []
+    assert context["visible_messages"] == context["recent_messages"]
     assert len(context["active_commitments"]) == 1
     assert context["active_commitments"][0]["promise"] == "I will give wood"
     assert "hidden" not in json.dumps(context)
@@ -479,7 +512,11 @@ def test_trace_store_failures_survive_reopen_and_success_without_changing_resume
         [accepted] * completed_steps + [invalid, exhausted] * 3 + [accepted]
     )
     engine = GameEngine(COLORS, seed=4, shuffle_players=False)
-    red = AgentPlayer(Color.RED, transport, session_id=f"{engine.id}:RED")
+    red = AgentPlayer(
+        Color.RED, transport, session_id=f"{engine.id}:RED",
+        suite=load_context_suite(default_suite_path().with_name("catan_v10.yaml")),
+        communication_suite=load_communication_suite(default_communication_suite_path()),
+    )
     players = {Color.RED: red}
     players.update({color: FirstLegalPlayer(color) for color in COLORS[1:]})
     sandbox = CatanSandbox(engine, players, retry_policy=RetryPolicy(2))
@@ -579,11 +616,49 @@ def test_trace_store_failures_survive_reopen_and_success_without_changing_resume
     assert trace["step_count"] == completed_steps + 1
     assert trace["steps"][-1]["before_revision"] == completed_steps
     assert len(trace["model_calls"]) == completed_steps + 1
+    usage = store.get_usage(game_id)
+    assert len(usage["calls"]) == completed_steps + 1
+    assert len(usage["failure_calls"]) == 6
+    assert {row["failure_id"] for row in usage["failure_calls"]} == set(failure_ids)
+    assert len({(row["failure_id"], row["call_kind"], row["call_index"])
+                for row in usage["failure_calls"]}) == 6
     resume = store.load_resume_point(game_id)
     assert resume.step_index == completed_steps
     assert resume.public_state == {"revision": completed_steps + 1}
     sandbox.restore(resume.snapshot)
     assert sandbox.revision == completed_steps + 1
+
+
+def test_recorded_step_public_state_accepts_late_step_labels(tmp_path):
+    engine = GameEngine(COLORS, seed=7, shuffle_players=False)
+    sandbox = CatanSandbox(engine, {color: FirstLegalPlayer(color) for color in COLORS})
+    store = SQLiteLiveTraceStore(tmp_path / "relabel.sqlite3")
+    game_id = str(engine.id)
+    store.start_game(game_id, config={"seed": 7}, snapshot=sandbox.snapshot())
+    result = asyncio.run(sandbox.step())
+    step_index = store.record_step(
+        game_id, result=result, rejected_attempts=(),
+        public_state={"game_log": [{"type": "message", "details": {"sequence": 3}}]},
+        snapshot=sandbox.snapshot(),
+    )
+
+    stamped = {
+        "game_log": [
+            {
+                "type": "message",
+                "step_index": step_index,
+                "details": {"sequence": 3, "step_index": step_index},
+            }
+        ]
+    }
+    assert store.update_step_public_state(game_id, step_index, stamped) is True
+    assert store.get_step(game_id, step_index)["step"]["public_state"] == stamped
+    assert store.load_resume_point(game_id).public_state == stamped
+    # Only the addressed step moves, and an unrecorded step is a no-op.
+    assert store.update_step_public_state(game_id, step_index + 1, stamped) is False
+    assert store.update_step_public_state("missing-game", step_index, stamped) is False
+    assert store.get_game(game_id)["step_count"] == 1
+    assert store.get_game(game_id)["steps"][0]["after_revision"] == sandbox.revision
 
 
 def test_trace_store_failure_requires_existing_game(tmp_path):
@@ -633,6 +708,8 @@ def test_trace_store_failure_preserves_raw_calls_with_sanitization(tmp_path):
     engine = GameEngine(COLORS, seed=8, shuffle_players=False)
     red = AgentPlayer(
         Color.RED, SequenceTransport([response]), session_id=f"{engine.id}:RED",
+        suite=load_context_suite(default_suite_path().with_name("catan_v10.yaml")),
+        communication_suite=load_communication_suite(default_communication_suite_path()),
         board_presenter=ImageBoardPresenter(image_size=512),
     )
     players = {Color.RED: red}
@@ -658,7 +735,7 @@ def test_trace_store_failure_preserves_raw_calls_with_sanitization(tmp_path):
         round=0,
     )
     communication = CommunicationChoice(
-        mode=CommunicationMode.SAY, text="I need ore", audience=COLORS, intent="trade",
+        mode=CommunicationMode.SAY, text="I need ore", audience=COLORS,
         model_request=replace(attempt.model_request, decision_id="talk:0:BLUE"),
         model_response=replace(response, content="<say>I need ore</say>"),
     )
@@ -671,6 +748,15 @@ def test_trace_store_failure_preserves_raw_calls_with_sanitization(tmp_path):
     )
 
     failure = SQLiteLiveTraceStore(store.path).get_game(game_id)["failures"][0]
+    usage = store.get_usage(game_id)
+    assert usage["calls"] == []
+    assert usage["step_count"] == 0
+    assert [(row["call_kind"], row["accepted"]) for row in usage["failure_calls"]] == [
+        ("decision", 0), ("communication", 1),
+    ]
+    assert all(row["usage"] == dict(response.usage) for row in usage["failure_calls"])
+    assert all(set(row) == {"failure_id", "call_index", "call_kind", "accepted", "usage"}
+               for row in usage["failure_calls"])
     decision, no_model = failure["attempts"]
     talk = failure["communication_attempts"][0]
     assert no_model["model_request"] is None
@@ -776,6 +862,8 @@ def test_trace_store_persists_image_metadata_without_image_bytes(tmp_path):
         Color.RED,
         transport,
         session_id=f"{engine.id}:RED",
+        suite=load_context_suite(default_suite_path().with_name("catan_v10.yaml")),
+        communication_suite=load_communication_suite(default_communication_suite_path()),
         board_presenter=ImageBoardPresenter(image_size=512),
     )
     players = {Color.RED: red}
@@ -811,7 +899,7 @@ def test_trace_store_persists_image_metadata_without_image_bytes(tmp_path):
 
     with sqlite3.connect(store.path) as connection:
         serialized = "\n".join(
-            value
+            unpack_blob(value).decode("utf-8")
             for row in connection.execute(
                 "SELECT request_json, response_json FROM model_calls"
             )
@@ -948,7 +1036,7 @@ def test_trace_store_migrates_legacy_database_without_changing_checkpoints(tmp_p
             for row in connection.execute("PRAGMA table_info(live_games)")
         }
         assert "display_name" in columns
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 4
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 5
         assert connection.execute(
             "SELECT initial_snapshot, schema_version FROM live_games"
         ).fetchone() == (initial_snapshot, schema_version)
@@ -956,3 +1044,73 @@ def test_trace_store_migrates_legacy_database_without_changing_checkpoints(tmp_p
             "SELECT sandbox_snapshot FROM live_steps"
         ).fetchone()[0] == step_snapshot
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
+
+
+def test_trace_store_packs_large_columns_and_reads_legacy_rows(tmp_path):
+    engine = GameEngine(COLORS, seed=11, shuffle_players=False)
+    sandbox = CatanSandbox(engine, {color: FirstLegalPlayer(color) for color in COLORS})
+    store = SQLiteLiveTraceStore(tmp_path / "packed.sqlite3")
+    game_id = str(engine.id)
+    store.start_game(game_id, config={"seed": 11}, snapshot=sandbox.snapshot())
+    result = asyncio.run(sandbox.step())
+    public_state = {"game_log": [{"type": "dice", "message": "Rolled 3 + 4 = 7"}], "player_hands": {}}
+    step_index = store.record_step(
+        game_id, result=result, rejected_attempts=(),
+        public_state=public_state, snapshot=sandbox.snapshot(),
+    )
+    failure_id = store.record_failure(
+        game_id, revision=sandbox.revision, player=Color.RED,
+        validation_error="boom", attempts=(),
+        snapshot=sandbox.snapshot(), public_state=public_state,
+    )
+
+    with sqlite3.connect(store.path) as connection:
+        packed_columns = [
+            ("live_games", "initial_snapshot"),
+            ("live_steps", "sandbox_snapshot"),
+            ("live_steps", "result_json"),
+            ("live_steps", "public_state_json"),
+            ("live_failures", "sandbox_snapshot"),
+            ("live_failures", "public_state_json"),
+        ]
+        for table, column in packed_columns:
+            value = connection.execute(f"SELECT {column} FROM {table}").fetchone()[0]
+            assert is_packed(value), (table, column)
+        # SQL still inspects these two, so they stay plain JSON text.
+        assert isinstance(
+            connection.execute("SELECT payload_json FROM live_failures").fetchone()[0], str,
+        )
+        assert connection.execute(
+            "SELECT json_extract(payload_json, '$.attempts') FROM live_failures"
+        ).fetchone()[0] == "[]"
+
+    # Every reader unpacks transparently.
+    assert store.get_step(game_id, step_index)["step"]["public_state"] == public_state
+    assert store.get_game(game_id)["steps"][0]["public_state"] == public_state
+    assert store.get_game(game_id)["failures"][0]["failure_id"] == failure_id
+    resume = store.load_resume_point(game_id)
+    assert resume.public_state == public_state
+    assert resume.snapshot.engine.events == tuple(engine.events)
+    assert store.load_snapshot(game_id, step_index=step_index).engine.events == tuple(engine.events)
+    assert store.get_usage(game_id)["step_count"] == 1
+
+    # Late labels are written packed too.
+    stamped = {**public_state, "game_log": [{"type": "message", "step_index": step_index}]}
+    assert store.update_step_public_state(game_id, step_index, stamped) is True
+    with sqlite3.connect(store.path) as connection:
+        assert is_packed(connection.execute("SELECT public_state_json FROM live_steps").fetchone()[0])
+    assert store.get_step(game_id, step_index)["step"]["public_state"] == stamped
+
+    # A database written before packing holds raw JSON text and raw pickle;
+    # both keep loading unchanged.
+    with sqlite3.connect(store.path) as connection:
+        for table, column in packed_columns:
+            value = connection.execute(f"SELECT {column} FROM {table}").fetchone()[0]
+            raw = unpack_blob(value)
+            legacy = raw if column.endswith("snapshot") else raw.decode("utf-8")
+            connection.execute(f"UPDATE {table} SET {column} = ?", (legacy,))
+        assert not is_packed(connection.execute("SELECT result_json FROM live_steps").fetchone()[0])
+    reopened = SQLiteLiveTraceStore(store.path)
+    assert reopened.get_step(game_id, step_index)["step"]["public_state"] == stamped
+    assert reopened.load_resume_point(game_id).snapshot.engine.events == tuple(engine.events)
+    assert reopened.load_snapshot(game_id, step_index=step_index).engine.events == tuple(engine.events)

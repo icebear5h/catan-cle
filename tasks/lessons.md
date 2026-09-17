@@ -1,5 +1,263 @@
 # Lessons
 
+- [scope] A request to catch up on denser self-play RL reward signal is research, not authorization to implement decision filtering. Read the reward proposals and later RL lessons first; distinguish unimplemented credit-assignment ideas from board-recognition training and existing runtime inference shortcuts.
+
+- [gotcha] Modal resolves `/runs/...` to `/__modal/volumes/vo-.../...` in trainer
+  evidence. Offline identity checks must bind the shared mount through a verified
+  dataset source and compare exact relative paths plus content hashes; raw alias
+  string equality can reject the correct immutable initialization.
+
+- [sft] Additional SFT steps past the first cosine horizon show diminishing greedy
+  returns even as teacher-forced loss keeps falling (extension: loss 0.49 → 0.36,
+  held-out +9, review −1 with 25 churned IDs). Report paired improved/regressed
+  counts alongside headline accuracy; a flat headline can hide real movement.
+- [sft] A cosine schedule restarted with warmup starts at exactly LR 0.0 on the
+  first update. Offline schedule-shape checks must allow zero at update 1 only
+  and require strictly positive rates after; blanket positivity rejects the
+  correct schedule (seen in the 256-step extension audit).
+- [sft] LR peak/ramp/decay shape assertions belong on the complete update
+  history only. Earlier checkpoints hold truncated warmup prefixes whose partial
+  maxima sit at the truncation point; history-prefix continuity already binds
+  them to the verified full schedule (seen in the 512-step extension audit).
+
+- [ux] Board controls should be a compact strip: one busy status, stable action
+  labels, inline history, and usage only when recorded. Put coverage diagnostics
+  behind disclosure rather than stacking empty metrics and nested cards.
+
+- [sft] Frozen tensor invariance is not serialized-file byte identity. A real
+  two-step text run preserved all333 FP32 visual tensors bitwise while the
+  safetensors file hash changed. Compare canonical names/dtypes/shapes/tensor
+  bytes, and retain raw artifact hashes separately for provenance.
+
+- [harness] Deterministic plans need full syntax admission but incremental live
+  legality: a road or conversion can unlock a later action absent from the first
+  menu. Persist next-action consumption separately from model receipts; own-input
+  cursors and notes advance once, not on automatic continuations. Setup pair
+  boundaries are explicit even when snake reversal preserves the actor. Detach
+  returned provenance as well as snapshots so callers cannot rewrite queued calls.
+
+- [trade] Keep premoves narrow: one admitted exact-offer proposer authorization,
+  not responder willingness or a general conditional plan. Wait for the whole
+  barrier; use explicit priority/engine seat order, and pause on every arriving
+  counteroffer even alongside acceptance. Persist consumption and causal call
+  identity separately from model receipts so retries cannot exchange twice or
+  duplicate notes/tokens. Normal offers remain probes.
+
+- [communication] Public event delivery is not a reason for inference. Shared
+  decisions choose an action OR standalone speech; only explicit respondents and
+  the post-discard seven window trigger reactions. Do not reintroduce routine
+  actor/after-build polls or speculative setup windows. Skipped polls acknowledge
+  nothing; accepted pass can commit notes. Keep one checkpointed conversation
+  budget across replies/retries, and never split the atomic Knight bundle.
+
+- [sft] Rank-expansion parity must use the actual text-inference precision:
+  BF16 base plus PEFT FP32 adapter arithmetic, without an added autocast context.
+  BF16-autocasting LoRA matmuls can produce rank-dependent differences. The real
+  r8/r16 probe matched exactly after aligning precision. Temporarily bypass
+  Accelerate's AMP forward wrapper for parity probes, then restore it for training.
+
+- [gotcha] Modal FunctionCall.get(timeout=...) raises built-in TimeoutError when
+  polling expires; modal.exception.TimeoutError is a different remote-failure
+  class. Catch the polling case without treating it as a failed training stage.
+  Give heavy-import coordinators enough CPU to avoid slow cold starts.
+
+- [gotcha] Normalize launch plans to JSON-native types before both Modal RPC and
+  writing receipts. Integer-keyed histograms become string-keyed on disk and
+  otherwise fail immutable-plan equality. Use the selected interpreter's Modal
+  CLI flags; the project's CLI lacks the global executable's --yes stop flag.
+
+- [tracing] Keep historical board presentation separate from authoritative runtime
+  state and inference settings. Returning live is a client view change, never a
+  checkpoint load. Wait for the initial runtime identity before auto-selecting
+  saved history; otherwise startup request ordering can silently enter browse mode.
+- [tokens] Aggregate canonical recorded call identities, not duplicated result
+  attempts. Keep failure-only batches outside completed-step averages, expose
+  direction-specific coverage, and never add reasoning/cache subsets to totals.
+
+- [context] Active prompts are runtime configuration, not saved-game continuity.
+  Save exact requests/sources as historical evidence, but never restore those
+  sources as active policy. Apply edits at safe inference boundaries, retaining
+  notes and events and validating mode migrations rather than silently resetting.
+
+- [prompt] Shared fresh requests expose current facts, new visible events and notes,
+  not legality-derived answer lists. Strategy is guidance, never labeled facts.
+  Keep trade syntax and Knight semantics in stable tool definitions rather than
+  burying them in phase-specific prose. Preserve explicit historical requests.
+- [testing] When removing visible legal menus, test transports must obtain their
+  scripted replies from independent engine fixtures, not scrape stable tool
+  definitions. Typed legacy agents must explicitly select their historical suite;
+  bypassing model requests cannot satisfy fresh-context provenance checks.
+- [events] Fresh channel delivery needs self-contained trade lifecycle terms.
+  Capture live terms before mutation and join replay terms only by exact recorded
+  source ID; never choose a latest/similar offer to explain a negotiation.
+
+- [sft] Transformers 5.16.1 tokenizer.apply_chat_template returns BatchEncoding
+  by default. Native text helpers expecting list[int] must explicitly request
+  return_dict=False; list(BatchEncoding) yields field names and silently destroys
+  prompt/completion boundaries. Check the actual saved tokenizer in the pinned
+  runtime rather than relying on an older local library's defaults.
+
+- [gotcha] Symbolic scorer imports currently traverse board_recognition's package
+  initializer into benchmark source helpers and playground.game_viewer.state.
+  Remote eval images need the transitive playground Python package and jsonschema
+  dependency as well as data_pipeline. Modal retries=0 does not prevent container-import restart loops;
+  stop a failed-start app before relaunching a corrected CPU preflight.
+
+- [curriculum] Structural queries and deterministic game calculations belong to
+  one board-fluency class: derive facts from explicit state using atlas relations,
+  rules, and weights. Organize datasets by operation/composition (joins, sets,
+  weighted aggregation, connectivity, constraints), not an artificial spatial
+  versus game-calculation split. Strategic judgment belongs to self-play RL.
+
+- [arch] Group atlas fluency, state/topology composition, and configuration
+  reasoning into board fluency alongside deterministic game calculations. The
+  user targets immediate answers for rule-constrained computations;
+  distinguish reasoning complexity from inference latency and do not assume
+  these computations must involve explicit deliberation or generated search.
+
+- [arch] For the symbolic board-token capability hierarchy, current ownership and
+  occupation are explicitly supplied as atlas-token/state records. Treat these
+  facts as the input contract, not a perception or retrieval capability to learn.
+  Separate any implicit atlas-topology knowledge from composition over supplied
+  state; prioritize this symbolic direction rather than reintroducing vision.
+
+- [workflow] When the user chooses human verification, stop automated test runs
+  and test expansion immediately. Report the implementation and known limitations
+  briefly; do not spend more turns on verification machinery.
+
+- [workflow] For dataset exploration, deliver inspectable questions and answers
+  before expanding trainer/test infrastructure. The user explicitly stopped
+  further pytest work on the symbolic atlas task and requested the generated set.
+
+- [testing] Prefer a small set of high-value integration and contract tests over
+  large overlapping helper/validation matrices. The user explicitly requested
+  pruning the prompt/notes test expansion; keep unrelated tests untouched.
+
+- [context] A speech acknowledgment is not action-context delivery. Keep separate
+  channel cutoffs, bind updates to the exact input context before mutation, and
+  preserve accepted silence/notes in failure snapshots even at the same revision.
+- [tracing] Resuming after accepted speech must preserve both its canonical event
+  index and the accepted action's model call on post-action cancellation. Preserve
+  asyncio cancellation in the core while carrying the committed result across
+  the synchronous viewer bridge explicitly.
+
+- [eval] For the symbolic atlas experiment, the user selected settlement and
+  Longest Road as transfer tests, not SFT targets. Distinguish rule recall from
+  applying spatial constraints; state rules in transfer prompts and exclude
+  equivalent full-rule training examples disguised as explicit predicates.
+  Road-state inputs must omit computed lengths, award answers, and legal lists.
+
+- [prompt] Build shared authored prompt components first. Reuse definitions by
+  reference across decision and speech compositions; neither one global section
+  order nor a provider message count is part of the component contract.
+- [context] The selected first implementation is fresh context plus explicit
+  private notes and new visible events. Defer the long-context alternative;
+  do not carry forward an accidental option selection or replay raw reasoning.
+
+- [arch] For the September 12 spatial-SFT direction, retain the user's existing
+  checkpoint and atlas token IDs while moving to symbolic board-state inputs.
+  Prioritize text/graph supervision resources over visual grounding recipes.
+  An out-of-the-box longest-road failure does not isolate perception from graph
+  reasoning; do not treat it as proof that vision is intrinsically useless.
+
+- [workflow] Resolve a stop request against the active experiment's receipt and
+  app ID, including a user's RL-to-SFT correction. Stop the coordinator as well
+  as the training worker so queued evaluation cannot start; verify zero tasks.
+
+- [context] A large request-message count is not by itself the architecture
+  defect: identify whether prior cumulative decision packets duplicate the
+  current authoritative event history. Do not prescribe an arbitrary last-N
+  transcript window or switch to snapshot-only inference before confirming the
+  intended bounded versus non-duplicating long-context path.
+
+- [debugging] HTTPX's status exception omits the provider response body. A 403
+  cannot establish which permission, guardrail, or moderation check failed.
+  A successful non-inference key check does not prove inference authorization;
+  retain a bounded credential-redacted structured reason without retrying 403s.
+- [restore] Public/checkpoint equality does not prove all failure evidence is
+  durable. Barrier siblings can exist only in decision_trace, which is not in
+  sandbox snapshots. If no resident-process export exists, obtain consent before
+  restarting and potentially discarding those unpersisted calls.
+
+- [debugging] A reasoning-only OpenRouter response can finish with `stop` and no
+  completion cap. Inspect raw content/reasoning and both finish reasons before
+  blaming token exhaustion, invalid action arguments, or the earlier TLS error.
+  Report missing final output distinctly; never execute action-shaped reasoning.
+- [restore] Recheck the current checkpoint's suite at each live investigation.
+  A previously restored legacy game can later reload using current defaults if
+  its old config has no suite source pin; yesterday's verified version is not
+  evidence of today's active contract.
+- [restore] A rejected decision can follow successful pre-action SILENCE that
+  acknowledges events without adding gameplay or history. Compare live player
+  cursors to the last checkpoint before restarting, and preserve only verified
+  acknowledgments rather than silently treating the DB as the full live state.
+
+- [scoring] Touching-tile answers are unordered exact sets; shortest paths are
+  ordered routes and every equally short valid route must pass. Dispatch by task
+  before generic readout parsing so long node lists cannot lose their order.
+- [curriculum] Allocate the approved spatial/readout mix by interleaved optimizer
+  steps and report token exposure separately. Completion-token share is not
+  gradient share or a guarantee against forgetting; use matched retention evals.
+
+- [debugging] Inspect the active process log before prioritizing hypothetical
+  autoplay failures. A null last_live_step_error and empty live_failures do not
+  exclude raw provider exceptions that only reached the generic server log.
+- [network] Retry a classified TLS record failure without weakening certificate
+  verification or closing a shared client underneath other players. Bound the
+  retries and distinguish exactly-once gameplay from possibly duplicated billed
+  inference after an upstream response is lost.
+
+- [eval] Whole-answer exact matching needs an explicit output contract. Before
+  interpreting low spatial accuracy, check whether yes/no and two-token-choice
+  prompts actually request bare answers. Preserve the original result and use
+  a matched format-only control rather than retroactively awarding prefix credit.
+- [sft] FP32 training checkpoints must be restored into FP32 visual parameters
+  before evaluation, not copied into BF16 and promoted afterward. Match the
+  validated generation autocast recipe and record source/runtime tensor dtypes.
+
+- [api] Semantic action handlers and provider-native function calling are
+  different layers. When the user asks for executable tools, clarify whether
+  they expect native tools/tool_calls and tool-result messages or a parsed
+  text-response protocol before choosing the transport. Do not present JSON
+  emitted as ordinary assistant text as native function calling.
+
+- [data] In two-choice spatial QA, inverse relations do not remove answer-position
+  leakage if each prompt still lists its answer first. Balance displayed choices
+  explicitly and test the rendered prompt, answer, and sampled blocks. Regenerate
+  derived data under new names so historical eval prompts remain reproducible.
+
+- [tokens] In this project, the user's angle-bracket spatial notation refers to
+  the trained atlas vocabulary (<N00>, <E00_01>, <T00>), not XML control tags.
+  Preserve those exact strings in tool arguments; do not replace them with raw
+  integer IDs, sequential edge IDs, or escaped token spellings.
+- [api] When expanding the model tool surface, use semantic operations across
+  action families rather than assuming a three-tool exception is the goal.
+  A Knight destination belongs in the same model decision when requested;
+  preserve the engine's canonical transitions and victory boundary underneath.
+- [harness] Separate model-facing action syntax from engine legality. For
+  parameterized resource tools, resolve named bundles against the authoritative
+  menu rather than exposing every combination or weakening live validation.
+- [review] Check implemented behavior before proposing contract migrations:
+  v10 already parameterizes discards, and semantic tool calls do not require
+  changing replay actions or old datasets when canonical internal choices stay
+  intact. Do not infer retry causes or training behavior without measurements.
+
+- [harness] The sandbox must own a detached canonical context and give each
+  callback its own copy; detach returned attempts before awaiting siblings.
+  Stage complete trade batches against strict engine validation, retain
+  completed-but-withheld replies, and commit before invoking player callbacks.
+- [parsing] Validate the complete control-field XML structure before extracting
+  actions or speech. Comments and inert plans cannot supply controls, and trusted
+  schema-echo normalization must receive only the exact authored schema template.
+- [restore] Repair stale derived caches in concrete old snapshots, but retain
+  indexed menu ordering when regenerated action identities are the same multiset.
+  A saved incumbent cannot reveal historically incorrect tie ownership; do not
+  claim to reconstruct history from current material state alone.
+- [replay] Source reconstruction must not invent cancellation or turn actions
+  while recovering an unmatched recorded build. Publish source response snapshots
+  consistently with the reconstructed offer board, and keep source completion
+  distinct from live score-based termination even in read-only previews.
+
 - [harness] Barrier failure must retain completed sibling calls as withheld,
   not just the failing actor's rejected attempts. Remove a pending attempt on
   rejection and replace it after retry so no call is lost or recorded twice.
@@ -185,9 +443,10 @@
 - [ux] Historical reasoning should reuse the normal live reasoning location, not turn navigation controls into a second content surface. Keep checkpoint selection in the toolbar and render the selected step’s calls in the right column beneath the game log, preserving the full accepted/rejected and communication detail.
 - [tracing] Legacy trace databases may contain deterministic baseline choices in `model_calls` even though no inference occurred. A canned `rationale` is not evidence of a model call; require a recorded model request or response before labeling a row as model reasoning, preserve the legacy row as metadata, and state clearly that no provider reasoning exists.
 - [prompt] Production prompts should pair exact dice numbers with pip probability rather than choosing one representation. Show the per-tile mapping (for example `WOOD dice=6(5pip)`) and the aggregate node total, so pips summarize frequency without hiding the actual roll outcomes.
-- [communication] Silence is the default unless speech changes another player's strategic choice. Do not spend model calls on compliments, thanks, acknowledgements, or narration; advertise only trade, decision-relevant questions, concrete warnings/coordination, and conditional bribes, then enforce that intent allowlist when parsing.
+- [communication] Silence is the default unless speech changes another player's strategic choice. Do not spend model calls on compliments, thanks, acknowledgements, or narration. A required intent enum (TRADE/QUESTION/WARNING/BRIBE) did not police this: every hotline message passed as WARNING, nothing branched on the value, and rendering it to listeners stapled the speaker's frame to the text and made bluffing impossible. Never make the model classify its own speech; categorize post-hoc offline if needed. Removed 2026-09-16.
 - [config] Never let a user-facing live sandbox silently inherit an obsolete provider fallback. Give live inference its own visible model selector, send the model explicitly, persist and return the realized ID, and keep its default aligned with the current policy baseline.
 - [communication] Bounded reaction rounds still create noisy message cascades when `MESSAGE_SENT` itself is a wakeup cause. Messages may remain in the recent-talk context, but do not recursively schedule another communication barrier; let players answer at the next normal pre-action, trade, robber, or strategic event opportunity.
+- [communication] Answer own-turn speech questions with the concrete sequence: normal main-game steps call communicate (message or SILENCE) before the gameplay decision; setup and forced rolls skip that pre-action call. This is part of the turn despite using separate model calls. Do not substitute an explanation of message-triggered wakeups for whether the agent can speak on its own turn.
 - [ux] Setup controls should reflect lifecycle state, not merely become disabled. Once a live game exists, remove the start-game configuration and start buttons from the visible controls; restore them only after the game is cleared.
 - [prompt] Keep the communication system message limited to stable role identity: the model is playing Catan as a specific color. Put opportunity-specific speech policy, visible events, recent talk, commitments, and the response schema in the user message rather than overloading the system prompt.
 - [process] Treat a reported model-quality observation as evidence for architectural discussion, not an implicit request to change defaults. Confirm intent before changing model selection, and distinguish the strongest interactive teacher from the intended student/evaluation policy.
@@ -272,3 +531,92 @@
   tokens (the mixer reports shares), keep readouts in the hundreds.
 - [gotcha] `get_peft_model` mutates the module tree in place: targets become `<name>.base_layer` and gain `lora_A/lora_B` children, so any helper that lists targets by module name (`vision_linear_targets`, `language_linear_targets`) must run before wrapping and its result reused; recounting afterwards either returns a different number or raises. Same trap for state files: a `visual_model.safetensors` saved from a wrapped model only loads into an equally wrapped model, so restore before `merge_and_unload`.
 - [gotcha] Match the local peft to the Modal image pin before trusting a local PEFT test. peft 0.17 refuses `trainable_token_indices` on an untied `lm_head` that 0.20 accepts, so a test that passes or fails locally may say nothing about the H200 container.
+- [rl] Do not recommend a learned Catan value model as an easy answer to sparse
+  rewards: values depend on hidden-information beliefs, negotiation history,
+  and the joint policy/opponent population. Distinguish a training-only baseline
+  from a reward oracle. Potential shaping preserves returns under its endpoint
+  conditions without an accurate critic, but supplies no automatic strategic
+  credit assignment; narrow process scores remain proxies, not win guarantees.
+- [rl] Read classic-net Catan RL as the wrong prior for LLM training.
+  DQN/PPO-from-scratch, Settlers-RL, Deep Catan, fastCatan, and catanrl learn
+  representation plus policy from zero with dense shaping, critics, MCTS, and
+  10M-plus steps. For LLMs the base model already supplies language,
+  arithmetic, rules, and reasoning priors; board grounding plus verified
+  SFT/SDFT puts legal strategic behavior in support, and outcome RL only
+  selects and sharpens it. Do not expect sparse reward to invent rules,
+  topology, production, beliefs, or planning.
+- [rl] Treat process reward models as denser auxiliary signal, not the
+  objective. Use turn/action-level scores first for search rerank, Best-of-N,
+  and data filtering, where PRMs reliably help. Before training a policy
+  against a PRM, require a held-out ranking/calibration win, preserve raw
+  game outcomes alongside adjusted scores, keep scorer/optimizer separate
+  with privileged-info boundaries, and bound aggregation (min-form or
+  Clip plus Delta, outcome-linked, weakest-link) because sum-form step
+  rewards invite verbosity and thinking-only hacks.
+- [rl] Default to straight games over GRPO-style branched rollouts for Catan
+  policy learning. Branched LLM continuations cost full games each yet with
+  small K mostly label dice/opponent luck, so they are pricier and noisier
+  per gradient bit than complete games. GRPO/RLOO/DAPO are built for RLVR
+  verifiable single-turn math/code with cheap checkers; Catan is a
+  stochastic multi-agent partial-information game, and the same-prompt
+  group assumption breaks across seats, turns, and dice seeds. Prefer
+  grouped scenario seeds with scenario-conditioned baselines, and treat
+  RLOO as undecided and DAPO-style clip-higher/dynamic-sampling/token-loss
+  as suspect until each beats straight games in an equal-rollout ablation.
+- [gotcha] Live games carry two independent counters and UI labels must say
+  which one they show. Engine events (action plus every speech and trade
+  response inside one step) run well ahead of recorded trace steps, so a
+  349-step game reaches event #523. Reusing a "step N" label for a sequence
+  reads as a bug in the engine. When a label needs the step index, remember it
+  only exists after `record_step` commits: log the row first, stamp it after,
+  rebuild the snapshot so the response, the broadcast and the stored public
+  state stay identical, and fall back to the sequence when no step was
+  recorded rather than inventing one.
+- [gotcha] Two dev servers, one reload story. Vite hot-reloads the playground
+  frontend on :5173, but the viewer's Flask process on :5001 has no reloader
+  unless `CATAN_VIEWER_RELOAD=1`. A backend change made after the server started
+  is invisible while the frontend half of the same feature is live, so the UI
+  renders the new markup against the old payload and the work looks unapplied.
+  Check the process start time against the source mtime before debugging the
+  frontend, and prefer `CATAN_VIEWER_RELOAD=1` when iterating across both.
+- [pattern] Do not put a spectator view behind a toggle by default. The
+  playground exists to watch agents play; hand contents belong on the chip
+  where the totals already are. A toggle adds a click, a persisted preference
+  and a second state to test for information the operator always wants.
+- [pattern] A panel that disappears when empty reads as a broken panel. Gating
+  the inspector's message board on `entries.length > 0` meant a silent table and
+  a missing feature looked identical, which cost a debugging round. Render the
+  container whenever its subject exists and let it say it is empty.
+- [perf] Per-step snapshots must be O(state), never O(history). The sandbox
+  snapshot pickled every agent's full receipt map, and each receipt deep-copied
+  the model's reasoning trace, so a 400-step game re-serialized 4 MB per step
+  and cost 0.85 GB. History that is already appended once (`model_calls`,
+  `game_events`) must not ride along inside the thing that gets stored every
+  step. When a blob grows with the step index, find the list inside it before
+  reaching for compression; compress as well, but second.
+- [gotcha] Before compressing a JSON column, grep the SQL for `json_extract` and
+  `json_each` on it. `get_usage` reads `response_json` and `payload_json` inside
+  SQLite, so those stay plain text while their siblings are packed.
+- [gotcha] Restarting a server does not un-truncate data it already stored. The
+  viewer rebuilds its in-memory log from the last checkpoint on load, so a
+  window removed in code still came back windowed from the checkpoint the old
+  process wrote. When a stored projection can be lossy, rebuild it from the
+  durable record (events) on load rather than trusting the stored copy.
+- [arch] The viewer's game log is a derived narration of the engine's event
+  stream but lives in memory and is stored per checkpoint, which is why it
+  needed windowing, post-hoc step stamping and event backfill. The clean shape
+  is a pure `events -> rows` renderer with no stored log; `game_events` already
+  carries sequence and step index. Deferred deliberately (2026-09-16): the
+  current patches are small and tested. Revisit if the log grows another
+  special case.
+
+- [gotcha] Socket echo-dedupe keys must cover every field a notice-only broadcast
+  can change (`last_live_step_error`, `live_inference`, `player_types`), not just
+  game progress. A key built from state index/log length silently drops failure
+  notices sent to other tabs, and the browser tests that emit such notices fail
+  for a reason unrelated to the feature under test.
+- [pattern] "Unlimited retries" for live auto-play belongs in the frontend loop,
+  not the per-request decision budget: each retry is a fresh `/api/step` under a
+  new attempt budget with its failure checkpointed, so the backend and its
+  in-memory game never need a restart. Keep one hard stop for failures the trace
+  store could not record.

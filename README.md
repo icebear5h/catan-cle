@@ -15,8 +15,161 @@ CatanSandbox
 
 `GameEngine` owns rules, mutable state, RNG, legal actions, canonical events,
 privacy projections, trades, and snapshots. `CatanSandbox` is the asynchronous
-single-writer orchestrator. Players choose one exact zero-based entry from the
-engine's ordered legal-action menu; they never construct arbitrary actions.
+single-writer orchestrator. The v11 model interface uses semantic JSON tools and
+trained spatial tokens such as `<N00>`, `<E00_01>`, and `<T05>`, resolved internally
+against the engine's legal actions. Knight includes its robber destination in
+one model decision. Historical indexed suites remain loadable. See the
+[action contract](cle/harness/README.md) for tool signatures and validation.
+
+New live games use [shared prompt components](cle/harness/suites/shared_v1.yaml)
+and fresh context with private notes. Decision and speech reuse authored
+definitions without a fixed global order. Requests contain current facts, newly
+visible events, and accepted notes, not the entire prior model conversation.
+Notes have a 4,000-character ceiling; omitted keeps, empty clears, and a string
+replaces them only after admission. Saved games preserve game state, private notes,
+and exact historical traces; active inference configuration is independent.
+
+The shared contract now uses reactive **public** table talk: a normal decision
+chooses a game action or standalone `say`. Say leaves the board decision pending;
+only explicitly named respondents get immediate reaction calls, then the actor
+must act. Pass may still update private notes. Routine completed events accumulate
+without speech polling. Sevens have a bounded window after discards and before
+the robber destination; Knight remains atomic. Conversation budgets and pending
+replies survive save/load. See the [speech contract](cle/harness/README.md#reactive-public-speech).
+
+Shared `offer_trade` optionally accepts `confirm_if_accepted_by`: an ordered
+player array or `"ANY"`. It preauthorizes one exact exchange after the simultaneous
+response batch; any counteroffer, no permitted acceptance, or stale/invalid
+state returns control to the model. Omission remains a normal probe. Automatic
+confirmation is its own engine-only checkpoint, with an originating-call reference
+and no synthetic model response or token usage. See
+[trade preauthorization](cle/harness/README.md#one-shot-trade-preauthorization).
+
+Shared decisions also support **deterministic action batches** of up to four
+semantic calls: settlement, road, city upgrade, bank/port conversion, and optional
+terminal end-turn. Use one setup settlement + attached road per decision, or a
+normal road → settlement / conversions → build plan. Each Step commits one action
+and checkpoint; queued Steps make no model call. Auto-play drains the queue through
+the same Step path. Later invalid actions discard the remainder while preserving
+the committed prefix. New events, actor/phase changes, setup-pair completion and
+victory stop continuation. Notes and tokens belong to the originating call once.
+See [batch syntax and boundaries](cle/harness/README.md#deterministic-action-batches).
+
+### Live history and token usage
+
+The board's compact live strip includes **Previous / Next / Latest** and a checkpoint
+picker. Previous/Next select a recorded post-step board and its exact saved
+request/reasoning. Browsing is read-only: incoming runtime updates stay separate,
+and Step/Auto-play are disabled until **Latest** returns to the active runtime.
+Latest never reloads or rewinds the sandbox. Loading a different saved game
+remains an explicit **Load latest** action.
+
+The strip shows one status with secondary model settings and elapsed time during
+inference. Empty history and token metrics are omitted. Available step/game-average
+input and output tokens appear inline; **Token details** expands coverage and
+failure-only batches. Controls wrap on narrow screens and errors stay visible.
+
+Token metrics use recorded provider `prompt_tokens`/`completion_tokens` (or
+`input_tokens`/`output_tokens`) from canonical call rows. They include rejected
+decision retries and accepted/rejected communication; cache and reasoning detail
+counts are not added again. **Game avg** divides known totals by completed steps
+with usage for each direction separately. Step and call coverage are in Token details;
+partial coverage means known tokens only, and missing usage is **unknown**, never
+zero. Failure-only batches (including admitted speech) appear separately and are
+excluded from completed-step averages. Transport retries without recorded provider
+usage cannot be measured; these figures are not billing estimates.
+
+The existing trace endpoint supports `?view=usage`, returning only call identities,
+admission status and usage, without requests, boards or checkpoint blobs. The UI
+fetches it on game/runtime changes, not on each historical selection. Older server
+processes need to pick up this backend change for game averages; selected-step
+metrics still use the existing checkpoint endpoint.
+
+### Hand contents on the player chips
+
+Viewer snapshots carry two layers. `all_player_resources` and `all_player_dev_cards`
+stay a public projection - a hand total and unplayed development-card count, exactly
+what an opponent knows. `player_hands` is a spectator field alongside them with the
+exact per-resource and per-card breakdown. It is a viewer artifact only: model
+prompts come from the engine's privacy projection and never read a snapshot.
+
+The board's player chips always render that breakdown under the VP/Hand/Dev line:
+one pill per held resource, then unplayed development cards (`K2`, `VP1`), with
+exact counts in the hover title. A player holding nothing reads `empty`. Stored
+step checkpoints carry `player_hands`, so history browsing shows the hand as it
+stood at that step; checkpoints recorded before this field existed show no
+breakdown, and neither does a server process started before it (the viewer has
+no reloader unless `CATAN_VIEWER_RELOAD=1`).
+
+The inspector's **Messages** board renders for any game, before anyone has
+spoken: an empty board says so rather than disappearing, so a silent table reads
+as silence and not as a missing panel. Rows come from the game log's speech
+entries, labelled by recorded game step where one exists and by engine-event
+sequence otherwise. Loading a saved game re-projects any speech row the stored
+log no longer carries from the checkpoint's public events (checkpoints written
+under the old 50-row window kept every event but dropped older rows), so old
+games load with their full message board.
+
+### Trace database size
+
+Every live step stores a restorable snapshot, so the trace database grows with
+play. Large columns are zlib-packed on write and agent receipts no longer carry
+model reasoning (it lives once in `model_calls`), which keeps a 400-step game at
+tens of MB rather than nearly a gigabyte. Existing databases keep loading;
+`python -m scripts.compact_live_traces --apply --vacuum` packs old rows and
+shrinks the file. Details in the [trace store notes](cle/traces/README.md#storage-size).
+
+### Editing prompts during a game
+
+Prompt Studio's **Save active prompts** applies edits to the next decision or
+speech batch without starting a fresh game. Each in-flight action or concurrent
+trade/speech batch (including retries) finishes under its original contract.
+The following boundary atomically stages all agent replacements, preserving
+sessions, notes, receipts, events and the pending-decision continuation.
+
+Loading a saved game restores the board, hands, scores, RNG, events and notes,
+but uses the current runtime model/settings and active prompt selection. After a
+server restart, current defaults/environment apply. Saved source paths and suite
+text are historical evidence, never runtime selectors. Every new live request
+records exact source text, identity and SHA-256 in `prompt_sources`, alongside
+its exact messages/components. Old trace rows and saved configuration stay intact.
+
+The default selection follows the shared/local resolver. Explicit current
+`CATAN_SHARED_SUITE`, `CATAN_CONTEXT_SUITE`/`CATAN_COMMUNICATION_SUITE`, or factory
+path selections remain authoritative and are reread at boundaries. Studio cannot
+shadow environment-selected files. Existing local legacy pairs remain selected
+until reset to the shared built-in; reset applies during a live game too.
+
+Changing the selected context mode deliberately migrates session metadata:
+legacy-to-fresh preserves notes/history and redelivers visible events to both
+channels because the legacy mixed cursor cannot prove separate delivery.
+Fresh-to-legacy preserves cursors and retained historical messages; fresh-era
+conversations are not reconstructed. Notes exceeding the new limit, unknown
+policies, or incompatible action/speech contracts stop rebinding atomically.
+Correct the active configuration and step again; notes are never silently cleared.
+
+### Shared fresh request contract
+
+Shared requests show stable, compact tool definitions rather than legal-move
+enumerations; the engine still validates every selected action internally.
+Setup facts identify the first/second settlement or road, the already-placed
+settlement and road anchor, and starting cards from the second settlement only.
+Road Building's remaining free placements are separate facts. Private inventory
+includes every development-card type even with zero resources, authoritative
+current playability, and your actual VP; opponents retain public VP and card totals.
+
+Shared trade calls identify another `player` and `give`/`receive` from the acting
+player's perspective. `counter_offer` supplies `player`, `original` and `proposed`
+terms. The resolver binds these to one active visible offer internally; stale or
+ambiguous terms fail without guessing. Accepting signals willingness; only
+confirmation transfers cards. Wildcard proposals and negotiation lifecycle events
+carry their terms, so neither decision nor speech needs a trade-window prompt block.
+
+Bare `AgentPlayer` uses the shared contract. Explicit historical suites retain
+their indexed/offer-ID parsers and historical rendering; eval defaults were not
+migrated. Trace views retain all recorded request messages, including historical
+long contexts, and label fresh requests separately. See the
+[harness guide](cle/harness/README.md) for exact trade syntax and compatibility.
 
 ## Quick Start
 
@@ -41,8 +194,9 @@ asyncio.run(main())
 
 - Deterministic, event-driven Catan engine with explicit snapshots
 - Asynchronous player inference with single-writer state mutation
-- Complete perspective-safe game history and bounded table talk
-- Exact legal-menu action identity and bounded decision retries
+- Complete perspective-safe event storage with causal per-channel delivery
+- Shared prompt components and bounded private notes without transcript replay
+- Semantic action tools with exact engine validation and bounded decision retries
 - Barrier-synchronized trading and reactions independent of model latency
 - Live viewer, deterministic replay, evaluations, and data pipelines over the
   same engine contracts
@@ -91,6 +245,26 @@ npm run dev
 - LLM decision tracking
 - Probability dots on number tokens
 
+### Message board labels
+
+Message board rows are labelled with the **game step** they were spoken in: one
+Step advance, one `/api/step` call, one recorded trace step. The engine-event
+`sequence` carried in each row is a different, larger counter - one step emits
+the action plus every speech and trade-response event inside it, so a 349-step
+game can reach event #523. The step index only exists once the step is recorded,
+so speech rows are logged with their sequence first, stamped afterwards, and the
+recorded checkpoint is rewritten so a browsed step shows the same labels the live
+board does. Rows with no recorded step - speech logged without a trace store, or
+games saved before this change - keep showing `event #<sequence>`.
+
+The socket snapshot and `/api/state` carry the **whole** game log, not the last
+50 rows, so rare rows (speech above all) stay reachable in a long game and the
+message board keeps the full conversation. Rows average ~500 bytes, so a long
+game's log is a few hundred KB per snapshot and per stored checkpoint - small
+against the ~2 MB pickled sandbox snapshot every step already stores. Reinstate a
+tail in `build_game_state_snapshot` and `_get_state_snapshot` together if a game
+ever gets long enough for that to matter.
+
 ### Live failure handling
 
 The red Step banner contains validation/retry guidance only. Expand **Rejected
@@ -100,11 +274,50 @@ Rejected attempts persist in SQLite `live_failures` and the saved-game API's
 `failures` field, independently of completed checkpoints. Earlier failures
 from before this change were transient and cannot be reconstructed in full.
 
+A blank action response is reported as a missing final answer, not a JSON syntax
+error. A provider can return reasoning only even with finish reason `stop` and
+no completion cap; this does not by itself establish token exhaustion. Reasoning
+is never executed as an action, even when it contains valid action JSON. The
+original channels remain in the saved failure; another Step requests a new paid
+response under the existing decision-attempt budget, not a recovered answer.
+
 If post-action communication fails, the action and agent history remain
-committed and checkpointed. The warning stops auto-play (including other
-connected tabs); the next Step advances the game rather than repeating the
-applied action. The stateful backend intentionally disables source reload;
-restart deliberately and load the latest saved game after backend changes.
+committed and checkpointed; the next Step advances the game rather than
+repeating the applied action. The stateful backend intentionally disables
+source reload; restart deliberately and load the latest saved game after
+backend changes.
+
+**Auto-play retries until the game completes.** A failed step (a rejected
+decision, a provider rejection or connection failure, an unhandled sandbox
+error, a post-action communication warning, or an unreachable server) does not
+end auto-play: the loop waits with exponential backoff (1s doubling to a 30s
+cap, reset after a successful step) and requests a fresh Step, which either asks
+the model again under a new decision-attempt budget or advances past an applied
+action. The controls strip shows the retry count and countdown; **Stop auto**
+cancels a pending retry immediately. Checkpointed notices broadcast from other
+tabs are shown but do not cancel auto-play. The one hard stop is a failure the
+trace store could not record (`retryable: false` with `checkpoint_saved: false`
+for a traced game), because continuing before storage is repaired can lose
+admitted changes. Retries make a new paid model request each time; a stuck
+configuration (an incompatible active prompt, a revoked key) keeps retrying at
+the 30s cap until you press Stop or fix it. Manual Step is unchanged.
+
+OpenRouter's `SSLV3_ALERT_BAD_RECORD_MAC` connection failure is retried within
+the existing three-attempt transport budget, with 1s/2s backoff and fresh
+request-local clients for the default owned transport. Other players' shared
+connections are not reset; certificate validation stays enabled and certificate
+errors are not retried. Exhaustion returns a retained HTTP 502 notice and saved
+failure diagnostics, not an invented model response. Transport retries cannot
+duplicate an applied game action, but a lost upstream response can incur repeated
+inference charges. Borrowed clients are never closed or cloned by recovery.
+
+OpenRouter HTTP 403 rejections are not retried. The live notice and saved failure
+retain a bounded structured `error.message` and request ID when usable, instead
+of only HTTPX's status/MDN message. Known credentials and request echoes are
+redacted or suppressed; raw bodies and moderation metadata are not published.
+The notice distinguishes an unapplied decision from already-committed gameplay
+and asks you to resolve the provider rejection before continuing. A successful
+key-status check does not establish model access or rule out a guardrail block.
 
 Harness validation preserves opaque trade IDs, preflights concurrent trade
 responses before applying them, and prevents overlapping/stale decisions.
@@ -119,13 +332,19 @@ mounted browser regression (requires local Playwright Chromium) runs with:
   playground/frontend/tests/test_live_autoplay_browser.py
 ```
 
-### Known correctness findings
+### Correctness Checks
 
-The [deeper correctness audit](reports/correctness-audit-2026-09-08.md) records
-unresolved rule, replay-history, and harness-boundary defects. Passing inventory
-and replay checks do not certify game outcomes. Reproductions in `tests/audits/`
-are strict expected failures, not passing correctness gates; use `--runxfail`
-to expose them as failures. This audit did not change the production runtime.
+The [audit and remediation report](reports/correctness-audit-2026-09-08.md)
+records the rule, replay-history, and harness fixes and their verification.
+Reproductions in `tests/audits/` are now ordinary passing regressions. Enable
+`CATAN_FULL_GAME_AUDIT=1` for full-game inventory, seat-history, and independent
+road/scoring checks. Replay reconstruction and inventory conservation alone
+still do not certify every rule or historical training label.
+
+The default shared suite uses semantic action tools and fresh notes. Explicit
+historical suites remain available and historical requests remain unchanged.
+Resume uses active inference settings and repairs stale derived road caches
+without changing placed pieces, resources, or equivalent menu order.
 
 ## Eval Frontend
 

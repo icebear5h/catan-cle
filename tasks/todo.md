@@ -1,3 +1,2068 @@
+# Connected-roads readout + atlas reconciliation (2026-09-17)
+
+## Already covered, do not rebuild
+
+node->tile and tile->node adjacency exist in BOTH `sft/scripts/build_atlas_topology_dataset.py`
+(as node_tiles / tile_nodes) and `sft/board_atlas.py`. Cross-checked fact by fact: 0
+mismatches on node_tiles, node_edges, tile_nodes, edge_endpoints.
+
+The cross-check caught a bug in `sft/board_atlas.py`, not in the existing builder: port_nodes
+disagreed on 6 of 9 ports because intersecting a port hex's six node refs with the land set
+yields three nodes for several ports. A port grants access through the two corners of the hex
+edge it occupies - `PORT_DIRECTION_TO_NODEREFS`. Fixed; all overlapping tables now agree and
+node_port is a clean inverse (18 nodes = 9 ports x 2). Keeping both sources so they continue
+to check each other.
+
+## New: `sft/board_readouts.py` + `tests/test_board_readouts.py` (13 tests, passing)
+
+`connected_roads(facts, color)` states a colour's road partition outright, as perception
+rather than traversal. Component semantics are NOT redefined - it calls `Facts.components`
+from `build_board_fluency_review`, so the readout and the graded ops cannot drift.
+
+Verified: the readout implies the existing `component_count` and `component_roads` golds
+exactly, 0 inconsistencies across those rows in the r04 review panel.
+
+Scoring is partition-aware, because exact match is useless for grading here - one misplaced
+edge among twenty reads the same as answering nothing. `score_readout` reports component
+recall, edge recall/missing/spurious, and a Rand-style `pair_agreement` over edge pairs that
+degrades smoothly. Tested: merging all components keeps edge_recall 1.0 but drops component
+recall to 0; splitting one component keeps every edge but lowers pair agreement; one misplaced
+edge scores strictly better than total collapse.
+
+## Load-bearing measurement: the pack generator can ride on existing semantics
+
+`decode_state` + `Facts` + `answer` reproduced **200/200 review golds across all 20 operations**.
+So board packs can be generated against the live implementation with no reimplementation and
+no risk of semantic drift.
+
+## Honest limit: connected_roads is a scaffold, not a density anchor
+
+Measured over 800 colour-boards: readout answers average 12.9 tokens (median 10.2, max 35.8).
+Boards carry ~21 roads split across 4 colours, so ~5 roads per colour. At 4 colours that is
+~51 answer tokens against ~800 prompt tokens = 6% loss-bearing from the anchor alone.
+
+Its value is as substrate for the four connectivity ops (reachable_nodes, shortest_distance,
+component_count, component_roads), which become lookups into an answer already in the
+sequence. Density still has to come from `local_node_tiles` (30 tok x 54) and
+`settlement_upgrade_production` (43 tok).
+
+Board density itself is healthy and is NOT the problem: density_bin setup/dense/sparse =
+58/83/59 over the review rows, roads mean 20.9 median 18 max 57, buildings mean 8.5 max 19.
+
+- [ ] Compose the pack: connected_roads as scaffold + local_node_tiles as density anchor +
+      traversal queries riding along on the colour whose readout is already present.
+- [ ] Consolidate the two atlas builders, or keep both and wire only the connectivity tables
+      (node_neighbors, node_distance, node_path, tile_neighbors, node_port) into the mix -
+      the existing builder is pure incidence and has no connectivity at all.
+
+# Board packs: compose queries per board, do not batch same-task (2026-09-17)
+
+Measured against r04 review records. Query space per board, from the `target.query`
+parameterization (4 colors, 54 nodes, 72 edges, 19 tiles, 11 rolls, 5 resources):
+
+    robber_move_production        15,048      settlement_upgrade_production  2,376
+    shortest_distance              5,724      component_roads                  288
+    reachable_nodes / owned_incident_roads 216
+    local_node_tiles / node_pip_sum / distance_rule_witnesses  54
+    coverage_* / port_access / component_count    4-12
+    resource_pip_totals / resource_pip_argmax        1
+
+The corpus uses ONE query per board and then discards the board. 3,200 boards against
+~24k available queries each is roughly 0.004% utilisation.
+
+## Three regimes, not one
+
+A. Same-task batching wins: long answers, large query space.
+   settlement_upgrade_production (43 ans tok) hits 30% loss-bearing at N=8, 93% at cap.
+   local_node_tiles (30 tok) 30% at N=12, 63% at all 54. component_roads N=22.
+   reachable_nodes N=68.
+B. Same-task is impossible: resource_pip_totals and resource_pip_argmax admit exactly ONE
+   query per board; port_access / component_count / coverage_missing admit four. Asking
+   every query that exists still leaves 1-4% loss-bearing. The query space binds, not the
+   sampling.
+C. Answer smaller than the query: node_pip_sum answers average 0.4 tokens against ~3 to
+   name the node; all 54 queries reach 2%. Same for component_count (0.2) and
+   shortest_distance (1.2).
+
+## Design
+
+Pack by BOARD, composing operations by answer length - same-task is a special case that
+works for A and cannot work for B.
+
+- Anchor each pack with regime-A ops to supply loss-bearing tokens.
+- Ride regime-C ops along on the SAME arguments. node_pip_sum(<N23>) costs 0.4 tokens when
+  local_node_tiles(<N23>) is already in the sequence.
+- Sweep regime B wholesale - only ~36 global/color-indexed queries exist per board.
+
+The ride-along is the main prize: local_node_tiles is at 100% and node_pip_sum at 40%,
+and pip sum is exactly "take those tiles, map number to pip, add". Co-locating them on the
+same node puts the retrieval in context when the arithmetic happens - the compositional
+scaffold, delivered as a prior answer rather than as reasoning tokens, at ~0.4 tokens
+marginal cost. Satisfies the no-CoT-for-perception constraint.
+
+- [ ] Build the board-pack generator over `sft/symbolic_board_tasks.py`, reusing the
+      multi-entry KEY: VALUE format and per-entry scorer from `sft/board_atlas.py`.
+- [ ] Pack composition policy: anchor/ride-along/sweep proportions per pack.
+- [ ] Argument-sharing policy: how often ride-along ops reuse the anchor's node, vs
+      independent draws. Full sharing maximises scaffold, zero sharing maximises coverage.
+- [ ] Re-measure loss-bearing fraction with the real tokenizer, not the 4-chars/token proxy
+      used for the table above.
+
+# Atlas generator built (2026-09-17)
+
+`sft/board_atlas.py` + `tests/test_board_atlas.py` (18 tests, passing). Generates the
+static-topology curriculum described in the section below. Nothing existing was touched.
+
+3,197 facts across 10 tables, all derived from `STATIC_GRAPH` / `base_map` rather than
+restated: node_neighbors 54, node_edges 54, edge_endpoints 72, node_tiles 54, tile_nodes 19,
+tile_neighbors 19, port_nodes 9, node_port 54, node_distance 1431, node_path 1431.
+Verified against corpus gold - `node_tiles <N09>` = T01 T02 T08, `node_neighbors <N19>` =
+N20 N21 N46.
+
+Design decisions worth keeping:
+
+- Keys travel in the prompt and examples draw a random subset in random order. A model
+  trained on full ordered dumps learns the sequence, not the facts, and then cannot answer
+  about one node in isolation - which is the form traversal consumes.
+- Cardinality is sampled log-uniform (octave-uniform) over [1, max_k]: ~20% of examples are
+  k=1, ~45% are k<=4. Uniform-over-k would drown single-key queries.
+- Per-entry scoring, not exact match. A 24-entry dump with 23 right scores 0 under
+  `score_board_fluency`, making progress invisible; `score_atlas` reports entry accuracy
+  plus atom precision/recall, set answers order-free and sequence answers order-sensitive.
+- `coverage_report` asserts every fact was emitted. Closed world, so an uncovered key is a
+  generation bug, not a sampling outcome - and there is no held-out split because there is
+  nothing to generalize to.
+
+Measured: one exhaustive pass = 406 examples covering all 3,197 facts. A 2,436-example
+corpus (exhaustive pass + 2,000 sampled) is 45.1% loss-bearing tokens against ~5% for the
+current board-fluency corpus.
+
+- [ ] Decide max_k and the exhaustive:sampled ratio against a real tokenizer count rather
+      than the whitespace proxy used above.
+- [ ] Wire into a prepare stage and pick the curriculum schedule (atlas to saturation
+      first, vs mixed in at high weight and annealed).
+- [ ] Keep incident-encoding as a control arm. If the atlas takes single-hop adjacency to
+      ~100% and traversal still does not move, the remaining failure is frontier
+      termination, not missing structure - worth knowing which.
+- [ ] Rotations/reflections rejected: the land graph is static with fixed labels, so a
+      rotation is an automorphism that relabels nodes and would teach node identity as
+      relative, fighting the fixed atlas. Resource/number/piece placement already varies
+      per generated board, so a rotated assignment adds no information.
+
+# Board topology is absent from the prompt (2026-09-17)
+
+Supersedes the ordering in the section below: test this BEFORE deleting the engine-track
+ops or building any CoT/RL machinery. It is the cheapest hypothesis and it may explain
+most of the failure.
+
+## Finding
+
+The serialized board (`metadata.target.state.board`, ~2373 chars) is four flat lists plus
+the robber:
+
+    <T00> brick 9; ... <T18> sheep 4;          19 tiles: resource + number
+    <N00> empty; ... <N53> empty;              54 nodes: occupancy only
+    <E00_01> empty; ... <E52_53> empty;        72 edges: road owner only
+    <P00> brick port; ... <P08> 3:1 port;      9 ports
+    robber <T03>
+
+It says what sits ON each element. It never says how elements CONNECT.
+
+- Node -> tile incidence: absent (verified, zero occurrences of a tile token in any node
+  clause). "Which tiles touch <N09>" is answerable only from memorized topology.
+- Node -> node adjacency: only implicit in edge token NAMES.
+- Node -> port incidence: absent.
+
+And `trainable_tokens.json` shows all 154 atlas tokens (54 N, 72 E, 19 T, 9 P) are
+`regular_added_tokens`, trainable on input and output. So `<E19_21>` is a SINGLE ATOMIC
+token - the model cannot lexically read "19" or "21" out of it. The endpoints are
+recoverable only from what the embedding learned.
+
+Therefore the entire board graph lives in 154 learned embeddings, not in context. A
+reachability query forces alternation between embedding-recall (which edges touch N19?
+what is the far endpoint?) and prompt-read (is that edge blue?), once per hop, with no
+place to write intermediate state.
+
+This predicts the observed profile exactly:
+- local_node_tiles 100%: one embedding recall + one prompt read. Single hop.
+- reachable_nodes 10%: unbounded alternation of recall and read.
+- Decay with answer cardinality: each additional element needs another full recall/read
+  cycle.
+
+Note the topology is STATIC (`board.py:23-36`, `STATIC_GRAPH` + lru_cached
+floyd_warshall) - only resources, numbers, buildings, roads and robber vary per game. So
+`<N39>` has a stable referent; the tokens are not ill-defined, they are simply being asked
+to carry structure that belongs in the context window.
+
+## Action
+
+- [ ] Re-serialize incident-style: for each node, explicitly list its neighbouring nodes,
+      its touching tiles, and its port if any. Talk Like a Graph (Fatemi et al., ICLR 2024,
+      arXiv:2310.04560) measures Incident encoding 53.8% vs Friendship 4.0% zero-shot on
+      connected-nodes, and Incident 25.0% vs Adjacency 12.4% on node degree; encoding
+      choice alone swings accuracy 4.8-61.8 points across tasks. We are currently below
+      even their worst encoding, since we supply no adjacency at all.
+      Cost: roughly doubles the prompt (~650 extra tokens). The block is identical across
+      boards, so it prefix-caches, and the batched multi-QA plan amortizes it further.
+      Requires a short retrain - the current checkpoint is trained on the present format,
+      so a prompt change alone is out of distribution.
+- [ ] Re-test reachable_nodes / shortest_distance / component_* under incident encoding
+      BEFORE committing to the engine-offload track. If they move substantially, the
+      ceiling argument was partly a serialization artifact and the offload is optional
+      rather than necessary.
+- [ ] Consider replacing opaque `<N39>` with axial hex coordinates in a parallel arm.
+      Talk Like a Graph found integer IDs help integer-output tasks while semantic IDs win
+      on relational-output tasks like ours; a fused `<N39>` token discards even the integer
+      39 the model could do arithmetic on, and added tokens carry no pretraining prior plus
+      documented under-training pathologies (arXiv:2608.03494 - subword-composition init
+      beats random init by >6x fewer steps to equivalent loss). Audit per-token occurrence
+      counts in the SFT corpus for under-trained embeddings.
+      No paper runs the exact ablation (opaque per-entity token vs axial coordinate, same
+      task/model) - this is a real literature gap and a cheap, well-scoped experiment.
+- [ ] Longer shot: the field's actual answer to "give an LLM graph structure" is
+      structure-derived tokens, not per-entity symbols - GraphToken (arXiv:2402.05862,
+      GNN-derived soft prompts) reports up to 73 point gains over text encodings; <SOG_k>
+      (arXiv:2602.01771) compresses a whole graph into one VQ codebook token. Both train
+      the token via a topology-aware encoder. Our embeddings get no structural training
+      signal at all.
+
+## Also from the spatial sweep
+
+- Serialization friction is independently documented: text serialization of 2D structure
+  collapsed 92.7% -> 0.8% from 12x12 to 20x20 grids while 2D-native stayed >90%, and
+  rendering the serialized text as an image did NOT recover it (arXiv:2604.27272). The
+  loss happens at serialization time, not at the input modality - so the vision track will
+  not rescue a bad serialization.
+- Our cardinality decay matches documented VLM counting decay (Gemini 2.5 Pro 60.3% at 1-5
+  objects -> 13.9% at 50+). Diagnosed mechanism is diffuse attention failing to keep
+  instances distinct ("feature conflation"), NOT language-side arithmetic - consistent with
+  a representation problem rather than a reasoning-step problem. No canonical name for the
+  pattern; "subitizing cliff" is the borrowed term.
+- SFT memorizes / RL generalizes was tested on GeneralPoints (a card game) and V-IRL in
+  both text and visual variants (arXiv:2501.17161): SFT failed OOD, RL generalized.
+  Reason-RFT (arXiv:2503.20752) on counting specifically: RL beat SFT +12% (2B) / +17%
+  (7B), and OOD SFT got worse while RL kept generalizing.
+- Steal SVQA-R1's consistency reward (arXiv:2506.01371): they perturb the scene
+  (mirror-flip) and require consistent answers. The hex board has rotational and
+  reflective symmetry, so we can generate equivalent boards from the engine and require
+  answers to transform correspondingly - a free grounding reward with no extra labels,
+  and a direct check against memorization shortcuts on a Qwen base.
+- Data scale reality check: working synthetic-spatial pipelines run 3.4M (SpaRE), 8.5M
+  (GRAID) and 2B (SpatialVLM) QA pairs. We run 3,200 unique examples. Boards are cheap to
+  generate; this may be a plain data-volume problem on top of the 5% loss-density problem.
+- Biggest evidence gap: no study isolates generalization to novel structural
+  configurations (held-out layouts) as opposed to novel phrasing or novel rendering.
+  Confirm our eval splits hold out LAYOUTS, not just questions.
+
+# Board fluency: split perception / engine / thinking tracks (2026-09-17)
+
+Context: `board-fluency-extension-20260915-r04` completed 2026-09-16 17:37Z, status
+completed, 512 updates (1536 cumulative), train_loss 0.128 / eval_loss 0.201 at corpus
+epoch 1.0. Review panel 64.0% (128/200), validation_eval 71.6% (136/190). Four extension
+rounds moved review 29% -> 64%, but the gain is concentrated in operations that were
+already working.
+
+## Diagnosis (recomputed from r04 posteval records)
+
+- Per-operation, review panel (/10): reachable_nodes 1, settlement_upgrade_production 3,
+  coverage_intersection 4, node_pip_sum 4, coverage_difference 5, coverage_missing 5,
+  ... local_node_tiles 10, resource_pip_totals 10.
+- Accuracy decays monotonically with expected-answer cardinality:
+  size 0 = 88.9%, 1 = 66.7%, 2 = 52.2%, 3 = 40.0%, 4 = 20.0%.
+- Of 72 failures: 31 set answers off by 1-2 elements, 6 numerics off by +/-1, 10 answered
+  NONE when the answer was non-empty. Boundary errors, not confusion.
+- r02/r03/r04 per-op trend: reachable_nodes 0/0/1, node_pip_sum 4/4/4,
+  settlement_upgrade_production 1/3/3, vs resource_pip_totals 4/6/10 and
+  distance_rule_witnesses 1/2/7. Every multi-hop op is pinned; lookups saturate.
+- Training allocation is uniform ~205 examples/op regardless of 100% or 10% accuracy.
+- Every training row uses a unique board state (epoch3 2304 rows / 2304 states; epoch4
+  1792/1792). Loss-bearing tokens are ~5% of each sequence (~900 prompt : ~52 answer).
+- Prompts end in "No explanation."; targets average 1.9 space-separated tokens;
+  `reasoning_enabled: false`. No reasoning/derivation/witness field exists in
+  `sft/symbolic_board_tasks.py`.
+
+Conclusion: not undertrained. Direct-answer decoding caps data-dependent-depth
+computation. Supporting: no-CoT transformers are TC0-bounded (Merrill & Sabharwal, TACL
+2022); CoT lifts toward NC1 (arXiv:2402.12875, ICLR 2024); BAPO proves an Omega(n)
+reasoning-token lower bound specifically for graph reachability (arXiv:2602.02909);
+compositional error compounds with scale (Faith and Fate, arXiv:2305.18654);
+graph-task difficulty tracks minimum BFS iterations required (arXiv:2602.06319).
+Scope the claim to fixed-depth single-pass decoding - looped transformers can simulate
+BFS/Dijkstra exactly (arXiv:2402.01107).
+
+Note: `summary.json` already carries `by_operation` and `by_family`.
+`by_task_type` / `by_task_family` / `categories` are generic aliases reading metadata
+keys board-fluency rows never set (`eval_qwen_vl_adapter.py:451-457`, fallback
+`or "unknown"`). Read the former; `modal_board_fluency_extension4.py:301-307` already does.
+
+## Track assignment
+
+1. Perception (bare answer, keep current format): local_node_tiles, resource_pip_totals,
+   port_access, owned_incident_roads, owned_buildings_touching_resource, coverage_union
+2. Engine (delete from training, surface in observation): reachable_nodes,
+   shortest_distance, component_count, component_roads, road_removal_connectivity,
+   distance_rule_witnesses
+3. Thinking (separate corpus + panel, RL target): settlement_upgrade_production,
+   robber_move_production, coverage_intersection, coverage_difference, coverage_missing,
+   resource_pip_argmax, roll_production, node_pip_sum
+
+The existing `FAMILIES` map (`board_fluency_scoring.py:16-35`) groups by topic, which
+cuts across this boundary (aggregation_comparison holds both resource_pip_totals at 100%
+and node_pip_sum at 40%). Track is a new axis, not a regrouping of families.
+
+## Work items, ordered by cost
+
+- [ ] Engine track: surface reachability, node distances and components in
+      `cle/env/observation_formatter.py` from the existing exact implementations -
+      `board.py:30 get_node_distances()` (floyd_warshall, lru_cached),
+      `board.py:269 find_connected_components()`, `board.py:279 continuous_roads_by_player()`,
+      `features.py:329 reachability_features()`. Drop those 6 ops from the training mix
+      (~30% of corpus). OPEN: push into every observation vs expose as a tool call.
+- [ ] Prompt-token loss weighting on the existing corpus. Cheapest possible test of the
+      loss-starvation hypothesis: config change, no data regeneration. Low-moderate weight
+      on prompt tokens, moderate-high on answers (WIT, TACL 2025, arXiv:2507.07817;
+      Instruction Tuning With Loss Over Instructions, NeurIPS 2024, arXiv:2405.14394 -
+      advantage is driven by low answer-token density and shrinks as dataset grows;
+      our ~17:1 prompt:answer ratio is squarely in their regime).
+- [ ] Assert and log loss-bearing token fraction per example in prepare. Would have
+      surfaced the 5% problem four runs ago.
+- [ ] Ablate `orthogonal_lambda=0` for one round. Our 0.5 matches O-LoRA's paper default
+      (arXiv:2310.14152), but their evidence is distinct sequential tasks; we apply it
+      across rounds of the same objective, where overlapping subspaces may be desirable.
+      Not evidenced either way in the literature.
+- [ ] Audit LoRA target modules against the full weight set. Attention-only rank-256
+      underperforms MLP-only rank-128 at equal parameter count (LoRA Without Regret,
+      Thinking Machines, Sept 2025 - non-peer-reviewed, single source).
+- [ ] Perception track: batched multi-QA SFT. 8-16 questions per board, board encoded
+      once, loss on answer spans only. Raises loss-bearing fraction ~5% -> ~30%.
+      Sequence budget is fine (max_sequence_length 4096, observed max 971).
+      - Pack board + its Q&A as one atomic unit; never split the board across a pack
+        boundary (Best-fit Packing, ICML 2024, arXiv:2404.10830).
+      - Block-diagonal masking isolates boards from each other, NOT questions within a
+        board - intra-board attention is the scaffold (arXiv:2107.02027; naive
+        separator-only packing costs ~0.35% F1).
+      - Packing related items beats random packing (TFP, NAACL 2025, arXiv:2408.09327).
+      - Shuffle question order in ~50% of sequences, not 100% (arXiv:2311.09198;
+        position bias is architectural and full shuffling does not remove it).
+      - Do NOT scale effective batch naively: LoRA tolerates large batches worse than
+        full FT and the gap grows with batch size independent of rank. Prefer gradient
+        accumulation at smaller effective batch.
+      - RISK: multi-turn training has documented single-turn degradation
+        (arXiv:2510.21339, arXiv:2606.00135). No paper measures our exact setup (frozen
+        shared context + many independent short probes). Run BOTH eval panels:
+        single-question (comparable to r01-r04) and batched (deployment condition).
+- [ ] Thinking track: cold start before any RL. Rejection-sample traces with the verifier
+      as filter.
+      - k>=8 per problem, temp 0.7 (ReST-EM uses k=32-64, top-k 40, caps 10 kept per
+        problem to avoid imbalance, arXiv:2312.06585; RFT sweeps k to 100, arXiv:2308.01825).
+      - Dedup by reasoning-path signature, not final answer (RFT's canonicalized
+        equation-list dedup) or we keep k copies of one lucky trace.
+      - Keep the SHORTEST correct trace per problem (Kimi k1.5, arXiv:2501.12599) - doubles
+        as a false-positive filter and as anti-verbosity pressure.
+      - Consider STaR rationalization for problems never solved: re-prompt with the answer
+        as a hint, generate the backward rationale, strip the hint (arXiv:2203.14465).
+        Far cheaper than 10x resampling.
+      - False positives: "medium sampling-frequency" answers (correct on 40-60% of
+        resamples) are the dominant spurious-signal source (arXiv:2604.21327). Require
+        self-consistency across samples. Hand-audit a sample - no paper quantifies the
+        false-positive rate for game-state tasks.
+      - ReST-EM resets to the base model each iteration rather than continuing; 2-3
+        iterations before returns go negative (test accuracy regressed at iteration 2 on
+        APPS while train accuracy kept rising).
+      - Start cold start from a FRESH adapter on the frozen base, not a continuation of
+        checkpoint-512, and ablate against the continuation. OOD capability peaks early in
+        SFT then degrades, and RL only recovers that peak rather than exceeding it, with
+        recovery failing if SFT drifted too far (arXiv:2509.12235). 1536 updates of
+        direct-answer training is a live drift risk. Nobody has published this comparison.
+- [ ] Thinking track: GRPO with correctness-gated length reward.
+      - reward = 0 if wrong; 1 + alpha*(1 - len/max_len) if correct, alpha ~0.1-0.2.
+        Well precedented: Kimi k1.5 clamps its length term to min(0, lambda) so a short
+        wrong answer never scores positive; "Shorten After You're Right" (arXiv:2505.12284)
+        names the same gates - RightGate (correct-only) and StableSwitch (activate once
+        accuracy is stable). Reported Logic-RL inference length 2632 -> 535 tokens with
+        accuracy 79% -> 93%.
+      - ADD SlackBand from that paper: do not penalize correct answers only marginally
+        longer than the minimum. We did not have this.
+      - Phase alpha in from 0 after correctness stabilizes (Kimi ran RL with no length
+        penalty first). Correctness-only reward does NOT yield brevity on its own -
+        R1 length grew 1k -> 14k emergently.
+      - Zero-gradient groups: use DAPO Dynamic Sampling, filter/oversample until
+        0 < correct < G (arXiv:2503.14476). Degeneracy is worse than (1-p)^G predicts
+        because correctness is correlated within a batch - measured rate 0.69 at G=4
+        (arXiv:2605.07689). That paper's Sign advantage (A = 2r-1) is a cheap complementary
+        fix, reported GSM8K 73.8% vs 28.4% at G=4; single unreplicated result.
+      - Do NOT rely on the length term to restore gradient in all-correct groups. That was
+        my assumption and it is unevidenced; treat it as an ablation, not a mechanism.
+      - `scale_rewards` is an active hyperparameter, not a default to accept. Vanilla GRPO
+        already has length bias from 1/|o_i| token normalization and group-std division
+        (Dr. GRPO, arXiv:2503.20783); its own unbiasedness claim is disputed
+        (arXiv:2607.23364). Tune jointly with alpha.
+      - Reward function drops straight onto `score_board_fluency`
+        (`board_fluency_scoring.py:188`): pure, and malformed predictions score False
+        rather than raising, so missing-delimiter rollouts fail closed.
+      - Monitor NONE-precision as a first-class metric. 18/200 review rows have NONE as
+        the correct answer and we already have 10 "said NONE but non-empty" failures.
+      - We are on a Qwen base: spurious rewards produced real gains on Qwen2.5 by
+        activating memorization shortcuts (arXiv:2601.11061). Treat headline RL gains
+        with suspicion until they hold on held-out layouts.
+- [ ] Split the eval into three panels (perception / engine-as-observation / thinking).
+      A blended 64% averages incommensurable things and is why four runs looked like
+      progress. Also raise per-op row count: 10 rows/op gives roughly +/-15pt error bars,
+      fine for spotting reachable_nodes, useless for judging a 3-point delta.
+
+## Open questions
+
+- Inference contract for the perception track: does the agent ask many questions per
+  board per turn (batched matches deployment) or one ad hoc (relying on transfer)?
+  Determines whether the batched panel or the single panel is the real metric.
+- Engine track delivery: observation push vs tool call.
+- Is rank 16 a bottleneck for the perception SFT? Likely fine for GRPO (policy gradient
+  carries ~O(1) bits/episode) but LoRA underperforms full FT on knowledge injection, with
+  real update ranks 10-100x higher than typical LoRA (Biderman et al., TMLR 2024,
+  arXiv:2405.09673). Split verdict, worth a rank sweep on the SFT track only.
+- Budget: r04 was ~$40 / 88 min against a $41 approved ceiling and `actual_billed_usd` is
+  still null in the receipt. Reconcile against Modal billing before committing to GRPO,
+  which is 8-15x SFT cost per update because it is generation-bound.
+
+# Colonist top-player replay capture for table-talk data (2026-09-17)
+
+Goal: Speak-or-Stay-Silent style "when to speak" dataset from human Catan chat.
+Existing 66 replays already hold 3,245 event-aligned human utterances that no
+code reads (`event_parser.py` ignores `gameChatState`). Scaling for positives
+and player diversity.
+
+- [x] Stale sessions: `.env` JWT expired 2026-06-12; `.colonist-playwright-profile`
+      returns 401. `.colonist-cdp-profile` (Chrome 151, cf_clearance valid to 2027)
+      only needed a re-login. Playwright's Chromium cannot read Chrome-encrypted
+      cookies, so use real Chrome + `--cdp-url`, per bootstrapping README.
+- [x] Chrome launched on the cdp profile with `--remote-debugging-port=9222`;
+      one-game CDP test captured 192299640 (601 events, 62 human chat lines).
+- [x] First batch: 50 captured, then 429 at request ~52 (~35 min, no Retry-After).
+      Loop retuned: 45/batch, 1h cooldown, 429 -> 90 min + one retry, second 429 stops.
+      `pull_replays_loop.py` running detached with a 1h initial delay.
+- [x] Retry probes at 02:46, 04:16 and 13:42 all 429 on the first request: the
+      window is at least 12h, likely a daily quota (~50), and rejected probes may
+      extend it. Scraper now logs 429 headers+body. Loop restarted to probe once at
+      ~24h after the last 429, then 45/day (24h cooldown, 6h after a 429, stop on 2).
+- [x] Original batch plan: 150 games from `4p_games_training_candidates.json` minus the
+      69 already on disk (raw + staging + rejected), 40s pacing, stop on 429.
+      Log: `logs/colonist_scrape_*.log`. Filtered index lives in the session
+      scratchpad; regenerate from the candidates index for the next run.
+- [x] Diversity fix: candidates index was grouped by player (first 51 captures = 2
+      accounts). Loop now round-robins across players; first batch = 45 distinct.
+- [x] Seat ratings: only source is the Classic4P leaderboard (30k+ deep). Daily
+      snapshot + `seat_ratings.json` manifest; loop runs it after each batch.
+      First snapshot 2026-09-17: 39,804 rated players, 237s. Coverage 250/462 human
+      seats (54%); unmatched seats are likely renamed or inactive accounts. New
+      top-100-indexed games: opponent rating p10/p50/p90 = 1627/1832/1968.
+- [ ] Validate + promote staged captures to `artifacts/raw/colonist/replays/`.
+- [ ] Repeat daily (~150/run) until ~500 games; then build the chat extractor and
+      per-player decision-point labeler (ADDRESSED / TARGETED / AFFECTED /
+      BYSTANDER), rendered through the harness's own observation components.
+
+# Player reasoning filter (2026-09-17)
+
+- [x] Add an All players / color filter for saved, live, and rejected reasoning; preserve within a game and reset across games.
+- [x] Make Previous/Next find matching inference checkpoints, including origin-call continuations, with stale-request protection and lightweight actor caching. Keep direct checkpoint selection and Latest available.
+- [x] Verify filtering, navigation boundaries, continuation precedence, and run frontend tests, lint, and TypeScript build.
+
+Review: 61 node unit tests and 23 mounted browser tests pass, `tsc -b`
+and production build clean; remaining lint errors pre-exist in
+HexBoard.tsx/types.ts. Origin continuation applies only when the current
+step has no inference, matching the shared renderer.
+
+# Remove the speech intent enum (2026-09-16)
+
+Traces: 12 WARNING / 3 TRADE across all recorded messages; all 12 WARNINGs were
+the robber-lobby spam. No runtime code branched on intent. Listeners saw
+`'intent': 'BRIBE'` in the dict-repr render, which forecloses bluffing.
+
+- [x] `intent` removed from `CommunicationChoice`, `append_message`, the
+      `MESSAGE_SENT` payload, trace `choice_json`, and the game-log `[INTENT]` prefix.
+- [x] Reactive parser: say requires `mode, text, respondents`; `intent` is now an
+      unknown key and is rejected like any other. Legacy XML parser ignores `<intent>`;
+      legacy fresh-JSON parser tolerates and ignores the key (recorded responses).
+- [x] Prompts: `shared_v1` v11, `shared_rl_v1` v4, `communication_v5` schema. Also
+      dropped the word "non-binding" from commitment wording.
+- [x] Tests updated; lesson rewritten in `tasks/lessons.md`.
+- [ ] Next: render table talk to the model as `COLOR: "text"`, not a dict repr.
+
+# Prompt suite lifecycle status (2026-09-16)
+
+Only `shared_v1.yaml` is live; the other 14 files under `cle/harness/suites/`
+were indistinguishable from it by name. Renaming would touch ~65 test path
+references for no runtime gain, so status is a field.
+
+- [x] `status: active | legacy | deprecated` on `ContextSuite`,
+      `CommunicationSuite`, `SharedPromptSuite` (shared `SuiteStatus` Literal in
+      `components.py`); derived decision/speech suites inherit the bundle's status.
+- [x] Every suite YAML declares status; deprecated/legacy files carry a banner
+      comment naming the successor. `shared_rl_v1.yaml` is deprecated: no code,
+      test, or doc references it.
+- [x] `load_*` by file path warns `DeprecationWarning` on deprecated files;
+      `parse_*` (embedded trace sources, replay) stays silent.
+- [x] Status surfaced in `PromptSuiteDocument` and `/api/prompt-suite`.
+- [x] `tests/test_suite_status.py`: exactly one active and it is the default,
+      legacy pair marked legacy, banners present, warnings fire.
+- [ ] Prompt Studio badge for status (frontend `SuiteMetadata` type has no
+      `status` yet; payload already carries it).
+
+# "Return one JSON object with tool, arguments..." rejections (2026-09-16)
+
+All 10 occurrences in game 7af0253f were `{"tool":"end_turn","notes":...}`:
+a valid object missing `arguments` on a tool that takes none. The error did
+not say so, so retries could not learn from it. 10 wasted calls.
+
+- [x] `decision_response` now shows the argument-less form explicitly and
+      names the tools it applies to (end_turn, roll_dice, buy_development_card,
+      play_road_building, cancel_trade). Suite v9.
+- [x] Parser (`cle/harness/context.py`) names the defect: `Missing
+      "arguments"` with the exact fix, or `Unexpected top-level keys: ...`.
+      Generic message kept for everything else. Pinned in
+      `test_envelope_errors_name_the_actual_defect`.
+- [x] User call: `"arguments":{}` on a no-parameter tool is a formality. A
+      bare `{"tool":"end_turn"}` now parses as `{}` (single calls and batch
+      entries); tools with parameters still fail on their own missing fields.
+      Prompt keeps the canonical form and says the bare form is accepted.
+      Suite v10. Backend restarted so the parser change is live.
+- [x] Game 7af0253f completed: BLUE won at 431 steps (8 VP; others 3/4/4).
+      Backend restarted on the new formatter/tool/parser code, game reloaded.
+
+Known gap: `GET /api/prompt-suite` returns 500 on a terminal game because the
+preview builds a decision context; it should fall back to a static render.
+
+# Bank trades and discard exposure in the model's view (2026-09-16)
+
+Game 7af0253f: 79 player offers, 11 forced discards, 2 bank trades, while
+maritime_trade was legal in all 503 decisions. The only mention of the bank
+in a request was the tool line "exact port/bank rate for one different card";
+no request mentioned 4:1, ports owned, or that no partner is needed.
+
+- [x] Resources block (shared path) now lists the player's exact rates:
+      "Bank trade (maritime_trade, no partner needed): ... WOOD 4, SHEEP 2 (2:1
+      port), ..." from owned port nodes, plus "DISCARD EXPOSURE: 9 cards held;
+      any 7 rolled costs you 4 cards" when over the limit.
+- [x] Tool signature and the failed-call hint state the rule (4, 3 with 3:1,
+      2 with matching 2:1; any time after rolling; bank must hold the card).
+- [x] `main_game` guidance: use the bank to finish a build or get under the
+      limit when partners will not trade fairly. Suite bumped to v7.
+- [x] Test pins rates, port discounts and the exposure flag.
+
+The YAML half is live (server rereads it); the formatter/tool-text half is
+Python and needs a backend restart plus Load latest. Not restarted: auto-play
+was running.
+
+# Richer private notes (2026-09-16)
+
+Measured first: 519 accepted notes updates in game 7af0253f, median 487 chars,
+p90 701, max 1,374, zero oversized rejections. The 4,000 ceiling never binds,
+so the fix is the policy text, not the limit. `memory_policy` now asks for
+substantial notes (1,500-3,000 chars normal) with a fixed shape: plan and its
+needs, production and gaps, each opponent's position/needs/trade behaviour,
+open offers and promises, discard exposure and spend intent. Update, don't
+append; delete stale entries. Suite bumped to `catan-shared` v6.
+
+If the ceiling ever needs raising, it is enforced in three places:
+`cle/players/notes.py:MAX_NOTES_CHARS`, `shared_suite.py` (`le=4000`) and the
+suite's `max_notes_chars`.
+
+# Discard-risk guidance in the shared prompt suite (2026-09-16)
+
+- [x] `shared_v1.yaml` bumped to `catan-shared` v5. `main_game` guidance now
+      states the rule exactly as the engine applies it (`state.py:700-767`):
+      8 or more resource cards when anyone rolls a 7 loses half, rounded down;
+      a 7 is 1 in 6, so roughly even odds across a round of opponents' turns;
+      spend or trade down to 7 or fewer before `end_turn`. `robber` guidance
+      notes that large post-discard hands are the richest steal targets.
+- [x] Version pins updated (`test_shared_prompt_components`, the default-suite
+      assertion in `test_communication`); the legacy `communication_v4.yaml`
+      pin stays 4. 140 prompt-suite tests pass.
+- [x] The live server already serves v5 through the default resolver.
+
+# Full game log and message board on load (2026-09-16)
+
+- [x] Backend already emits the whole log (`list(state.game_log)`); pinned by
+      `test_snapshots_carry_the_whole_game_log_not_a_window`.
+- [x] Load latest rebuilt `state.game_log` from the last checkpoint's stored
+      slice, so old games came back with 50 rows and no speech. Speech rows are
+      now re-projected from the checkpoint's public events in
+      `normalize_public_state_game_log` (`backfill_message_log_entries`),
+      the same path that already re-projects trade rows.
+- [x] Backend restarted with `CATAN_VIEWER_RELOAD=1` (PID 71801) at the user's
+      request; game 7af0253f reloaded: 63 log rows, 12 messages, hands present.
+
+# Trace DB: stop re-snapshotting model reasoning every step (2026-09-16)
+
+`.cle/live_traces.sqlite3` hit 1.49 GB from 598 steps. Breakdown: `sandbox_snapshot`
+1031 MB, `result_json` 202 MB, `public_state_json` 84 MB, model calls 150 MB.
+Snapshots grow 43 KB -> 4.4 MB over a 400-step game because every agent's
+`session.receipts` deep-copies the full `PlayerChoice` (native reasoning and
+details, ~20 KB each) and the whole map is re-pickled on every step: O(n^2).
+`model_calls` already holds every request, response and reasoning for training;
+receipts exist only for idempotent redelivery, so they need the decision, not
+the trace.
+
+- [x] `receipt_choice()` in `cle/harness/models.py`: drop `raw_response`,
+      `native_reasoning`, `native_reasoning_details`, `reasoning_request`,
+      `usage` when minting a `ChoiceReceipt`. Decision fields unchanged.
+- [x] zlib pack/unpack in `cle/traces/sqlite.py` with a magic prefix and legacy
+      passthrough for: `initial_snapshot`, `sandbox_snapshot` (steps, failures),
+      `result_json`, `public_state_json` (steps, failures), `request_json`.
+      `response_json` and `payload_json` stay plain text: `get_usage` runs
+      `json_extract` / `json_each` on them in SQL.
+- [x] `scripts/compact_live_traces.py`: dry-run by default, `--apply` packs
+      legacy rows in batches, `--vacuum` reclaims the file. Idempotent.
+- [x] Tests: receipt slimming and redelivery, packed round-trips, legacy rows,
+      compaction; update the three assertions that inspected raw columns.
+- [x] Docs: `cle/traces/README.md`, README, lessons.
+
+Full suite: 3140 passed; remaining failures are pre-existing (Modal/SFT
+artifact tests, replay trading payloads from the engine work, two route tests
+on new validation strings). Two route tests asserted raw responses and
+reasoning off session receipts (`..._tls_recovery...`, `..._pinned_v11_agent...`);
+both now check the accepted model call in the trace store, where that record
+lives. A new route test pins that snapshots carry the whole game log, not a
+trailing window.
+
+Dry run on the real database: 1,438 MB of packed-column bytes -> 204 MB
+(1,235 MB saved across 3,171 rows) before VACUUM. Not applied: the user runs
+`--apply --vacuum` with the viewer stopped.
+
+# Playground hand contents: resources + dev cards (2026-09-16)
+
+Live viewer snapshots collapsed every hand to a total, so the frontend's
+existing breakdown branches never received data. Added a spectator layer rather
+than widening the public projection.
+
+- [x] `get_player_hands` in `live/game_logging.py`; `player_hands` added to the
+      websocket broadcast, `/api/state`, the inject payload and `serialize.py`.
+      Public `all_player_resources` / `all_player_dev_cards` unchanged.
+- [x] `src/playerHands.ts` with canonical ordering and unknown-card tolerance;
+      overlay chips always render the breakdown. A dock toggle was built first
+      and removed at the user's request: contents belong on the chip, not behind
+      a button.
+- [x] Verified: node unit tests (54), a playwright render test asserting the
+      chips, backend route test, and an end-to-end run proving the stored
+      checkpoint hands match the live snapshot.
+
+- [x] Messages board always renders for a game (was gated on having entries),
+      with a "No messages yet" state and a 0-message count in the summary.
+
+Gotcha found in use: the viewer's Flask process has no reloader unless
+`CATAN_VIEWER_RELOAD=1`, so a server started before a backend change keeps
+emitting the old snapshot shape while Vite hot-reloads the frontend. The chips
+then render totals with no contents and the change looks unapplied.
+
+Note for later: `snapshotKey` echo-dedupe in `App.tsx` ignores socket updates
+that change only `last_live_step_error` or `live_inference`, which already fails
+`test_socket_notice_during_autoplay_pause` and
+`test_compact_empty_and_busy_controls` on the current working tree. Pre-existing
+and untouched here.
+
+# Fourth board-fluency extension: 512 more steps (2026-09-16)
+
+Learning is not saturating (+27 review / +10 held-out in r03). User approved
+512 more steps after a ceiling correction (my ~$37 estimate was short; honest
+caps need ~$41). Suffix is epoch-3 rows 897–3200 (2,304) plus epoch-4 rows
+1–1792 (1,792): 4,096 presentations at batch 8. Parent is the r03 trained
+checkpoint-512 (cumulative 1,024); target is cumulative 1,536 updates (12,288
+presentations, 3,200 unique). Baselines are r03 posteval: review 103/200,
+validation 126/190.
+
+New ceiling is $41 (explicit user approval). Carry-forward is $26.09012499
+(pinned r06/r01/r02 allowances + r03 recorded). New caps: prepare 300 s, train
+6,200 s, eval 900 s, startup 300 s, coordinator 8,000 s, absolute 7,500 s, plus
+$0.75 reserve. New envelope is about $14.46; cumulative bound is about $40.55,
+under $41.
+
+- [x] Specify repeat data order, checkpoint plan and raised budget.
+- [x] Implement CPU admission, pinned suffix/baselines and bounded train/eval stages.
+- [x] Verify dry plan, source/checkpoint/data identity and independent code review.
+- [ ] Execute the extension; retain 16 checkpoints and both 390 predictions.
+- [ ] Rescore paired results, reconcile cumulative compute, verify stop, and report.
+
+Prelaunch r04 review: new sibling launcher leaves r06/r01/r02/r03 pins intact.
+Suffix 4,096 rows (epoch-3 finish + epoch-4 start), full 390 baseline rescoring,
+JSON roundtrip and plan/config checks passed; two independent reviews clear.
+Cumulative bound $40.55011099 under the user-approved $41. Run name:
+`board-fluency-extension-20260915-r04`; no Catan apps running.
+
+# Third board-fluency extension: 512 more steps (2026-09-16)
+
+User approved 512 more repeat steps with a ~$31 ceiling (no fresh rows remain).
+Suffix is the full 3,200-row corpus (second epoch) plus rows 1–896 (partial
+third epoch): 4,096 presentations at batch 8. Parent is the r02 trained
+checkpoint-256 (cumulative 512); target is cumulative 1,024 updates. Baselines
+are r02 posteval: review 76/200, validation 116/190.
+
+New ceiling is $31 (explicit user approval). Carry-forward is $16.43294677
+(pinned r06 allowances + r01/r02 recorded). New caps: prepare 300 s, train
+6,200 s, eval 900 s, startup 300 s, coordinator 8,000 s, absolute 7,500 s, plus
+$0.75 reserve. New envelope is about $14.46; cumulative bound is about $30.89,
+under $31.
+
+- [x] Specify repeat data order, checkpoint plan and raised budget.
+- [x] Implement CPU admission, pinned suffix/baselines and bounded train/eval stages.
+- [x] Verify dry plan, source/checkpoint/data identity and independent code review.
+- [x] Execute the extension; retain 16 checkpoints and both 390 predictions.
+
+Prelaunch r03 review: new sibling launcher leaves r06/r01/r02 pins intact.
+Suffix 4,096 rows (full second epoch + rows 1–896 third), full 390 baseline
+rescoring, JSON roundtrip and plan/config checks passed; two independent
+reviews clear. Cumulative bound $30.89293277 under the user-approved $31. Run
+name: `board-fluency-extension-20260915-r03`; prior app stopped, zero tasks.
+- [x] Rescore paired results, reconcile cumulative compute, verify stop, and report.
+
+## Completed third extension result
+
+`board-fluency-extension-20260915-r03` completed at 08:01:20 UTC on 2026-09-16:
+prepare, 512 training updates and full 390-row post-evaluation. Offline audit
+passed all retained/new predictions, hashes, stage receipts and checkpoint
+histories (one verifier fix: LR peak/ramp/decay shape checks apply to the full
+512-update history only; earlier checkpoints hold truncated warmup prefixes).
+Review moved 76/200 → 103/200 (37 improved, 10 regressed); held-out190 moved
+116/190 → 126/190 (27 improved, 17 regressed). Combined 192/390 → 229/390
+(49.2% → 58.7%); malformed answers fell to 2. Teacher120 loss 0.299 → 0.190,
+row exact 60.8% → 71.7%. Frozen visual digest unchanged. App
+`ap-etvhT392SCzo9rPo5PSdjL` stopped with zero tasks. Recorded-window extension
+cost is $9.6572; cumulative with pinned prior allowances is $26.0901, under
+the user-approved $31 (provisioned-rate estimate, not a provider bill).
+
+# Second board-fluency extension: 256 more steps (2026-09-16)
+
+User chose 256 more steps with a raised ceiling over 144 steps within $15.
+Only 1,152 fresh rows remain (2049–3200); the run wraps to rows 1–896 for the
+rest (896 second-epoch repeats; cumulative unique reaches all 3,200 = 1.0 epoch).
+Parent is the ext-r01 trained checkpoint (cumulative 256); target is cumulative
+512 updates. Baselines are ext-r01 posteval: review 57/200, validation 96/190.
+
+New ceiling is $21 (explicit user approval via the raise-the-ceiling choice).
+Carry-forward is $11.25575718 (pinned r06 $7.47126099 allowances + pinned ext-r01
+$3.78449619 recorded). New caps: prepare 300 s, train 3,300 s, eval 900 s,
+startup 300 s, coordinator 6,000 s, absolute 5,400 s, plus $0.75 reserve. New
+envelope is about $9.34; cumulative bound is about $20.59, under $21.
+
+- [x] Specify wrap-around data order, checkpoint plan and raised budget.
+- [x] Implement CPU admission, pinned suffix/baselines and bounded train/eval stages.
+- [x] Verify dry plan, source/checkpoint/data identity and independent code review.
+- [x] Execute the extension; retain 8 checkpoints and both 390 predictions.
+
+Prelaunch r02 review: new sibling launcher leaves r06/r01 pins intact. Suffix
+2048 rows (1152 fresh + 896 exact repeats), full 390 baseline rescoring, JSON
+roundtrip and plan/config checks passed; two independent reviews clear.
+Cumulative bound $20.59185918 under the user-approved $21. Run name:
+`board-fluency-extension-20260915-r02`; prior extension app stopped, zero tasks.
+- [x] Rescore paired results, reconcile cumulative compute, verify stop, and report.
+
+## Completed second extension result
+
+`board-fluency-extension-20260915-r02` completed at 05:59:20 UTC on 2026-09-16:
+prepare, 256 training updates and full 390-row post-evaluation. Offline audit
+passed all retained/new predictions, hashes, stage receipts and checkpoint
+histories (one verifier assumption fixed: warmup starts at exactly LR 0.0 on
+update 1, as in r06 itself). Review moved 57/200 → 76/200 (28 improved, 9
+regressed); held-out190 moved 96/190 → 116/190 (28 improved, 8 regressed).
+Combined 153/390 → 192/390 (39.2% → 49.2%); malformed answers fell 28 → 3.
+Teacher120 loss 0.360 → 0.299, row exact 47.5% → 60.8%. Frozen visual digest
+unchanged. App `ap-dTpI6ngcgd2AgGuACY13Db` stopped with zero tasks.
+Recorded-window extension cost is $5.1772; cumulative with pinned prior
+allowances is $16.4329, under the user-approved $21 (provisioned-rate estimate,
+not a provider bill).
+
+# Symbolic board-fluency extension (2026-09-15)
+
+User approved more steps after the completed r06 pilot. Continue its trained
+checkpoint-128 with another128 steps, preserving rank16/alpha32, text-only scope,
+atlas rows, learning rates and effective batch8. Use the existing fresh-optimizer
+initial_bundle path and original rows1025–2048 via an immutable suffix file;
+cumulative main training becomes256 updates /2048 unique examples /0.64 epoch.
+
+Options considered:128 steps provides comfortable startup/train/eval margins;
+256 would require tighter deadlines to fit the existing$15 budget. Choose128.
+Carry the complete$7.47126099194740 previous allowance-inclusive estimate. New
+caps: preparation300s, training1800s, evaluation1050s, startup300s, coordinator
+4500s plus an additional$0.75 reserve. Modeled cumulative upper is about$14.41.
+Reuse verified r06 review200(58correct) and validation190(87correct) as the full
+baseline. One fresh sibling launcher; preserve the pinned pilot source/results.
+
+- [x] Inspect supported weight-continuation/data-order semantics and budget options.
+- [x] Implement CPU admission, pinned suffix/baselines and bounded train/eval stages.
+- [x] Verify dry plan, source/checkpoint/data identity and independent code review.
+- [x] Execute the extension; retain checkpoints32/64/96/128 and both390 predictions.
+- [x] Rescore paired results, reconcile cumulative compute, verify stop, and report.
+
+## Completed extension result
+
+`board-fluency-extension-20260915-r01` completed at 04:50:36 UTC on 2026-09-16:
+prepare, 128 training updates and full 390-row post-evaluation. Offline audit
+passed all retained/new predictions, hashes, stage receipts and checkpoint
+histories. Review moved 58/200 → 57/200 (12 improved, 13 regressed); held-out190
+moved 87/190 → 96/190 (18 improved, 9 regressed). Combined 145/390 → 153/390.
+Teacher120 loss 0.487 → 0.360. Frozen visual digest unchanged. App
+`ap-2cb1HYO4C07Rxhuk3WcF3T` stopped with zero tasks. Recorded-window extension
+cost is $3.7845; cumulative with pinned prior allowances is $11.2558, under the
+approved $15 (provisioned-rate estimate, not a provider bill).
+
+Prelaunch review: new sibling launcher leaves all r06 source pins intact. Raw
+suffix count/hash, disjoint next1024 IDs/states, full390 baseline rescoring,
+JSON roundtrip and plan/config checks passed. Review tightened the one-time
+budget-lineage claim, local coordinator-startup supervision and bounded cleanup.
+Cumulative envelope is$14.41212699194740. Run name:
+`board-fluency-extension-20260915-r01`; existing Catan apps have no active tasks.
+
+# Live stale prompt-suite backend recovery (2026-09-15)
+
+- [x] Confirm listener, launch command/workspace, and reproduce stale validation.
+- [x] Verify idle inference and saved checkpoints; gracefully restart only backend.
+- [x] Verify health, shared flags over HTTP, and checkpoint availability; report restore status.
+
+Review: confirmed workspace listener PID 19121 and uv launch parent; read-only
+state returned No game before shutdown (no live sandbox for inference), with no
+outbound provider TCP connection. SIGINT was ignored by the nohup-launched process;
+after rechecking idle state, SIGTERM exited it. Same uv command now serves as PID
+48530. Health, GET prompt-suite (shared v4, both flags true), and non-saving POST
+prompt-suite/validate all return HTTP 200. No application source fix was needed.
+Logs: `logs/game-viewer-backend-20260915-stale-suite.log`.
+Saved trace metadata is unchanged; latest game
+`02926b63-505a-483d-8813-f220c8f040af` has 22 steps, checkpoint index 21 with a
+376193-byte snapshot verified through read-only SQLite. State remains No game;
+resuming saved play requires an explicit load. No game load/step/reset was issued.
+
+# Deterministic action batches (2026-09-15)
+
+Approved build: optional shared/fresh `actions` envelope, 1–4 semantic calls,
+one optional notes update. Existing single calls and historical contracts remain.
+Validate all syntax before admission, then resolve each action against live state.
+Commit prefixes incrementally; consume invalid remainders with private feedback.
+Use one engine action/checkpoint per Step and zero inference for continuations.
+Stop at setup-pair boundaries (including snake reversal), actor/phase changes,
+new information, speech/trade barriers, end-turn and victory. No random tools.
+
+- [x] Implement strict opt-in parsing and typed, durable continuation state.
+- [x] Integrate live validation, boundary consumption and exact call provenance.
+- [x] Verify real setup/build/conversion, prefix failure, persistence and legacy paths.
+- [x] Review trace/UI accounting, document behavior and run targeted checks.
+
+No subagent tool is available; parallel inspection and direct review are used.
+
+## Results and review
+
+- Built-in shared v4 / RL v3 opt in with `deterministic_batches: true`. Strict
+  shared/fresh parsing validates the whole envelope and notes first, then binds
+  only the first action. Existing single calls and explicit historical sources
+  retain their contracts. Batch prompts expose stable signatures, not legal lists.
+- One action commits per Step; pending continuations regenerate legality from
+  updated state before resolving semantic arguments. Setup pairs, including
+  snake reversal and second-settlement resource grants, are handled explicitly.
+  A failed later action consumes the remainder with private feedback and fresh
+  model control; earlier actions and costs remain, with no replay or fallback.
+- Durable queue consumption survives SQLite/pickle restore and cancellation
+  before inference, after admission and midway through continuation. Prompt/player
+  rebinding preserves accepted plans. Notes and delivered-input cursors advance
+  once; later engine-only steps acknowledge no unseen observations.
+- Each continuation has an ordinary checkpoint and exact context/provider/event
+  provenance with no model-call row or invented usage. Live/saved UI distinguishes
+  requested batches from committed actions and displays automatic provenance.
+- Direct review tightened first-action fresh legality, literal-token admission,
+  terminal handling and defensive copies of returned provenance. Tests confirm
+  that callers cannot mutate the remaining queue through results or snapshots.
+
+Verification: **1,217 backend tests passed, 32 existing skips** across 21 focused
+modules (new batches, shared/legacy contracts, trade preauthorization, speech,
+Knight, live routes/traces, fresh notes, replay, engine/harness/checkpoint audits).
+Frontend: **45 unit tests passed**, TypeScript and Vite build passed. Scoped Ruff
+and `git diff --check` passed. Real engine fixtures cover all eight setup pairs,
+newly opened settlement sites, 2:1/3:1/4:1 conversions into cities, stale cached
+menus, actor/phase/speech interruption, paid-prefix failures and immediate wins.
+
+Limitations: max four deterministic actions; dev cards/randomness, speech and
+player trades (including preauthorization) remain standalone. Old/local authored
+sources must explicitly opt in. Read-only replay previews validate the first
+action without executing a live queue. Mixed legacy speech policies still apply;
+emitted speech invalidates a pending queue before the next continuation.
+No full-repository test run, hosted inference, live-game mutation or server restart.
+
+# Narrow trade preauthorization (2026-09-15)
+
+Approved implementation: shared/fresh offer_trade optionally accepts an ordered
+nonempty player list or ANY. Authorization belongs to one admitted exact root
+offer and its first complete response barrier. Any counteroffer pauses; no
+permitted acceptance pauses. ANY uses engine seat order, never completion order.
+Revalidate current window, offer, willingness, both hands and legality; consume
+once on resolution with no fallback. Normal offers remain probes.
+
+- [x] Inspect admission, barriers, persistence and actual-call trace accounting.
+- [x] Implement typed shared-only parsing, durable authorization and engine steps.
+- [x] Verify priority, pause/stale paths, restore/retry and compatibility offline.
+- [x] Review changes and document interface, provenance and verification.
+
+No delegation tool is exposed; parallel inspection and direct review instead.
+
+## Results and review
+
+- Shared-only optional `confirm_if_accepted_by` accepts a distinct ordered audience
+  list or literal ANY. Typed validation rejects non-root/non-proposer, wildcard,
+  duplicate, self/outside-audience and malformed authorizations. Normal probes and
+  historical indexed/v11 parsers retain their behavior.
+- Immutable sandbox authorization binds original engine window/offer, exact terms,
+  audience, turn/round, deterministic priority and accepted-call provenance. The
+  first response barrier commits unchanged; the following engine-only step checks
+  fresh legality, both hands and exact admitted response events before transfer.
+  Any counteroffer pauses; missing acceptance, changed willingness, cancellation,
+  withdrawal, expiry or other stale state consumes with proposer-private feedback.
+- No lower-priority fallback after funding failure, no later-round continuation,
+  no repeated transfer. Barrier failure/cancellation retains pending authorization;
+  successful or paused resolution clears it before further inference. Save/load
+  validates original event identity and preserves pending/consumed state. Safe
+  actor rebinding cannot reinterpret the accepted instruction.
+- Confirmation is an ordinary engine action/event and separate live checkpoint,
+  with empty model contexts/attempts and an `automatic_action` source reference in
+  result JSON/live API. No fabricated reasoning card/call, token duplication,
+  note update or input-cursor acknowledgment. Ordinary trade visibility remains.
+- Direct review tightened current willingness checks against exact committed
+  response events, checked old-slot defaults, checkpoint restoration, atomic
+  transfer and cancellation boundaries, and preserved existing reactive speech.
+
+Verification: broad focused backend suite **1,052 passed, 32 existing skips**
+(18 modules covering semantic/shared contracts, sandbox, reactive speech, Knight,
+players, live routes/traces, trade/events/RNG and engine/harness/checkpoint audits).
+Final regression after review: **147 passed**, including all **42** new trade
+preauthorization cases plus compatibility, trace-store, reactive and sandbox tests.
+Scoped Ruff and `git diff --check` passed. SQLite tests use temporary stores and
+offline transports; four actual calls are recorded for offer + three responses,
+and zero calls/usage are duplicated on the confirmation checkpoint.
+
+Limitations: no general condition/rejection language, wildcard execution or
+multi-round authorization. The UI shows the normal trade action; causal provenance
+is exposed through saved results/live API. No frontend changes/build required.
+No full repository run, hosted inference, live-game mutation or server restart.
+
+# Reactive public speech (2026-09-15)
+
+Approved build; preserve the existing dirty tree and resident game.
+
+- [x] Add an explicit versioned reactive contract: action OR public say, separate
+  respondent metadata, and accepted pass/speech notes.
+- [x] Implement bounded pending-decision conversations and the once-only
+  post-discard/pre-robber window with checkpoint continuity.
+- [x] Preserve trade barriers, atomic Knight bundles, historical contracts,
+  safe prompt rebinding, exact requests and navigable speech traces.
+- [x] Verify isolated engine/parser/runtime/persistence and focused UI contracts;
+  document files, checks, and limitations.
+
+Implementation choice: one actor-initiated speech per pending game decision;
+bounded addressed replies use the existing communication limits. Speech is a
+typed choice, never an engine Action or synthetic turn. Routine observations
+accumulate without inference or cursor acknowledgment. Required trade decisions
+handle negotiation offers directly. No automatic setup polling. Subagent tools
+are unavailable in this harness; use parallel reads and a separate direct review.
+
+## Results and review
+
+- Shared default v3 and RL v2 explicitly opt into the reactive contract. Omitted
+  `reactive_speech` preserves old parsers/scheduling for authored historical sources.
+  Normal sandbox decisions can return CommunicationChoice or PlayerChoice; the
+  engine receives only validated gameplay actions. Say never consumes an action,
+  turn, placement or synthetic step. The continuing action sees accepted notes.
+- Public audience and explicit respondents are separate. Pass (or the accepted
+  silence alias) updates notes exactly once. Skipped routine polls update no
+  cursor. Other players receive public speech at their next actual observation.
+- Persistent pending-reaction queue, shared call budget and initiating-speech
+  marker prevent reply/retry loops. Default cap is 12 calls including initiating
+  say, with two reaction rounds; failed reaction calls consume slots. Reactions
+  use deterministic queue order. Trade barriers remain simultaneous and private.
+- Seven window opens after all discards, before destination, once per roll event.
+  Both zero-discard and multi-discard retry/restore paths pass. Knight applies its
+  bundle with no intermediate await. Placement can initiate speech; no automatic
+  setup, ordinary roll/build/end-turn/trade/theft or actor speech polling.
+- Traces retain selected standalone speech as communication with its exact
+  action-channel request/response and usage. Trigger reason/respondents are saved
+  and exposed in live provenance. SQLite continuation and cancellation retain
+  accepted speech without a fake completed step or duplicate message.
+- Active prompt rebinding still occurs at safe actual inference boundaries. Tests
+  verify old in-flight admission, next-boundary edits/incompatibilities, and
+  unchanged historical rows. Read-only action-comparison previews remain action-only.
+- Direct review checked cursor separation, stale-response admission, public
+  visibility, context-ID uniqueness, restore defaults, budgets and trade isolation.
+  No subagent review was possible because the harness exposes no delegation tool.
+
+Verification (offline transports, temporary stores only):
+- 1,292 selected backend tests passed across reactive/fresh/shared contracts,
+  sandbox, Knight, historical compatibility, live routes/traces, prompt stores,
+  tools, engine/trade boundaries and harness/checkpoint/replay audits.
+- 166 additional communication, replay action-diff, setup reasoning and RNG tests
+  passed. Final focused rerun after typed-intent validation and the cancellation
+  regression: 140 passed (includes the added cancellation test).
+- 44 frontend Node tests passed. TypeScript/Vite build passed to the approved
+  temporary directory; scoped Ruff, frontend ESLint and `git diff --check` passed.
+
+No live restart, game advance, hosted model inference, reasoning-setting change,
+style redesign, file deletion or commit. Full repository and mounted browser
+suites were not run; no model-quality, latency or token-savings claim is made.
+
+# Symbolic board-fluency r16 SFT pilot (2026-09-15)
+
+## Approved scope
+Start from `/runs/catan-vision-sft/spatial-continuation-20260912-r01/checkpoints/checkpoint-128`.
+Expand standard LoRA r8/alpha16 to r16/alpha32 with preserved effective updates:
+retain old A/B blocks, initialize added A normally and added B to zero. Preserve
+the 154 input/output atlas rows. Train language LoRA and atlas rows only; keep
+base language and visual/merger weights frozen. Use a fresh optimizer/scheduler.
+
+Generate 3,200 admitted symbolic training rows (160 per reviewed operation),
+excluding the 200 inspected review states. Preserve original validation/test
+source splits and separate full settlement/Longest Road transfer tasks. Run 128
+optimizer steps with effective batch8, LoRA LR5e-5 and atlas LR1e-4; save every32.
+Verify expansion parity, actual backward/update, checkpoint save/reload, then
+evaluate held-out queries and the unchanged review200 baseline (24/200).
+
+## Plan
+- [x] Implement rank-preserving conversion and rank-aware trainer/evaluator checks.
+- [x] Generate and validate new train/validation/test corpora and evaluation panel.
+- [x] Build CPU preparation and bounded GPU gate/train/eval orchestration.
+- [x] Pass real conversion/backward/save/reload checks and run the pilot.
+- [x] Verify predictions, checkpoint identities and budget receipts; report results.
+
+## Budget
+Approved ceiling: $15. Current Modal standard rates checked at modal.com/pricing:
+H200 $0.001261/s, CPU $0.0000131/core/s, RAM $0.00000222/GiB/s. Plan capped stages
+with one GPU worker at a time, no automatic retries, explicit cancellation, and
+reserved evaluation time. Keep the sum of execution/startup resource bounds below
+$15 before requesting any paid GPU call; preserve source checkpoints and prior runs.
+
+## Implementation review
+Generated `symbolic_board_fluency_sft_v1`: train3200 on3200 distinct states/332maps,
+validation370, test370, validation_eval190; all200 reviewed state IDs/content
+hashes excluded. Training has160 examples peroperation and640 perfamily; first
+1024 presentations cover everyoperation (51–52 each). Gold/provenance/admission
+checks passed, including the oldreview scorer compatibility path.
+
+Function-preserving expansion and supportedranks8/16 are implemented. Targeted
+existing scope/config checks and algebraic conversion checks passed. Static review
+found and resolved the oldreview schema alias, base metadata hashing, nonzero
+atlas-gradient evidence, and cancellation handling. Stop uses the dedicated
+Modal app ID so coordinator and all children stop together without a spawn race.
+Local dryrun bounds compute at $13.572673 using current standard rates. No GPU
+call has been made yet. Launch target: `board-fluency-sft-20260915-r01`.
+
+R01 stopped before prepare/GPU because audit histogram integer keys differed
+between the RPC object and saved JSON. Normalized the launch plan before both
+transports and verified the project interpreter's app-stop command. Stopped app
+`ap-hY5V0lZXsn78Es8AXpamhh`; corrected launch will be r02. CPU-only failed startup
+remains within the existing termination/control reserve, not a new $15 budget.
+
+R02 reached the coordinator but treated a normal 30-second FunctionCall polling
+timeout as a failed stage (built-in TimeoutError differs from Modal's exception).
+Corrected the catch and raised control-plane CPU from0.125 to1 core to avoid
+slow heavy-library cold starts; capped compute remains below$15. The coordinator
+cancelled its CPU prepare call; no GPU stage ran. Stopped the dedicated r02 app;
+next launch r03 includes these corrections under the original budget.
+
+R03 CPU preparation/real r16 conversion passed. Its first GPU gate stopped on
+different greedy IDs before training; factor blocks/scaling/token and visual
+bytes passed conversion checks. The probe was autocasting LoRA arithmetic while
+the actual text evaluator does not. Align probe precision with text inference
+and persist complete logits/metadata before asserting parity. R03 gate occupied
+about114 seconds including startup; prior attempts used CPU only. A corrected
+full-run envelope plus this consumed work remains below the original$15 ceiling.
+
+R04 now passes exact GPU logit parity (`max_abs=0.0`) in matched text-inference
+precision. Its gate is collecting pre-validation190 and will then perform the
+two-step gradient/save/reload check. Budget includes a conservative$0.50 allowance
+for earlier attempts; prospective total compute bound is$14.179274 under$15.
+
+R04's generation-heavy baseline hit the gate deadline before any training step.
+Saved144/190 complete predictions (21correct), SHA256
+`2fc6ce78b4f1620d1b186a8e4052cf38d3cad4841250d1522703c2e9edccdd00`.
+Preserve these as an explicitly partial baseline and compare only the same IDs
+after training; full post-validation190 and unchangedreview200 remain requested.
+Next gate skips baseline regeneration, retaining parity/gradient/save checks with
+a450-second cap. Prior-attempt allowance rises to$2.00; total prospective bound
+is still under$15. No source checkpoint or training dataset is changed.
+
+R05 passed real two-step backward/update and complete checkpoint-save checks:
+nonzero gradients/updates in language LoRA and both atlas-row groups, nonzero
+new-rank B gradients, all1184 frozen parameter versions unchanged, visual model
+tensor digest unchanged. It stopped at an overly strict saved-file SHA comparison.
+An independent CPU check proved all333 saved FP32 visual tensors are bitwise
+identical to the parent; only serialization differed. Switched frozen checks to
+canonical tensor digests. Concurrent palette imports now require pydantic in the
+remote image; included the validated local2.12.3 version without changing model
+library pins. Prior-attempt allowance is$2.50; main training cap reduced to3300s
+(still128 steps) to keep the prospective all-attempt compute bound below$15.
+
+R06 prelaunch: local dataset admission, JSON roundtrip, plan/config/source checks
+and scoped diff checks passed. Independent gate/save/reload review found no
+blocker. Original evaluator/trainer/scorer hashes still match retainedr04.
+All earlier SFT/diagnostic apps are stopped withzero tasks. Modeled compute upper
+is$14.863204 including$2.50 prior allowance, not a provider billing total. Recorded
+r03-r05 stage/control windows model about$2.12, with remaining prior allowance for
+CPU-only starts/diagnostics and termination. Monitor the dedicated app through
+startup and completion; stage timeout is terminal, never an automatic extension.
+
+R06 app `ap-AyeiKbmYnRGN9mBMLtkBD0`: CPU preparation and fullGPU gate completed.
+Parent/expanded, trainer initialization and trained-checkpoint reload all match
+exactly (`max_abs=0.0`). Frozen visual canonical digest is unchanged; real nonzero
+gradients/updates passed. Main128-step training began at23:12:40UTC from pristine
+expanded-r16 with a fresh optimizer; isolated gate checkpoint2 is not its parent.
+
+R06 main training completed at23:36:03UTC with all32/64/96/128 checkpoints
+committed and frozen visual tensors preserved. Finalgreedy review200 then
+validation190 started at23:36:07UTC; quality results remain pending.
+
+## Completed result
+
+R06 completed at23:48:05UTC. Independent offline audit passed all390 final raw
+predictions, baseline IDs/scores, hashes, complete stage receipts and checkpoint
+histories. Review improved24/200→58/200(12%→29%); matched held-out144 improved
+21/144→69/144(14.6%→47.9%). Full postvalidation is87/190(45.8%);46 baseline
+answers remain unavailable. Review improved42/regressed8; matchedvalidation
+improved50/regressed2. Review malformed answers fell48→13. Reachable-node sets
+and resource pip totals remain atzero on bothfull panels.
+
+All32/64/96/128 checkpoints are saved under
+`/runs/catan-vision-sft/board-fluency-sft-20260915-r06/training/checkpoints/`.
+App `ap-AyeiKbmYnRGN9mBMLtkBD0` explicitly stopped; Modal reports stopped/zero
+tasks at23:48:20UTC. Recordedr06 resource-window estimate is$4.1852; diagnostics
+plus fullprior allowance/control reserve yield$7.47, not a provider billing total.
+Report: `reports/sft/2026-09-15-symbolic-board-fluency-sft.md`; run artifacts
+include `analysis.json`, reproducible `analyze.py`, and `cost_estimate.json`.
+
+---
+
+# Active prompts independent of saved games (2026-09-15)
+
+User-approved implementation plan:
+- [x] Inspect runtime, restore, prompt storage, traces and editor contracts.
+- [x] Resolve active selections at safe inference boundaries; stage all player
+  replacements before publishing, preserve historical requests and session data.
+- [x] Load saved game state with active prompts; migrate context modes explicitly
+  in code with validated notes and conservative channel event delivery.
+- [x] Enable live prompt editing, update labels/docs and correction lesson.
+- [x] Run meaningful runtime/route regressions, frontend checks and diff review.
+
+Design: active source selection belongs to the runtime, never the checkpoint.
+Each concurrent inference batch keeps one immutable contract through admission.
+Legacy-to-fresh migration redelivers visible history because legacy acknowledgments
+cannot establish per-channel delivery; fresh-to-legacy retains history and cursors.
+Invalid notes/contract pairs reject rebinding atomically without clearing state.
+
+## Implementation review
+
+- Live factory installs a non-snapshotted runtime binding; the sandbox refreshes
+  before decisions and concurrent speech/trade batches. Retries in an acquired
+  batch preserve its original parser/notes contract. Rebinding publishes only
+  after every replacement session validates; no existing requests are mutated.
+- Studio source writes use the prompt store's own lock rather than waiting for
+  provider I/O. Preview capture still uses the state lock. Explicit current path
+  selections are visible and cannot be silently shadowed by local editor saves.
+- Load reconstructs gameplay composition from saved metadata and uses current
+  runtime inference settings and prompt selection. Historical source metadata is
+  ignored as configuration and retained as evidence. Each new live request stores
+  exact source text/identity/hash; no migration rewrites old trace rows.
+- Notes, receipts, historical messages and pending-decision state survive rebinding.
+  Legacy-to-fresh replays visible events to both channels because mixed legacy
+  acknowledgments cannot establish per-channel delivery. Invalid source/schema or
+  notes-limit changes pause safely with configuration guidance.
+- Updated historical fixture expectations for active restore/editing. Three audit
+  fixtures still scripted legacy XML/game_plan with bare shared-default agents;
+  they now explicitly select their intended legacy suite.
+- Frontend production build and 41 Node tests passed. Six Prompt Studio browser
+  flows passed on desktop/mobile. Broader browser run: desktop New Game passed;
+  mobile New Game is blocked by existing workspace separator pointer interception
+  (outside prompt editing; no style redesign). Backend server was not restarted.
+- Verification: 334 targeted Python regressions passed across fresh/live routes,
+  prompt routes/store/components, players, sandbox, trace persistence, compatibility,
+  and harness/checkpoint audits. TypeScript build and focused editor ESLint passed;
+  `git diff --check` passed. Final review removed a redundant source reread after
+  publishing restored state: metadata now uses the actual bound source snapshot.
+- Final live/fresh route rerun: 80 passed, including a tightened in-flight regression
+  where the new notes limit would reject the old response. The old action/notes
+  still commit exactly once; only the following speech boundary pauses with clear
+  configuration guidance. Historical requests and saved source evidence survive.
+
+# Shared fresh request contract (2026-09-15)
+
+User approved implementation. Preserve existing work and explicit historical suites.
+
+- [x] Implement shared-only compact tools, semantic trade resolution, and prompt composition.
+- [x] Supply exact setup/free-road facts, complete private inventory and actual VP,
+  and self-contained visible negotiation events.
+- [x] Inspect exact-request frontend rendering and invalid-call atomicity.
+- [x] Run focused integration/compatibility tests; document results and limitations.
+
+Design: keep historical tool rendering/parser defaults; opt shared compositions into
+stable definitions and acting-perspective trade terms. Resolve against current
+observed offers before internal engine admission; ambiguity is an error.
+
+## Results and review
+
+- Shared tools have stable signatures, no legal enumeration or opaque trade IDs.
+  Historical v11 tool rendering/IDs and indexed parsers remain explicit paths;
+  no eval-default migration. Counter terms are original/proposed from the actor's
+  perspective, and ambiguous active offers fail before legality filtering.
+- Setup facts distinguish all four decisions and the placed settlement anchor.
+  Starting cards are verified against the real second settlement's adjacent tiles.
+  Free Road Building placements, zero-resource dev inventory, authoritative
+  playability, private actual VP and public opponent VP are supplied separately.
+- Decision/speech compositions omit trade_window; validation no longer requires
+  it. Strategy is labeled guidance; the main-game manual is reduced to strategy.
+  Live lifecycle events carry terms. Replay responses/closures use exact recorded
+  offer IDs to carry source terms, including nonexecutable source-only proposals;
+  replay action matching and original source rows are not rewritten.
+- Repeated real-engine shared requests carry current facts/new channel events and
+  accepted notes only. Invalid calls preserve gameplay, notes and pending events;
+  retries include specific feedback without a legal-menu dump.
+- Live traces now expose all recorded request messages plus board presentation.
+  Saved traces retain their exact message mapping. Fresh and historical requests
+  are labeled separately, with no truncation of transmitted historical messages.
+- Kept existing dirty-tree changes. Updated historical typed-agent test fixtures
+  to pin their contract; shared route fixtures now select replies from independent
+  engine contexts rather than scraping a removed legal menu.
+
+## Verification
+
+- **1,304 passed**: shared fresh contract/components, semantic tools, context,
+  players, sandbox, Knight, compatibility, fresh/shared routes, trace store,
+  initial placement, prompt stores/routes, v11, engine events/trades/boundaries/RNG,
+  replay core/LLM response/action-diff tests. Command: `uv run python -m pytest`
+  with the 22 corresponding test modules (latest run: 29.91 seconds).
+- **41 passed**: `npm test` in `playground/frontend`.
+- **Build passed**: `npm run build` (TypeScript and Vite), also run by browser fixture.
+- **9 passed**: `uv run python -m pytest playground/frontend/tests/test_live_autoplay_browser.py -q`.
+  Includes exact two-message fresh and 82-message historical display plus the board
+  attachment; every recorded message is compared with mounted browser text.
+- **7 passed, 1 failed**: separate `test_shared_prompt_browser.py` run. The mobile
+  session/New Game click is intercepted by the workspace separator/board. The
+  unchanged session panel has minSize 260px but maxSize 28%, incompatible at 390px.
+  Left this unrelated responsive-layout issue explicit; no style redesign.
+- `git diff --check` passed. No hosted model inference, paid eval, running-game
+  restart, or full repository-wide suite was performed. Archived request payloads
+  remain exact; missing historical source terms are never invented.
+
+# Published September 2 checkpoint comparison (2026-09-15)
+
+## Scope
+User requested `icebear5h/catan-qwen3.8-27b-spatial-sft`, pinned to
+`8030a960ee73e758994c3938be347f2fc4abb38e`. Evaluate the same 200 symbolic review
+examples and compare against the completed September 12 checkpoint-128 run.
+
+## Plan
+- [x] Verify the HF bundle in CPU preflight, then run one capped H200 eval.
+- [x] Retrieve all 200 predictions and verify matched inputs/settings/scoring.
+- [x] Save overall/family/operation comparison and representative changed answers.
+
+Use the existing corrected launcher: text-only greedy generation, thinking off,
+batch16, 512-token completion cap, context4096, no candidate scoring, the same
+pinned base revision and scorer. Run name: `hf-sept02-fluency200-20260915-r01`.
+
+## Result
+Completed: **16/200 (8.0%)**, versus September 12 checkpoint-128's 24/200 (12.0%).
+Older/newer family counts: joins 2/6, coverage 5/6, aggregation 1/3, connectivity
+6/6, consequences 2/3 (40 rows each). Both miss all 20 board pip totals/argmax
+questions. Older model: 146 well-formed, 130 wrong-but-valid, 54 malformed,
+zero small-vocabulary atlas loops under the prior definition. Paired outcomes:
+nine both correct, seven older-only, 15 newer-only, 169 neither.
+
+One H200 stage took 335.863 seconds. All 200 predictions, expected answers,
+metadata, scores, summaries, and receipt hashes verified in offline comparison.
+Same data, base, generation settings and chat template; saved tokenizer file
+hashes differ, while atlas IDs and every prompt/gold token length match.
+App `ap-YeAQBoYvs7cAwegBaP5dNK` completed; container listing is empty.
+Saved `comparison.json` and `compare.py` in the run directory. Report:
+`reports/sft/2026-09-15-hf-spatial-board-fluency-comparison.md`.
+
+---
+
+# Quick board-fluency checkpoint evaluation (2026-09-15)
+
+### Offline r06 artifact analysis
+- [x] Inspect saved artifacts and the current strict scorer/evaluator contract.
+- [x] Re-score all 200 saved responses; verify IDs, source targets, and summary counts.
+- [x] Persist format/family/operation/gold-type counts, repetition, and exact failures
+  under the run directory. Verification is offline aggregation only; no tests/inference.
+Review: all identity/metadata/gold/score/summary checks passed. Saved reproducible
+`analyze.py` and `analysis.json` in the r06 run directory: 24 correct, 128 wrong but
+format-valid, 48 malformed; final report/documentation handled by the main task.
+
+## Scope
+Evaluate the exact 200 review examples with the latest saved spatial checkpoint:
+`/runs/catan-vision-sft/spatial-continuation-20260912-r01/checkpoints/checkpoint-128`
+in the `icebear5h` Modal workspace. The user accepted this continuation candidate
+after reviewing the Gaussian-init and later checkpoints.
+Use text-only direct greedy generation and report exact task-aware scores by
+family/operation, preserving raw predictions. This is a review-set diagnostic,
+not an untouched held-out generalization claim.
+
+## Plan
+- [x] Resolve checkpoint choice and locate its saved bundle/tokenizer.
+- [x] Add the minimal strict review-scoring dispatch and bounded remote eval path.
+- [x] Run one capped H200 evaluation after CPU-only checkpoint/tokenizer prep.
+- [x] Retrieve all predictions, verify row coverage, and summarize actual results.
+
+## Findings
+Local HF auth is absent; the existing Modal `catan-hf` secret can be used for
+CPU-only repository discovery. Existing evaluator supports text-only generation,
+but the review's set/typed-JSON/integer answers need explicit scoring dispatch.
+
+Authenticated discovery confirmed two published HF repos: the spatial-SFT bundle
+at `icebear5h/catan-qwen3.8-27b-spatial-sft@8030a960ee73e758994c3938be347f2fc4abb38e`
+and marker-only control at commit `b366613bb835fee10ccbc84d3af99ac8d456ab7b`.
+Neither is labeled v2. User requested the other available checkpoints before
+selecting. Remote listings confirm single-piece-v2 checkpoint-256 and terrain-v2
+checkpoint-384 in the `tetracorp` workspace; full-board-new-layouts checkpoint-128,
+September 9 mixed continuation checkpoint-128, and September 12 saved checkpoints
+32/64/96/128 in `icebear5h`. The last extension has no final generated evaluation.
+
+Added strict review scoring and family/operation summaries; direct checks passed
+for 200 gold rows and malformed-answer cases. Added a bounded HF text-eval launcher,
+but checkpoint preparation/model loading/inference have not run. Await checkpoint
+selection; no GPU evaluation was launched. Workspace-specific HF secrets are
+`catan-hf` in tetracorp and `huggingface-secret-2` in icebear5h.
+
+Selection resolved to the latest saved September 12 checkpoint-128. The launcher
+now accepts a saved Modal bundle as well as immutable HF snapshots. Planned run:
+`spatial-ck128-fluency200-20260915-r01`; one H200, 900-second execution cap,
+840-second inner deadline, no automatic retries, batch16, 512-token completion
+cap, context4096. CPU preparation validates tokenizer/tensor compatibility and
+source hashes before GPU allocation.
+
+Run r01 hit a CPU-container import error: the symbolic scorer transitively needs
+`playground.game_viewer.state`. App `ap-TXcmtaZew2g6d1uUj7SpDd` was stopped;
+orchestration recorded zero GPU calls. Added the missing Python source mount and
+will launch corrected r02; no predictions exist from r01.
+
+R02 exposed the same package initializer's additional jsonschema dependency;
+stopped app `ap-EWJL1WJrQ2QsW301dinbNE` before any GPU call. The eval image now
+includes the locally validated jsonschema 4.25.1. Corrected launch will use r03.
+
+R03 failed at image construction because pip installation followed runtime source
+mounts. Split the existing pinned training base image from its source mounts so
+the eval dependency is installed first. R04 then reached CPU preflight and caught
+the native text helper converting Transformers 5.16.1 BatchEncoding to its field
+names instead of token IDs. A bounded CPU inspection of the saved tokenizer
+confirmed return_dict=False yields the correct answer/EOT boundary. Applied the
+explicit return type; r01-r04 made zero GPU calls. The checkpoint's saved base
+identifier is its exact immutable cache snapshot, now retained in evaluator args
+after matching it against the pinned repo/revision. Corrected run is r05.
+
+R05 passed tokenizer/context checks but the header-based LoRA preflight mistook
+seven training-only `mtp.*` tensors for inference modules. CPU inspection showed
+496 intended language modules plus those seven false positives. Preflight now
+uses the actual inference architecture on the meta device (no weight allocation),
+matching the evaluator's own module discovery. No GPU call occurred; next run r06.
+
+## Completed Result
+R06 completed all 200 examples: **24/200 correct (12.0%)**. Family scores:
+relations/joins 6/40, sets/coverage 6/40, aggregation/comparison 3/40,
+connectivity/structure 6/40, constraints/consequences 3/40. Of 152 format-valid
+answers, 128 were wrong; another 48 were malformed. Pip totals and tied argmax
+were 0/20 despite all 20 being well-formed. Twenty-four responses met the recorded
+small-vocabulary atlas-loop criterion.
+
+One H200 call lasted 615.544 seconds. App `ap-BajhKL3lk4VpZgpq9mTwTr` is stopped
+with zero tasks. All 200 IDs, expected answers, metadata, score dictionaries,
+grouped totals, and saved record/summary hashes passed offline verification.
+Run root: `artifacts/runs/sft/spatial-ck128-fluency200-20260915-r06/`.
+Report: `reports/sft/2026-09-15-board-fluency-text-eval.md`. This is a text-only,
+train-source-derived review diagnostic; no initialization comparison was run.
+
+---
+
+# Board fluency review on port 5174 (2026-09-14)
+
+## Approved Scope
+Generate an inspectable 200-example review batch from existing symbolic training
+states, with 40 examples per approved operator family, and expose it in the eval
+viewer on port 5174. Model input is explicit symbolic state; board renderings are
+review aids. Full settlement composition and Longest Road remain transfer tests.
+
+## Plan
+- [x] Identify port 5174 and existing viewer/data interfaces.
+- [x] Build a bounded-source generator with exact answers and provenance, and
+  generate 200 examples covering joins, sets, aggregation, connectivity, and
+  constraints/consequences.
+- [x] Add a scoped viewer tab with family/operation filters, exact input/gold,
+  and matching board renderings using the current UI patterns.
+- [x] Verify generated counts/labels and viewer integration, start the eval
+  frontend on 5174, and provide the direct review URL.
+
+## Design
+Use a standalone review builder and a local generated artifact bundle served by
+Vite. Source inspection is bounded to a few hundred v2 training rows. Keep the
+existing canonical atlas and source facts, recompute answers, and preserve source
+contract hashes. The interface consumes a compact preview JSON plus read-only
+board render states derived from matching contracts. No training is part of this
+preview task.
+
+## Result
+Available at `http://localhost:5174/?tab=board-fluency`. Generated 200 rows from
+200 distinct states, 195 maps/trajectories, and 20 operations (10 each), with 40
+rows per approved family. Sources are 167 engine rollouts and 33 replay states;
+only the first 400 symbolic-v2 source lines were examined. Bundle path:
+`artifacts/generated/sft/symbolic_board_fluency_review_v1/`.
+
+Verification: all 200 source-contract, answer, and render-state checks passed;
+rebuilding under another Python hash seed was byte-identical. Targeted code
+review found no blockers. TypeScript and Vite production build passed (output
+under the approved temporary directory). Browser verification covered all five
+family filters, 20 operation filters, matching board rendering, exact question/
+gold/input text, row navigation/permalink reload, search/reset, and downloads;
+zero page errors or failed requests. Eval frontend is listening on 127.0.0.1:5174.
+
+---
+
+# Symbolic board dataset review (2026-09-14)
+
+## Scope
+Review existing v1/v2 and related datasets using at most 300 sampled corpus rows.
+Treat structural queries and fast deterministic game calculations as one
+board-fluency class; strategic judgment remains for self-play RL. Recommend reuse and generation
+gaps while preserving settlement composition and Longest Road as transfer tests.
+
+## Plan
+- [x] Locate dataset versions and inspect manifests, source mix, and task definitions.
+- [x] Inspect up to 280 rows across symbolic v1/v2 and related atlas/spatial data.
+- [x] Summarize existing coverage, sample findings, and prioritized generation work.
+
+## Review
+Inspected exactly 280 unique corpus rows: 100 training + 20 transfer-validation
+from each symbolic version, 20 atlas-topology rows, and 20 spatial-continuation
+rows. Counts below come from manifests/metadata, not full corpus scans. Stored
+golds were inspected, not independently revalidated. No builds/tests/training.
+
+- `artifacts/generated/sft/symbolic_board_v1/`: 3,200 train, 480/480 component
+  validation/test, 2,240/2,240 transfer validation/test. Preserve its concise
+  explicit-state question style; sampled incident-road labels exhibit the
+  documented roster-position shortcut.
+- `artifacts/generated/sft/symbolic_board_v2/`: same component counts, 548/535
+  transfer rows; corrects roster sampling and raises distinct dynamic training
+  states from 306 to 1,600. Prefer its generator/sampling over raw v1 artifacts.
+- `artifacts/generated/sft/atlas_topology/catan_atlas_topology.jsonl`: documented
+  390 text-only atlas facts; reusable relation foundation.
+- `artifacts/generated/board_recognition/spatial_continuation_v1/`: 1,024
+  image-conditioned training examples. Reuse local-tile/production oracles after
+  rendering explicit symbolic source state and recomputing labels.
+- Both symbolic versions allocate 1,600 rows to fixed-atlas tasks; another 560
+  select supplied owners/pieces/resources. Several near-tile/port questions also
+  ignore current state. Existing composition and traversal tasks are useful but
+  configuration coverage and symbolic production tasks need expansion.
+
+Recommendation: retain v1-style prompts and v2 sampling safeguards; replace most
+supplied-fact selection with state/topology joins, coverage/overlap, blocker-aware
+components/reachable sets, exact production/probability, port access, and paired
+local-change consequences. A proposed first 3,200-row pilot can allocate roughly
+800 each to atlas, state/topology joins, configurations, and immediate calculations;
+this is a starting design, not an established optimal mixture. Full settlement
+composition and Longest Road stay transfer-only. Expand held-out engine-state
+coverage for cycles, effective blockers, and qualifying ties; existing replay
+transfer boards miss these. Source availability is 5,120 training states across
+333 resource/number layouts, not a reason to bulk-generate repetitive questions.
+
+Scope refinement: balance query operators/compositions rather than separate
+structural/game categories. Add board-wide resource pip totals and tied maxima
+as weighted-aggregation questions; distinguish printed tile-pip totals from
+ownership/city/robber-conditioned production.
+
+User approved the qualitative mix: relations/joins, sets/coverage,
+aggregation/comparison, connectivity/structure, and constraints/consequences.
+Use explicit symbolic state and short exact answers. Balance operator coverage
+and composition depth; the earlier numerical quotas remain provisional.
+Next proposed artifact is a small inspectable generation preview before scaling.
+
+Sampling windows (1-based, inclusive):
+- V1 train: 1–25, 801–825, 1601–1625, 2401–2425. Transfer validation:
+  4–5, 33–35, 564–565, 593–595, 1124–1125, 1153–1155, 1684–1685, 1713–1715.
+- V2 train: 1–40, 511–525, 1021–1035, 1544–1558, 2093–2107. Transfer validation:
+  1–8, 182–185, 363–366, 495–498.
+- Atlas: 1–3, 28–30, 58–60, 217–219, 220–221, 362–363, 364–367.
+- Prior spatial train: 1–6, 17–18, 33–42, 49, 57.
+
+---
+
+# Playground new game and test cleanup (2026-09-13)
+
+## Scope
+Add a discoverable New Game action to Session controls. Reuse reset/start APIs,
+preserve saved traces and model preferences, and return to empty setup without
+automatically reopening an old checkpoint. Prune tests added for the shared
+prompt/notes work, not unrelated engine or training tests.
+
+## Plan
+- [x] Inspect existing session controls, reset API, saved-checkpoint selection,
+  and task-specific tests. Subagents unavailable due usage limit; direct review.
+- [x] Add New Game, guard concurrent session changes, and keep cleared setup empty.
+- [x] Remove redundant task-specific test modules and browser parameter matrices.
+- Cancelled: further automated verification at the user's request; human verification.
+
+## Result
+New Game returns to setup through the existing reset API without deleting saved
+traces or resetting model preferences. Old checkpoints no longer reopen
+automatically after clearing. Removed six redundant Python test modules, two
+frontend test modules, and the delayed browser-test matrix.
+Before the stop request, retained Python/unit tests and desktop browser flow
+passed. The existing narrow-screen session-panel layout obstructed the mobile
+button; left as a known limitation for human verification. No further tests or
+live backend/game operations after the user's stop request.
+
+---
+
+# Symbolic atlas and road transfer experiment (2026-09-13)
+
+## Agreed Scope
+Reuse the existing atlas vocabulary and matching language adapters. Compare the
+pre-spatial `full-board-new-layouts-20260907/checkpoints/checkpoint-128` with
+`spatial-continuation-20260912-r01/checkpoints/checkpoint-128`, the last saved
+checkpoint of the cancelled extension (confirmed by a prior remote listing and
+trainer-state read). Its interrupted run status does not invalidate a saved
+checkpoint; full tensor/hash admission remains required before training.
+
+Learn geometry through text-only SFT. Train node/tile directions, neighbors,
+incidence, road ownership/connectivity, and explicit spatial components.
+The user selected settlement placement and Longest Road as downstream transfer
+tests, with rules stated. Reserve complete settlement-rule combinations and
+longest-trail optimization from SFT; do not hide equivalent training targets
+behind different wording. Settlement tests use board placement under an
+explicit setup/normal mode, assuming resources and pieces are available.
+
+## Plan
+- [x] Inspect current trainer, evaluator, datasets, rule oracles, and provenance.
+- [x] Confirm learned geometry and training-versus-transfer scope with the user.
+- [ ] Add checkpoint-compatible text-only training/evaluation with frozen vision,
+  preserved atlas input/output rows, correct completion masking, and scope audits.
+- [x] Add canonical geometry/road task oracles and strict task-aware scoring;
+  validate transfer labels independently against engine rules.
+- [x] Build a new deterministic symbolic projection from existing training-safe
+  contracts, preserving source splits and explicit fact/pair holdouts.
+- [ ] Prepare identical two-anchor experiment configs and local dry-run checks.
+- [ ] Run focused tests, independent review, and document actual readiness.
+- [ ] Confirm step/time budget and pinned-runtime preflight before paid training.
+
+## User Review Handoff
+The user stopped further pytest work and requested the generated dataset for
+inspection. Further trainer integration, paired-launch work, and GPU execution
+are deferred. No new training was launched. Text-mode changes are present;
+the last shared-scorer integration has not received its final verification.
+
+Generated `artifacts/generated/sft/symbolic_board_v2/`: 3,200 training examples,
+480 component validation, 480 component test, 548 transfer validation, and
+535 transfer test. Inputs and gold answers are the two `messages` entries.
+V2 fixes the reviewed roster-position shortcut and uses 1,600 distinct training
+states for its 1,600 dynamic component examples. Transfer settlement positives
+and negatives are balanced within supported groups. Existing held-out replay
+boards lack cycles/effective blockers/tied qualifying road lengths; metadata
+records this limited coverage. The original v1 artifacts remain preserved.
+
+## Findings
+The diverse source pool contains 5,120 train and 64 each validation/test/color
+diagnostic states, including the original replay_v1 corpus. Saved contracts
+contain answer-leaking road counters/awards and explicit geometry; model inputs
+must use a factual allowlist, with geometry kept in the label oracle. The
+original trainer required image tensors even with zero auxiliary loss.
+Road traversal, maximum trail, award ties, and settlement legality are distinct
+contracts. Board-only award questions are admissible only when the answer is
+determined without unknown incumbent history. Current state sources lack hands
+and complete action-phase state, so they do not support full executable-action
+legality labels. Existing benchmark games remain excluded from training.
+
+---
+
+# Shared components and fresh notes (2026-09-13)
+
+## Approved Scope
+Shared authored prompt components come first; composition order and provider
+message packing are not global component invariants. Implement fresh context
+with accepted private notes and new visible events. Long context is deferred.
+Preserve historical contracts and the resident live game; no hosted calls,
+backend restart, source reset, or saved-game conversion in this task.
+
+## Implementation Plan
+- [x] Inspect current source boundaries, lessons, dirty worktree, and tests.
+- [x] Add one versioned authored component bundle and a reusable renderer;
+  decision/speech compositions reference shared definitions, with validated
+  membership and inputs rather than one fixed order.
+- [x] Add fresh-notes action/speech contracts and per-player accepted memory,
+  separate channel event coverage, strict omission/clear/replace semantics,
+  and historical snapshot compatibility.
+- [x] Integrate bundle source pinning/editor ownership, sandbox admission,
+  failure-boundary snapshots, replay preview isolation, and trace presentation.
+- [x] Verify component reuse, flexible composition, causal delivery, privacy,
+  acceptance and failure restoration; run focused tests and independent review.
+- [x] Update READMEs and this review with measured verification and limitations.
+
+## Implementation Boundaries
+- A self-contained authored bundle pins the entire shared-definition closure.
+  Existing two-source suites remain self-contained historical contracts.
+- New policy is `fresh_notes`; the default notes ceiling is 4,000 characters.
+  Notes are plain text: omitted keeps, empty clears, nonempty replaces.
+  Validation is atomic with the action/speech response; no automatic repair call.
+- Shared notes are private per seat. Action and speech have separate delivery
+  cursors; only admitted responses advance the matching input cutoff. The
+  existing reaction cursor is not repurposed as a model-delivery cursor.
+- Current state and all not-yet-delivered perspective-safe events are supplied;
+  no prior conversation or native-reasoning replay. Historical traces stay intact.
+- New source/config behavior must not silently change an existing saved game.
+  All tests use temporary stores and offline transports, not the resident DB.
+
+## Review
+Implemented the shared `suites/shared_v1.yaml` bundle, typed component definitions,
+independent decision/speech compositions, and the accepted fresh-notes runtime.
+New live games and cold replay previews use the shared resolver; explicit legacy
+sources and saved source pins retain their historical contracts. Unpinned saved
+LLM games require original sources rather than silently adopting new defaults.
+
+The existing editor now edits shared definitions once, validates both consumers,
+and handles reordered references. Coherent previews and save/reset permission
+checks share the state lock. Whole-bundle optimistic writes preserve overrides
+on validation/reset failure; busy editors cannot lose newly entered drafts.
+Notes inspection uses typed variable bindings, not hardcoded component names.
+
+Acceptance binds player/context/channel/input cutoff/memory revision before any
+action mutation. Independent action/talk cursors preserve unseen messages. Failed
+decisions checkpoint accepted pre-action notes/speech and resume without speaking
+twice. Schema-v5 failure snapshots and event backfill preserve exact state/evidence.
+Post-action cancellation carries the committed result without changing headless
+CancelledError semantics; the viewer persists its accepted model call and warning.
+
+Final verification:
+- 2,412 engine/harness/provider/live/replay/component regressions passed; 33
+  existing opt-in cases skipped. No task-focused failures remain.
+- 53 frontend unit tests passed. 18 mounted browser cases passed on desktop and
+  mobile, including delayed save/refresh/reset responses; no JS errors or
+  unexpected network requests. Fixed toolbar/banner overlap without redesign.
+- TypeScript and production Vite build passed into the approved temp directory;
+  existing dist was not replaced. Scoped Ruff/ESLint and git diff checks passed
+  (the three existing types.ts no-explicit-any lint findings remain unrelated).
+- Independent component/store/editor and lifecycle/persistence reviews cleared
+  after regression-tested fixes, including source pins, atomic restore, and
+  cancellation evidence.
+
+The full repository run timed out; a later full collection was blocked by
+unrelated text-training tests importing unavailable torchvision. Replay tests
+whose old monkeypatch targeted a removed loader were updated and pass. No full
+repository-green or model-quality/cost claim is made.
+
+No hosted inference, gameplay on the resident server, real trace-store migration,
+backend restart, saved-game conversion, dependency installation, or commit was
+performed. All fixtures/stores were temporary. Concurrent unrelated changes,
+including the symbolic-SFT work, remain untouched.
+
+---
+
+# Action context duplication investigation (2026-09-12)
+
+## Plan
+- [x] Trace displayed request counts to provider messages, session accumulation,
+  authoritative decision packets, design notes, tests, and persisted suites.
+- [x] Record the correction: replaying cumulative packets duplicates complete
+  visible game history; an arbitrary transcript cap is not an agreed design.
+- [x] Confirm the context policy: fresh context plus notes, shared components
+  first; preserve historical games. Implementation is tracked above.
+
+## Findings
+`ContextAssembler.assemble()` includes all retained session messages before the
+current environment. `AgentPlayer.accept()` retains prior cumulative environment
+packets, while the current packet already includes complete visible game events.
+The default v11 trajectory is uncapped. This mixes cumulative snapshot context
+with transcript replay. Design notes explicitly reject this duplication but also
+distinguish bounded context from intentional long-context continuity; the latter
+cannot be replaced by snapshot-only calls without a policy decision.
+
+## Review
+Read-only investigation complete; the user subsequently approved implementation.
+No hosted calls, game advances, database writes, or restarts in the investigation.
+
+---
+
+# Longer spatial/readout continuation (2026-09-12)
+
+## Plan
+- [x] Inspect existing continuation controls, saved checkpoint results, and
+  complete-board rehearsal data.
+- [x] User selected the unchanged mixed curriculum and 256 additional optimizer
+  steps (384 cumulative mixed steps).
+- [x] Prepare a bounded continuation from the completed spatial run's FP32
+  checkpoint-128; verify configuration and matched evaluation before launch.
+- [x] Launch the agreed detached run, pass remote CPU preflight, and confirm
+  real training progress on the H200.
+- [x] Stop the SFT worker and coordinator at the user's request; verify the
+  Modal app is stopped with zero tasks.
+- Cancelled: final generated evaluation and post-run scoring, because the user
+  terminated the extension during training.
+
+## Findings
+The existing mixture already uses complete-board readouts for 25% of optimizer
+steps. The generic trainer supports longer runs; the historical coordinator and
+pilot worker are fixed to 128 steps. Local receipts do not contain numerical
+retention results for checkpoints 32/64/96. Repeating the mixture increases
+exposure, not the number of unique images.
+
+## Approved Run
+Continue from `spatial-continuation-20260909-r01/checkpoints/checkpoint-128` for
+256 additional updates: two passes over the same ordered 1,024 examples, with
+64 full-board rehearsal updates and 32 updates for each of six spatial families.
+Keep inherited learning rates, rank-8 language LoRA, 154 atlas input/output rows,
+FP32 visual masters and BF16 computation; fresh optimizer/schedule as in the prior
+continuation. Save and teacher-force-evaluate every 32 steps; retain all eight
+new checkpoints. Reuse the six saved parent panels after independent rescoring,
+then generate the same six final panels. Estimated mixed-training time is about
+65 minutes plus 27 minutes for final evaluation. Use bounded sequential H200
+workers with a detached CPU coordinator and durable receipts.
+
+## Verification
+350 focused tests passed, including the longer-run coordinator, independent
+receipt verifier, spatial scorer, and visual-precision contracts. Scoped Ruff
+and diff checks passed. Independent launch review found no blockers. All 430
+saved parent responses passed offline rescoring; remote checkpoint/input checks
+remain a required CPU preflight. The first combined test invocation hit its
+two-minute shell limit; rerunning with a sufficient limit passed in 169 seconds.
+
+## Cancelled receipt
+`spatial-continuation-20260912-r01` launched successfully. Remote CPU preflight
+reproduced all six baselines and verified checkpoint/data identities. Training
+logs earlier confirmed step 16/256 at 19:32:34 UTC; the final step reached before
+cancellation has not been audited. User-requested stop completed at 20:04:36 UTC,
+with the Modal app stopped and zero tasks. No final generated evaluation ran.
+App: `ap-a4jolUBznIMMAdwGQFJsrs`; coordinator:
+`fc-01M2BGP3QRPN8R3AD5FAJ7ZB1Y`; training: `fc-01M2BH8VSZB14T9QBC5S0BQY6W`.
+Both training and the coordinator were cancelled; the planned final evaluation
+will not be launched by this run. The remote receipt's failed/RemoteError status
+reflects cancellation during training. Local `cancellation.json` records it.
+Status and download/verification commands are documented in
+`reports/sft/2026-09-12-mixed-spatial-extension.md`.
+
+---
+
+# OpenRouter forbidden-request diagnostics (2026-09-09)
+
+## Plan
+- [x] Inspect the actual 403 log and saved checkpoints without replaying inference.
+- [x] Check configured key access with a non-inference request; distinguish
+  evidence from possible permission, guardrail, and moderation causes.
+- [x] Retain a bounded, credential-safe structured 403 reason through the existing
+  live provider-failure path, with no retries, invented response, or action fallback.
+- [x] Test provider rejection, off-turn attribution, persistence, and applied-action
+  safety offline; preserve the current paused game if deploying the diagnostic.
+
+## Findings
+Upstream HTTP 403 at 2026-09-09 18:48:32 UTC, in the trade-response decision
+barrier after checkpoint 125/revision 163. The generic HTTP exception discarded
+the response body from logs/storage and returned local HTTP 500. No failed
+session or rejection reason is recoverable from that log. Stored model calls:
+561; the only saved failure remains the earlier reasoning-only response.
+
+## Review
+- Non-inference GET `/api/v1/key` returned 200 for the currently configured key,
+  with no key-level spending limit. This does not prove model authorization or
+  identify the original rejection. OpenRouter documents 403 as insufficient
+  permissions, guardrail block, or moderation flag. No inference was retried;
+  no keys, permissions, provider routing, or moderation settings were changed.
+- Added bounded `OpenRouterHTTPFailure` for 403 only, preserving the original
+  non-retry policy and other HTTP/TLS behavior. Structured error.message/request
+  ID are retained when usable; known credentials/echoes are scrubbed or suppressed.
+  No raw error bodies, arbitrary metadata, or fabricated model responses published.
+- Reused the existing provider-failure route: retained/broadcast 502 includes the
+  upstream status and forbids automatic retry; safe summary/request ID persist
+  through existing failure JSON with no schema change. Off-turn attribution,
+  withheld siblings, storage failure, and applied-action guards remain intact.
+  Post-action 403 is a checkpointed 200 warning with safe cause, not a rollback.
+- Verification: 642 focused Python tests, 20 frontend unit tests, scoped Ruff,
+  and whitespace checks passed. Independent review found no remaining issues.
+  Real-provider rejection behavior remains untested; mounted browser tests were
+  not rerun (the separate known Knight-fixture timing failure is documented below).
+- Public runtime state matched checkpoint 125 exactly, but resident decision
+  traces could contain unpersisted siblings. The user explicitly selected
+  "Restart from checkpoint" after disclosure of potential loss of that evidence.
+  No existing export API could prove or preserve those trace-only objects.
+- WAL-aware backup, isolated restore preflight, final guard, and approved restart
+  completed: PID 80046 replaced by 4654. Full public HTTP/WebSocket state, private
+  hands/cards, v11 suite, inference, all player cursors, DB config/checkpoint hash,
+  561 stored calls and one saved failure matched afterward. No gameplay advances.
+  GOLD remains at cursor 162, exactly as captured; no old cursor/error overlays.
+- Temp artifacts: `catan-http403-state.json`, `catan-http403-backup.sqlite3`,
+  `catan_http403_verify.py`, `catan_http403_serve.py`, and active log
+  `catan-backend-http403-5001.log` in the approved OpenCode temp directory.
+- The original 403 reason remains unavailable. The diagnostic fix is deployed,
+  not a claim that the upstream rejection is resolved. Next evidence is the
+  provider's error message from its activity/support record, if present, or a
+  future captured rejection; do not use blind automatic retries to obtain it.
+
+---
+
+# Missing final action response (2026-09-09)
+
+## Plan
+- [x] Inspect the actual saved failure and distinguish provider channels,
+  completion limits, and the active response contract without paid calls.
+- [x] Classify blank final responses before JSON/XML action parsing; retain
+  native reasoning as diagnostics, never executable output or a fallback action.
+- [x] Verify real transport-to-route rejection, persisted diagnostics, unchanged
+  gameplay/history, and existing strict response contracts with offline tests.
+- [x] Deploy only after a fresh backup and checkpoint/suite verification; do not
+  advance gameplay, add automatic resampling, or change inference settings.
+
+## Findings
+Failure `785646fa-17e0-481e-8eab-4845eb6a36c5`, GOLD at revision 129, followed
+checkpoint 100. OpenRouter/Reka returned null final content, no native tool calls,
+and action-shaped JSON only in reasoning. Both finish reasons were `stop`; the
+request had no completion cap. The active contract at this failure was v11.
+This is not the previous TLS failure. The trace cannot distinguish a model
+channel error from upstream reasoning-parser/normalization behavior.
+
+## Review
+- The shared action parser now reports a missing final answer before JSON/XML
+  decoding. Reasoning-only responses remain rejected, including legal action
+  JSON/XML; completion-limit guidance appears only for an explicit limit finish.
+  This fixes misleading diagnostics, not the upstream missing-answer behavior.
+- 522 focused Python tests passed, including both suite formats, actual
+  OpenRouter-to-live-route admission through a local HTTP transport, retained
+  HTTP/WebSocket/saved diagnostics, and one application on a later manual Step.
+  Scoped Ruff and whitespace checks passed. Independent review has no remaining
+  findings after correcting a test's parser attribute reference.
+- Browser verification: 6 passed, 1 failed, reproduced once on review. The
+  existing immediate-victory Knight fixture's live panel disappears when its
+  background saved-checkpoint fetch selects an empty saved trace. That fixture
+  intercepts Step and never invokes this parser change. No frontend code/test
+  changes made for this separate race; this is not a green browser-suite claim.
+- Captured and backed up checkpoint 100/revision 129, 446 stored model calls,
+  one saved failure, and active v11. Preflight reproduced the actual saved
+  response through the new parser offline. GOLD's pre-action SILENCE had advanced
+  its live event cursor from checkpoint 128 to 129; the restore preserved that
+  observed acknowledgment plus the original retained failure, not just the DB.
+- Restarted PID 72357 as 80046. HTTP/WebSocket snapshots, player statuses,
+  inference settings, private hands/cards, DB config, checkpoint hash, call and
+  failure counts matched after restore. No model calls or gameplay advances.
+  Capture/backup/verifier/bootstrap and `catan-backend-missing-final-5001.log`
+  are in the approved OpenCode temp directory. Original failure evidence remains
+  unchanged; future missing answers receive the new diagnostic.
+
+---
+
+# OpenRouter TLS autoplay recovery (2026-09-08)
+
+## Plan
+- [x] Confirm recurring SSLV3_ALERT_BAD_RECORD_MAC in the active backend log;
+  inspect retry ownership, shared-player concurrency, and failure persistence.
+- [x] Retry only this TLS alert within the existing transport budget, using a
+  fresh request-local client for owned transports and bounded backoff. Preserve
+  shared clients, cancellation, and certificate/hostname verification.
+- [x] Surface exhausted TLS calls as a safe, retained live error and saved
+  failure without inventing model output or claiming post-commit rollback.
+- [x] Test recovery, exhaustion, concurrent calls, no duplicate gameplay,
+  failure persistence, and existing post-action warning semantics offline.
+- [x] Verify live state against a consistent backup; intentionally restart and
+  restore the same game/suite only after tests, without advancing it.
+
+## Scope
+Target the observed temporary blocker, not a general provider/retry framework.
+No paid probes, extra games, forced actions, or weakened TLS verification.
+Retries can duplicate upstream inference billing if a response was lost.
+
+## Review
+- Classified raw/wrapped bad-record alerts now recover within the existing
+  retry budget. Owned clients use fresh request-local clients; shared/injected
+  clients are never replaced or closed during recovery. TLS validation is intact.
+- Exhaustion produces safe HTTP 502 diagnostics, retained state/WebSocket notice,
+  and a failure row. No invented model response; off-turn actors are matched by
+  session identity. Pre-action speech and post-application errors are distinguished;
+  persistence failure is visible without exposing raw storage/provider secrets.
+- Verification: 291 focused Python tests and seven mounted browser regressions
+  passed. Scoped Ruff and whitespace checks passed. Independent review confirmed
+  the installed HTTPX/httpcore/AnyIO wrapping and concurrency behavior.
+- Backed up and verified game 27886234-8ae9-4529-8801-6399e42ac412 at checkpoint
+  95/revision 124, 424 stored model calls. Restarted PID 9916 as 72357 and restored
+  the same v10 suite using a restore-only pin, leaving new-game defaults unchanged.
+- HTTP and WebSocket snapshots, private resources/cards, player sessions, saved
+  configuration, model-call count, and checkpoint blob hash remained identical.
+  No gameplay advances or paid calls. Backup/verifier/bootstrap and active log
+  `catan-backend-tls-recovery-5001.log` are in the approved OpenCode temp directory.
+
+---
+
+# Mixed spatial continuation, 128 steps (2026-09-08)
+
+## Approved Plan
+- [x] Inspect actual dataset contracts, parent checkpoint, trainer, and frozen
+  evaluation identities; confirm existing images suffice without rerendering.
+- [x] Add typed task scoring: unordered exact touching-tile sets, ordered valid
+  shortest paths (accept ties), strict local-neighborhood and production JSON.
+- [x] Build 1,024 engine-labeled rows in eight-example task-specific batches:
+  16 steps each directions, adjacency/connectivity, node tiles, shortest paths,
+  local tile/resource/number, and dice production; 32 full-board readout steps.
+- [x] Freeze new-task validation panels with board-layout exclusion and path
+  endpoint-pair holdouts, preserving existing spatial120 and full-board64 bytes.
+- [x] Verify exact labels, output contracts, quotas, source/image hashes,
+  token lengths/shares, checkpoint restoration, and baseline scorer equivalence.
+- [x] Launch one bounded detached cycle: parent new-task baselines, 128-step
+  continuation, and matched final evaluation of new and existing panels.
+- [x] Retrieve results, independently rescore, compare forgetting, and record
+  final outcome or precise running status with resumable call IDs.
+
+## Contract And Scope
+Parent: `full-board-new-layouts-20260907/checkpoints/checkpoint-128`.
+Keep rank-8 language LoRA, all 154 atlas rows, full FP32 visual masters, BF16
+computation, existing learning rates, microbatch 4 and accumulation 2. Fresh
+optimizer/schedule, token initialization kept, checkpoint every 32 steps.
+Paths ignore pieces/ownership; production respects cities/robber but ignores
+bank shortages. No additional brainstormed families enter this first training
+mix. Static atlas recall is not unseen-graph or image-dependent reasoning.
+Reuse matched 57/120 spatial and 64/64 board-readout baselines; baseline only
+new task panels before training. One H200 stage at a time, no retries, bounded
+stage timeouts, no automatic additional training, no historical overwrites.
+
+## Review
+242 focused tests passed; scoped Ruff/diff checks passed. Independent review
+verified real engine production labels, shortest-path ties/holdouts, mixture
+quotas, and bounded orchestration. A task-metadata scoring bypass was fixed
+before launch. Dataset has 1,024 distinct training images over 333 layouts.
+
+Launched `spatial-continuation-20260909-r01`, coordinator
+`fc-01M22ZWJGBAV7R05K19DYKJEK0`, app `ap-5DfPPuxoiAEKDyNt8R50bo`.
+Remote CPU preflight passed: parent FP32 checkpoint/token IDs, data/pixel
+identities, and both reused baselines verified. Measured readout target-token
+share 94.38%, explicitly not gradient/optimizer-step share. New-task parent
+evaluation completed and all 246 responses independently rescored: node tiles
+0/54, paths 0/64, local neighborhoods 0/64, production 16/64. All 128 training
+steps completed in 32.1 worker minutes (33.5 including startup). Six-panel
+post-evaluation completed in 26.7 worker minutes, call
+`fc-01M232GXRCGP3GR9YPKY8EXFSE`. Coordinator completed successfully.
+All 676 pre/post responses independently rescored with exact receipt matches.
+After: spatial 53/120, readouts 53/64, touching tiles 19/54, paths 1/64,
+local neighborhoods 18/64, production 46/64. Occupied readout accuracy remains
+1,193/1,204, with failures concentrated in node/building facts on two layouts.
+Parent preserved; no automatic extra training or checkpoint promotion.
+Report: `reports/sft/2026-09-09-mixed-spatial-continuation.md`.
+
+---
+
+# Corrected spatial evaluation (2026-09-08)
+
+## Plan
+- [x] Verify the latest completed full-board checkpoint and corrected held-out
+  supplement, including live Modal checkpoint availability.
+- [x] Extend the existing eval builder to select the corrected supplement and
+  only its 120 spatial validation questions, with distinct IDs and provenance.
+- [x] Preserve saved FP32 visual weights in the general evaluator, matching the
+  completed full-board evaluator; verify builder/loading changes offline.
+- [x] Launch one detached H200 evaluation, greedy/no-thinking, batch 48,
+  16-token answers, original images only, no candidate scoring or training.
+- [x] Run one separately named, matched answer-format control: the original
+  result is 1/120 exact, but none of the 100 binary responses are bare yes/no
+  and the source prompts omit an explicit answer-only instruction. Preserve
+  the original result; change only output-format guidance and versioned IDs.
+- [x] Retrieve all 120 responses, independently rescore, verify checkpoint/input
+  identity, and publish per-relation/task/entity results and limitations.
+
+## Scope
+Checkpoint: `full-board-new-layouts-20260907/checkpoints/checkpoint-128`.
+Use new dataset/run paths. Preserve historical prompts/results and keep the
+corrected report out of legacy fingerprint/first-token diagnostic aggregation.
+
+## Review
+User explicitly requested this model eval. Input SHA256:
+`930c9ce829566f40f9c7de0dc0bcf2b1f1c11dfdc7f3165f094767baef0bfa1e`.
+All 120 rows / five images uploaded; detached call
+`fc-01M21SZH04RS53CJ4JCBNQYBWP` in app `ap-F8zKIl6B9UYda6tR6FT4DE`.
+Local receipt: `artifacts/runs/sft/full-board-new-layouts-ck128-spatial-choice-order-v1-20260908-r01/launch.json`.
+Original run completed: 1/120 exact. Raw responses independently rescored with
+no mismatches; FP32 restoration confirmed. Stopped its Modal app after retrieval.
+Replanned one matched format control to avoid treating verbosity as a spatial
+error. This is not training or a new task/image/checkpoint sweep.
+
+Answer-only control completed: 57/120 (47.5%); binary 55/100, node choices 0/10,
+tile choices 2/10. All binary answers now follow the requested format; only
+6/20 token answers name an offered choice. Independent audits pass every check
+for both runs, including the prior full-board visual-file hash. Both GPU apps
+are stopped with zero tasks. Final focused suite: 82 passed; scoped Ruff and
+diff whitespace checks passed. Report:
+`reports/sft/2026-09-08-corrected-spatial-eval.md`.
+
+---
+
+# Spatial QA choice-order fix (2026-09-08)
+
+## Plan
+- [x] Trace the shared direction-question bank, sampling, stage-2 projection,
+  saved artifacts, and existing test patterns.
+- [x] Keep displayed candidates fixed across inverse questions while preserving
+  answers, relation labels, bank size/order, and IDs. Prefer exact paired balance
+  over independent random swaps, which can leave sampled blocks biased.
+- [x] Add regressions for node/tile choice positions, sampled blocks, and
+  renderer-aligned answer correctness through the stage-2 projection.
+- [x] Run focused tests and independent review; export a corrected supplement
+  to a new directory without overwriting historical data or model results.
+- [x] Document verification, corrected-data location, and legacy-data caveats.
+
+## Scope
+Fix the answer-position shortcut only. No training, hosted model calls,
+curriculum redesign, or changes to historical eval inputs/results.
+
+## Review
+- Seven regression cases failed before the fix; all 28 spatial/supplement/
+  production tests passed after it. Targeted Ruff passed. Renderer-aligned
+  centers verify both node and tile labels through repeated/shuffled stage 2.
+- Exported and validated 5,304 rows (4,104 train) under
+  `artifacts/generated/board_recognition/replay_v1/spatial_robber_choice_order_v1/`.
+  Actual prompt/answer counts: train first/second 86/86, validation 10/10,
+  test 10/10, color diagnostic 32/32. Historical inputs/results were untouched.
+- Independent review found no generator/test blocker. Before promoting new
+  evals, account for existing diagnostics: behavior fingerprints omit prompt
+  text, and failure-scorecard subjects default to the first prompt token.
+  Neither path was used to publish corrected eval results here. Existing
+  production/eval builders still select the historical `spatial_robber_v1`.
+
+---
+
+# Semantic action tools v11 (2026-09-08)
+
+## Plan
+- [x] Inspect v10 parsing, prompt assembly, engine legality, and saved-suite paths.
+- [x] Confirm expanded scope: semantic tools for every action, literal trained
+  board tokens for spatial arguments, and Knight plus robber destination.
+- [x] Add the v11 JSON tool-call contract (game_plan, tool, arguments), preserving
+  literal <Nxx>, <Exx_yy>, <Txx> tokens rather than treating them as XML markup.
+- [x] Resolve semantic calls against the frozen engine menu; preserve strict
+  legality, bounded retries, old indexed suites, and domestic trade lifecycle.
+- [x] Preflight and apply Knight plus movement in one sandbox decision, retaining
+  canonical events, immediate-victory boundaries, and separate victim selection.
+- [x] Cover valid calls, illegal bundles, unavailable tools, conflicting controls,
+  unchanged rejection state, and recorded v10 compatibility. Update docs.
+- [x] Run focused tests and independent review; record verification below.
+
+## Scope
+Keep canonical engine actions unchanged; append only optional Knight destination
+metadata to PlayerChoice with actual saved-receipt compatibility. No reward
+penalties, silent fallback policy, renderer refactor, live restart, or hosted
+model calls. New default is v11; recorded suite sources remain authoritative.
+
+## Review
+- Implemented all 20 action families using semantic JSON and literal trained
+  atlas tokens. No model-facing action indices or resource-combination menus.
+  Internal exact menus remain the legality authority; v10 source bytes and
+  15-/16-slot saved PlayerChoice receipts remain compatible.
+- Knight plus destination is preflighted, committed synchronously as canonical
+  events, and accepted once. Immediate victory suppresses movement; subsequent
+  victim selection and stolen-resource RNG remain engine-owned. Live traces show
+  committed actions separately from requested destination metadata.
+- Replay evals preserve parsed semantic receipts and historical indexed records.
+  Knight agreement is explicitly primary-action/coarse, with followup unscored;
+  no future replay action is used to construct a decision or invent a score.
+- Final Python verification: 2,233 passed, 34 skipped, excluding the pre-existing
+  `tests/test_reweight_node_edge.py` fixture error (`full_coverage` argument).
+  A full run reproduced that error after 1,967 passes; unrelated tests unchanged.
+- All six mounted browser tests and 20 frontend unit tests passed. Browser setup
+  built the production frontend. Scoped Ruff, component ESLint, and whitespace
+  checks passed. `types.ts` ESLint still reports its three pre-existing `any`
+  annotations; the new optional trace fields pass TypeScript compilation.
+- Independent reviews cleared after fixing replay normalization, concrete/mixed
+  trade selection, exact cancellation IDs, and raw-token escaping checks.
+  Initial broad/browser runs timed out; isolated reruns completed successfully.
+- No hosted calls, live-game advances, or backend restarts. One review import
+  invoked configured trace-schema initialization without reading/writing game
+  rows; subsequent broad/review/browser runs explicitly used temporary databases.
+
+---
+
 # Harness boundary review follow-up (2026-09-08)
 
 - [x] Inspect acquisition/staged failure tracing, communication schema metadata,
@@ -18,17 +2083,17 @@ User approved implementing the deeper audit findings. Keep unrelated changes
 and the live game intact; verify with local transports and temporary databases.
 
 - [x] Review failing audit cases and coordinate engine/replay/harness ownership.
-- [ ] Correct road connectivity/longest-road awards, own-turn victory, terminal
+- [x] Correct road connectivity/longest-road awards, own-turn victory, terminal
   boundaries, shortage payouts, discard limits/exact bundles, and trade IDs.
-- [ ] Restore complete replay checkpoints and publish canonical replay lifecycle
+- [x] Restore complete replay checkpoints and publish canonical replay lifecycle
   events; index speech and preserve compatible saved inference settings.
-- [ ] Structurally parse control fields, detach mutable player inputs/results,
+- [x] Structurally parse control fields, detach mutable player inputs/results,
   validate typed outputs/commitments, and preflight whole trade batches.
-- [ ] Version action-visible talk/commitments and named discard parameters in a
+- [x] Version action-visible talk/commitments and named discard parameters in a
   new suite, retaining actual persisted-suite and pickle compatibility.
-- [ ] Convert repaired audit xfails into ordinary regressions and run combined
+- [x] Convert repaired audit xfails into ordinary regressions and run combined
   tests, full-game checks, then one consolidated local corpus audit.
-- [ ] Obtain independent review, resolve findings, document evidence, and
+- [x] Obtain independent review, resolve findings, document evidence, and
   intentionally restart/restore the backend only after verification.
 
 ## Design boundaries
@@ -37,6 +2102,25 @@ Ordinary live actions fail closed after victory; replay retains explicit forced
 outcomes. Preserve historical prompt source bytes and resolved discard-card
 serialization. A new suite owns added social context and exact-discard output;
 do not silently rewrite saved prompts or infer hidden state from table talk.
+
+## Verification and deployment
+- 1,076 targeted Python/browser tests and 20 frontend tests passed; build,
+  targeted Ruff, and whitespace checks passed. All prior audit xfails removed.
+- 32 full games / 17,304 transitions passed inventory, independent road/award,
+  own-turn victory and seat-continuity checks; timed-out batch seed 31 was
+  completed separately. Full local corpus: 66 games, 31,506 actions, 15,460
+  trade-lifecycle actions, no asserted resource mismatches or semantic errors.
+- Independent rule/replay/harness reviews cleared after targeted fixes.
+  Legacy restore repairs derived caches without reordering equivalent menus.
+- User chose v10 for the legacy unpinned game. Restored checkpoint 83/revision
+  108 with unchanged material state, snapshot blob, and 368 stored model calls.
+  Confirmed WebSocket state and rendered v10 prompt components. Corrected
+  P3_LONGEST_ROAD_LENGTH from 2 to 3; saved xhigh reasoning now honored.
+- No hosted calls or game advances for verification; backups are in the
+  approved OpenCode temp directory. Historical stored labels are not recertified.
+- Architecture clarification: ReplaySandbox and CatanSandbox remain separate
+  classes, sharing engine/context/player machinery but not one step contract.
+  No inheritance refactor was requested or performed during this clarification.
 
 ---
 
@@ -3280,3 +5364,104 @@ scorecards, never loss.
   copied files are byte-identical and pass real `afplay` playback; completion
   was also played at 0.65 volume. Independent review found no remaining blockers.
   Setup/limitations are documented in `~/.config/opencode/README.md`.
+# Live checkpoint navigation and recorded token usage (2026-09-15)
+
+- [x] Inspect dirty tree, navigation, provider usage, and trace persistence.
+- [x] Separate browse-only presentation from runtime; reuse navigator in live dock.
+- [x] Add lightweight usage projection, per-step totals and covered-step averages.
+- [x] Verify aggregation, routes and isolated mounted navigation; document review.
+
+Design: history GETs never restore a sandbox or replace active inference settings.
+Latest returns to the runtime view; progression is guarded while browsing/loading.
+Metrics use canonical model-call rows (decision retries plus communication), never
+duplicated result payloads. Failure-only calls are reported separately, excluded
+from completed-step averages. Unknown provider usage remains unknown.
+
+Review: reused TraceStepNavigator/SavedStepReasoningTrace, with one navigator in
+the dock. Runtime board/configuration stays independent of the browse view;
+Latest uses no load POST. Initial runtime identity gates default checkpoint
+selection, request generations discard stale detail responses, and failed history
+GETs keep progression locked until Latest. Metrics use the existing trace GET's
+usage-only projection; old baseline rows are excluded and failure batches retain
+distinct decision/speech identities. README documents denominator and limitations.
+
+Verification: 44 frontend Node tests; 63 trace-store/live-route tests; 13 isolated
+mounted browser tests (1280/1600 widths, real engine board states, exact saved
+messages/reasoning, usage, socket updates during history, failed GET recovery,
+startup into an existing game, and existing autoplay regressions). Production
+TypeScript/Vite build and focused ESLint passed. Existing dirty work preserved.
+No live server restart or user's game mutation. An already-running old backend
+must pick up the usage projection before game averages become available; per-step
+usage works through the existing checkpoint endpoint. No transport usage estimates.
+# Compact board control strip (2026-09-15)
+
+- [x] Flatten status/actions and inline checkpoint navigation; suppress empty history.
+- [x] Show available token summaries with optional coverage details; retain warnings.
+- [x] Verify unit/build/scoped lint and isolated desktop/mobile browser flows; review.
+
+Design: retain existing palette and runtime handlers, use one busy status and stable
+button labels, truncate secondary model settings, wrap controls within the dock.
+
+Review: one status, stable Step/Auto-play labels, inline history, available-only
+token summaries and native details disclosure. Preserved runtime/navigation guards
+and alert visibility. Desktop populated strip fits two rows (<90px); empty/busy
+strip stays <85px at 390/1600px. Mobile wraps and enabled dock hit targets pass.
+45 Node tests, TypeScript/Vite build, scoped ESLint and diff check passed. All 16
+isolated browser cases passed; after final CSS compaction, all five affected
+desktop/mobile layout/history cases passed again. Browser build uses a temporary
+output directory. Updated the existing fixture's required result field; mobile
+exact-request expansion remains covered on desktop because its inspector collapses.
+Screenshots: pytest-57/test_live_history_board_exact_{0,1,2}/compact-history-*.png
+and test_compact_empty_and_busy_co{0,1}/compact-controls-*.png under the local
+pytest temp root. No resident backend restart or live game mutation.
+# Message board shows the game step (2026-09-16)
+
+- [x] Stamp live speech log rows with the recorded trace step index after record_step.
+- [x] Rewrite the recorded checkpoint so browsed steps carry the same labels.
+- [x] Frontend: derive table talk in a pure module; render "step N", falling back to "event #N".
+- [x] Unit/store/route/frontend tests for stamping, relabelling and fallback.
+
+Design: the trace step index only exists after `record_step` commits, so speech rows
+keep being logged with their engine-event sequence during `analyze_transitions`, and
+`stamp_message_step_indexes` labels the rows appended since a per-step mark. The step
+row is already durable, so the follow-up `update_step_public_state` write is best
+effort - a failed relabel costs the label, not the step. Rebuilding the snapshot after
+stamping keeps the POST response, the socket broadcast and the stored public state
+identical, which the existing checkpoint equality assertion enforces.
+
+Review: no second source of truth - the label is derived from the recorded index, not
+recomputed in the UI. Rows without a recorded step (no trace store, or games saved
+before this change) fall back to the engine-event sequence instead of inventing a step.
+Derivation moved out of App.tsx into `src/tableTalk.ts` so it is directly testable,
+matching traceUsage/liveStepErrors.
+
+Verification: 48 Node tests, `tsc -b`, and 104 passing route/store/logging/fresh-notes
+tests plus 115 reactive-speech/action-batch/trade/checkpoint-audit tests. Two failures
+in tests/test_live_sandbox_routes.py (invalid-attempt diagnostics) are pre-existing in
+this dirty tree: uncommitted `_retry_feedback` in cle/sandbox/catan.py appends "Your
+currently legal tools: ..." to the surfaced validation_error, which those expectations
+predate. Unrelated to this change; left for the author of that work to settle.
+
+Follow-up (same day): the message board rendered empty because the log is broadcast,
+not accumulated - both the socket snapshot and `/api/state` sent only the last 50 rows,
+and a 384-step game's tail held no speech (12 messages existed, the newest at step 318).
+Moved the Messages panel under Game log, then dropped the tail: both snapshots now carry
+the whole log. A dedicated speech list was built first and then reverted - with an
+unbounded log it was a second source of truth for the same rows. Storage cost: the
+per-step checkpoint's public_state grows with the log (~500 bytes/row) against the
+~2.1 MB pickled snapshot each step already writes, so ~13% on a 1.4 GB trace DB.
+
+## 2026-09-16 Persistent auto-play (unlimited retries until game complete)
+- [x] Keep-awake: standalone `caffeinate -dims` (pid 76877, "asserting forever" per `pmset -g assertions`) already covers the machine; no second one started
+- [x] `autoPlay.ts`: `retryable` on step results, optional `retryPause(failures)`; unbounded retries, count resets after success, game-over checked before failure
+- [x] `liveStepErrors.ts`: warnings retryable (action applied, next Step advances); `liveStepFailureRetryable` stops only when `retryable=false` and `checkpoint_saved=false` on a traced game
+- [x] `App.tsx`: fetch/guard failures retryable, cancellable exponential backoff (1s doubling to 30s), retry notice state, socket notices no longer cancel auto-play unless persistence failed
+- [x] `App.tsx`: `snapshotKey` echo-dedupe now includes `last_live_step_error`, `live_inference`, `player_types` (the pre-existing gap noted above; notice-only broadcasts were being dropped)
+- [x] `BoardControlsDock`: retry countdown line (`role=status`), "Auto-play retrying" status, updated tooltips
+- [x] Tests: `npm test` 60/60; `tsc -b` clean; eslint clean on touched files; browser suite 22/22 with new 422/500 retry and stop-during-wait cases
+- [x] README live-failure section documents the retry policy and the single hard stop
+
+Review: frontend-only, so the live backend (pid 76710) and its in-memory game
+were not restarted. Vite hot-reloaded `App.tsx`, which remounts the app and
+ends any auto-play that was running at that moment; Auto-play must be clicked
+once more in the tab to pick up the persistent loop.

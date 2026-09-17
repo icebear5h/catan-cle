@@ -1,19 +1,62 @@
 # Catan correctness audit: 2026-09-08
 
+## Remediation status
+
+Implemented and verified after user approval. The findings below describe the
+original pre-fix audit, not the current status. All 35 former expected-failure
+cases, including the approved custom-player rejection policy, are now ordinary
+passing regressions. Additional regressions cover review-discovered edge cases.
+
+- Final targeted Python/browser suite: **1,076 passed**. The 33 skips were the
+  32 opt-in full-game seeds and the opt-in local corpus; both were run separately.
+- Frontend unit tests: **20 passed**; production build and targeted Ruff passed.
+- Full-game seeds 0-31: **32 passed**, covering **17,304 transitions**, with all
+  finite inventories, accepted seat history, own-turn victory, and an independent
+  edge-based Longest Road oracle checked. The batch timeout occurred after seed
+  30; seed 31 was then completed independently, not counted as a timed-out pass.
+- Full local corpus: **66/66**, **31,506 actions**, **15,460 trade-lifecycle
+  actions**, zero asserted resource mismatches or error-severity semantic issues.
+  The single integrated corpus run completed in 399.82 seconds. Subsequent
+  legacy-restore cache fixes received focused and full targeted-suite verification.
+- Three independent reviews were rechecked after fixes. Final restore review
+  also verified preservation of valid indexed menus during stale-counter repair.
+
+The v10 decision suite adds perspective-filtered table talk/commitments and
+explicit named discard choices. Historical suite files remain unchanged;
+recorded suite pins still take precedence. The user explicitly selected v10
+for their legacy unpinned live game.
+
+The backend was restarted and game `27886234-8ae9-4529-8801-6399e42ac412`
+restored at checkpoint **83**, revision **108**. Board, resources, cards,
+recorded actions and snapshot blob were preserved; stored model calls remained
+**368**, and WebSocket delivery was verified. One derived road-length counter
+was corrected from two to three. The fixed loader restored the saved `xhigh`
+reasoning setting rather than the old loader's forced `high` setting. No model
+calls or gameplay actions were made during deployment verification.
+
+Limits remain: these tests are not exhaustive; forced replay paths intentionally
+reconstruct source outcomes; historical speech indexes were not backfilled;
+historically incorrect tied award ownership cannot be inferred from a snapshot
+alone. Old game outcomes and labels are not retroactively certified. Deep
+detachment adds local simulation cost; optimize only while preserving isolation.
+
+Run `tests/audits` normally now. It no longer requires expected-failure handling.
+The original audit counts and reproductions below are retained as provenance.
+
 ## Verdict and scope
 
-The current runtime does not pass an independent correctness gate. Inventory
+The initially audited runtime did not pass an independent correctness gate. Inventory
 conservation and the existing replay audit pass, but rule, causal-history,
 parser, and mutable-state boundary checks fail.
 
-This pass adds verification only. No production logic, game rules, prompt or
+The initial audit pass added verification only. No production logic, game rules, prompt or
 action schemas were changed. No hosted model calls, live-game actions, server
 restart, or writes to the real `.cle` database were performed.
 
-The new suite preserves **31 reproduced correctness cases and four separately
+The initial suite preserved **31 reproduced correctness cases and four separately
 labeled custom-player robustness proposals**. Cases are not distinct bugs:
 several exercise different surfaces of the same underlying defect. They are
-strict expected failures, not successful correctness checks.
+strict expected failures at that time, not successful correctness checks.
 
 ## Coverage and results
 

@@ -94,6 +94,44 @@ python -m data_pipeline.bootstrapping.scrapers.replay_api_scraper \
 
 JWT alone may still receive a 403 when browser session state is required.
 
+## Keep pulling in batches
+
+`pull_replays_loop.py` runs bounded batches back to back through a logged-in
+Chrome over CDP, rebuilding a deduplicated index (raw, staging, and rejected
+captures excluded) before each batch and cooling down between them. It waits for
+any running scraper first and halts on its own on a rate limit, an empty batch
+(dead session or exhausted index), or the batch cap.
+
+```bash
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+  --user-data-dir="$PWD/.colonist-cdp-profile" --remote-debugging-port=9222 &
+# log in once in that window, then:
+nohup uv run python -m data_pipeline.bootstrapping.scrapers.pull_replays_loop \
+  --batch-size 150 --cooldown-seconds 600 --max-batches 20 > logs/colonist_pull_loop.log 2>&1 &
+```
+
+Playwright's bundled Chromium cannot read cookies written by Google Chrome, so a
+profile logged in through Chrome must be driven through Chrome via `--cdp-url`.
+Per-batch logs are `logs/colonist_scrape_<timestamp>.log`.
+
+Observed limit (2026-09-17): the replay endpoint returned 429 after about 50
+requests in 35 minutes at 40s pacing, with no `Retry-After`. The loop therefore
+defaults to 45 per batch and an hour between batches; one 429 cools down 90
+minutes and retries once, a second consecutive 429 stops the loop.
+
+## Seat ratings
+
+Replay payloads, the history endpoint, and `gameDetails.isRanked` (always false)
+carry no ratings, and `/api/profile/{username}` does not exist. The only public
+source is the Classic4P leaderboard: every rated player (30k+), 100 per page,
+`search` ignored. `annotate_seat_ratings.py` takes one snapshot per day into
+`artifacts/raw/colonist/indexes/classic4p_leaderboard_<date>.json` and writes
+`artifacts/manifests/colonist/seat_ratings.json` with per-seat rank, rating,
+division, and bot flag for every captured replay. Ratings are as of the snapshot,
+not at game time. The pull loop runs it after each batch. Rated games are
+`gameSettings.eloType == 4` with `gameType == 6` (inferred from the corpus; the
+enum is undocumented).
+
 ## Validate and promote
 
 Before copying a staged payload into `artifacts/raw/colonist/replays/`, verify:

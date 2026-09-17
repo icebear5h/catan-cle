@@ -262,6 +262,18 @@ class PlaywrightReplayScraper:
             except Exception as exc:
                 logger.warning("Could not read replay response for %s: %s", game_id, exc)
 
+        async def record_rate_limit(response: Response) -> None:
+            # Colonist sends no Retry-After; keep every other header and the body so the
+            # window can be worked out from the log instead of by probing again.
+            headers = {k: v for k, v in response.headers.items() if k.lower() != "set-cookie"}
+            try:
+                body = (await response.text())[:500]
+            except Exception as exc:
+                body = f"<unreadable: {exc}>"
+            logger.error("429 for %s: headers=%s body=%r", game_id, headers, body)
+            if not future.done():
+                future.set_exception(ReplayRateLimitedError(game_id, headers.get("retry-after")))
+
         def on_response(response: Response) -> None:
             if not is_matching_replay_response(response.url, game_id, player_color):
                 return
@@ -273,12 +285,7 @@ class PlaywrightReplayScraper:
             elif status in {401, 403}:
                 logger.info("Waiting for a later successful replay response after %s", status)
             elif status == 429 and not future.done():
-                future.set_exception(
-                    ReplayRateLimitedError(
-                        game_id,
-                        response.headers.get("retry-after"),
-                    )
-                )
+                asyncio.create_task(record_rate_limit(response))
             elif status == 404 and not future.done():
                 future.set_exception(RuntimeError(f"Replay not found: {game_id}"))
 

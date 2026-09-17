@@ -1,8 +1,19 @@
 import type { LiveStepFailure } from '../liveStepErrors';
+import type { Color as PlayerColor } from '../types';
 import './LiveReasoningTrace.css';
 import './SavedStepReasoningTrace.css';
 
-export default function RejectedLiveAttempts({ failure }: { failure: LiveStepFailure }) {
+export default function RejectedLiveAttempts({
+  failure,
+  playerFilter = 'all',
+}: {
+  failure: LiveStepFailure;
+  playerFilter?: 'all' | PlayerColor;
+}) {
+  if (playerFilter !== 'all' && failure.player !== playerFilter) {
+    return null;
+  }
+
   return (
     <section
       className="live-reasoning-panel saved-step-reasoning-panel"

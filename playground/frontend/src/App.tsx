@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import { motion } from 'motion/react';
 import {
@@ -9,13 +9,20 @@ import {
   usePanelRef,
 } from 'react-resizable-panels';
 import type { PanelSize } from 'react-resizable-panels';
-import { runAutoPlayLoop } from './autoPlay';
-import type { AutoPlayStepResult } from './autoPlay';
-import { liveStepAutoPlayResult, liveStepErrorUpdate } from './liveStepErrors';
+import { autoPlayRetryDelayMs, runAutoPlayLoop } from './autoPlay';
+import type { AutoPlayRetryNotice, AutoPlayStepResult } from './autoPlay';
+import {
+  liveStepAutoPlayResult,
+  liveStepErrorUpdate,
+  liveStepFailureRetryable,
+} from './liveStepErrors';
+import { deriveTableTalk } from './tableTalk';
 import type { LiveStepFailure, LiveStepWarning } from './liveStepErrors';
 import type { AllPlayerDevCards } from './playerDevCards';
+import type { AllPlayerHands } from './playerHands';
 import type {
   GameState,
+  Color,
   AllPlayerResources,
   ReplayInfo,
   ReplayLLMResponse,
@@ -41,6 +48,9 @@ import SavedLiveGamesBar, {
 import TraceStepNavigator, {
   type TraceStepDetail,
 } from './components/TraceStepNavigator';
+import { matchingReasoningActors } from './components/traceModelCalls';
+import TraceUsage from './components/TraceUsage';
+import type { GameUsage } from './traceUsage';
 import PromptSuiteStudio from './components/PromptSuiteStudio';
 import './App.css';
 
@@ -82,10 +92,11 @@ interface ReplayCursor {
 }
 
 interface GameLogEntry {
-  type: 'dice' | 'resource' | 'building' | 'trade' | 'robber' | 'general';
+  type: 'dice' | 'resource' | 'building' | 'trade' | 'robber' | 'general' | 'message';
   timestamp: number;
   message: string;
   color?: string;
+  step_index?: number | null;
   details?: unknown;
 }
 
@@ -115,10 +126,33 @@ interface StateSnapshot {
   game_log?: GameLogEntry[];
   all_player_resources?: AllPlayerResources | null;
   all_player_dev_cards?: AllPlayerDevCards | null;
+  // Spectator hand contents alongside the public totals above. Absent on
+  // snapshots recorded before the field existed, so always optional.
+  player_hands?: AllPlayerHands | null;
   player_types?: Record<string, string> | null;
   replay_mode?: boolean;
   replay?: ReplayInfo | null;
   last_dice_roll?: [number, number] | null;
+}
+
+// Identity of a state snapshot for echo-dedupe: the POST-response state and the
+// socket broadcast carry the same payload, so the second delivery can be skipped.
+// A broadcast that changes only the failure notice, inference settings or seat
+// types (a failure in another tab, a prompt swap) must still get through.
+function snapshotKey(snapshot: StateSnapshot): string {
+  const game = snapshot.game;
+  return JSON.stringify([
+    snapshot.replay_mode
+      ? `replay:${snapshot.replay?.game_id}:${snapshot.replay?.event_index}`
+      : `live:${snapshot.live_trace_game_id}`,
+    game?.state_index ?? null,
+    snapshot.running,
+    snapshot.game_log?.length ?? 0,
+    snapshot.last_dice_roll ?? null,
+    snapshot.last_live_step_error ?? null,
+    snapshot.live_inference ?? null,
+    snapshot.player_types ?? null,
+  ]);
 }
 
 function getApiError(payload: unknown, fallback: string): string {
@@ -155,8 +189,9 @@ async function readApiObject(response: Response): Promise<Record<string, unknown
 function App() {
   const [workspace, setWorkspace] = useState<'game' | 'prompt-suite'>('game');
   const [promptSuiteDirty, setPromptSuiteDirty] = useState(false);
-  const [gameState, setGameState] = useState<GameState | null>(null);
+  const [runtimeGameState, setGameState] = useState<GameState | null>(null);
   const [hasActiveGame, setHasActiveGame] = useState(false);
+  const [runtimeReady, setRuntimeReady] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [liveError, setLiveError] = useState<string | null>(null);
   const [liveStepFailure, setLiveStepFailure] = useState<LiveStepFailure | null>(null);
@@ -170,17 +205,28 @@ function App() {
   const [browsedTraceStep, setBrowsedTraceStep] = useState<TraceStepDetail | null>(null);
   const [traceBrowseBusy, setTraceBrowseBusy] = useState(false);
   const [traceBrowseError, setTraceBrowseError] = useState<string | null>(null);
+  const [reasoningSelection, setReasoningSelection] = useState<{ gameId: string | null; color: 'all' | Color }>({ gameId: null, color: 'all' });
+  const reasoningActorsRef = useRef(new Map<string, Map<number, string[]>>());
+  const [reasoningNavigationNotice, setReasoningNavigationNotice] = useState<string | null>(null);
+  const [viewingHistory, setViewingHistory] = useState(false);
+  const historyRef = useRef(false);
+  const [gameUsage, setGameUsage] = useState<GameUsage | null>(null);
+  const [usageError, setUsageError] = useState<string | null>(null);
+  const [usageRevision, setUsageRevision] = useState(0);
   const [liveReasoningTraces, setLiveReasoningTraces] = useState<LiveReasoningTraceRecord[]>([]);
-  const [gameLog, setGameLog] = useState<GameLogEntry[]>([]);
-  const [allPlayerResources, setAllPlayerResources] = useState<AllPlayerResources | null>(null);
-  const [allPlayerDevCards, setAllPlayerDevCards] = useState<AllPlayerDevCards | null>(null);
+  const [runtimeGameLog, setGameLog] = useState<GameLogEntry[]>([]);
+  const [runtimeResources, setAllPlayerResources] = useState<AllPlayerResources | null>(null);
+  const [runtimeDevCards, setAllPlayerDevCards] = useState<AllPlayerDevCards | null>(null);
+  const [runtimeHands, setPlayerHands] = useState<AllPlayerHands | null>(null);
   const [isLlmProcessing, setIsLlmProcessing] = useState(false);
+  const [isSessionChanging, setIsSessionChanging] = useState(false);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
-  const [playerTypes, setPlayerTypes] = useState<Record<string, string> | null>(null);
+  const [autoPlayRetry, setAutoPlayRetry] = useState<AutoPlayRetryNotice | null>(null);
+  const [runtimePlayerTypes, setPlayerTypes] = useState<Record<string, string> | null>(null);
   const [replayMode, setReplayMode] = useState(false);
   const [replayInfo, setReplayInfo] = useState<ReplayInfo | null>(null);
   const [lastReplayStep, setLastReplayStep] = useState<ReplayStepResult | null>(null);
-  const [lastDiceRoll, setLastDiceRoll] = useState<[number, number] | null>(null);
+  const [runtimeDiceRoll, setLastDiceRoll] = useState<[number, number] | null>(null);
   const [liveModel, setLiveModel] = useState(
     () => window.localStorage.getItem(LIVE_MODEL_STORAGE_KEY) || DEFAULT_LIVE_MODEL,
   );
@@ -193,9 +239,7 @@ function App() {
   const [liveColorPalette, setLiveColorPalette] = useState<LiveColorPalette>(
     'random_all',
   );
-  const [replayGamePlan, setReplayGamePlan] = useState('');
   const [replayLlmResponse, setReplayLlmResponse] = useState<ReplayLLMResponse | null>(null);
-  const [tableTalkLog, setTableTalkLog] = useState<TableTalkEntry[]>([]);
   const [replayLlmError, setReplayLlmError] = useState<string | null>(null);
   const [isReplayLlmProcessing, setIsReplayLlmProcessing] = useState(false);
   const [replayPlaybackError, setReplayPlaybackError] = useState<string | null>(null);
@@ -203,10 +247,14 @@ function App() {
   const [isSessionDrawerOpen, setIsSessionDrawerOpen] = useState(true);
   const [isInspectorDrawerOpen, setIsInspectorDrawerOpen] = useState(true);
   const replayCursorRef = useRef<ReplayCursor | null>(null);
+  const lastSnapshotKeyRef = useRef<string | null>(null);
+  const lastListRefreshRef = useRef(0);
+  const lastListGameRef = useRef<string | null>(null);
   const replayModelRef = useRef(replayModel);
   const savedGamesRequestRef = useRef(0);
   const traceBrowseRequestRef = useRef(0);
   const autoPlayRequestedRef = useRef(false);
+  const autoPlayRetryCancelRef = useRef<(() => void) | null>(null);
   const stepInFlightRef = useRef(false);
   const appMountedRef = useRef(true);
   const sessionPanelRef = usePanelRef();
@@ -218,8 +266,44 @@ function App() {
     onlySaveAfterUserInteractions: false,
   });
 
+  const checkpoint = viewingHistory && browsedTraceStep
+    ? browsedTraceStep.step.public_state as StateSnapshot : null;
+  const gameState = checkpoint ? checkpoint.game : runtimeGameState;
+  const gameLog = checkpoint ? checkpoint.game_log ?? [] : runtimeGameLog;
+  // Message board: derive table talk from game-log message rows (agent speech
+  // logged by _log_table_talk). The old replay-response accumulator never fires
+  // (ReplayLLMResponse no longer carries a message), so derive instead.
+  const tableTalkLog: TableTalkEntry[] = useMemo(
+    () => deriveTableTalk(gameLog),
+    [gameLog],
+  );
+  const allPlayerResources = checkpoint ? checkpoint.all_player_resources ?? null : runtimeResources;
+  const allPlayerDevCards = checkpoint ? checkpoint.all_player_dev_cards ?? null : runtimeDevCards;
+  const playerHands = checkpoint ? checkpoint.player_hands ?? null : runtimeHands;
+  const playerTypes = checkpoint ? checkpoint.player_types ?? null : runtimePlayerTypes;
+  const lastDiceRoll = checkpoint ? checkpoint.last_dice_roll ?? null : runtimeDiceRoll;
+  const reasoningGameId = replayMode ? null : selectedSavedGameId || liveTraceGameId;
+  const reasoningFilter = reasoningSelection.gameId === reasoningGameId ? reasoningSelection.color : 'all';
+  if (reasoningSelection.gameId !== reasoningGameId) {
+    setReasoningSelection({ gameId: reasoningGameId, color: 'all' });
+    setReasoningNavigationNotice(null);
+  }
+  const reasoningGameRef = useRef(reasoningGameId);
+  useEffect(() => {
+    reasoningGameRef.current = reasoningGameId;
+  }, [reasoningGameId]);
+
+  const cacheReasoningActors = useCallback((detail: TraceStepDetail) => {
+    const cache = reasoningActorsRef.current;
+    if (!cache.has(detail.game_id)) cache.set(detail.game_id, new Map());
+    cache.get(detail.game_id)!.set(detail.step.step_index, matchingReasoningActors(detail));
+    if (cache.size > 3) cache.delete(cache.keys().next().value!);
+  }, []);
+
   const stopAutoPlay = useCallback(() => {
     autoPlayRequestedRef.current = false;
+    // A pending retry backoff ends now so the loop observes the cancellation.
+    autoPlayRetryCancelRef.current?.();
     setIsAutoPlaying(false);
   }, []);
 
@@ -237,7 +321,9 @@ function App() {
   ) => {
     const update = liveStepErrorUpdate(payload, source);
     if (update === undefined) return;
-    if (update.message !== null) stopAutoPlay();
+    // Auto-play retries every checkpointed failure, from this tab or another;
+    // only a failure the server could not save halts it.
+    if (update.message !== null && !liveStepFailureRetryable(payload)) stopAutoPlay();
     setLiveError(update.message);
     setLiveStepFailure(update.failure);
   }, [stopAutoPlay]);
@@ -246,6 +332,7 @@ function App() {
     data: StateSnapshot,
     source: 'runtime' | 'checkpoint' = 'runtime',
   ) => {
+    lastSnapshotKeyRef.current = snapshotKey(data);
     setGameState(data.game);
     setIsRunning(data.running);
     setGameLog(data.game_log || []);
@@ -255,6 +342,7 @@ function App() {
     applyLiveStepError(data.last_live_step_error, source);
     setAllPlayerResources(data.all_player_resources || null);
     setAllPlayerDevCards(data.all_player_dev_cards || null);
+    setPlayerHands(data.player_hands || null);
     if (data.player_types !== undefined) {
       setPlayerTypes(data.player_types);
     }
@@ -272,28 +360,12 @@ function App() {
     }
     if (!nextReplayMode || !nextReplay) {
       replayCursorRef.current = null;
-      setReplayGamePlan('');
       setReplayLlmResponse(null);
       setReplayLlmError(null);
-      setTableTalkLog([]);
     } else {
       const changedGame = previousCursor?.gameId !== nextReplay.game_id;
       const changedCursor = previousCursor?.eventIndex !== nextReplay.event_index;
-      const movedBackward = (
-        previousCursor?.gameId === nextReplay.game_id
-        && nextReplay.event_index < previousCursor.eventIndex
-      );
 
-      if (changedGame) {
-        setTableTalkLog([]);
-      } else if (movedBackward) {
-        setTableTalkLog((prev) => prev.filter(
-          (entry) => entry.replayIndex <= nextReplay.event_index,
-        ));
-      }
-      if (changedGame || movedBackward) {
-        setReplayGamePlan('');
-      }
       if (changedGame || changedCursor) {
         setReplayLlmResponse(null);
         setReplayLlmError(null);
@@ -311,7 +383,7 @@ function App() {
     }
   }, [applyLiveStepError]);
 
-  const refreshSavedGames = useCallback(async () => {
+  const refreshSavedGames = useCallback(async (selectDefault = true) => {
     const requestId = ++savedGamesRequestRef.current;
     try {
       setSavedGamesBusy(true);
@@ -334,7 +406,7 @@ function App() {
       setSelectedSavedGameId((previous) => (
         games.some((game) => game.game_id === previous)
           ? previous
-          : games[0]?.game_id || ''
+          : selectDefault ? games[0]?.game_id || '' : ''
       ));
     } catch (error) {
       if (requestId === savedGamesRequestRef.current) {
@@ -352,11 +424,16 @@ function App() {
     void refreshSavedGames();
   }, [refreshSavedGames]);
 
-  const browseSavedStep = useCallback(async (gameId: string, stepIndex: number) => {
+  const browseSavedStep = useCallback(async (gameId: string, stepIndex: number, followLive = false) => {
+    if (!followLive && stepInFlightRef.current) return;
+    if (!followLive) stopAutoPlay();
+    historyRef.current = !followLive;
+    setViewingHistory(!followLive);
     const requestId = ++traceBrowseRequestRef.current;
     try {
       setTraceBrowseBusy(true);
       setTraceBrowseError(null);
+      setReasoningNavigationNotice(null);
       const response = await fetch(
         `${SERVER_URL}/api/live-traces/${gameId}/steps/${stepIndex}`,
         { cache: 'no-store' },
@@ -369,10 +446,9 @@ function App() {
       if (requestId !== traceBrowseRequestRef.current) {
         return;
       }
+      cacheReasoningActors(detail);
       setBrowsedTraceStep(detail);
       setSelectedSavedGameId(gameId);
-      setLiveReasoningTraces([]);
-      applyStateSnapshot(detail.step.public_state as StateSnapshot, 'checkpoint');
     } catch (error) {
       if (requestId === traceBrowseRequestRef.current) {
         const message = error instanceof Error ? error.message : String(error);
@@ -383,7 +459,59 @@ function App() {
         setTraceBrowseBusy(false);
       }
     }
-  }, [applyStateSnapshot]);
+  }, [stopAutoPlay, cacheReasoningActors]);
+
+  const navigateReasoning = async (gameId: string, startIndex: number, direction: -1 | 1, stepCount: number) => {
+    if (reasoningFilter === 'all') {
+      void browseSavedStep(gameId, startIndex + direction);
+      return;
+    }
+    if (stepInFlightRef.current) return;
+    stopAutoPlay();
+    const requestId = ++traceBrowseRequestRef.current;
+    setTraceBrowseBusy(true);
+    setTraceBrowseError(null);
+    setReasoningNavigationNotice(null);
+    try {
+      for (let index = startIndex + direction; index >= 0 && index < stepCount; index += direction) {
+        if (requestId !== traceBrowseRequestRef.current || reasoningGameRef.current !== gameId) return;
+        const cachedActors = reasoningActorsRef.current.get(gameId)?.get(index);
+        if (cachedActors && !cachedActors.includes(reasoningFilter)) continue;
+        const response = await fetch(`${SERVER_URL}/api/live-traces/${gameId}/steps/${index}`, { cache: 'no-store' });
+        const data = await readApiObject(response);
+        if (requestId !== traceBrowseRequestRef.current || reasoningGameRef.current !== gameId) return;
+        if (!response.ok) throw new Error(getApiError(data, 'Failed to search saved reasoning'));
+        const detail = data as unknown as TraceStepDetail;
+        cacheReasoningActors(detail);
+        if (!matchingReasoningActors(detail).includes(reasoningFilter)) continue;
+        historyRef.current = true;
+        setViewingHistory(true);
+        setBrowsedTraceStep(detail);
+        setSelectedSavedGameId(gameId);
+        return;
+      }
+      setReasoningNavigationNotice(`No ${direction === -1 ? 'earlier' : 'later'} reasoning for ${reasoningFilter}.`);
+    } catch (error) {
+      if (requestId === traceBrowseRequestRef.current) {
+        setTraceBrowseError(error instanceof Error ? error.message : String(error));
+      }
+    } finally {
+      if (requestId === traceBrowseRequestRef.current) setTraceBrowseBusy(false);
+    }
+  };
+
+  const returnLatest = useCallback(() => {
+    if (stepInFlightRef.current) return;
+    traceBrowseRequestRef.current += 1;
+    setTraceBrowseBusy(false);
+    setTraceBrowseError(null);
+    setReasoningNavigationNotice(null);
+    historyRef.current = false;
+    setViewingHistory(false);
+    setBrowsedTraceStep(null);
+    setSelectedSavedGameId(liveTraceGameId ?? '');
+    void refreshSavedGames(false);
+  }, [liveTraceGameId, refreshSavedGames]);
 
   const selectSavedGame = (gameId: string) => {
     traceBrowseRequestRef.current += 1;
@@ -406,6 +534,12 @@ function App() {
 
     newSocket.on('game_state', (data) => {
       const snapshot = data as StateSnapshot;
+      setRuntimeReady(true);
+      const key = snapshotKey(snapshot);
+      if (key === lastSnapshotKeyRef.current) {
+        return;
+      }
+      lastSnapshotKeyRef.current = key;
       const isRuntimeSnapshot = snapshot.game !== null && (
         Boolean(snapshot.replay_mode)
         || snapshot.live_trace_game_id !== undefined
@@ -413,19 +547,32 @@ function App() {
       setHasActiveGame(isRuntimeSnapshot);
       if (!snapshot.replay_mode && snapshot.live_trace_game_id !== undefined) {
         setLiveTraceGameId(snapshot.live_trace_game_id);
+        if (!historyRef.current && snapshot.live_trace_game_id) {
+          setSelectedSavedGameId(snapshot.live_trace_game_id);
+          setBrowsedTraceStep((previous) => previous?.game_id === snapshot.live_trace_game_id ? previous : null);
+        }
       }
 
-      console.log('='.repeat(80));
-      console.log('[FRONTEND] Received game state update');
-      console.log('='.repeat(80));
-      console.log('Game:', data.game);
-      console.log('Running:', data.running);
-      console.log('Current player:', data.game?.current_color);
-      console.log('Game log entries:', data.game_log?.length || 0);
-      console.log('Player types:', data.player_types);
-      console.log('='.repeat(80));
+      console.log(
+        '[FRONTEND] game_state',
+        snapshot.replay_mode ? snapshot.replay?.game_id : snapshot.live_trace_game_id,
+        'idx',
+        snapshot.game?.state_index,
+        'log',
+        snapshot.game_log?.length || 0,
+      );
 
       applyStateSnapshot(snapshot);
+      // The saved-games list + usage follow-ups are ~400KB of fetch/parse per
+      // event. Refresh immediately on game switch, otherwise throttle.
+      const now = Date.now();
+      const gameId = snapshot.live_trace_game_id ?? null;
+      if (gameId !== lastListGameRef.current || now - lastListRefreshRef.current >= 2500) {
+        lastListGameRef.current = gameId;
+        lastListRefreshRef.current = now;
+        void refreshSavedGames(false);
+        setUsageRevision((value) => value + 1);
+      }
     });
 
     newSocket.on('disconnect', () => {
@@ -435,9 +582,13 @@ function App() {
     return () => {
       newSocket.close();
     };
-  }, [applyStateSnapshot]);
+  }, [applyStateSnapshot, refreshSavedGames]);
 
   const startGame = async (mode: string = 'random') => {
+    if (isSessionChanging || hasActiveGame || stepInFlightRef.current) return;
+    setIsSessionChanging(true);
+    historyRef.current = false;
+    setViewingHistory(false);
     traceBrowseRequestRef.current += 1;
     setTraceBrowseBusy(false);
     applyLiveStepError(null);
@@ -448,11 +599,9 @@ function App() {
     setLiveTraceDatabase(null);
     setSelectedSavedGameId('');
     replayCursorRef.current = null;
-    setReplayGamePlan('');
     setReplayLlmResponse(null);
     setReplayLlmError(null);
     setReplayPlaybackError(null);
-    setTableTalkLog([]);
     try {
       const response = await fetch(`${SERVER_URL}/api/start-game`, {
         method: 'POST',
@@ -488,12 +637,15 @@ function App() {
       const message = error instanceof Error ? error.message : String(error);
       setLiveError(message);
       console.error('Error starting game:', error);
+    } finally {
+      setIsSessionChanging(false);
     }
   };
 
   const stepGame = useCallback(async (): Promise<AutoPlayStepResult> => {
-    if (stepInFlightRef.current) {
-      return { ok: false, running: false, gameOver: false };
+    if (stepInFlightRef.current || historyRef.current || traceBrowseBusy || isSessionChanging || savedGamesBusy) {
+      // Busy flags clear on their own; browsing history is a deliberate pause.
+      return { ok: false, running: false, gameOver: false, retryable: !historyRef.current };
     }
 
     stepInFlightRef.current = true;
@@ -510,11 +662,17 @@ function App() {
       const data = await readApiObject(response);
 
       const duration = performance.now() - startTime;
-      console.log(`[FRONTEND] Step game - response received (${(duration / 1000).toFixed(3)}s):`, data);
+      console.log(
+        `[FRONTEND] Step game - response received (${(duration / 1000).toFixed(3)}s)`,
+        'trace_step_index',
+        (data as { trace_step_index?: unknown }).trace_step_index,
+      );
 
       if (!response.ok) {
         applyLiveStepError(data);
-        return { ok: false, running: false, gameOver: false };
+        return {
+          ok: false, running: false, gameOver: false, retryable: liveStepFailureRetryable(data),
+        };
       }
       if (!data.state) {
         throw new Error('Live step response did not include authoritative state');
@@ -522,6 +680,7 @@ function App() {
 
       const snapshot = data.state as unknown as StateSnapshot;
       applyStateSnapshot(snapshot);
+      setAutoPlayRetry(null);
       setTraceBrowseError(null);
       const traceGameId = typeof data.trace_game_id === 'string'
         ? data.trace_game_id
@@ -531,7 +690,7 @@ function App() {
         : null;
       if (traceGameId !== null && traceStepIndex !== null) {
         setSelectedSavedGameId(traceGameId);
-        await browseSavedStep(traceGameId, traceStepIndex);
+        await browseSavedStep(traceGameId, traceStepIndex, true);
       } else {
         traceBrowseRequestRef.current += 1;
         setTraceBrowseBusy(false);
@@ -549,30 +708,23 @@ function App() {
       const message = error instanceof Error ? error.message : String(error);
       setLiveError(message);
       console.error('[FRONTEND] Error stepping game:', error);
-      return { ok: false, running: false, gameOver: false };
+      // The server or network may be back on the next attempt.
+      return { ok: false, running: false, gameOver: false, retryable: true };
     } finally {
+      setUsageRevision((value) => value + 1);
       stepInFlightRef.current = false;
       if (appMountedRef.current) {
         setIsLlmProcessing(false);
       }
     }
-  }, [applyLiveStepError, applyStateSnapshot, browseSavedStep, refreshSavedGames]);
+  }, [applyLiveStepError, applyStateSnapshot, browseSavedStep, refreshSavedGames,
+    traceBrowseBusy, isSessionChanging, savedGamesBusy]);
 
   const resetGame = async () => {
-    traceBrowseRequestRef.current += 1;
-    setTraceBrowseBusy(false);
-    applyLiveStepError(null);
-    setBrowsedTraceStep(null);
-    setTraceBrowseError(null);
-    setLiveReasoningTraces([]);
-    setLiveTraceGameId(null);
-    setLiveTraceDatabase(null);
-    setSelectedSavedGameId('');
-    replayCursorRef.current = null;
-    setReplayGamePlan('');
-    setReplayLlmResponse(null);
-    setReplayLlmError(null);
-    setReplayPlaybackError(null);
+    if (isSessionChanging || stepInFlightRef.current || isReplayPlaybackProcessing
+      || isReplayLlmProcessing || savedGamesBusy) return;
+    setIsSessionChanging(true);
+    stopAutoPlay();
     try {
       const response = await fetch(`${SERVER_URL}/api/reset`, {
         method: 'POST',
@@ -581,24 +733,42 @@ function App() {
       if (!response.ok) {
         throw new Error(getApiError(data, 'Failed to clear game'));
       }
+      traceBrowseRequestRef.current += 1;
+      setTraceBrowseBusy(false);
+      setBrowsedTraceStep(null);
+      setTraceBrowseError(null);
+      setLiveReasoningTraces([]);
+      setLiveTraceGameId(null);
+      setLiveTraceDatabase(null);
+      setSelectedSavedGameId('');
+      setLastReplayStep(null);
+      setReplayPlaybackError(null);
       setHasActiveGame(false);
+      historyRef.current = false;
+      setViewingHistory(false);
       applyStateSnapshot({
         game: null,
         running: false,
         game_log: [],
         all_player_resources: null,
         all_player_dev_cards: null,
+        player_hands: null,
         player_types: null,
         replay_mode: false,
         replay: null,
         last_dice_roll: null,
+        live_trace_game_id: null,
+        live_inference: null,
+        last_live_step_error: null,
       });
-      void refreshSavedGames();
+      void refreshSavedGames(false);
       console.log('Game reset:', data);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       setLiveError(message);
       console.error('Error resetting game:', error);
+    } finally {
+      setIsSessionChanging(false);
     }
   };
 
@@ -626,6 +796,11 @@ function App() {
   };
 
   const loadSavedGame = async (gameId: string) => {
+    if (gameId === liveTraceGameId) { returnLatest(); return; }
+    if (stepInFlightRef.current) return;
+    stopAutoPlay();
+    historyRef.current = false;
+    setViewingHistory(false);
     traceBrowseRequestRef.current += 1;
     setTraceBrowseBusy(false);
     try {
@@ -663,12 +838,13 @@ function App() {
   };
 
   const loadReplay = async (gameId: string) => {
+    historyRef.current = false;
+    setViewingHistory(false);
     traceBrowseRequestRef.current += 1;
     setTraceBrowseBusy(false);
     setBrowsedTraceStep(null);
     setTraceBrowseError(null);
     setSelectedSavedGameId('');
-    setReplayGamePlan('');
     setReplayLlmResponse(null);
     setReplayLlmError(null);
     setReplayPlaybackError(null);
@@ -787,7 +963,6 @@ function App() {
     replayModelRef.current = model;
     setReplayModel(model);
     window.localStorage.setItem(REPLAY_MODEL_STORAGE_KEY, model);
-    setReplayGamePlan('');
     setReplayLlmResponse(null);
     setReplayLlmError(null);
   };
@@ -816,7 +991,6 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: requestModel,
-          game_plan: replayGamePlan,
           reasoning: nativeReasoningRequest(nativeReasoningEffort),
         }),
       });
@@ -839,9 +1013,6 @@ function App() {
       };
 
       setReplayLlmResponse(result);
-      if (!result.stale && result.game_plan) {
-        setReplayGamePlan(result.game_plan);
-      }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error('Error generating replay response:', error);
@@ -861,32 +1032,67 @@ function App() {
     ? 'off'
     : liveInference?.reasoning.effort || null;
 
+  const usageGameId = selectedSavedGameId || liveTraceGameId;
+  useEffect(() => {
+    if (!usageGameId || replayMode) return;
+    const controller = new AbortController();
+    setUsageError(null);
+    void fetch(`${SERVER_URL}/api/live-traces/${usageGameId}?view=usage`, {
+      signal: controller.signal, cache: 'no-store',
+    }).then(async (response) => {
+      const data = await readApiObject(response);
+      if (!response.ok) throw new Error(getApiError(data, 'Failed to load usage'));
+      if (!Array.isArray(data.calls) || !Array.isArray(data.failure_calls)) {
+        throw new Error('Server does not support the usage projection yet');
+      }
+      if (!controller.signal.aborted) setGameUsage(data as unknown as GameUsage);
+    }).catch((error: unknown) => {
+      if (!controller.signal.aborted) {
+        setGameUsage(null);
+        setUsageError(error instanceof Error ? error.message : String(error));
+      }
+    });
+    return () => controller.abort();
+  }, [usageGameId, usageRevision, replayMode]);
+
   useEffect(() => {
     if (
-      replayMode
+      !runtimeReady
+      || replayMode
+      || isSessionChanging
       || isReplayPlaybackProcessing
+      || isLlmProcessing
+      || traceBrowseError !== null
       || selectedSavedGame === null
       || selectedSavedGame.step_count === 0
-      || browsedTraceStep?.game_id === selectedSavedGame.game_id
+      || traceBrowseBusy
+      || (browsedTraceStep?.game_id === selectedSavedGame.game_id && (
+        viewingHistory || browsedTraceStep.step.step_index >= selectedSavedGame.step_count - 1
+      ))
     ) {
       return;
     }
     void browseSavedStep(
       selectedSavedGame.game_id,
       selectedSavedGame.step_count - 1,
+      !historyRef.current && selectedSavedGame.game_id === liveTraceGameId,
     );
   }, [
     browseSavedStep,
-    browsedTraceStep?.game_id,
+    runtimeReady,
+    browsedTraceStep,
+    liveTraceGameId,
+    traceBrowseBusy,
+    traceBrowseError,
+    isLlmProcessing,
+    viewingHistory,
     isReplayPlaybackProcessing,
+    isSessionChanging,
     replayMode,
     selectedSavedGame,
   ]);
 
-  const isTraceBrowsing = browsedTraceStep !== null && (
-    browsedTraceStep.game_id !== liveTraceGameId
-    || browsedTraceStep.step.step_index !== browsedTraceStep.latest_step_index
-  );
+  const isTraceBrowsing = viewingHistory;
 
   const toggleAutoPlay = useCallback(() => {
     if (autoPlayRequestedRef.current) {
@@ -899,6 +1105,7 @@ function App() {
       || !isRunning
       || replayMode
       || isTraceBrowsing
+      || traceBrowseBusy || savedGamesBusy || isSessionChanging
       || gameState?.winning_color != null
     ) {
       return;
@@ -912,10 +1119,26 @@ function App() {
       pause: () => new Promise((resolve) => {
         window.setTimeout(resolve, AUTO_PLAY_STEP_DELAY_MS);
       }),
+      retryPause: (failures) => new Promise<void>((resolve) => {
+        const delayMs = autoPlayRetryDelayMs(failures);
+        const finish = () => {
+          window.clearTimeout(timer);
+          autoPlayRetryCancelRef.current = null;
+          if (appMountedRef.current) {
+            setAutoPlayRetry({ attempt: failures, resumeAt: null });
+          }
+          resolve();
+        };
+        const timer = window.setTimeout(finish, delayMs);
+        autoPlayRetryCancelRef.current = finish;
+        setAutoPlayRetry({ attempt: failures, resumeAt: Date.now() + delayMs });
+      }),
     }).finally(() => {
       autoPlayRequestedRef.current = false;
+      autoPlayRetryCancelRef.current = null;
       if (appMountedRef.current) {
         setIsAutoPlaying(false);
+        setAutoPlayRetry(null);
       }
     });
   }, [
@@ -923,6 +1146,7 @@ function App() {
     hasActiveGame,
     isRunning,
     isTraceBrowsing,
+    traceBrowseBusy, savedGamesBusy, isSessionChanging,
     replayMode,
     stepGame,
     stopAutoPlay,
@@ -1092,7 +1316,7 @@ function App() {
               onLiveColorPaletteChange={setLiveColorPalette}
               isRunning={hasActiveGame && isRunning}
               hasGame={hasActiveGame}
-              isLlmProcessing={isLlmProcessing || isAutoPlaying}
+              isLlmProcessing={isLlmProcessing || isAutoPlaying || isSessionChanging || savedGamesBusy}
               liveError={liveError}
               liveTraceGameId={liveTraceGameId}
               liveTraceDatabase={liveTraceDatabase}
@@ -1108,7 +1332,7 @@ function App() {
                   games={savedLiveGames}
                   selectedGameId={selectedSavedGameId}
                   activeGameId={liveTraceGameId}
-                  busy={savedGamesBusy || isLlmProcessing || isAutoPlaying}
+                  busy={savedGamesBusy || isLlmProcessing || isAutoPlaying || isSessionChanging}
                   error={savedGamesError}
                   onSelect={selectSavedGame}
                   onLoad={loadSavedGame}
@@ -1116,20 +1340,6 @@ function App() {
                   onRefresh={() => { void refreshSavedGames(); }}
                 />
 
-                <TraceStepNavigator
-                  game={selectedSavedGame}
-                  detail={browsedTraceStep}
-                  activeGameId={liveTraceGameId}
-                  busy={
-                    traceBrowseBusy
-                    || savedGamesBusy
-                    || isLlmProcessing
-                    || isAutoPlaying
-                  }
-                  error={traceBrowseError}
-                  onNavigate={browseSavedStep}
-                  onLoadLatest={loadSavedGame}
-                />
               </>
             )}
           </motion.aside>
@@ -1175,6 +1385,7 @@ function App() {
                 gameState={gameState}
                 allPlayerResources={allPlayerResources}
                 allPlayerDevCards={allPlayerDevCards}
+                playerHands={playerHands}
                 playerTypes={playerTypes}
                 replayInfo={replayInfo}
                 variant="overlay"
@@ -1229,17 +1440,18 @@ function App() {
           )}
 
             <BoardControlsDock
-              hasGame={hasActiveGame}
+              hasGame={hasActiveGame || selectedSavedGame !== null || browsedTraceStep !== null}
               isRunning={hasActiveGame && isRunning}
               replayMode={replayMode}
               replayInfo={replayInfo}
               busy={
-                replayMode
+                isSessionChanging || (replayMode
                   ? isReplayPlaybackProcessing || isReplayLlmProcessing
-                  : isLlmProcessing
+                  : isLlmProcessing || traceBrowseBusy || savedGamesBusy)
               }
               error={replayMode ? replayPlaybackError : liveError}
               isTraceBrowsing={isTraceBrowsing}
+              historyLoading={traceBrowseBusy}
               liveActor={gameState?.current_color || null}
               liveActorIsAgent={Boolean(
                 gameState
@@ -1254,13 +1466,33 @@ function App() {
               liveReasoningEffort={activeLiveReasoningEffort}
               liveMaxTokens={liveInference?.max_tokens ?? null}
               isAutoPlaying={!replayMode && isAutoPlaying}
+              autoPlayRetry={replayMode ? null : autoPlayRetry}
               onStep={replayMode
                 ? replayStep
                 : () => { void stepGame(); }}
               onToggleAutoPlay={toggleAutoPlay}
               onPrevious={replayUndo}
               onSeek={setReplayStep}
-            />
+            >
+              {!replayMode && <>
+                <TraceStepNavigator
+                  game={selectedSavedGame}
+                  detail={browsedTraceStep}
+                  activeGameId={liveTraceGameId}
+                  busy={traceBrowseBusy || savedGamesBusy || isLlmProcessing || isAutoPlaying || isSessionChanging}
+                  error={traceBrowseError}
+                  isHistory={viewingHistory}
+                  onNavigate={browseSavedStep}
+                  onNavigateReasoning={navigateReasoning}
+                  playerFilter={reasoningFilter}
+                  navigationNotice={reasoningNavigationNotice}
+                  onLatest={selectedSavedGameId === liveTraceGameId ? returnLatest : undefined}
+                  onLoadLatest={loadSavedGame}
+                />
+                <TraceUsage detail={browsedTraceStep}
+                  game={gameUsage?.game_id === usageGameId ? gameUsage : null} error={usageError} />
+              </>}
+            </BoardControlsDock>
           </div>
         </Panel>
 
@@ -1320,6 +1552,18 @@ function App() {
               </details>
             )}
 
+            {gameState && (
+              <details className="inspector-table-talk" open>
+                <summary>
+                  <span>Messages</span>
+                  <span>
+                    {tableTalkLog.length} message{tableTalkLog.length === 1 ? '' : 's'}
+                  </span>
+                </summary>
+                <TableTalkLog entries={tableTalkLog} showHeading={false} />
+              </details>
+            )}
+
             {hasInspectorContent ? (
               <>
             {replayInfo?.paired_transcript && (
@@ -1352,10 +1596,6 @@ function App() {
               </div>
             )}
 
-            {tableTalkLog.length > 0 && (
-              <TableTalkLog entries={tableTalkLog} />
-            )}
-
             {gameLog.length > 0 && (
               <details className="inspector-game-log">
                 <summary>
@@ -1366,16 +1606,36 @@ function App() {
               </details>
             )}
 
-            {!replayMode && liveStepFailure && (
-              <RejectedLiveAttempts failure={liveStepFailure} />
+            {!replayMode && gameState && (
+              <label className="trace-step-picker">
+                <span>Reasoning player</span>
+                <select
+                  aria-label="Reasoning player"
+                  value={reasoningFilter}
+                  onChange={(event) => {
+                    traceBrowseRequestRef.current += 1;
+                    setTraceBrowseBusy(false);
+                    setTraceBrowseError(null);
+                    setReasoningNavigationNotice(null);
+                    setReasoningSelection({ gameId: reasoningGameId, color: event.target.value as 'all' | Color });
+                  }}
+                >
+                  <option value="all">All players</option>
+                  {gameState.colors.map((color) => <option key={color} value={color}>{color}</option>)}
+                </select>
+              </label>
+            )}
+
+            {!replayMode && !viewingHistory && liveStepFailure && (
+              <RejectedLiveAttempts failure={liveStepFailure} playerFilter={reasoningFilter} />
             )}
 
             {!replayMode && browsedTraceStep && (
-              <SavedStepReasoningTrace detail={browsedTraceStep} />
+              <SavedStepReasoningTrace detail={browsedTraceStep} playerFilter={reasoningFilter} />
             )}
 
             {!replayMode && !browsedTraceStep && liveReasoningTraces.length > 0 && (
-              <LiveReasoningTrace traces={liveReasoningTraces} />
+              <LiveReasoningTrace traces={liveReasoningTraces} playerFilter={reasoningFilter} />
             )}
               </>
             ) : (

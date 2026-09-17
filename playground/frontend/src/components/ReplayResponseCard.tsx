@@ -1,4 +1,6 @@
 import type { ReplayLLMResponse } from '../types';
+import { traceGamePlanArtifact } from '../reasoningTraceArtifacts';
+import TraceGamePlan from './TraceGamePlan';
 import './ReplayResponseCard.css';
 
 interface ReplayResponseCardProps {
@@ -9,6 +11,8 @@ export default function ReplayResponseCard({ response }: ReplayResponseCardProps
   const latency = response.latency_ms === null
     ? 'unknown latency'
     : `${(response.latency_ms / 1000).toFixed(2)}s`;
+  const request = response.request ?? response;
+  const gamePlan = traceGamePlanArtifact('decision', response, request);
 
   return (
     <section className="replay-response-card" aria-label="Replay LLM response">
@@ -28,7 +32,7 @@ export default function ReplayResponseCard({ response }: ReplayResponseCardProps
 
       {response.stale && (
         <div className="replay-response-warning" role="status">
-          The replay moved while this response was generating. Goals from this response were not carried forward.
+          The replay moved while this response was generating. This preview is not committed.
         </div>
       )}
 
@@ -59,14 +63,27 @@ export default function ReplayResponseCard({ response }: ReplayResponseCardProps
         {response.action && <pre>{response.action}</pre>}
       </div>
 
-      <div className="replay-response-section">
-        <h4>Game plan</h4>
-        <p>{response.game_plan || 'No updated game plan returned.'}</p>
-      </div>
+      <p className="replay-detail-note">
+        Preview only. No action or notes update is committed or carried into later requests.
+      </p>
+
+      {gamePlan.notes ? (
+        <TraceGamePlan
+          artifact={gamePlan}
+          committed={false}
+          request={request}
+          className="replay-response-section"
+        />
+      ) : (
+        <div className="replay-response-section">
+          <h4>Game plan</h4>
+          <p>{gamePlan.text ?? 'No updated game plan returned.'}</p>
+        </div>
+      )}
 
       <details className="replay-response-details" open>
         <summary>
-          Reasoning
+          Provider-native reasoning
           {response.reasoning_tokens === null
             ? ''
             : ` (${response.reasoning_tokens} tokens)`}

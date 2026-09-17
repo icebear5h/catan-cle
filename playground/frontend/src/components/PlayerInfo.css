@@ -274,6 +274,56 @@
   font-weight: 650;
 }
 
+.player-chip-hand {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  margin-top: 0.34rem;
+  padding-top: 0.32rem;
+  border-top: 1px solid color-mix(in srgb, var(--player-accent) 22%, transparent);
+}
+
+.chip-hand-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.12rem;
+  padding: 0.05rem 0.24rem;
+  border: 1px solid transparent;
+  border-radius: 0.28rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--muted);
+  font-size: 0.56rem;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.chip-hand-card b {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 650;
+}
+
+.chip-hand-card.dev {
+  border-color: rgba(105, 167, 255, 0.35);
+  background: rgba(105, 167, 255, 0.13);
+  color: #bdd7ff;
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+.chip-hand-card.dev b {
+  margin-left: 0.1rem;
+  color: #dbe9ff;
+}
+
+.chip-hand-empty {
+  color: var(--muted);
+  font-size: 0.54rem;
+  font-style: italic;
+  opacity: 0.75;
+}
+
 @container (max-width: 560px) {
   .player-state-overlay {
     top: 3.8rem;

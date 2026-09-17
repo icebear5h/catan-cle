@@ -314,6 +314,59 @@ body {
   background: transparent;
 }
 
+.inspector-table-talk {
+  flex: 0 0 auto;
+  border: 1px solid rgba(135, 159, 190, 0.22);
+  border-radius: 0.75rem;
+  background: rgba(4, 8, 13, 0.66);
+}
+
+.inspector-table-talk > summary {
+  min-height: 2.65rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 640;
+  list-style: none;
+}
+
+.inspector-table-talk > summary::-webkit-details-marker {
+  display: none;
+}
+
+.inspector-table-talk > summary::before {
+  content: "›";
+  color: var(--blue);
+  font-family: var(--font-mono);
+  transition: transform 140ms ease;
+}
+
+.inspector-table-talk[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.inspector-table-talk > summary span:last-child {
+  margin-left: auto;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  font-weight: 500;
+}
+
+.inspector-table-talk[open] > summary {
+  border-bottom: 1px solid rgba(135, 159, 190, 0.18);
+  color: var(--blue);
+}
+
+.inspector-table-talk .table-talk-log {
+  border: 0;
+  background: transparent;
+}
+
 .inspector-empty {
   max-width: 16rem;
   color: var(--muted);

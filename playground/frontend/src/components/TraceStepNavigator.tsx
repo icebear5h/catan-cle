@@ -1,17 +1,6 @@
+import type { TraceRequest } from '../types';
 import type { SavedLiveGameSummary } from './SavedLiveGamesBar';
-import { hasRecordedModelInference } from './traceModelCalls';
 import './TraceStepNavigator.css';
-
-interface TraceMessage {
-  role: string;
-  content: string;
-}
-
-interface TraceRequest {
-  decision_id: string;
-  session_id: string;
-  messages: TraceMessage[];
-}
 
 interface TraceResponse {
   content?: string;
@@ -57,6 +46,7 @@ export interface TraceStepDetail {
     public_state: unknown;
   };
   model_calls: TraceModelCall[];
+  origin_calls?: TraceModelCall[];
 }
 
 interface TraceStepNavigatorProps {
@@ -67,6 +57,11 @@ interface TraceStepNavigatorProps {
   error: string | null;
   onNavigate: (gameId: string, stepIndex: number) => void;
   onLoadLatest: (gameId: string) => void;
+  onNavigateReasoning?: (gameId: string, currentIndex: number, direction: -1 | 1, stepCount: number) => void;
+  playerFilter?: string;
+  navigationNotice?: string | null;
+  onLatest?: () => void;
+  isHistory?: boolean;
 }
 
 export default function TraceStepNavigator({
@@ -77,28 +72,29 @@ export default function TraceStepNavigator({
   error,
   onNavigate,
   onLoadLatest,
+  onNavigateReasoning,
+  playerFilter = 'all',
+  navigationNotice,
+  onLatest,
+  isHistory = true,
 }: TraceStepNavigatorProps) {
   const currentDetail = detail?.game_id === game?.game_id ? detail : null;
-  const stepCount = currentDetail?.step_count ?? game?.step_count ?? 0;
+  const stepCount = Math.max(currentDetail?.step_count ?? 0, game?.step_count ?? 0);
   const latestIndex = stepCount - 1;
   const currentIndex = currentDetail?.step.step_index ?? latestIndex;
-  const modelCalls = (
-    currentDetail?.model_calls.filter(hasRecordedModelInference) || []
-  );
 
   if (!game) {
     return null;
   }
 
+  if (stepCount === 0) {
+    return error ? <div className="trace-step-error" role="alert">{error}</div> : null;
+  }
+
   return (
     <section className="trace-step-navigator" aria-label="Saved trace step navigator">
-      <header className="trace-step-title">
-        <span>Checkpoint</span>
-        <strong>Browse only</strong>
-      </header>
-
       <label className="trace-step-picker">
-        <span>Saved step</span>
+        <span className="visually-hidden">Saved step</span>
         <select
           value={stepCount === 0 ? '' : currentIndex}
           onChange={(event) => onNavigate(game.game_id, Number(event.target.value))}
@@ -109,7 +105,7 @@ export default function TraceStepNavigator({
           {Array.from({ length: stepCount }, (_, offset) => latestIndex - offset).map(
             (stepIndex) => (
               <option key={stepIndex} value={stepIndex}>
-                Step {stepIndex + 1}{stepIndex === latestIndex ? ' — latest' : ''}
+                Step {stepIndex + 1} / {stepCount}{stepIndex === latestIndex ? ' · latest' : ''}
               </option>
             ),
           )}
@@ -119,7 +115,10 @@ export default function TraceStepNavigator({
       <div className="trace-step-actions">
         <button
           type="button"
-          onClick={() => onNavigate(game.game_id, Math.max(0, currentIndex - 1))}
+          title={playerFilter === 'all' ? 'Previous checkpoint' : `Previous ${playerFilter} reasoning`}
+          onClick={() => onNavigateReasoning
+            ? onNavigateReasoning(game.game_id, currentIndex, -1, stepCount)
+            : onNavigate(game.game_id, Math.max(0, currentIndex - 1))}
           disabled={busy || stepCount === 0 || currentIndex <= 0}
           aria-label="Previous saved step"
         >
@@ -127,7 +126,10 @@ export default function TraceStepNavigator({
         </button>
         <button
           type="button"
-          onClick={() => onNavigate(game.game_id, currentIndex + 1)}
+          title={playerFilter === 'all' ? 'Next checkpoint' : `Next ${playerFilter} reasoning`}
+          onClick={() => onNavigateReasoning
+            ? onNavigateReasoning(game.game_id, currentIndex, 1, stepCount)
+            : onNavigate(game.game_id, currentIndex + 1)}
           disabled={busy || stepCount === 0 || currentIndex >= latestIndex}
           aria-label="Next saved step"
         >
@@ -135,42 +137,27 @@ export default function TraceStepNavigator({
         </button>
         <button
           type="button"
-          onClick={() => onNavigate(game.game_id, latestIndex)}
+          onClick={() => onLatest ? onLatest() : onNavigate(game.game_id, latestIndex)}
           disabled={
             busy
             || stepCount === 0
-            || (currentDetail !== null && currentIndex === latestIndex)
+            || (!isHistory && currentDetail !== null && currentIndex === latestIndex)
           }
         >
           Latest
         </button>
-        <button
+        {game.game_id !== activeGameId && <button
           type="button"
           className="trace-resume-button"
           onClick={() => onLoadLatest(game.game_id)}
           disabled={busy}
         >
-          {game.game_id === activeGameId ? 'Return live' : 'Load latest'}
-        </button>
+          Load latest
+        </button>}
       </div>
 
-      <div className="trace-step-summary" aria-live="polite">
-        {busy && <span>Loading checkpoint…</span>}
-        {!busy && currentDetail && (
-          <>
-            <span>
-              Step {currentDetail.step.step_index + 1}/{currentDetail.step_count}
-              {' · '}revision {currentDetail.step.before_revision} → {currentDetail.step.after_revision}
-            </span>
-            <span>{modelCalls.length} model calls with reasoning history</span>
-          </>
-        )}
-        {!busy && !currentDetail && stepCount > 0 && (
-          <span>Select a checkpoint to browse its board and traces.</span>
-        )}
-        {stepCount === 0 && <span>This game has no completed steps yet.</span>}
-        {error && <span className="trace-step-error">{error}</span>}
-      </div>
+      {playerFilter !== 'all' && <span role="status">{navigationNotice || `${playerFilter} reasoning`}</span>}
+      {error && <span className="trace-step-error" role="alert">{error}</span>}
     </section>
   );
 }

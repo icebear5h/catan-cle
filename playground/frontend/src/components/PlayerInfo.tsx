@@ -3,6 +3,8 @@ import { PLAYER_COLORS } from '../types';
 import type { AllPlayerResources, GameState, Color, ReplayInfo } from '../types';
 import { hasDevCardBreakdown } from '../playerDevCards';
 import type { AllPlayerDevCards } from '../playerDevCards';
+import { handDevCardEntries, handResourceEntries } from '../playerHands';
+import type { AllPlayerHands, PlayerHand } from '../playerHands';
 import {
   hasResourceBreakdown,
   resourceHandSize,
@@ -14,6 +16,9 @@ interface PlayerInfoProps {
   gameState: GameState;
   allPlayerResources: AllPlayerResources | null;
   allPlayerDevCards: AllPlayerDevCards | null;
+  // Spectator hand contents for the overlay chips. Absent for snapshots that
+  // never carried a breakdown (older checkpoints, or a stale server process).
+  playerHands?: AllPlayerHands | null;
   playerTypes: Record<string, string> | null;
   replayInfo: ReplayInfo | null;
   variant?: 'detailed' | 'overlay';
@@ -55,6 +60,7 @@ export default function PlayerInfo({
   gameState,
   allPlayerResources,
   allPlayerDevCards,
+  playerHands = null,
   playerTypes,
   replayInfo,
   variant = 'detailed',
@@ -96,6 +102,15 @@ export default function PlayerInfo({
     return getPlayerValue(`P${index}`, 'NUM_DEVS_IN_HAND');
   };
 
+  const handSummary = (hand?: PlayerHand | null): string => {
+    const resources = handResourceEntries(hand)
+      .map(({ resource, count }) => `${count} ${resource}`);
+    const devCards = handDevCardEntries(hand)
+      .map(({ card, count }) => `${count} ${card.replace(/_/g, ' ')}`);
+    const parts = [...resources, ...devCards];
+    return parts.length ? parts.join(', ') : 'empty hand';
+  };
+
   if (variant === 'overlay') {
     return (
       <section className="player-state-overlay" aria-label="Player game state">
@@ -108,13 +123,17 @@ export default function PlayerInfo({
             ? COLONIST_COLOR_CSS[colonistPlayer.color] || PLAYER_COLORS[color]
             : PLAYER_COLORS[color];
           const style = { '--player-accent': accent } as CSSProperties;
+          const hand = playerHands?.[color] ?? null;
+          const handResources = handResourceEntries(hand);
+          const handDevCards = handDevCardEntries(hand);
+          const showHand = hand !== null;
 
           return (
             <article
               key={color}
               className={`player-state-chip ${isCurrent ? 'current' : ''}`}
               style={style}
-              title={`${displayName}: ${getHandSize(color, index)} cards in hand, ${getDevCardSize(color, index)} development cards, ${gameState.played_knights_by_player[color] || 0} knights played`}
+              title={`${displayName}: ${getHandSize(color, index)} cards in hand, ${getDevCardSize(color, index)} development cards, ${gameState.played_knights_by_player[color] || 0} knights played${showHand ? ` — holding ${handSummary(hand)}` : ''}`}
             >
               <div className="player-chip-identity">
                 <span className="player-chip-turn" aria-hidden="true" />
@@ -127,6 +146,35 @@ export default function PlayerInfo({
                 <span><b>{getDevCardSize(color, index)}</b> Dev</span>
                 <span><b>{gameState.played_knights_by_player[color] || 0}</b> Knights</span>
               </div>
+              {showHand && (
+                <div className="player-chip-hand" aria-label={`${displayName} hand contents`}>
+                  {handResources.length === 0 && handDevCards.length === 0 ? (
+                    <span className="chip-hand-empty">empty</span>
+                  ) : (
+                    <>
+                      {handResources.map(({ resource, count }) => (
+                        <span
+                          key={resource}
+                          className="chip-hand-card resource"
+                          title={`${count} ${resource}`}
+                        >
+                          <span aria-hidden="true">{RESOURCE_EMOJIS[resource]}</span>
+                          <b>{count}</b>
+                        </span>
+                      ))}
+                      {handDevCards.map(({ card, count }) => (
+                        <span
+                          key={card}
+                          className="chip-hand-card dev"
+                          title={`${count} ${card.replace(/_/g, ' ')}`}
+                        >
+                          {DEV_CARD_LABELS[card] || card}<b>{count}</b>
+                        </span>
+                      ))}
+                    </>
+                  )}
+                </div>
+              )}
             </article>
           );
         })}

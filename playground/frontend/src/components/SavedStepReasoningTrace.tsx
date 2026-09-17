@@ -1,12 +1,14 @@
 import { traceGamePlanArtifact, visibleArtifactText } from '../reasoningTraceArtifacts';
+import type { Color as PlayerColor } from '../types';
 import type { TraceStepDetail } from './TraceStepNavigator';
 import TraceGamePlan from './TraceGamePlan';
-import { hasRecordedModelInference } from './traceModelCalls';
+import { hasRecordedModelInference, savedReasoningCalls } from './traceModelCalls';
 import './LiveReasoningTrace.css';
 import './SavedStepReasoningTrace.css';
 
 interface SavedStepReasoningTraceProps {
   detail: TraceStepDetail;
+  playerFilter?: 'all' | PlayerColor;
 }
 
 function json(value: unknown): string {
@@ -15,9 +17,17 @@ function json(value: unknown): string {
 
 export default function SavedStepReasoningTrace({
   detail,
+  playerFilter = 'all',
 }: SavedStepReasoningTraceProps) {
   const calls = detail.model_calls.filter(hasRecordedModelInference);
+  const displayedCalls = savedReasoningCalls(detail).filter(
+    (call) => playerFilter === 'all' || call.actor === playerFilter,
+  );
+  const continuedFromStep = calls.length === 0 && displayedCalls.length > 0
+    ? displayedCalls[0].step_index + 1
+    : null;
   const legacyBaselineCount = detail.model_calls.length - calls.length;
+  const automatic = detail.step.result.automatic_action;
 
   return (
     <section
@@ -26,14 +36,30 @@ export default function SavedStepReasoningTrace({
     >
       <h3>
         Step {detail.step.step_index + 1} reasoning history
-        <span>{calls.length} calls</span>
+        <span>{displayedCalls.length} calls</span>
       </h3>
 
-      {calls.length === 0 && (
+      {displayedCalls.length === 0 && (
         <p className="saved-step-reasoning-empty">
-          No model inference was made for this step. There is no provider
-          reasoning to display.
+          {playerFilter === 'all'
+            ? 'No model inference was made for this step. There is no provider reasoning to display.'
+            : `No reasoning for ${playerFilter} in this step.`}
         </p>
+      )}
+
+      {calls.length === 0 && continuedFromStep != null && (
+        <p className="saved-step-baseline-notice">
+          Continued from Step {continuedFromStep}: reasoning was recorded once
+          on the originating model call.
+        </p>
+      )}
+
+      {automatic != null && (
+        <div className="live-reasoning-section">
+          <h4>Automatic action provenance</h4>
+          <p>This engine step continues an admitted instruction. Its originating model call is recorded once.</p>
+          <pre>{json(automatic)}</pre>
+        </div>
       )}
 
       {legacyBaselineCount > 0 && (
@@ -43,7 +69,7 @@ export default function SavedStepReasoningTrace({
         </p>
       )}
 
-      {calls.map((call) => {
+      {displayedCalls.map((call) => {
         const nativeReasoning = (
           visibleArtifactText(call.response?.native_reasoning)
           || visibleArtifactText(call.choice?.native_reasoning)
@@ -52,7 +78,7 @@ export default function SavedStepReasoningTrace({
         const actor = call.actor || 'unknown';
         const actorClass = call.actor || '';
         const isSpeechCall = call.call_kind === 'communication';
-        const gamePlan = traceGamePlanArtifact(call.call_kind, call.choice);
+        const gamePlan = traceGamePlanArtifact(call.call_kind, call.choice, call.request);
         const statusClass = call.accepted ? 'accepted' : 'rejected';
         const cardClassName = [
           'live-reasoning-card',
@@ -87,10 +113,19 @@ export default function SavedStepReasoningTrace({
               </div>
             )}
 
+            {Array.isArray(call.choice?.batch_actions) && call.choice.batch_actions.length > 0 && (
+              <div className="live-reasoning-section">
+                <h4>Requested deterministic batch</h4>
+                <p>First action admitted with this call; remaining actions revalidate on subsequent Steps.</p>
+                <pre>{json(call.choice.batch_actions)}</pre>
+              </div>
+            )}
+
             {gamePlan.show && (
               <TraceGamePlan
-                gamePlan={gamePlan.text}
+                artifact={gamePlan}
                 committed={call.accepted}
+                request={call.request}
               />
             )}
 
@@ -124,6 +159,8 @@ export default function SavedStepReasoningTrace({
             <details>
               <summary>
                 Exact request messages ({call.request?.messages.length || 0})
+                {call.request?.context_policy === 'fresh_notes'
+                  ? ' · fresh context + notes' : ' · historical context'}
               </summary>
               <div className="saved-step-message-list">
                 {(call.request?.messages || []).map((message, index) => (
@@ -139,8 +176,8 @@ export default function SavedStepReasoningTrace({
             </details>
 
             <details>
-              <summary>Parsed choice, usage, and provider payloads</summary>
-              <pre>{json({ choice: call.choice, response: call.response })}</pre>
+              <summary>Request components, parsed choice, and provider payloads</summary>
+              <pre>{json({ request: call.request, choice: call.choice, response: call.response })}</pre>
             </details>
           </>
         );

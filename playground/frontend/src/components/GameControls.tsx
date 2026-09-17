@@ -82,6 +82,22 @@ export default function GameControls({
     <div className="game-controls">
       <h3>Controls</h3>
 
+      {hasGame && (
+        <div className="control-section">
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={onReset}
+            disabled={isLlmProcessing || isPlaybackProcessing || isReplayLlmProcessing}
+          >
+            New Game
+          </button>
+          <p className="replay-context-hint">
+            Return to setup for a fresh game. Saved games stay available.
+          </p>
+        </div>
+      )}
+
       {liveError && (
         <div className="replay-llm-error" role="alert">
           {liveError}
@@ -141,6 +157,7 @@ export default function GameControls({
           <button
             className="btn btn-primary"
             onClick={() => onStartGame('random')}
+            disabled={isLlmProcessing || isPlaybackProcessing || isReplayLlmProcessing}
           >
             Start Game (Random)
           </button>
@@ -148,6 +165,7 @@ export default function GameControls({
           <button
             className="btn btn-secondary"
             onClick={() => onStartGame('llm_vs_random')}
+            disabled={isLlmProcessing || isPlaybackProcessing || isReplayLlmProcessing}
           >
             LLM vs Random
           </button>
@@ -155,6 +173,7 @@ export default function GameControls({
           <button
             className="btn btn-secondary"
             onClick={() => onStartGame('llm')}
+            disabled={isLlmProcessing || isPlaybackProcessing || isReplayLlmProcessing}
           >
             Start Game (LLM)
           </button>
@@ -230,13 +249,6 @@ export default function GameControls({
               Local trace: {liveTraceGameId}
             </p>
           )}
-          <button
-            className="btn btn-danger"
-            onClick={onReset}
-            disabled={isLlmProcessing || isPlaybackProcessing}
-          >
-            Clear Game
-          </button>
         </div>
       )}
 
@@ -313,7 +325,7 @@ export default function GameControls({
           <button
             className="btn btn-danger"
             onClick={onReset}
-            disabled={isPlaybackProcessing || isReplayLlmProcessing}
+            disabled={isLlmProcessing || isPlaybackProcessing || isReplayLlmProcessing}
           >
             Exit Replay
           </button>

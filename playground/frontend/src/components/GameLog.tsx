@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import './GameLog.css';
 
 interface LogEntry {
-  type: 'dice' | 'resource' | 'building' | 'trade' | 'robber' | 'general';
+  type: 'dice' | 'resource' | 'building' | 'trade' | 'robber' | 'general' | 'message';
   timestamp: number;
   message: string;
   color?: string;
@@ -36,6 +36,8 @@ export default function GameLog({ entries, showHeading = true }: GameLogProps) {
         return '🤝';
       case 'robber':
         return '🦹';
+      case 'message':
+        return '💬';
       default:
         return '•';
     }

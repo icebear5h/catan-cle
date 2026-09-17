@@ -28,6 +28,8 @@ export interface LiveStepFailure {
   attempt_count?: number;
   attempts: FailedLiveAttempt[];
   retryable?: boolean;
+  action_applied?: boolean;
+  checkpoint_saved?: boolean;
 }
 
 export interface LiveStepWarning {
@@ -44,9 +46,35 @@ export function liveStepAutoPlayResult(
   return {
     // The state/checkpoint is already applied; only automatic advancement stops.
     ok: response.warning == null,
+    // The warned action is committed and checkpointed, so the next Step
+    // advances the game instead of repeating it.
+    retryable: response.warning != null,
     running: state.running,
     gameOver: response.game_over === true || state.game?.winning_color != null,
   };
+}
+
+/**
+ * Whether auto-play may request another Step after a failed live step.
+ *
+ * Every failure the server could checkpoint is retried, including provider
+ * rejections and unhandled sandbox errors: the paused boundary is saved and a
+ * new Step asks the model again or advances past an applied action. Only a
+ * failure the trace store could not record blocks the retry, because the
+ * server then asks for storage to be repaired before the game continues.
+ */
+export function liveStepFailureRetryable(payload: unknown): boolean {
+  if (typeof payload !== 'object' || payload === null || Array.isArray(payload)) {
+    return true;
+  }
+  const record = payload as Record<string, unknown>;
+  if (record.retryable === true) {
+    return true;
+  }
+  const persistenceFailed = record.retryable === false
+    && record.checkpoint_saved === false
+    && typeof record.trace_game_id === 'string';
+  return !persistenceFailed;
 }
 
 export function liveStepErrorUpdate(

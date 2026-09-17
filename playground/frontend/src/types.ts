@@ -219,15 +219,48 @@ export interface GameStateMessage {
   all_player_resources?: AllPlayerResources;
 }
 
-export interface LiveReasoningTrace {
+export interface TraceRequestMetadata {
+  context_policy?: 'fresh_notes' | null;
+  memory_revision?: number | null;
+  input_next_sequence?: number | null;
+  channel?: string | null;
+  trigger_reason?: string | null;
+}
+
+export interface TraceRequest extends TraceRequestMetadata {
+  decision_id: string;
+  session_id: string;
+  messages: Array<{ role: string; content: string }>;
+  components?: Array<{
+    id: string;
+    channel: 'system' | 'environment';
+    template: string;
+    value: string;
+    rendered: string;
+    variables?: Record<string, string> | Array<[string, string]>;
+  }>;
+  board_presentation?: unknown;
+}
+
+export interface LiveReasoningTrace extends TraceRequestMetadata {
   schema: 'live-reasoning-trace-v2';
   context_id: string;
   player_color: Color;
-  turn_number: number;
-  phase: string;
-  prompt_key: string;
-  action_index: number;
-  action_type: string;
+  turn_number: number | null;
+  phase: string | null;
+  prompt_key: string | null;
+  call_kind?: 'decision' | 'communication';
+  accepted?: boolean;
+  request?: TraceRequest | null;
+  notes_update?: string | null;
+  communication_mode?: string;
+  respondents?: Color[] | null;
+  text?: string;
+  action_index: number | null;
+  action_type: string | null;
+  action_sequence?: string[];
+  batch_actions?: { tool: string; arguments: Record<string, unknown> }[];
+  knight_destination?: [number, number, number] | null;
   game_plan: string;
   native_reasoning: string;
   native_reasoning_details: unknown[];
@@ -463,13 +496,19 @@ export interface ReplayActivityWindow {
 }
 
 export interface TableTalkEntry {
-  replayIndex: number;
+  // Engine-event sequence, NOT a live-trace step index: one step emits
+  // several engine events (action + speech + trade responses), so sequences
+  // run higher than the step count.
+  sequence: number;
+  // Recorded trace step - the /api/step advance this message was spoken in.
+  // Null for rows logged without a trace store, or before step stamping.
+  step_index: number | null;
   player: string;
   message: string;
   model: string;
 }
 
-export interface ReplayLLMResponse {
+export interface ReplayLLMResponse extends TraceRequestMetadata {
   schema: 'agent-decision-preview-v2';
   context_version: string;
   context_id: string;
@@ -482,6 +521,9 @@ export interface ReplayLLMResponse {
   model: string;
   generation_max_tokens: number;
   game_plan: string;
+  notes_update?: string | null;
+  accepted?: false;
+  request?: TraceRequest | null;
   action_index: number | null;
   action: string | null;
   action_description: string | null;

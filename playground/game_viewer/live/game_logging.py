@@ -271,27 +271,106 @@ def normalize_game_log_entries(entries: Any, events: Any) -> list[Any]:
     return result
 
 
+def _message_text(payload: Mapping[str, Any]) -> str:
+    return payload.get("text") or ""
+
+
+def backfill_message_log_entries(entries: Any, events: Any) -> list[Any]:
+    """Re-project speech rows that a stored game log no longer carries.
+
+    Checkpoints written while the viewer still sliced the log to its last 50
+    rows kept every public event but dropped older message rows. The events
+    are the durable record, so any MESSAGE_SENT without a matching row is
+    rebuilt from its payload and placed in engine-sequence order among the rows
+    that carry a sequence; rows without one keep their position.
+    """
+    if not isinstance(entries, list):
+        return []
+    result = [dict(entry) if isinstance(entry, Mapping) else entry for entry in entries]
+    if not isinstance(events, list):
+        return result
+
+    def row_sequence(entry: Any) -> int | None:
+        if not isinstance(entry, Mapping):
+            return None
+        details = entry.get("details")
+        sequence = details.get("sequence") if isinstance(details, Mapping) else None
+        return sequence if isinstance(sequence, int) else None
+
+    present = {
+        row_sequence(entry)
+        for entry in result
+        if isinstance(entry, Mapping) and entry.get("type") == "message"
+    }
+    missing = sorted(
+        (
+            (event["sequence"], event)
+            for event in events
+            if isinstance(event, Mapping)
+            and event.get("event_type") == "MESSAGE_SENT"
+            and isinstance(event.get("sequence"), int)
+            and isinstance(event.get("payload"), Mapping)
+            and event["sequence"] not in present
+        ),
+        key=lambda item: item[0],
+    )
+    if not missing:
+        return result
+
+    def rebuilt(event: Mapping[str, Any], timestamp: Any) -> dict[str, Any]:
+        payload = event["payload"]
+        return {
+            "type": "message",
+            "timestamp": timestamp,
+            "message": _message_text(payload),
+            "color": _enum_value(payload.get("speaker", event.get("actor"))),
+            "details": {
+                "event_type": "MESSAGE_SENT",
+                "payload": dict(payload),
+                "sequence": event["sequence"],
+            },
+        }
+
+    merged: list[Any] = []
+    cursor = 0
+    for entry in result:
+        sequence = row_sequence(entry)
+        if sequence is not None:
+            timestamp = entry.get("timestamp")
+            while cursor < len(missing) and missing[cursor][0] < sequence:
+                merged.append(rebuilt(missing[cursor][1], timestamp))
+                cursor += 1
+        merged.append(entry)
+    tail_timestamp = merged[-1].get("timestamp") if merged and isinstance(merged[-1], Mapping) else None
+    for _, event in missing[cursor:]:
+        merged.append(rebuilt(event, tail_timestamp))
+    return merged
+
+
 def normalize_public_state_game_log(public_state: Any) -> Any:
-    """Return a public-state copy with semantic trade log messages."""
+    """Return a public-state copy with semantic trade rows and every speech row."""
     if not isinstance(public_state, Mapping):
         return public_state
     normalized = dict(public_state)
-    normalized["game_log"] = normalize_game_log_entries(
-        public_state.get("game_log"),
-        public_state.get("events"),
+    events = public_state.get("events")
+    normalized["game_log"] = backfill_message_log_entries(
+        normalize_game_log_entries(public_state.get("game_log"), events),
+        events,
     )
     return normalized
 
 
 def log_game_event(state, event_type, message, color=None, details=None):
-    """Add an event to the game log."""
-    state.game_log.append({
+    """Add an event to the game log and return the appended row."""
+    entry = {
         "type": event_type,
         "timestamp": time.time(),
         "message": message,
         "color": color,
         "details": details,
-    })
+    }
+    state.game_log.append(entry)
+    return entry
 
 
 def get_player_resources(game_state):
@@ -347,6 +426,26 @@ def get_player_dev_cards(game_state):
         }
 
     return dev_cards
+
+
+def get_player_hands(game_state):
+    """Spectator hand contents: the exact resource and dev-card breakdown.
+
+    The viewer's public projection collapses hands to totals, so this is the
+    parallel field the playground reveals when the operator asks to see
+    contents. It is a viewer artifact only - model prompts are built from the
+    engine's privacy projection, never from a viewer snapshot.
+    """
+    resources = get_player_resources(game_state)
+    dev_cards = get_player_dev_cards(game_state)
+
+    return {
+        color: {
+            "resources": counts,
+            "dev_cards": dev_cards[color],
+        }
+        for color, counts in resources.items()
+    }
 
 
 def compare_and_log_resources(state, before, after, roll_value):
@@ -424,7 +523,49 @@ def post_analyze_action(state, pre_state, game_state):
             compare_and_log_resources(state, pre_state["resources_before"], resources_after, roll_sum)
 
 
-def analyze_transitions(state, transitions, game_state_before, game_state_after):
+def _log_table_talk(state, events) -> None:
+    """Append one game-log row per spoken table-talk event, deduplicated."""
+    seen: set[Any] = set()
+    for event in events or ():
+        payload = getattr(event, "public_payload", None)
+        if getattr(event, "event_type", None) != "MESSAGE_SENT" or not isinstance(payload, Mapping):
+            continue
+        sequence = getattr(event, "sequence", None)
+        if sequence in seen:
+            continue
+        seen.add(sequence)
+        speaker = _enum_value(payload.get("speaker", getattr(event, "actor", None)))
+        log_game_event(
+            state, "message", _message_text(payload),
+            color=speaker,
+            details={
+                "event_type": "MESSAGE_SENT",
+                "payload": dict(payload),
+                "sequence": sequence,
+            },
+        )
+
+
+def stamp_message_step_indexes(game_log, mark, step_index) -> int:
+    """Stamp table-talk rows appended during one step with its trace index.
+
+    The trace step index only exists after the step is recorded, so message
+    rows are logged first (with engine-event sequences) and stamped here.
+    Returns the number of stamped rows.
+    """
+    stamped = 0
+    for entry in game_log[mark:]:
+        if not isinstance(entry, Mapping) or entry.get("type") != "message":
+            continue
+        entry["step_index"] = step_index
+        details = entry.get("details")
+        if isinstance(details, dict):
+            details["step_index"] = step_index
+        stamped += 1
+    return stamped
+
+
+def analyze_transitions(state, transitions, game_state_before, game_state_after, messages=()):
     """Log every engine transition represented by one sandbox Step."""
     for transition in transitions:
         previous_log_length = len(state.game_log)
@@ -460,3 +601,8 @@ def analyze_transitions(state, transitions, game_state_before, game_state_after)
             "payload": event.public_payload,
             "sequence": event.sequence,
         }
+
+    talked = list(messages)
+    for transition in transitions:
+        talked.extend(transition.events)
+    _log_table_talk(state, talked)

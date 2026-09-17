@@ -5,7 +5,11 @@ import json
 from flask import Blueprint, jsonify, current_app
 
 from cle.game_engine.json import GameEncoder
-from ..live.game_logging import get_player_resources, get_player_dev_cards
+from ..live.game_logging import (
+    get_player_resources,
+    get_player_dev_cards,
+    get_player_hands,
+)
 from ..replay.model_traces import build_paired_model_trace_window
 from ..replay.narrator_reasoning import build_paired_narrator_reasoning_window
 from ..replay.transcript import build_paired_transcript_window
@@ -67,9 +71,11 @@ def _get_state_snapshot(state):
         "live_trace_game_id": (
             None if state.replay_mode else state.live_trace_game_id
         ),
-        "game_log": state.game_log[-50:],
+        # Whole history, like the socket snapshot: no tail drops rare rows.
+        "game_log": list(state.game_log),
         "all_player_resources": all_resources,
         "all_player_dev_cards": all_dev_cards,
+        "player_hands": get_player_hands(engine.state),
         "live_inference": (
             None if state.replay_mode else getattr(state, "live_inference", None)
         ),

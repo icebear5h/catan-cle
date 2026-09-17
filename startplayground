@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Start the Catan playground: backend (Flask+SocketIO :5001) + frontend (Vite :5173).
+# Must run the backend from the repo root so it finds .cle/live_traces.sqlite3.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+LOG_DIR="/tmp/catan-playground"
+mkdir -p "$LOG_DIR"
+
+port_open() { curl -s -m 2 -o /dev/null "http://localhost:$1"; }
+
+if port_open 5001; then
+  echo "backend already running on :5001, skipping"
+else
+  echo "starting backend..."
+  nohup uv run python -m playground.game_viewer_server > "$LOG_DIR/backend.log" 2>&1 &
+  echo "  log: $LOG_DIR/backend.log"
+fi
+
+if port_open 5173; then
+  echo "frontend already running on :5173, skipping"
+else
+  echo "starting frontend..."
+  nohup npm run dev -- --host --port 5173 > "$LOG_DIR/frontend.log" 2>&1 &
+  echo "  log: $LOG_DIR/frontend.log"
+fi
+
+echo "waiting for servers..."
+for i in $(seq 1 30); do
+  sleep 1
+  if port_open 5001 && port_open 5173; then
+    echo "backend:  http://localhost:5001"
+    echo "frontend: http://localhost:5173"
+    exit 0
+  fi
+done
+
+echo "timed out waiting. Check logs:"
+echo "  $LOG_DIR/backend.log"
+echo "  $LOG_DIR/frontend.log"
+exit 1

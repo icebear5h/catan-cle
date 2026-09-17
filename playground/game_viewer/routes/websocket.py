@@ -3,7 +3,7 @@
 import json
 
 from cle.game_engine.json import GameEncoder
-from ..live.game_logging import get_player_resources, get_player_dev_cards
+from ..live.game_logging import get_player_hands
 from ..replay.model_traces import build_paired_model_trace_window
 from ..replay.narrator_reasoning import build_paired_narrator_reasoning_window
 from cle.replay.runtime.trade_ledger import replay_trade_ledger_payload
@@ -16,18 +16,20 @@ def build_game_state_snapshot(state):
         return
     game = sandbox.game_engine
 
-    private_resources = get_player_resources(game.state)
-    private_dev_cards = get_player_dev_cards(game.state)
+    # Two layers: the public projection every viewer gets, and the spectator
+    # hand contents the playground reveals on demand. Keep them separate so the
+    # public fields stay a faithful "what an opponent knows" view.
+    player_hands = get_player_hands(game.state)
     all_resources = {
-        color: {"TOTAL": sum(resources.values())}
-        for color, resources in private_resources.items()
+        color: {"TOTAL": sum(hand["resources"].values())}
+        for color, hand in player_hands.items()
     }
     all_dev_cards = {
         color: {
-            "total_in_hand": cards["total_in_hand"],
-            "played": cards["played"],
+            "total_in_hand": hand["dev_cards"]["total_in_hand"],
+            "played": hand["dev_cards"]["played"],
         }
-        for color, cards in private_dev_cards.items()
+        for color, hand in player_hands.items()
     }
 
     if sandbox.players:
@@ -86,9 +88,12 @@ def build_game_state_snapshot(state):
         "live_trace_game_id": (
             None if state.replay_mode else state.live_trace_game_id
         ),
-        "game_log": state.game_log[-50:] if state.game_log else [],
+        # The whole log, not a tail: rare rows (speech) must stay reachable, and
+        # a checkpoint's log is read back as the log as of that step.
+        "game_log": list(state.game_log) if state.game_log else [],
         "all_player_resources": all_resources,
         "all_player_dev_cards": all_dev_cards,
+        "player_hands": player_hands,
         "player_types": player_types,
         "sandbox_players": player_statuses,
         "live_inference": (

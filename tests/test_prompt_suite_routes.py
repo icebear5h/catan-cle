@@ -2,6 +2,7 @@ import pytest
 from flask import Flask
 
 from cle.harness import ModelMessage, ModelRequest, PromptComponent
+from cle.harness.prompt_store import resolve_prompt_suites
 from cle.players.baseline import FirstLegalPlayer
 from cle.players.contracts import CommunicationChoice
 from cle.sandbox import CatanSandbox
@@ -19,6 +20,11 @@ COLORS = (Color.RED, Color.BLUE, Color.WHITE, Color.ORANGE)
 @pytest.fixture
 def prompt_app(tmp_path, monkeypatch):
     monkeypatch.setenv("CATAN_PROMPT_SUITE_DIR", str(tmp_path / "prompt-suites"))
+    # Exercise the historical pair editor without changing the shared default.
+    monkeypatch.setattr(
+        "playground.game_viewer.routes.prompt_suite.resolve_prompt_suites",
+        lambda **kwargs: resolve_prompt_suites(legacy=True, use_environment=False),
+    )
     app = Flask(__name__)
     state = ServerState()
     app.config["SERVER_STATE"] = state
@@ -65,8 +71,15 @@ def test_prompt_suite_get_returns_fixed_strings_and_no_store(prompt_app):
     assert response.status_code == 200
     assert response.headers["Cache-Control"] == "no-store"
     payload = response.get_json()
+    assert payload["mode"] == "legacy"
     assert payload["saving_locked"] is False
-    assert payload["decision"]["version"] == "10.0.0"
+    assert payload["decision"]["version"] == "11.0.0"
+    instruction = payload["decision"]["response_instruction"]
+    assert '"game_plan"' in instruction
+    assert '"tool"' in instruction
+    assert '"arguments"' in instruction
+    assert "<action>" not in instruction
+    assert "action_index" not in instruction
     assert "Maximizing raw pip count is not the objective" in (
         payload["decision"]["phase_guidance"]["initial_settlement_1"]
     )
@@ -158,8 +171,9 @@ def test_validate_save_stale_and_reset_prompt_strings(prompt_app):
 
     assert reset.status_code == 200
     assert reset.json["status"] == "reset"
-    assert reset.json["decision"]["overridden"] is False
-    assert reset.json["decision"]["sha256"] == original["decision"]["sha256"]
+    assert reset.json["mode"] == "shared"
+    assert reset.json["shared"]["overridden"] is False
+    assert reset.json["shared"]["sha256"] == resolve_prompt_suites(use_environment=False).shared.sha256
 
 
 def test_invalid_component_edit_leaves_both_suites_unchanged(prompt_app):
@@ -184,7 +198,7 @@ def test_invalid_component_edit_leaves_both_suites_unchanged(prompt_app):
     assert current["communication"]["sha256"] == original["communication"]["sha256"]
 
 
-def test_save_and_reset_are_locked_by_live_or_replay_game(prompt_app):
+def test_live_editing_is_allowed_but_replay_remains_read_only(prompt_app):
     app, state = prompt_app
     client = app.test_client()
     original = client.get("/api/prompt-suite").get_json()
@@ -198,9 +212,13 @@ def test_save_and_reset_are_locked_by_live_or_replay_game(prompt_app):
     }
 
     state.current_sandbox = _sandbox()
-    assert client.get("/api/prompt-suite").json["saving_locked"] is True
-    assert client.put("/api/prompt-suite", json=save_payload).status_code == 409
-    assert client.delete("/api/prompt-suite", json=reset_payload).status_code == 409
+    assert client.get("/api/prompt-suite").json["saving_locked"] is False
+    saved = client.put("/api/prompt-suite", json=save_payload)
+    assert saved.status_code == 200
+    reset_payload["expected"] = {
+        kind: saved.json[kind]["sha256"] for kind in ("decision", "communication")
+    }
+    assert client.delete("/api/prompt-suite", json=reset_payload).status_code == 200
 
     state.current_sandbox = None
     state.replay_data = {"events": []}
@@ -229,6 +247,9 @@ def test_current_decision_preview_is_componentized_and_perspective_safe(prompt_a
     assert components["environment.board_state"]["rendered"].startswith(
         "BOARD STATE:"
     )
+    assert "build_settlement" in components["environment.legal_actions"]["value"]
+    assert "<N00>" in components["environment.legal_actions"]["value"]
+    assert "action_index" not in components["environment.decision_request"]["value"]
     board = preview["board_presentation"]
     assert board["kind"] == "text"
     assert board["format"] == "indexed_tile_rows/v3"

@@ -20,6 +20,8 @@ class ServerState:
         self.live_trace_store = None
         self.live_trace_game_id = None
         self.live_inference = None
+        # Runtime selection outlives game reset/load; never comes from a trace.
+        self.active_live_config = None
         self.last_live_step_error = None
 
         # Replay mode state

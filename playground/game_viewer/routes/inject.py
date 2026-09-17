@@ -27,6 +27,7 @@ def inject_state():
         "game_log": [],
         "all_player_resources": data.get("all_player_resources", {}),
         "all_player_dev_cards": data.get("all_player_dev_cards", {}),
+        "player_hands": data.get("player_hands", {}),
         "player_types": data.get("player_types", {}),
         "trade_state": None,
         "replay_mode": False,

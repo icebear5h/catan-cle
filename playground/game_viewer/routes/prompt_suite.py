@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import json
+import os
+from copy import deepcopy
+from dataclasses import replace
 from typing import Any, Mapping
 
 import yaml
@@ -11,6 +15,7 @@ from pydantic import ValidationError
 from cle.harness.board_surface import board_presentation_payload
 from cle.harness.communication import (
     CommunicationSuite,
+    build_communication_request,
     parse_communication_suite,
 )
 from cle.harness.context import ContextAssembler
@@ -18,11 +23,15 @@ from cle.harness.models import PlayerSession, PromptComponent
 from cle.harness.prompt_store import (
     ActivePromptSuites,
     PromptSuiteConflictError,
-    load_active_prompt_suites,
+    resolve_prompt_suites,
     reset_prompt_suite_overrides,
+    reset_shared_prompt_override,
     save_prompt_suite_overrides,
+    save_shared_prompt_override,
     validate_prompt_suite_sources,
+    validate_shared_prompt_source,
 )
+from cle.harness.shared_suite import SharedPromptSuite, parse_shared_prompt_suite
 from cle.harness.suite import ContextSuite, parse_context_suite
 
 
@@ -41,9 +50,17 @@ def _state():
 
 def _saving_locked(state: Any) -> bool:
     return bool(
-        getattr(state, "current_sandbox", None) is not None
-        or getattr(state, "replay_mode", False)
+        getattr(state, "replay_mode", False)
         or getattr(state, "replay_data", None) is not None
+    )
+
+
+def _active_suites() -> ActivePromptSuites:
+    selection = getattr(_state(), "active_live_config", None)
+    return resolve_prompt_suites(
+        shared_path=getattr(selection, "shared_suite_path", None),
+        decision_path=getattr(selection, "context_suite_path", None),
+        communication_path=getattr(selection, "communication_suite_path", None),
     )
 
 
@@ -69,15 +86,23 @@ def _metadata(document: Any) -> dict[str, Any]:
     return {
         "id": document.id,
         "version": document.version,
+        "status": document.status,
         "sha256": document.sha256,
         "overridden": document.overridden,
     }
 
 
 def _editor_payload(active: ActivePromptSuites) -> dict[str, Any]:
+    if active.shared is not None:
+        bundle = parse_shared_prompt_suite(active.shared.source)
+        return {
+            "mode": "shared",
+            "shared": {**_metadata(active.shared), "document": bundle.model_dump(mode="json")},
+        }
     decision = parse_context_suite(active.decision.source)
     communication = parse_communication_suite(active.communication.source)
     return {
+        "mode": "legacy",
         "decision": {
             **_metadata(active.decision),
             "system_identity": decision.system.template,
@@ -119,18 +144,33 @@ def _decision_preview(
     sandbox = getattr(state, "current_sandbox", None)
     if sandbox is None:
         return {"status": "no_game_context", "components": []}
-    actor = sandbox.current_actor()
-    player = sandbox.players.get(actor)
-    session = getattr(player, "session", None)
+    resolved = sandbox.decision_context()
+    context = resolved[0] if isinstance(resolved, tuple) else resolved
+    actor = context.actor
+    player = getattr(sandbox, "players", {}).get(actor)
+    session = deepcopy(getattr(player, "session", None))
     if session is None:
         session = PlayerSession(
             color=actor,
             session_id=f"prompt-preview:{sandbox.game_engine.id}:{actor.value}",
         )
-    context = sandbox.decision_context(actor)
-    model_request = ContextAssembler(suite).assemble(context, session)
+    if suite.context.memory_mode == "fresh_notes":
+        cutoff = context.visible_through_sequence
+        if cutoff is not None:
+            cursor = session.action_next_sequence if session.context_policy == "fresh_notes" else 0
+            messages = tuple(
+                event for event in context.visible_messages if cursor <= event.sequence <= cutoff
+            )
+            context = replace(
+                context,
+                events=tuple(event for event in context.events if cursor <= event.sequence <= cutoff),
+                recent_messages=messages, visible_messages=messages,
+            )
+    presenter = getattr(getattr(player, "_assembler", None), "board_presenter", None)
+    model_request = ContextAssembler(suite, board_presenter=presenter).assemble(context, session)
     return {
         "status": "rendered",
+        "provenance": "current_typed_context",
         "actor": actor.value,
         "prompt_key": context.prompt_key,
         "components": [
@@ -148,7 +188,7 @@ def _latest_communication_request(state: Any) -> Any:
     sandbox = getattr(state, "current_sandbox", None)
     if sandbox is None:
         return None
-    for record in reversed(sandbox.communication_trace):
+    for record in reversed(getattr(sandbox, "communication_trace", ())):
         choice = record.choice
         if choice.model_request is not None:
             return choice.model_request
@@ -158,11 +198,78 @@ def _latest_communication_request(state: Any) -> Any:
 def _communication_preview(
     state: Any,
     suite: CommunicationSuite,
+    *,
+    candidate: bool = False,
 ) -> dict[str, Any]:
-    model_request = _latest_communication_request(state)
+    if suite.components or candidate:
+        sandbox = getattr(state, "current_sandbox", None)
+        policy = getattr(sandbox, "communication_policy", None)
+        opportunity = None
+        provenance = "current_typed_context"
+        if policy is not None:
+            opportunities = policy.pre_action(sandbox.game_engine)
+            if opportunities:
+                opportunity = opportunities[0]
+            elif trace := getattr(sandbox, "communication_trace", ()):
+                opportunity = replace(
+                    trace[-1].opportunity,
+                    visible_through_sequence=sandbox.game_engine.revision - 1,
+                )
+                provenance = "current_typed_context_with_latest_trigger"
+        if opportunity is not None:
+            context = sandbox._talk_context(opportunity)
+            context = replace(context, observation=sandbox.game_engine.observe(context.player))
+            player = sandbox.players.get(context.player)
+            session = getattr(player, "session", None)
+            notes = ""
+            if suite.memory_mode == "fresh_notes":
+                cursor = (
+                    session.talk_next_sequence
+                    if getattr(session, "context_policy", "legacy") == "fresh_notes" else 0
+                )
+                if session is not None:
+                    notes = session.strategic_memory
+                visible = sandbox.game_engine.project_events(context.player)
+                messages = tuple(
+                    event for event in visible
+                    if cursor <= event.sequence <= context.visible_through_sequence
+                    and event.event_type == "MESSAGE_SENT"
+                )
+                context = replace(
+                    context,
+                    game_events=tuple(event for event in context.game_events if event.sequence >= cursor),
+                    recent_messages=messages, visible_messages=messages,
+                )
+            model_request = build_communication_request(
+                context, "prompt-preview", suite, notes=notes,
+                board_presenter=getattr(getattr(player, "_assembler", None), "board_presenter", None),
+            )
+            return {
+                "status": "rendered", "actor": context.player.value, "provenance": provenance,
+                "components": [_component_payload(item) for item in model_request.components],
+                "board_presentation": board_presentation_payload(
+                    model_request.board_presentation, include_text_content=True,
+                ),
+            }
+        if suite.components:
+            return {
+                "status": "no_current_communication_context",
+                "provenance": "authored_templates_only",
+                "components": [
+                    {
+                        "id": f"{suite.components[name].channel}.{name}",
+                        "channel": suite.components[name].channel,
+                        "template": suite.components[name].template,
+                        "value": "", "rendered": "", "variables": {},
+                    }
+                    for name in suite.order
+                ],
+            }
+    model_request = None if candidate else _latest_communication_request(state)
     if model_request is not None and model_request.components:
         return {
             "status": "rendered",
+            "provenance": "recorded_request",
             "components": [
                 _component_payload(component)
                 for component in model_request.components
@@ -222,17 +329,25 @@ def _communication_preview(
 def _studio_payload(
     active: ActivePromptSuites,
     state: Any,
+    *,
+    candidate: bool = False,
 ) -> dict[str, Any]:
-    decision = parse_context_suite(active.decision.source)
-    communication = parse_communication_suite(active.communication.source)
-    return {
-        **_editor_payload(active),
-        "saving_locked": _saving_locked(state),
-        "preview": {
-            "decision": _decision_preview(state, decision),
-            "communication": _communication_preview(state, communication),
-        },
-    }
+    if active.shared is not None:
+        bundle = parse_shared_prompt_suite(active.shared.source)
+        decision = bundle.decision_suite()
+        communication = bundle.communication_suite()
+    else:
+        decision = parse_context_suite(active.decision.source)
+        communication = parse_communication_suite(active.communication.source)
+    with state.replay_mutation_lock:
+        return {
+            **_editor_payload(active),
+            "saving_locked": _saving_locked(state),
+            "preview": {
+                "decision": _decision_preview(state, decision),
+                "communication": _communication_preview(state, communication, candidate=candidate),
+            },
+        }
 
 
 def _mapping(value: Any, component: str) -> Mapping[str, Any]:
@@ -266,6 +381,8 @@ def _edited_sources(
     active: ActivePromptSuites,
     payload: Any,
 ) -> tuple[str, str]:
+    if active.shared is not None:
+        raise PromptSuiteEditError("request", "Shared mode requires one complete shared document")
     root = _mapping(payload, "request")
     _exact_keys(root, {"decision", "communication"}, "request")
     decision_edit = _mapping(root["decision"], "decision")
@@ -361,6 +478,20 @@ def _edited_sources(
     return decision_source, communication_source
 
 
+def _shared_source(payload: Any) -> str:
+    document = _mapping(payload, "shared")
+    _exact_keys(document, set(SharedPromptSuite.model_fields), "shared")
+    # JSON strict mode accepts declared arrays but never coerces booleans/numbers/strings.
+    bundle = SharedPromptSuite.model_validate_json(json.dumps(document), strict=True)
+    return yaml.safe_dump(bundle.model_dump(mode="json"), sort_keys=False, width=1_000)
+
+
+def _shared_expected(payload: Any) -> str:
+    expected = _mapping(payload, "expected")
+    _exact_keys(expected, {"shared"}, "expected")
+    return _string(expected["shared"], "expected.shared")
+
+
 def _expected_hashes(payload: Any) -> tuple[str, str]:
     root = _mapping(payload, "request")
     _exact_keys(root, {"expected"}, "request")
@@ -388,7 +519,7 @@ def _validation_error(exc: Exception) -> dict[str, Any]:
 @prompt_suite_bp.route("/api/prompt-suite", methods=["GET"])
 def get_prompt_suite():
     try:
-        return _response(_studio_payload(load_active_prompt_suites(), _state()))
+        return _response(_studio_payload(_active_suites(), _state()))
     except (OSError, TypeError, ValueError, yaml.YAMLError) as exc:
         return _response(
             {"error": "Prompt suite cannot be loaded", "details": str(exc)},
@@ -399,23 +530,22 @@ def get_prompt_suite():
 @prompt_suite_bp.route("/api/prompt-suite/validate", methods=["POST"])
 def validate_prompt_suite():
     try:
-        active = load_active_prompt_suites()
-        decision_source, communication_source = _edited_sources(
-            active,
-            request.get_json(silent=True),
-        )
-        candidate = validate_prompt_suite_sources(
-            decision_source,
-            communication_source,
-        )
+        root = _mapping(request.get_json(silent=True), "request")
+        if "shared" in root:
+            _exact_keys(root, {"shared"}, "request")
+            candidate = validate_shared_prompt_source(_shared_source(root["shared"]))
+        else:
+            active = _active_suites()
+            decision_source, communication_source = _edited_sources(active, root)
+            candidate = validate_prompt_suite_sources(decision_source, communication_source)
         return _response(
             {
                 "valid": True,
-                "candidate": _studio_payload(candidate, _state()),
+                "candidate": _studio_payload(candidate, _state(), candidate=True),
                 "errors": [],
             }
         )
-    except (TypeError, ValueError, ValidationError, yaml.YAMLError) as exc:
+    except (OSError, TypeError, ValueError, ValidationError, yaml.YAMLError) as exc:
         return _response(
             {"valid": False, "errors": [_validation_error(exc)]},
             400,
@@ -425,14 +555,28 @@ def validate_prompt_suite():
 @prompt_suite_bp.route("/api/prompt-suite", methods=["PUT"])
 def save_prompt_suite():
     state = _state()
+    # The store has its own atomic lock. Publishing a new source must not wait
+    # for provider I/O; players acquire it only at safe inference boundaries.
+    return _save_prompt_suite_transaction(state)
+
+
+def _save_prompt_suite_transaction(state: Any):
     if _saving_locked(state):
         return _response(
-            {"error": "Clear the loaded game before saving prompt suites"},
+            {"error": "Clear the loaded replay before saving prompt suites"},
             409,
         )
     payload = request.get_json(silent=True)
     try:
+        _require_local_selection()
         root = _mapping(payload, "request")
+        if "shared" in root:
+            _exact_keys(root, {"expected", "shared"}, "request")
+            saved = save_shared_prompt_override(
+                source=_shared_source(root["shared"]),
+                expected_sha256=_shared_expected(root["expected"]),
+            )
+            return _response({"status": "saved", **_studio_payload(saved, state)})
         _exact_keys(root, {"expected", "decision", "communication"}, "request")
         expected = _mapping(root["expected"], "expected")
         _exact_keys(expected, {"decision", "communication"}, "expected")
@@ -448,7 +592,7 @@ def save_prompt_suite():
             "decision": root["decision"],
             "communication": root["communication"],
         }
-        active = load_active_prompt_suites()
+        active = _active_suites()
         decision_source, communication_source = _edited_sources(
             active,
             edit_payload,
@@ -472,18 +616,29 @@ def save_prompt_suite():
 @prompt_suite_bp.route("/api/prompt-suite", methods=["DELETE"])
 def reset_prompt_suite():
     state = _state()
+    return _reset_prompt_suite_transaction(state)
+
+
+def _reset_prompt_suite_transaction(state: Any):
     if _saving_locked(state):
         return _response(
-            {"error": "Clear the loaded game before resetting prompt suites"},
+            {"error": "Clear the loaded replay before resetting prompt suites"},
             409,
         )
     try:
+        _require_local_selection()
+        root = _mapping(request.get_json(silent=True), "request")
+        _exact_keys(root, {"expected"}, "request")
+        if "shared" in _mapping(root["expected"], "expected"):
+            active = reset_shared_prompt_override(expected_sha256=_shared_expected(root["expected"]))
+            return _response({"status": "reset", **_studio_payload(active, state)})
         expected_decision, expected_communication = _expected_hashes(
-            request.get_json(silent=True)
+            root
         )
         active = reset_prompt_suite_overrides(
             expected_decision_sha256=expected_decision,
             expected_communication_sha256=expected_communication,
+            shared_default=True,
         )
         return _response({"status": "reset", **_studio_payload(active, state)})
     except PromptSuiteConflictError as exc:
@@ -492,4 +647,20 @@ def reset_prompt_suite():
         return _response(
             {"error": "Prompt suite reset failed", "errors": [_validation_error(exc)]},
             400,
+        )
+
+
+def _require_local_selection() -> None:
+    selection = getattr(_state(), "active_live_config", None)
+    if any(getattr(selection, name, None) for name in (
+        "shared_suite_path", "context_suite_path", "communication_suite_path",
+    )):
+        raise PromptSuiteConflictError(
+            "Explicit runtime prompt paths are active; edit those files or select local overrides"
+        )
+    if any(os.getenv(name) for name in (
+        "CATAN_SHARED_SUITE", "CATAN_CONTEXT_SUITE", "CATAN_COMMUNICATION_SUITE",
+    )):
+        raise PromptSuiteConflictError(
+            "Explicit environment prompt paths are active; clear them before editing local overrides"
         )

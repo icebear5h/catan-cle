@@ -237,6 +237,13 @@ npm run dev
 # UI runs on http://localhost:5173
 ```
 
+**Headless speed run (no browser):**
+```bash
+uv run python scripts/time_live_game.py --seed 1                 # cerebras/qwen-3.8-27b, needs CEREBRAS_API_KEY
+uv run python scripts/time_live_game.py --model qwen/qwen3.8-27b  # same game through OpenRouter
+```
+A `cerebras/<id>` model routes that game to Cerebras; see `cle/harness/README.md`.
+
 ### Features
 - Real-time hex board rendering with SVG
 - Live game state updates via WebSocket

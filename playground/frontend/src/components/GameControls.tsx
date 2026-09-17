@@ -14,6 +14,7 @@ const MODEL_PRESETS: Array<{ id: string; label: string }> = [
   { id: 'thinkingmachines/inkling', label: 'Inkling · 975B/41B' },
   { id: 'qwen/qwen3.8-max', label: 'Qwen3.8-Max · 2.4T/95B' },
   { id: 'qwen/qwen3.8-27b', label: 'Qwen3.8-27B · eval baseline' },
+  { id: 'cerebras/qwen-3.8-27b', label: 'Qwen3.8-27B · Cerebras · fast' },
   { id: 'qwen/qwen3.7-flash', label: 'Qwen3.7 Flash · VL · cheap' },
   { id: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash · default' },
   // Student tier (small)

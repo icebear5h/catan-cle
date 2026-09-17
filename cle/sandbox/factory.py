@@ -29,6 +29,8 @@ from cle.harness.reasoning import (
     validate_native_reasoning_request,
 )
 from cle.harness.providers import (
+    CerebrasConfig,
+    CerebrasTransport,
     OpenRouterConfig,
     OpenRouterTransport,
     VLLMConfig,
@@ -47,6 +49,9 @@ from cle.game_engine.trading import TradeLimits
 DEFAULT_LIVE_MODEL = "qwen/qwen3.8-27b"
 DEFAULT_LIVE_REASONING_EFFORT = "high"
 DEFAULT_LIVE_MAX_DECISION_ATTEMPTS = 3
+# A `cerebras/<id>` model routes to Cerebras per game; every other model keeps
+# the env-selected vLLM/OpenRouter transport.
+CEREBRAS_MODEL_PREFIX = "cerebras/"
 
 
 @dataclass(frozen=True, slots=True)
@@ -372,6 +377,17 @@ def resolve_live_model(value: str | None) -> str:
 def create_text_transport(config: LiveSandboxConfig) -> CompletionTransport:
     model = resolve_live_model(config.model)
     reasoning = validate_native_reasoning_request(config.reasoning)
+    if model.startswith(CEREBRAS_MODEL_PREFIX):
+        if config.board_surface == "image":
+            raise ValueError("Cerebras transport is text-only; use a text board surface")
+        return CerebrasTransport(
+            CerebrasConfig(
+                model=model.removeprefix(CEREBRAS_MODEL_PREFIX),
+                temperature=config.temperature,
+                max_tokens=config.max_tokens,
+                reasoning=reasoning,
+            )
+        )
     if base_url := os.getenv("VLLM_BASE_URL"):
         _reject_unsupported_native_reasoning("vLLM", reasoning)
         return VLLMTransport(
@@ -394,7 +410,10 @@ def create_text_transport(config: LiveSandboxConfig) -> CompletionTransport:
                 allow_image_input=config.board_surface == "image",
             )
         )
-    raise ValueError("Set VLLM_BASE_URL or OPENROUTER_API_KEY for inference")
+    raise ValueError(
+        "Set VLLM_BASE_URL or OPENROUTER_API_KEY for inference, "
+        "or use a cerebras/<model> id with CEREBRAS_API_KEY"
+    )
 
 
 def _reject_unsupported_native_reasoning(

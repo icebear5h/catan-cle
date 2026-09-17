@@ -364,14 +364,38 @@ and never enters the game log. Catan Lab may save validated static string-only
 overrides under `.cle/prompt_suites/`; active games retain their recorded suite
 sources and hashes.
 
-OpenRouter, Groq, and vLLM transports are asynchronous and provider-independent.
+OpenRouter, Cerebras, Groq, and vLLM transports are asynchronous and provider-independent.
 The complete active context is sent every time. Session affinity and provider KV
 caching are optional optimizations, never continuity storage.
+
+### Cerebras
+
+A live model id of `cerebras/<id>` (for example `cerebras/qwen-3.8-27b`) routes
+that game to `CerebrasTransport` and sends the bare `<id>` upstream; it needs
+`CEREBRAS_API_KEY`. The prefix wins over `VLLM_BASE_URL` and
+`OPENROUTER_API_KEY`, so provider choice stays per game and every other model
+string keeps the env-selected transport. The transport is text-only (the image
+board surface is rejected) and implements the native-reasoning channel:
+
+| harness `reasoning` | Cerebras `reasoning_effort` |
+|---|---|
+| `enabled: false` | `none` |
+| `minimal`, `low` | `low` |
+| `medium` | `medium` |
+| `high`, `xhigh`, `max` | `high` |
+
+`reasoning.max_tokens` is rejected because Cerebras has no reasoning budget.
+`max_tokens` is sent as `max_completion_tokens`, which reasoning tokens count
+against. Rate-limit retries honor `retry-after` (capped at 30s).
+`scripts/time_live_game.py` plays one headless game on the default suite through
+the viewer's own `/api/start-game` and `/api/step` routes, so it is saved to the
+live trace database (loadable from the viewer's saved games, mid-run or after),
+then prints wall time, call latency, tokens, and tok/s from the recorded calls.
 
 The decision response contains only durable strategic memory, an action selection
 (or an opted-in deterministic plan), and applicable structured parameters. It never asks the
 model to author a rationale. Reasoning is stored only from a distinct provider
 response channel (`reasoning`, `reasoning_content`, or `reasoning_details`) or
 explicit provider token evidence. The current live factory sends configurable
-native-reasoning requests through OpenRouter and rejects enabled requests on
+native-reasoning requests through OpenRouter or Cerebras and rejects enabled requests on
 transports that do not implement that channel instead of silently faking it.

@@ -12,7 +12,11 @@ from flask import Flask
 
 from cle.harness import ModelResponse, default_suite_path
 from cle.harness.communication import default_communication_suite_path
-from cle.harness.providers import OpenRouterConfig, OpenRouterTransport
+from cle.harness.providers import (
+    CerebrasTransport,
+    OpenRouterConfig,
+    OpenRouterTransport,
+)
 from cle.harness.providers.openrouter import OpenRouterHTTPFailure, OpenRouterTLSFailure
 from cle.players.contracts import CommunicationChoice, CommunicationMode, PlayerAttempt, PlayerChoice
 from cle.sandbox.catan import PlayerResponseError
@@ -487,6 +491,42 @@ async def test_live_openrouter_defaults_to_high_reasoning_without_token_cap(
     }
 
     await transport.aclose()
+
+
+@pytest.mark.asyncio
+async def test_live_cerebras_model_prefix_selects_cerebras_over_env_providers(
+    monkeypatch,
+):
+    monkeypatch.setenv("VLLM_BASE_URL", "http://127.0.0.1:8000/v1")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "openrouter-key")
+    monkeypatch.setenv("CEREBRAS_API_KEY", "cerebras-key")
+    transport = create_text_transport(
+        LiveSandboxConfig(mode="llm", model="cerebras/qwen-3.8-27b")
+    )
+
+    assert isinstance(transport, CerebrasTransport)
+    assert transport.config.model == "qwen-3.8-27b"
+    assert transport.config.max_tokens is None
+    assert transport.reasoning_effort == "high"
+    assert dict(transport.reasoning_request) == {
+        "effort": "high",
+        "exclude": False,
+    }
+
+    await transport.aclose()
+
+
+def test_live_cerebras_rejects_image_board_surface(monkeypatch):
+    monkeypatch.setenv("CEREBRAS_API_KEY", "cerebras-key")
+
+    with pytest.raises(ValueError, match="text-only"):
+        create_text_transport(
+            LiveSandboxConfig(
+                mode="llm",
+                model="cerebras/qwen-3.8-27b",
+                board_surface="image",
+            )
+        )
 
 
 def test_live_factory_does_not_fall_back_to_groq(monkeypatch):

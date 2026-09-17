@@ -15,6 +15,7 @@ from cle.game_engine.state_functions import (
     get_player_buildings,
     get_player_freqdeck,
     get_visible_victory_points,
+    player_has_rolled,
     player_key,
 )
 
@@ -53,6 +54,7 @@ class PlayerObservation:
     current_prompt: str = ""
     setup_road_anchor: int | None = None
     free_roads_available: int = 0
+    turn_player_has_rolled: bool | None = None
 
     def __setstate__(self, state) -> None:
         """Keep older slotted observation pickles readable after additive facts."""
@@ -62,6 +64,7 @@ class PlayerObservation:
             "current_prompt": "",
             "setup_road_anchor": None,
             "free_roads_available": 0,
+            "turn_player_has_rolled": None,
             **stored,
         }
         for name, value in values.items():
@@ -171,4 +174,5 @@ def observe_state(
             and game_state.current_prompt.value == "BUILD_INITIAL_ROAD" else None
         ),
         free_roads_available=game_state.free_roads_available if game_state.is_road_building else 0,
+        turn_player_has_rolled=bool(player_has_rolled(game_state, turn_player_color)),
     ))

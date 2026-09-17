@@ -894,7 +894,23 @@ class CatanObservationFormatter:
         else:
             lines.append(f"Your VP: {obs.my_vp}/10")
 
-        if obs.last_dice_roll:
+        has_rolled = getattr(obs, "turn_player_has_rolled", None)
+        if shared and has_rolled is not None and obs.current_phase != "initial_placement":
+            # Fresh context has no memory of rolling, and a bare "last dice roll"
+            # never says whose roll it was, so models re-sent roll_dice mid-turn.
+            turn_player = (
+                "you" if obs.is_my_turn else self._color_name(obs.turn_player_color)
+            )
+            if has_rolled:
+                lines.append(
+                    f"Dice this turn: ALREADY ROLLED {obs.last_dice_roll} by {turn_player}. "
+                    "roll_dice is not available again until the next turn."
+                )
+            else:
+                lines.append(f"Dice this turn: NOT ROLLED YET by {turn_player}.")
+                if obs.last_dice_roll:
+                    lines.append(f"Previous turn's dice roll: {obs.last_dice_roll}")
+        elif obs.last_dice_roll:
             lines.append(f"Last dice roll: {obs.last_dice_roll}")
 
         return "\n".join(lines)

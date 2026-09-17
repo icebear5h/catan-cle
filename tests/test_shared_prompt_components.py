@@ -405,3 +405,46 @@ def test_legacy_paths_memory_rendering_and_validators_remain_unchanged(contexts)
     invalid["order"] = tuple(reversed(invalid["order"]))
     with pytest.raises(ValueError, match="fixed component order"):
         CommunicationSuite.model_validate(invalid)
+
+
+@pytest.mark.parametrize(
+    ("has_rolled", "is_my_turn", "expected", "forbidden"),
+    [
+        (True, True, "Dice this turn: ALREADY ROLLED (4, 3) by you.", "NOT ROLLED YET"),
+        (False, True, "Dice this turn: NOT ROLLED YET by you.", "ALREADY ROLLED"),
+        (True, False, "Dice this turn: ALREADY ROLLED (4, 3) by BLUE.", "NOT ROLLED YET"),
+    ],
+)
+def test_shared_phase_info_states_whether_dice_were_rolled_this_turn(
+    contexts, has_rolled, is_my_turn, expected, forbidden,
+):
+    decision, _ = contexts
+    observation = replace(
+        decision.observation,
+        current_phase="main_game",
+        last_dice_roll=(4, 3),
+        turn_player_has_rolled=has_rolled,
+        is_my_turn=is_my_turn,
+        turn_player_color=Color.RED if is_my_turn else Color.BLUE,
+    )
+    context = replace(
+        decision, observation=observation, phase="main_game", prompt_key="main_game",
+    )
+    request = ContextAssembler(load_shared_prompt_suite().decision_suite()).assemble(
+        context, PlayerSession(Color.RED, "dice"),
+    )
+    phase_info = next(
+        c for c in request.components if c.id == "environment.phase_info"
+    ).rendered
+
+    assert expected in phase_info
+    assert forbidden not in phase_info
+    # The ambiguous legacy line never says whose roll it was.
+    assert "Last dice roll" not in phase_info
+    if not has_rolled:
+        assert "Previous turn's dice roll: (4, 3)" in phase_info
+
+
+def test_observation_reports_turn_player_roll_state():
+    engine = GameEngine(COLORS, seed=7, shuffle_players=False)
+    assert observe_state(engine.state, Color.RED).turn_player_has_rolled is False

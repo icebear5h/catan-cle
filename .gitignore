@@ -70,6 +70,12 @@ artifacts/**/*.mp4
 artifacts/**/*.webm
 artifacts/**/*.wav
 
+# Scraper output in flight: staged replays, leaderboard pulls, seat ratings.
+# Files already tracked under these paths stay tracked.
+artifacts/staging/colonist/replays/
+artifacts/raw/colonist/indexes/classic4p_leaderboard_*.json
+artifacts/manifests/colonist/seat_ratings.json
+
 # Regenerable SFT datasets, local diagnostics, and heavyweight run state
 artifacts/generated/sft/*
 !artifacts/generated/sft/README.md

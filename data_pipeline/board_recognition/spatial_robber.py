@@ -192,13 +192,14 @@ def _relation_bank(
                     "tokens": [first, second],
                 }
             )
+            # Fixed choices across inverse questions balance both answer positions.
             bank[f"{entity}_direction_token"].append(
                 {
-                    "prompt": (f"Which {noun} is {relation} the other: {first} or {second}?"),
+                    "prompt": (f"Which {noun} is {relation} the other: {left} or {right}?"),
                     "answer": first,
                     "relationship": relation.replace(" ", "_"),
                     "polarity": "token_return",
-                    "tokens": [first, second],
+                    "tokens": [left, right],
                 }
             )
 

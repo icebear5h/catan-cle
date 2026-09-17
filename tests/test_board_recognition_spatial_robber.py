@@ -1,5 +1,8 @@
 import json
+from collections import defaultdict
 from pathlib import Path
+
+import pytest
 
 from data_pipeline.board_recognition.spatial_robber import (
     CURRICULUM_STAGES,
@@ -35,15 +38,44 @@ def test_spatial_bank_covers_directions_topology_and_hard_negatives():
     assert sum(token.startswith("<T") for token in tokens) == 19
 
 
-def test_empty_state_gets_balanced_24_row_spatial_block():
-    state, _ = _fixture_state_and_contract()
-    rows = spatial_queries_for_state(state, state_index=0)
+@pytest.mark.parametrize("entity", ["node", "tile"])
+def test_direction_choices_balance_inverse_pairs_and_cyclic_samples(entity):
+    rows = spatial_query_bank()[f"{entity}_direction_token"]
+    answer_positions = []
+    positions_by_relation = defaultdict(set)
+    for row in rows:
+        choices = row["prompt"].rsplit(": ", 1)[1].removesuffix("?").split(" or ")
+        assert choices == row["tokens"]
+        assert len(set(choices)) == 2
+        position = choices.index(row["answer"])
+        answer_positions.append(position)
+        positions_by_relation[row["relationship"]].add(position)
 
+    assert len(rows) % 2 == 0
+    for forward, inverse in zip(rows[::2], rows[1::2], strict=True):
+        assert forward["tokens"] == inverse["tokens"]
+        assert forward["answer"] != inverse["answer"]
+    assert set(positions_by_relation) == {"above", "below", "left_of", "right_of"}
+    assert all(positions == {0, 1} for positions in positions_by_relation.values())
+    # State sampling takes two consecutive rows, including cross-pair/wraparound starts.
+    for start, position in enumerate(answer_positions):
+        assert {position, answer_positions[(start + 1) % len(rows)]} == {0, 1}
+
+
+@pytest.mark.parametrize("state_index", [0, 1, 17])
+def test_empty_state_gets_balanced_24_row_spatial_block(state_index):
+    state, _ = _fixture_state_and_contract()
+    rows = spatial_queries_for_state(state, state_index=state_index)
+
+    assert rows == spatial_queries_for_state(state, state_index=state_index)
     assert len(rows) == 24
     assert sum(row["answer"] == "yes" for row in rows) == 10
     assert sum(row["answer"] == "no" for row in rows) == 10
     assert sum(row["answer"].startswith("<") for row in rows) == 4
     assert {row["curriculum_stage"] for row in rows} == {"spatial_grounding"}
+    for entity in ("node", "tile"):
+        choices = [row for row in rows if row["task_type"] == f"{entity}_direction_token"]
+        assert sorted(row["tokens"].index(row["answer"]) for row in choices) == [0, 1]
 
 
 def test_robber_rows_include_positive_negative_and_token_localization():

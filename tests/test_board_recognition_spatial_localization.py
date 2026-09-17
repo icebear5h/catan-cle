@@ -1,6 +1,8 @@
 import json
+from collections import Counter
 from pathlib import Path
 
+import pytest
 from PIL import Image
 
 from data_pipeline.board_recognition.spatial_localization import (
@@ -111,6 +113,45 @@ def test_relation_stage_expands_every_canonical_fact_eight_times():
     assert len(rows) == 9432
     assert {row["grounding_stage"] for row in rows} == {"unmarked_orientation"}
     assert not any("spatial_targets" in row for row in rows)
+
+
+@pytest.mark.parametrize("repetitions,balance_polarity", [(1, False), (8, True)])
+def test_relation_stage_preserves_balanced_choices_and_rendered_directions(
+    repetitions, balance_polarity
+):
+    state, contract = _fixture_contract()
+    regions = atlas_regions(contract, image_size=1024, view_padding_factor=1.2)
+    rows = _relation_rows(
+        [{**state, "split": "train"}],
+        repetitions=repetitions,
+        balance_polarity=balance_polarity,
+    )
+    counts = Counter()
+    for row in _deterministic_shuffle(rows, "stage2"):
+        if row["polarity"] != "token_return":
+            continue
+        prompt = row["messages"][0]["content"]
+        choices = prompt.rsplit(": ", 1)[1].removesuffix("?").split(" or ")
+        answer = row["messages"][1]["content"]
+        assert choices == row["tokens"]
+        position = choices.index(answer)
+        counts[(row["entity_type"], position)] += 1
+        other = choices[1 - position]
+        x, y = regions[answer]["center"]
+        other_x, other_y = regions[other]["center"]
+        expected_direction = (
+            ("right_of" if x > other_x else "left_of")
+            if abs(x - other_x) > abs(y - other_y)
+            else ("below" if y > other_y else "above")
+        )
+        assert row["relationship"] == expected_direction
+        assert f" is {expected_direction.replace('_', ' ')} the other:" in prompt
+
+    assert counts == {
+        (entity, position): pair_count * repetitions
+        for entity, pair_count in (("node", 72), ("tile", 42))
+        for position in (0, 1)
+    }
 
 
 def test_balanced_relation_stage_equalizes_yes_and_no_per_relationship():

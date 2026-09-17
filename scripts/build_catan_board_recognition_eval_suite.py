@@ -54,67 +54,109 @@ def compact_metadata(audit: JsonDict, *, suite: str, category: str) -> JsonDict:
     return metadata
 
 
-def build_rows(root: Path, split: str) -> list[JsonDict]:
-    mixed = read_jsonl(root / "ms_swift_bidirectional_v1" / "mixed" / f"{split}.jsonl")
-    mixed_index = read_jsonl(
-        root / "ms_swift_bidirectional_v1" / "mixed_index" / f"{split}.jsonl"
-    )
-    forward = {
-        row["query_id"]: row
-        for row in read_jsonl(root / "ms_swift_semantic_v1" / "audit" / f"{split}.jsonl")
-    }
-    inverse = {
-        row["query_id"]: row
-        for row in read_jsonl(
-            root / "ms_swift_bidirectional_v1" / "audit" / f"{split}.jsonl"
-        )
-    }
-    if len(mixed) != len(mixed_index):
-        raise ValueError("mixed rows and index have different lengths")
-
+def build_rows(
+    root: Path,
+    split: str,
+    *,
+    supplement_dir: Path | None = None,
+    spatial_only: bool = False,
+    answer_only: bool = False,
+) -> list[JsonDict]:
+    if answer_only and not spatial_only:
+        raise ValueError("--answer-only requires --spatial-only")
     output = []
     seen_ids = set()
-    for offset, (row, index) in enumerate(zip(mixed, mixed_index, strict=True)):
-        if index["mixed_index"] != offset:
-            raise ValueError(f"mixed_index is not contiguous at row {offset}")
-        audit = (forward if index["row_kind"] == "forward" else inverse)[index["query_id"]]
-        assert_aligned(row, audit)
-        category = (
-            str(audit["head"])
-            if index["row_kind"] == "forward"
-            else f"inverse.{audit['entity_type']}"
+    if not spatial_only:
+        mixed = read_jsonl(root / "ms_swift_bidirectional_v1" / "mixed" / f"{split}.jsonl")
+        mixed_index = read_jsonl(
+            root / "ms_swift_bidirectional_v1" / "mixed_index" / f"{split}.jsonl"
         )
-        metadata = compact_metadata(audit, suite="bidirectional", category=category)
-        metadata["row_kind"] = index["row_kind"]
-        enriched = {
-            "id": audit["query_id"],
-            "images": list(row["images"]),
-            "messages": row["messages"],
-            "metadata": metadata,
+        forward = {
+            row["query_id"]: row
+            for row in read_jsonl(root / "ms_swift_semantic_v1" / "audit" / f"{split}.jsonl")
         }
-        output.append(enriched)
-        seen_ids.add(enriched["id"])
+        inverse = {
+            row["query_id"]: row
+            for row in read_jsonl(root / "ms_swift_bidirectional_v1" / "audit" / f"{split}.jsonl")
+        }
+        if len(mixed) != len(mixed_index):
+            raise ValueError("mixed rows and index have different lengths")
 
-    spatial = read_jsonl(root / "spatial_robber_v1" / f"{split}.jsonl")
-    spatial_audit = read_jsonl(root / "spatial_robber_v1" / "audit" / f"{split}.jsonl")
+        for offset, (row, index) in enumerate(zip(mixed, mixed_index, strict=True)):
+            if index["mixed_index"] != offset:
+                raise ValueError(f"mixed_index is not contiguous at row {offset}")
+            audit = (forward if index["row_kind"] == "forward" else inverse)[index["query_id"]]
+            assert_aligned(row, audit)
+            category = (
+                str(audit["head"])
+                if index["row_kind"] == "forward"
+                else f"inverse.{audit['entity_type']}"
+            )
+            metadata = compact_metadata(audit, suite="bidirectional", category=category)
+            metadata["row_kind"] = index["row_kind"]
+            enriched = {
+                "id": audit["query_id"],
+                "images": list(row["images"]),
+                "messages": row["messages"],
+                "metadata": metadata,
+            }
+            output.append(enriched)
+            seen_ids.add(enriched["id"])
+
+    supplement_root = supplement_dir if supplement_dir is not None else root / "spatial_robber_v1"
+    spatial = read_jsonl(supplement_root / f"{split}.jsonl")
+    spatial_audit = read_jsonl(supplement_root / "audit" / f"{split}.jsonl")
     if len(spatial) != len(spatial_audit):
         raise ValueError("spatial rows and audit have different lengths")
     for row, audit in zip(spatial, spatial_audit, strict=True):
         assert_aligned(row, audit)
+        if audit.get("split", split) != split:
+            raise ValueError(f"split mismatch for {audit['query_id']}")
+        if "image_name" in audit and row["images"] != [audit["image_name"]]:
+            raise ValueError(f"image mismatch for {audit['query_id']}")
+        if spatial_only and audit["task_family"] != "spatial_grounding":
+            continue
         if audit["query_id"] in seen_ids:
             raise ValueError(f"duplicate query_id: {audit['query_id']}")
+        metadata = compact_metadata(
+            audit,
+            suite="spatial_robber",
+            category=str(audit["task_family"]),
+        )
+        if audit["task_family"] == "spatial_grounding":
+            entity_type = str(audit["task_type"]).split("_", 1)[0]
+            if entity_type not in {"node", "tile"}:
+                raise ValueError(f"unknown spatial entity for {audit['query_id']}")
+            metadata["entity_type"] = entity_type
+        metadata["source_supplement"] = str(supplement_root.resolve())
+        metadata["source_split"] = split
+        eval_id = audit["query_id"]
+        if supplement_dir is not None or spatial_only:
+            # Versioned sources must not alias historical prompt-blind fingerprints.
+            eval_id = f"{supplement_root.name}:{split}:{eval_id}"
         enriched = {
-            "id": audit["query_id"],
+            "id": eval_id,
             "images": list(row["images"]),
             "messages": row["messages"],
-            "metadata": compact_metadata(
-                audit,
-                suite="spatial_robber",
-                category=str(audit["task_family"]),
-            ),
+            "metadata": metadata,
         }
+        if answer_only:
+            task_type = str(audit["task_type"])
+            if task_type.endswith("_direction_token"):
+                instruction = "Answer with only one of the two tokens shown in the question."
+            elif task_type.endswith(("_yes", "_no")):
+                instruction = "Answer with exactly one word: yes or no."
+            else:
+                raise ValueError(f"unsupported answer-only spatial task: {task_type}")
+            messages = row["messages"]
+            enriched["messages"] = [
+                {**messages[0], "content": f"{messages[0]['content']}\n{instruction}"},
+                *messages[1:],
+            ]
+            enriched["id"] += ":answer_only"
+            metadata["prompt_variant"] = "answer_only"
         output.append(enriched)
-        seen_ids.add(enriched["id"])
+        seen_ids.add(audit["query_id"])
     return output
 
 
@@ -135,10 +177,10 @@ def smoke_rows(rows: Iterable[JsonDict], limit: int) -> list[JsonDict]:
     return selected
 
 
-def write_jsonl(path: Path, rows: Iterable[JsonDict]) -> int:
+def write_jsonl(path: Path, rows: Iterable[JsonDict], *, overwrite: bool = False) -> int:
     materialized = list(rows)
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w") as handle:
+    with path.open("w" if overwrite else "x") as handle:
         for row in materialized:
             handle.write(json.dumps(row, sort_keys=True) + "\n")
     return len(materialized)
@@ -152,19 +194,52 @@ def parse_args() -> argparse.Namespace:
         default=Path("artifacts/generated/board_recognition/replay_v1"),
     )
     parser.add_argument("--split", choices=("validation", "test"), default="validation")
+    parser.add_argument(
+        "--supplement-dir",
+        type=Path,
+        help="Supplement source directory (default: ROOT/spatial_robber_v1).",
+    )
+    parser.add_argument(
+        "--spatial-only",
+        action="store_true",
+        help="Skip base board rows and retain only task_family=spatial_grounding.",
+    )
+    parser.add_argument(
+        "--answer-only",
+        action="store_true",
+        help="Append a neutral answer-format instruction (requires --spatial-only).",
+    )
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--smoke-output", type=Path)
     parser.add_argument("--smoke-rows", type=int, default=16)
-    return parser.parse_args()
+    parser.add_argument("--overwrite", action="store_true", help="Replace existing eval outputs.")
+    args = parser.parse_args()
+    if args.answer_only and not args.spatial_only:
+        parser.error("--answer-only requires --spatial-only")
+    return args
 
 
 def main() -> int:
     args = parse_args()
-    rows = build_rows(args.root.resolve(), args.split)
-    count = write_jsonl(args.output, rows)
+    outputs = [args.output] + ([args.smoke_output] if args.smoke_output else [])
+    if len({path.resolve() for path in outputs}) != len(outputs):
+        raise ValueError("output and smoke-output must be different paths")
+    for path in outputs:
+        if not args.overwrite and (path.exists() or path.is_symlink()):
+            raise FileExistsError(f"output already exists: {path}; pass --overwrite")
+    rows = build_rows(
+        args.root.resolve(),
+        args.split,
+        supplement_dir=args.supplement_dir,
+        spatial_only=args.spatial_only,
+        answer_only=args.answer_only,
+    )
+    count = write_jsonl(args.output, rows, overwrite=args.overwrite)
     print(f"output={args.output} rows={count}")
     if args.smoke_output:
-        smoke_count = write_jsonl(args.smoke_output, smoke_rows(rows, args.smoke_rows))
+        smoke_count = write_jsonl(
+            args.smoke_output, smoke_rows(rows, args.smoke_rows), overwrite=args.overwrite
+        )
         print(f"smoke_output={args.smoke_output} rows={smoke_count}")
     return 0
 

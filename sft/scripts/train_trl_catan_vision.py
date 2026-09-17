@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import gc
 import hashlib
+import importlib
 import json
 import math
 import os
@@ -24,6 +25,18 @@ from pathlib import Path
 from typing import Any, Callable, Iterable, Iterator, Sequence
 
 import torch
+from huggingface_hub import HfApi
+from peft import LoraConfig, PeftModel, TrainableTokensConfig, get_peft_model
+from peft.tuners.trainable_tokens.layer import TrainableTokensLayer
+from peft.tuners.tuners_utils import BaseTunerLayer, check_target_module_exists
+from peft.utils.other import TrainableTokensWrapper
+from safetensors.torch import load_file, save_file
+
+from evals.catan_board_bench.tokens import semantic_recognition_token_inventory
+from sft.board_state_readout import score_board_state
+from sft.lora_expansion import (
+    SUPPORTED_TEXT_LORA_RANKS, expected_adapter_shapes, standard_lora_rank, tensor_headers,
+)
 
 
 MODEL_ID = "Qwen/Qwen3.8-27B"
@@ -65,6 +78,12 @@ DATASET_REPORT_FILE = "dataset_contract.json"
 RELOAD_REPORT_FILE = "reload_validation.json"
 RUN_CONFIG_FILE = "training_config.json"
 INITIAL_BUNDLE_FILE = "initial_bundle.json"
+# Transformers 5 stores image/video settings in processor_config.json; older
+# bundles use separate preprocessor files. Carry their bytes without instantiating
+# a multimodal processor in the text pipeline.
+PROCESSOR_ASSET_FILES = (
+    "processor_config.json", "preprocessor_config.json", "video_preprocessor_config.json",
+)
 # Row guard: one-phrase heads answer in a few words, and a full-board readout (54
 # nodes or 72 edges, empties explicit) runs to about 1,500 characters. Anything
 # past this is a broken row, not a long one.
@@ -72,6 +91,11 @@ MAX_PROMPT_CHARACTERS = 4096
 MAX_ANSWER_CHARACTERS = 2048
 PATCH_METRICS_FILE = "patch_localization_config.json"
 SPATIAL_TARGET_MODES = ("correct", "shuffled")
+INPUT_MODES = ("vision", "text")
+TEXT_MEDIA_KEYS = frozenset({
+    "image", "images", "image_url", "video", "videos", "audio", "audios",
+    "pixel_values", "pixel_values_videos", "image_grid_thw", "video_grid_thw",
+})
 # Completion tokens that every row shares; they are excluded from the
 # answer-only metrics so a plateau cannot hide behind end-of-turn accuracy.
 ANSWER_METRIC_TRIVIAL_TOKENS = ("<|im_end|>", "\n")
@@ -131,11 +155,6 @@ def expose_trainable_tokens_head_to_chunked_nll(model: torch.nn.Module) -> Itera
     and reload validation.
     """
 
-    from peft import PeftModel
-    from peft.tuners.trainable_tokens.layer import TrainableTokensLayer
-    from peft.tuners.tuners_utils import BaseTunerLayer
-    from peft.utils.other import TrainableTokensWrapper
-
     if not isinstance(model, PeftModel):
         yield
         return
@@ -170,9 +189,9 @@ def expose_trainable_tokens_head_to_chunked_nll(model: torch.nn.Module) -> Itera
 @dataclass(frozen=True)
 class TrainConfig:
     train_jsonl: str
-    image_root: str
-    token_inventory: str
-    output_dir: str
+    image_root: str | None = None
+    token_inventory: str = ""
+    output_dir: str = ""
     eval_jsonl: str | None = None
     eval_image_root: str | None = None
     model_id: str = MODEL_ID
@@ -211,19 +230,44 @@ class TrainConfig:
     visual_delta_factors: str | None = None
     orthogonal_lambda: float = 0.5
     vision_lora_learning_rate: float = 1e-4
+    input_mode: str = "vision"
+    max_sequence_length: int | None = None
 
     def validate(self) -> None:
-        for name in ("train_jsonl", "image_root", "token_inventory", "output_dir"):
-            if not str(getattr(self, name)).strip():
+        for name in ("train_jsonl", "token_inventory", "output_dir"):
+            if not getattr(self, name) or not str(getattr(self, name)).strip():
                 raise ValueError(f"{name} is required")
+        if self.input_mode not in INPUT_MODES:
+            raise ValueError(f"input_mode must be one of {INPUT_MODES}")
+        if not self.text_only and not (self.image_root and str(self.image_root).strip()):
+            raise ValueError("image_root is required in vision mode")
+        if self.text_only:
+            if (
+                self.profile != PROFILE_VISION_TOKENS_LORA
+                or type(self.lora_rank) is not int or self.lora_rank not in SUPPORTED_TEXT_LORA_RANKS
+            ):
+                raise ValueError("text mode requires vision_tokens_lora with rank 8 or 16")
+            if self.resume_from_checkpoint:
+                raise ValueError(
+                    "text-mode resume is not supported; use initial_bundle for a fresh optimizer"
+                )
+            if not self.initial_bundle or self.token_init != "keep":
+                raise ValueError("text mode requires initial_bundle and token_init=keep")
+            if self.patch_loss_weight != 0 or self.spatial_target_mode != "correct":
+                raise ValueError("text mode does not support patch objectives or shuffled targets")
+            validate_text_budget(self.max_sequence_length)
+        if self.resume_from_checkpoint:
+            validate_resume_mode(self.resume_from_checkpoint, self.input_mode)
         if self.profile not in PROFILES:
             raise ValueError(f"profile must be one of {PROFILES}; received {self.profile!r}")
         if not self.model_id.strip():
             raise ValueError("model_id must not be empty")
         if self.publish_to_hub and not self.hub_model_id.strip():
             raise ValueError("hub_model_id is required when publishing")
-        if bool(self.eval_jsonl) != bool(self.eval_image_root):
+        if not self.text_only and bool(self.eval_jsonl) != bool(self.eval_image_root):
             raise ValueError("eval_jsonl and eval_image_root must be supplied together")
+        if self.text_only and self.eval_image_root and not self.eval_jsonl:
+            raise ValueError("eval_image_root requires eval_jsonl")
         if self.resume_from_checkpoint and self.initial_bundle:
             raise ValueError("resume_from_checkpoint and initial_bundle are mutually exclusive")
         if self.olora:
@@ -278,6 +322,10 @@ class TrainConfig:
         return self.profile in LORA_PROFILES
 
     @property
+    def text_only(self) -> bool:
+        return self.input_mode == "text"
+
+    @property
     def olora(self) -> bool:
         return self.profile == PROFILE_OLORA_FROZEN_BUNDLE
 
@@ -294,6 +342,15 @@ class ModelComponents:
 
     def as_dict(self) -> JsonDict:
         return asdict(self)
+
+
+def normalize_training_config(payload: JsonDict) -> JsonDict:
+    """Fill only the two new input defaults for semantic comparisons.
+
+    Never hash or persist this view in place of an original historical receipt.
+    Other missing fields, unknown fields, and explicit nondefaults stay distinct.
+    """
+    return {"input_mode": "vision", "max_sequence_length": None, **payload}
 
 
 @dataclass(frozen=True)
@@ -335,8 +392,6 @@ def iter_jsonl(path: Path) -> Iterator[tuple[int, JsonDict]]:
 
 
 def load_token_inventory(path: str | Path) -> JsonDict:
-    from evals.catan_board_bench.tokens import semantic_recognition_token_inventory
-
     resolved = Path(path).expanduser().resolve()
     if not resolved.is_file():
         raise FileNotFoundError(resolved)
@@ -369,7 +424,34 @@ def _content_text(content: Any) -> tuple[str, int]:
     return "\n".join(text).strip(), images
 
 
-def _message_pair(row: JsonDict, *, line_number: int) -> tuple[str, str]:
+def _text_content(content: Any, *, line_number: int) -> str:
+    if isinstance(content, list):
+        if not content or any(
+            not isinstance(part, dict) or set(part) != {"type", "text"}
+            or part["type"] != "text" or not isinstance(part["text"], str)
+            for part in content
+        ):
+            raise ValueError(f"line {line_number} text mode allows only text content parts")
+        content = "\n".join(part["text"] for part in content)
+    if not isinstance(content, str):
+        raise ValueError(f"line {line_number} text content must be a string")
+    if any(marker in content for marker in ("<image>", "<video>", "<audio>", "<|")):
+        raise ValueError(f"line {line_number} text content contains media or chat control tokens")
+    return content.strip()
+
+
+def _message_pair(
+    row: JsonDict, *, line_number: int, input_mode: str = "vision",
+) -> tuple[str, str]:
+    if input_mode not in INPUT_MODES:
+        raise ValueError(f"unsupported input_mode: {input_mode}")
+    if input_mode == "text":
+        if TEXT_MEDIA_KEYS.intersection(row):
+            raise ValueError(f"line {line_number} text row must not contain media fields")
+        if row.get("spatial_targets"):
+            raise ValueError(f"line {line_number} text row must not contain spatial patch targets")
+        if "messages" in row and "conversations" in row:
+            raise ValueError(f"line {line_number} has ambiguous conversation formats")
     if "messages" in row:
         messages = row["messages"]
         role_key, user_role, assistant_role, content_key = "role", "user", "assistant", "content"
@@ -378,25 +460,123 @@ def _message_pair(row: JsonDict, *, line_number: int) -> tuple[str, str]:
         role_key, user_role, assistant_role, content_key = "from", "human", "gpt", "value"
     else:
         raise ValueError(f"line {line_number} has neither messages nor conversations")
-    if len(messages) != 2:
+    if not isinstance(messages, list) or len(messages) != 2 or not all(isinstance(m, dict) for m in messages):
         raise ValueError(f"line {line_number} must contain one user/assistant pair")
     if messages[0].get(role_key) != user_role or messages[1].get(role_key) != assistant_role:
         raise ValueError(f"line {line_number} has invalid message ordering")
-    prompt, prompt_images = _content_text(messages[0].get(content_key, ""))
-    answer, answer_images = _content_text(messages[1].get(content_key, ""))
-    if prompt_images + answer_images != 1:
-        raise ValueError(f"line {line_number} must contain exactly one image placeholder")
+    if input_mode == "text":
+        if any(TEXT_MEDIA_KEYS.intersection(message) for message in messages):
+            raise ValueError(f"line {line_number} text messages must not contain media fields")
+        prompt, answer = (
+            _text_content(message.get(content_key, ""), line_number=line_number)
+            for message in messages
+        )
+    else:
+        prompt, prompt_images = _content_text(messages[0].get(content_key, ""))
+        answer, answer_images = _content_text(messages[1].get(content_key, ""))
+        if prompt_images + answer_images != 1:
+            raise ValueError(f"line {line_number} must contain exactly one image placeholder")
     if not prompt or not answer:
         raise ValueError(f"line {line_number} contains an empty prompt or answer")
     answer_limit = MAX_ANSWER_CHARACTERS
     if row.get("task_type") == "full_board_readout":
-        from sft.board_state_readout import score_board_state
-
         answer_limit = 4096
         score_board_state(answer, answer)  # Reject incomplete or repeated target addresses.
-    if len(prompt) > MAX_PROMPT_CHARACTERS or len(answer) > answer_limit:
+    if input_mode == "vision" and (len(prompt) > MAX_PROMPT_CHARACTERS or len(answer) > answer_limit):
         raise ValueError(f"line {line_number} exceeds the answer-length contract")
     return prompt, answer
+
+
+def native_tokenizer(processor: Any) -> Any:
+    return getattr(processor, "tokenizer", processor)
+
+
+def validate_text_budget(max_sequence_length: int | None) -> None:
+    if (
+        not isinstance(max_sequence_length, int) or isinstance(max_sequence_length, bool)
+        or max_sequence_length <= 0
+    ):
+        raise ValueError("text mode requires a positive max_sequence_length (no truncation)")
+
+
+def text_chat_ids(tokenizer: Any, messages: list[JsonDict], *, generation: bool) -> list[int]:
+    if not getattr(tokenizer, "chat_template", None):
+        raise ValueError("text mode requires the checkpoint's saved native chat template")
+    return list(tokenizer.apply_chat_template(
+        messages, tokenize=True, add_generation_prompt=generation,
+        enable_thinking=False, preserve_thinking=False, return_dict=False,
+    ))
+
+
+def encode_text_pair(
+    tokenizer: Any, prompt: str, answer: str, *, max_sequence_length: int,
+) -> JsonDict:
+    """Check the native token boundary; supervise the answer AND end-of-turn."""
+    validate_text_budget(max_sequence_length)
+    prompt = _text_content(prompt, line_number=0)
+    answer = _text_content(answer, line_number=0)
+    if not prompt or not answer:
+        raise ValueError("text prompt and answer must be nonempty")
+    messages = [{"role": "user", "content": prompt}]
+    prefix = text_chat_ids(tokenizer, messages, generation=True)
+    complete = text_chat_ids(
+        tokenizer, messages + [{"role": "assistant", "content": answer}], generation=False,
+    )
+    if not prefix or complete[:len(prefix)] != prefix:
+        raise ValueError("native chat template changed the prompt/completion token boundary")
+    eot = tokenizer.encode("<|im_end|>", add_special_tokens=False)
+    completion = complete[len(prefix):]
+    if (
+        len(eot) != 1 or eot[0] not in tokenizer.all_special_ids
+        or completion.count(eot[0]) != 1 or completion.index(eot[0]) == 0
+    ):
+        raise ValueError("native completion must contain answer tokens and one supervised end-of-turn")
+    if len(complete) > max_sequence_length:
+        raise ValueError(
+            f"text sequence has {len(complete)} tokens, exceeds max_sequence_length="
+            f"{max_sequence_length}; truncation is forbidden"
+        )
+    return {"input_ids": complete, "labels": [-100] * len(prefix) + completion}
+
+
+def pad_text_inputs(tokenizer: Any, features: list[JsonDict], *, left: bool) -> JsonDict:
+    """Pad by position, never by token ID (pad and EOT may share an ID)."""
+    if not features or tokenizer.pad_token_id is None:
+        raise ValueError("text batches require rows and a native padding token")
+    width = max(len(item["input_ids"]) for item in features)
+    ids, masks, labels = [], [], []
+    for item in features:
+        size = len(item["input_ids"])
+        padding = width - size
+        before, after = (padding, 0) if left else (0, padding)
+        ids.append([tokenizer.pad_token_id] * before + item["input_ids"] + [tokenizer.pad_token_id] * after)
+        masks.append([0] * before + [1] * size + [0] * after)
+        if "labels" in item:
+            labels.append([-100] * before + item["labels"] + [-100] * after)
+    result = {"input_ids": torch.tensor(ids), "attention_mask": torch.tensor(masks)}
+    if labels:
+        if len(labels) != len(features):
+            raise ValueError("mixed labeled and unlabeled text rows")
+        result["labels"] = torch.tensor(labels)
+    return result
+
+
+class TextCompletionCollator:
+    """Explicit native-template collation, independent of TRL's VLM detection."""
+
+    def __init__(self, tokenizer: Any, *, max_sequence_length: int) -> None:
+        validate_text_budget(max_sequence_length)
+        self.tokenizer = tokenizer
+        self.max_sequence_length = max_sequence_length
+
+    def __call__(self, examples: list[JsonDict]) -> JsonDict:
+        features = []
+        for example in examples:
+            prompt, answer = _message_pair(example, line_number=0, input_mode="text")
+            features.append(encode_text_pair(
+                self.tokenizer, prompt, answer, max_sequence_length=self.max_sequence_length,
+            ))
+        return pad_text_inputs(self.tokenizer, features, left=False)
 
 
 def _image_reference(row: JsonDict, *, line_number: int) -> str:
@@ -459,13 +639,25 @@ def validate_spatial_targets(row: JsonDict, *, line_number: int) -> list[JsonDic
 
 def inspect_jsonl_contract(
     train_jsonl: str | Path,
-    image_root: str | Path,
+    image_root: str | Path | None = None,
     *,
     require_curriculum: bool,
+    input_mode: str = "vision",
+    tokenizer: Any = None,
+    max_sequence_length: int | None = None,
 ) -> JsonDict:
     source = Path(train_jsonl).expanduser().resolve()
-    root = Path(image_root).expanduser().resolve()
-    if not source.is_file() or not root.is_dir():
+    if input_mode not in INPUT_MODES:
+        raise ValueError(f"unsupported input_mode: {input_mode}")
+    text_only = input_mode == "text"
+    if text_only:
+        validate_text_budget(max_sequence_length)
+        if tokenizer is None:
+            raise ValueError("text dataset inspection requires the checkpoint tokenizer")
+    elif image_root is None:
+        raise ValueError("image_root is required in vision mode")
+    root = None if text_only else Path(image_root).expanduser().resolve()
+    if not source.is_file() or (root is not None and not root.is_dir()):
         raise FileNotFoundError(source if not source.is_file() else root)
     rows = 0
     stages: dict[str, int] = {}
@@ -474,12 +666,25 @@ def inspect_jsonl_contract(
     image_paths: set[Path] = set()
     max_prompt = 0
     max_answer = 0
+    max_tokens = total_tokens = supervised_tokens = 0
     spatial_target_rows = 0
     spatial_target_types: dict[str, int] = {}
     for line_number, row in iter_jsonl(source):
-        prompt, answer = _message_pair(row, line_number=line_number)
-        image_path = resolve_image_path(root, row, line_number=line_number)
-        spatial_targets = validate_spatial_targets(row, line_number=line_number)
+        prompt, answer = _message_pair(row, line_number=line_number, input_mode=input_mode)
+        if text_only:
+            try:
+                encoded = encode_text_pair(
+                    tokenizer, prompt, answer, max_sequence_length=max_sequence_length,
+                )
+            except ValueError as exc:
+                raise ValueError(f"line {line_number}: {exc}") from exc
+            total_tokens += len(encoded["input_ids"])
+            max_tokens = max(max_tokens, len(encoded["input_ids"]))
+            supervised_tokens += sum(value != -100 for value in encoded["labels"])
+            spatial_targets = []
+        else:
+            image_paths.add(resolve_image_path(root, row, line_number=line_number))
+            spatial_targets = validate_spatial_targets(row, line_number=line_number)
         if spatial_targets:
             spatial_target_rows += 1
             entity_type = spatial_targets[0]["entity_type"]
@@ -503,7 +708,6 @@ def inspect_jsonl_contract(
             {"start_row": rows, "end_row_exclusive": rows + 1},
         )
         span["end_row_exclusive"] = rows + 1
-        image_paths.add(image_path)
         max_prompt = max(max_prompt, len(prompt))
         max_answer = max(max_answer, len(answer))
         rows += 1
@@ -517,8 +721,10 @@ def inspect_jsonl_contract(
     # Hash images concurrently: on a cold Modal volume a serial loop over a few
     # thousand files runs at roughly 1 MB/s and keeps the GPU idle for minutes.
     ordered_paths = sorted(image_paths)
-    with ThreadPoolExecutor(max_workers=IMAGE_HASH_WORKERS) as pool:
-        digests = list(pool.map(sha256_file, ordered_paths))
+    digests = []
+    if not text_only:
+        with ThreadPoolExecutor(max_workers=IMAGE_HASH_WORKERS) as pool:
+            digests = list(pool.map(sha256_file, ordered_paths))
     image_manifest = [
         {"path": path.relative_to(root).as_posix(), "sha256": digest}
         for path, digest in zip(ordered_paths, digests, strict=True)
@@ -526,11 +732,11 @@ def inspect_jsonl_contract(
     image_manifest_sha256 = hashlib.sha256(
         json.dumps(image_manifest, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
-    return {
+    report = {
         "schema": "catan_trl_dataset_contract/v1",
         "source": str(source),
         "source_sha256": sha256_file(source),
-        "image_root": str(root),
+        "image_root": str(root) if root is not None else None,
         "rows": rows,
         "unique_images": len(image_paths),
         "stages": [
@@ -548,14 +754,46 @@ def inspect_jsonl_contract(
         "spatial_target_types": dict(sorted(spatial_target_types.items())),
         "require_curriculum": require_curriculum,
     }
+    if text_only:
+        report.update({
+            "input_mode": "text", "image_manifest_sha256": None,
+            "max_sequence_length": max_sequence_length, "max_sequence_tokens": max_tokens,
+            "total_sequence_tokens": total_tokens, "supervised_tokens": supervised_tokens,
+            "truncation": False,
+        })
+    return report
 
 
-def load_training_dataset(config: TrainConfig) -> tuple[Any, JsonDict]:
+def load_training_dataset(config: TrainConfig, *, tokenizer: Any = None) -> tuple[Any, JsonDict]:
+    if config.text_only:
+        return load_text_dataset(
+            config.train_jsonl, tokenizer=tokenizer,
+            max_sequence_length=config.max_sequence_length,
+            require_curriculum=config.require_curriculum,
+        )
     return load_vision_dataset(
         config.train_jsonl,
         config.image_root,
         require_curriculum=config.require_curriculum,
     )
+
+
+def load_text_dataset(
+    jsonl_path: str | Path, *, tokenizer: Any, max_sequence_length: int,
+    require_curriculum: bool,
+) -> tuple[Any, JsonDict]:
+    datasets = importlib.import_module("datasets")
+    report = inspect_jsonl_contract(
+        jsonl_path, require_curriculum=require_curriculum, input_mode="text",
+        tokenizer=tokenizer, max_sequence_length=max_sequence_length,
+    )
+    examples = []
+    for line_number, row in iter_jsonl(Path(jsonl_path).expanduser().resolve()):
+        prompt, answer = _message_pair(row, line_number=line_number, input_mode="text")
+        examples.append({"messages": [
+            {"role": "user", "content": prompt}, {"role": "assistant", "content": answer},
+        ]})
+    return datasets.Dataset.from_list(examples), report
 
 
 def load_vision_dataset(
@@ -564,7 +802,7 @@ def load_vision_dataset(
     *,
     require_curriculum: bool,
 ) -> tuple[Any, JsonDict]:
-    from datasets import Dataset, Image
+    datasets = importlib.import_module("datasets")
 
     report = inspect_jsonl_contract(
         jsonl_path,
@@ -599,7 +837,7 @@ def load_vision_dataset(
                 "spatial_targets": validate_spatial_targets(row, line_number=line_number),
             }
         )
-    dataset = Dataset.from_list(examples).cast_column("image", Image(decode=True))
+    dataset = datasets.Dataset.from_list(examples).cast_column("image", datasets.Image(decode=True))
     return dataset, report
 
 
@@ -848,7 +1086,7 @@ def prepare_semantic_tokens(
     model: torch.nn.Module,
     inventory: JsonDict,
 ) -> tuple[TokenSetup, ModelComponents]:
-    tokenizer = processor.tokenizer
+    tokenizer = native_tokenizer(processor)
     tokens = tuple(inventory["tokens"])
     if len(tokens) != 154 or len(set(tokens)) != 154:
         raise ValueError("semantic inventory must contain 154 unique tokens")
@@ -1122,8 +1360,6 @@ def wrap_trainable_model(
     components: ModelComponents,
     config: TrainConfig,
 ) -> torch.nn.Module:
-    from peft import LoraConfig, TrainableTokensConfig, get_peft_model
-
     model.requires_grad_(False)
     token_init = initialize_semantic_token_rows(model, components, setup, seed=config.seed, mode=config.token_init)
     token_targets = {
@@ -1148,7 +1384,10 @@ def wrap_trainable_model(
             init_weights=True,
         )
     wrapped = get_peft_model(model, peft_config)
-    visual = promote_visual_master_weights(wrapped, components)
+    visual = (
+        freeze_visual_weights(wrapped, components) if config.text_only
+        else promote_visual_master_weights(wrapped, components)
+    )
     wrapped._catan_components = components
     wrapped._catan_token_setup = setup
     wrapped._catan_initialization = {"semantic_rows": token_init, "visual_master_weights": visual}
@@ -1189,8 +1428,6 @@ def load_protected_bases(
     visual_delta_factors: Path | None,
 ) -> dict[str, torch.Tensor]:
     """Orthonormal input bases per module: the frozen adapter's ``lora_A`` rows, plus the visual delta's."""
-
-    from safetensors.torch import load_file
 
     bases: dict[str, torch.Tensor] = {}
     adapter = load_file(frozen_adapter_dir / "adapter_model.safetensors")
@@ -1261,8 +1498,6 @@ def apply_frozen_adapter(
 ) -> tuple[torch.nn.Module, JsonDict]:
     """Merge a finished adapter (LoRA and atlas rows) into the base weights and drop its wrappers."""
 
-    from peft import PeftModel
-
     missing = [str(path) for path in frozen_adapter_files(frozen_dir) if not path.is_file()]
     if missing:
         raise FileNotFoundError(f"frozen adapter is incomplete: {missing}")
@@ -1298,6 +1533,152 @@ def freeze_visual_except_lora(model: torch.nn.Module, components: ModelComponent
     return {"module": components.vision, "trainable_tensors": trainable, "frozen_tensors": frozen}
 
 
+def freeze_visual_weights(model: torch.nn.Module, components: ModelComponents) -> JsonDict:
+    """Preserve dormant FP32 visual state, including floating buffers, in text mode."""
+    visual = resolve_wrapped_module(model, components.vision)
+    visual.float().requires_grad_(False)
+    return {
+        "module": components.vision, "trainable_tensors": 0,
+        "frozen_tensors": sum(1 for _ in visual.parameters()),
+        "dtypes": dict(Counter(str(t.dtype) for t in visual.state_dict().values())),
+    }
+
+
+def validate_resume_mode(checkpoint: str | Path, input_mode: str) -> None:
+    path = Path(checkpoint) / RUN_CONFIG_FILE
+    if path.is_file():
+        saved = json.loads(path.read_text()).get("input_mode", "vision")
+        if saved != input_mode:
+            raise ValueError("cross-mode resume is forbidden; use initial_bundle for a fresh optimizer")
+
+
+def validate_checkpoint_tokenizer(
+    tokenizer: Any, bundle: str | Path, tokens: Sequence[str],
+) -> None:
+    """Compare the actual saved tokenizer mapping, not just two sidecar ID lists."""
+    bundle = Path(bundle)
+    if not (bundle / "tokenizer_config.json").is_file():
+        raise ValueError("text mode requires a checkpoint tokenizer_config.json")
+    saved = json.loads((bundle / TRAINABLE_SCOPE_FILE).read_text())["semantic_tokens"]
+    ids = saved.get("token_ids", [])
+    if (
+        len(tokens) != 154 or len(set(tokens)) != 154 or saved.get("tokens") != list(tokens)
+        or len(ids) != 154 or len(set(ids)) != 154
+    ):
+        raise ValueError("checkpoint must declare the exact 154-token atlas mapping")
+    vocab = tokenizer.get_vocab()
+    if any(
+        vocab.get(token) != token_id
+        or tokenizer.encode(token, add_special_tokens=False) != [token_id]
+        or token_id in tokenizer.all_special_ids
+        for token, token_id in zip(tokens, ids, strict=True)
+    ):
+        raise ValueError("actual checkpoint tokenizer mapping differs from saved atlas rows")
+    if not tokenizer.chat_template or tokenizer.pad_token_id is None:
+        raise ValueError("checkpoint tokenizer needs its native chat template and padding token")
+
+
+def load_checkpoint_text_tokenizer(bundle: str | Path, tokens: Sequence[str]) -> Any:
+    transformers = importlib.import_module("transformers")
+    if not (Path(bundle) / "tokenizer_config.json").is_file():
+        raise ValueError("text mode requires the checkpoint's saved tokenizer")
+    tokenizer = transformers.AutoTokenizer.from_pretrained(bundle, local_files_only=True)
+    validate_checkpoint_tokenizer(tokenizer, bundle, tokens)
+    return tokenizer
+
+
+def validate_text_context_budget(model: Any, max_sequence_length: int) -> None:
+    validate_text_budget(max_sequence_length)
+    config = getattr(model.config, "text_config", model.config)
+    limit = getattr(config, "max_position_embeddings", None)
+    if limit is not None and max_sequence_length > limit:
+        raise ValueError(f"max_sequence_length exceeds model context limit {limit}")
+
+
+def validate_text_adapter(
+    base_model: torch.nn.Module, bundle: str | Path, setup: TokenSetup,
+    components: ModelComponents, *, config: TrainConfig | None = None,
+) -> None:
+    """Admit standard rank-8/16 language LoRA and exact saved replacement rows."""
+    bundle = Path(bundle)
+    saved = json.loads((bundle / "adapter_config.json").read_text())
+    parent = json.loads((bundle / RUN_CONFIG_FILE).read_text())
+    rank = standard_lora_rank(saved, parent)
+    scope = json.loads((bundle / TRAINABLE_SCOPE_FILE).read_text())["semantic_tokens"]
+    expected_rows = {
+        components.input_embedding: list(setup.token_ids),
+        components.output_head: list(setup.token_ids),
+    }
+    if (
+        saved.get("trainable_token_indices") != expected_rows
+        or not isinstance(saved.get("target_modules"), (list, str))
+        or saved.get("target_parameters") or saved.get("layer_replication")
+        or len(setup.token_ids) != 154 or len(set(setup.token_ids)) != 154
+        or len(setup.tokens) != 154 or len(set(setup.tokens)) != 154
+        or scope.get("token_ids") != list(setup.token_ids)
+        or scope.get("tokens") != list(setup.tokens)
+        or (bundle / FROZEN_ADAPTER_DIR).exists()
+        or (bundle / FROZEN_BUNDLE_FILE).exists()
+    ):
+        raise ValueError(f"text mode requires compatible language rank-{rank} LoRA + 154 input/output rows")
+    if isinstance(base_model, PeftModel) or any(
+        isinstance(module, (BaseTunerLayer, TrainableTokensWrapper))
+        for module in base_model.modules()
+    ):
+        raise ValueError("text adapter validation requires an unwrapped base model")
+    # PEFT 0.20 automatically replaces >=20 full paths with minimal unambiguous
+    # suffixes. Validate what its real matcher selects, including exclusions and
+    # layer filters, over ALL base modules (not just the desired language ones).
+    adapter_config = LoraConfig.from_pretrained(bundle, local_files_only=True)
+    intended = set(language_linear_targets(base_model, components))
+    matched = {
+        name for name, _ in base_model.named_modules()
+        if name and check_target_module_exists(adapter_config, name)
+    }
+    if not intended or matched != intended:
+        raise ValueError(
+            f"text mode requires compatible language rank-{rank} targets: "
+            f"missing={sorted(intended - matched)} extra={sorted(matched - intended)}"
+        )
+    if config is not None and (
+        rank != config.lora_rank or saved.get("lora_alpha") != config.lora_alpha
+        or saved.get("lora_dropout") != config.lora_dropout
+    ):
+        raise ValueError("text LoRA rank/alpha/dropout must match the saved adapter")
+    modules = dict(base_model.named_modules())
+    expected = expected_adapter_shapes(
+        {name: (modules[name].out_features, modules[name].in_features) for name in intended},
+        {components.input_embedding: components.hidden_size, components.output_head: components.hidden_size},
+        rank,
+    )
+    actual = {name: header["shape"] for name, header in tensor_headers(bundle / "adapter_model.safetensors").items()}
+    if actual != expected:
+        raise ValueError(f"saved adapter tensor names/shapes must match rank-{rank} language LoRA + 154 rows")
+
+
+def processor_asset_hashes(bundle: str | Path) -> dict[str, str]:
+    bundle = Path(bundle)
+    hashes = {
+        name: sha256_file(bundle / name)
+        for name in PROCESSOR_ASSET_FILES if (bundle / name).is_file()
+    }
+    if not ({"processor_config.json", "preprocessor_config.json"} & hashes.keys()):
+        raise ValueError("text bundles require the parent's saved processor configuration assets")
+    return hashes
+
+
+def carry_processor_assets(source: str | Path, destination: Path) -> dict[str, str]:
+    """Copy native processor configuration bytes, never image/video data or weights."""
+    source = Path(source)
+    expected = processor_asset_hashes(source)
+    for name in expected:
+        if (source / name).resolve() != (destination / name).resolve():
+            shutil.copyfile(source / name, destination / name)
+    if processor_asset_hashes(destination) != expected:
+        raise RuntimeError("saved processor configuration assets differ from the parent")
+    return expected
+
+
 def load_frozen_bundle(
     base_model: torch.nn.Module,
     setup: TokenSetup,
@@ -1305,8 +1686,6 @@ def load_frozen_bundle(
     config: TrainConfig,
 ) -> tuple[torch.nn.Module, JsonDict]:
     """The O-LoRA start: exact vision weights, the parent's adapter merged, fresh adapters on top."""
-
-    from peft import LoraConfig, get_peft_model
 
     if config.frozen_bundle is None:
         raise ValueError("frozen_bundle is required")
@@ -1378,8 +1757,6 @@ def load_initial_bundle(
 ) -> tuple[torch.nn.Module, JsonDict]:
     """Load a completed parent stage without restoring optimizer/RNG state."""
 
-    from peft import PeftModel
-
     if config.initial_bundle is None:
         raise ValueError("initial_bundle is required")
     bundle = Path(config.initial_bundle).expanduser().resolve()
@@ -1408,12 +1785,22 @@ def load_initial_bundle(
     if errors:
         raise RuntimeError("incompatible initial bundle: " + "; ".join(errors))
 
+    if config.text_only:
+        if config.token_init != "keep":
+            raise ValueError("text mode requires token_init=keep")
+        validate_text_adapter(base_model, bundle, setup, components, config=config)
+        processor_assets = processor_asset_hashes(bundle)
+        base_model.requires_grad_(False)
+
     if (bundle / FROZEN_ADAPTER_DIR).is_dir():
         base_model, _ = apply_frozen_adapter(base_model, bundle / FROZEN_ADAPTER_DIR)
     model = PeftModel.from_pretrained(base_model, bundle, is_trainable=True)
     model._catan_components = components
     model._catan_token_setup = setup
-    promoted = promote_visual_master_weights(model, components)
+    promoted = (
+        freeze_visual_weights(model, components) if config.text_only
+        else promote_visual_master_weights(model, components)
+    )
     visual = load_visual_state(model, bundle)
     model._catan_initialization = {"semantic_rows": None, "visual_master_weights": promoted}
     report = {
@@ -1426,6 +1813,13 @@ def load_initial_bundle(
         "scheduler_state_restored": False,
         "rng_state_restored": False,
     }
+    if config.text_only:
+        report.update({
+            "source_input_mode": parent_config.get("input_mode", "vision"),
+            "input_mode": "text", "token_rows": "PEFT replacement rows (not additive)",
+            "processor_assets_sha256": processor_assets,
+            "lora_rank": config.lora_rank, "lora_alpha": config.lora_alpha,
+        })
     return model, report
 
 
@@ -1484,11 +1878,27 @@ def audit_trainable_scope(
         )
         if category.startswith("atlas_") and tuple(parameter.shape) != expected_delta:
             errors.append(f"{name} must have shape {expected_delta}")
-    required_groups = ("atlas_input_rows", "atlas_output_rows", "language_lora", "vision_lora") if config.olora else ("vision", "merger", "atlas_input_rows", "atlas_output_rows")
+        if config.text_only and category == "language_lora":
+            rank_axis = 0 if ".lora_A." in name else 1
+            if parameter.ndim != 2 or parameter.shape[rank_axis] != config.lora_rank:
+                errors.append(f"{name} must have configured LoRA rank {config.lora_rank}")
+    if config.text_only:
+        required_groups = ("atlas_input_rows", "atlas_output_rows", "language_lora")
+    elif config.olora:
+        required_groups = ("atlas_input_rows", "atlas_output_rows", "language_lora", "vision_lora")
+    else:
+        required_groups = ("vision", "merger", "atlas_input_rows", "atlas_output_rows")
     for required in required_groups:
         if groups[required]["parameters"] == 0:
             errors.append(f"required trainable group is empty: {required}")
-    if config.olora:
+    if config.text_only:
+        for frozen in ("vision", "merger", "vision_lora"):
+            if groups[frozen]["parameters"]:
+                errors.append(f"{frozen} weights must stay frozen in text mode")
+        visual = resolve_wrapped_module(model, components.vision)
+        if any(t.is_floating_point() and t.dtype != torch.float32 for t in visual.state_dict().values()):
+            errors.append("dormant visual state must stay FP32 in text mode")
+    elif config.olora:
         for frozen in ("vision", "merger"):
             if groups[frozen]["parameters"]:
                 errors.append(f"{frozen} weights must stay frozen under the olora profile")
@@ -1507,6 +1917,7 @@ def audit_trainable_scope(
     report = {
         "schema": "catan_trl_trainable_scope/v2",
         "profile": config.profile,
+        "input_mode": config.input_mode,
         "components": components.as_dict(),
         "semantic_tokens": setup.as_dict(),
         "groups": groups,
@@ -1515,6 +1926,11 @@ def audit_trainable_scope(
         "parameters": parameters,
         "errors": errors,
     }
+    if config.text_only:
+        report["lora"] = {
+            "rank": config.lora_rank, "alpha": config.lora_alpha,
+            "scaling": config.lora_alpha / config.lora_rank, "use_rslora": False,
+        }
     write_json_atomic(output_path, report)
     if errors:
         raise RuntimeError("invalid trainable scope: " + "; ".join(errors))
@@ -1537,6 +1953,8 @@ def build_optimizer(
         if not parameter.requires_grad:
             continue
         category = parameter_category(name, components)
+        if config.text_only and category not in {"atlas_input_rows", "atlas_output_rows", "language_lora"}:
+            raise RuntimeError(f"text optimizer cannot contain {category}: {name}")
         if category == "vision":
             grouped["vision"].append(parameter)
         elif category == "merger":
@@ -1549,7 +1967,12 @@ def build_optimizer(
             grouped["vision_lora"].append(parameter)
         else:
             raise RuntimeError(f"cannot route trainable parameter to optimizer: {name}")
-    required = ("token_rows", "language_lora", "vision_lora") if config.olora else ("vision", "merger", "token_rows")
+    if config.text_only:
+        required = ("token_rows", "language_lora")
+    elif config.olora:
+        required = ("token_rows", "language_lora", "vision_lora")
+    else:
+        required = ("vision", "merger", "token_rows")
     if any(not grouped[name] for name in required):
         raise RuntimeError({name: len(values) for name, values in grouped.items()})
     if config.language_lora != bool(grouped["language_lora"]):
@@ -1660,11 +2083,10 @@ def save_visual_state(
 ) -> JsonDict:
     """Write the full visual state.
 
-    Checkpoints keep the fp32 master weights so resume is exact; the final
-    bundle passes ``dtype=torch.bfloat16`` to preserve the eval and Hub contract.
+    Checkpoints keep the fp32 master weights so resume is exact. Vision final
+    bundles pass ``dtype=torch.bfloat16`` for their historical eval/Hub contract;
+    text final bundles retain the dormant visual state at its original precision.
     """
-
-    from safetensors.torch import save_file
 
     visual_state = {
         name: (tensor.detach() if dtype is None else tensor.detach().to(dtype)).cpu().contiguous()
@@ -1685,8 +2107,6 @@ def save_visual_state(
 
 
 def load_visual_state(model: torch.nn.Module, checkpoint_dir: str | Path) -> JsonDict:
-    from safetensors.torch import load_file
-
     path = Path(checkpoint_dir) / VISUAL_STATE_FILE
     if not path.is_file():
         raise FileNotFoundError(path)
@@ -1717,19 +2137,11 @@ def load_visual_state(model: torch.nn.Module, checkpoint_dir: str | Path) -> Jso
 
 
 def assert_runtime_versions() -> JsonDict:
-    import accelerate
-    import datasets
-    import peft
-    import transformers
-    import trl
-
     actual = {
         "torch": torch.__version__.split("+")[0],
-        "transformers": transformers.__version__,
-        "trl": trl.__version__,
-        "peft": peft.__version__,
-        "datasets": datasets.__version__,
-        "accelerate": accelerate.__version__,
+        **{name: importlib.import_module(name).__version__ for name in (
+            "transformers", "trl", "peft", "datasets", "accelerate",
+        )},
     }
     expected = {
         "torch": TORCH_VERSION,
@@ -1766,38 +2178,44 @@ load the PEFT adapter, and then load `{VISUAL_STATE_FILE}`.
 
 
 def _trainer_class(config: TrainConfig, components: ModelComponents, setup: TokenSetup):
-    from safetensors.torch import save_file  # noqa: F401 - fail early if unavailable
-    from transformers.trainer import TRAINING_ARGS_NAME
-    from trl import SFTTrainer
+    TRAINING_ARGS_NAME = importlib.import_module("transformers.trainer").TRAINING_ARGS_NAME
+    SFTTrainer = importlib.import_module("trl").SFTTrainer
 
     class CatanSFTTrainer(SFTTrainer):
         def __init__(self, *args: Any, **kwargs: Any) -> None:
             trainer_model = kwargs.get("model", args[0] if args else None)
             if trainer_model is None:
                 raise TypeError("CatanSFTTrainer requires a model")
+            if config.text_only:
+                kwargs["data_collator"] = TextCompletionCollator(
+                    native_tokenizer(kwargs["processing_class"]),
+                    max_sequence_length=config.max_sequence_length,
+                )
             with expose_trainable_tokens_head_to_chunked_nll(trainer_model):
                 super().__init__(*args, **kwargs)
-            self.data_collator = SpatialTargetCollator(
-                self.data_collator,
-                setup,
-                target_mode=config.spatial_target_mode,
-            )
-            vision_module = resolve_wrapped_module(self.model, components.vision)
-            self._catan_vision_capture = VisionPoolerCapture(vision_module)
+            self._catan_merge_size = None
+            if not config.text_only:
+                self.data_collator = SpatialTargetCollator(
+                    self.data_collator,
+                    setup,
+                    target_mode=config.spatial_target_mode,
+                )
+                vision_module = resolve_wrapped_module(self.model, components.vision)
+                self._catan_vision_capture = VisionPoolerCapture(vision_module)
+                vision_config = getattr(getattr(self.model, "config", None), "vision_config", None)
+                merge_size = getattr(vision_config, "spatial_merge_size", None)
+                if merge_size is None:
+                    image_processor = getattr(self.processing_class, "image_processor", None)
+                    merge_size = getattr(image_processor, "merge_size", 2)
+                self._catan_merge_size = int(merge_size)
+                if self._catan_merge_size <= 0:
+                    raise ValueError("vision spatial merge size must be positive")
             self._catan_hidden_capture = LanguageHiddenCapture(
                 resolve_wrapped_module(self.model, components.language)
             )
             self._catan_trivial_token_ids = trivial_completion_token_ids(
-                self.processing_class.tokenizer
+                native_tokenizer(self.processing_class)
             )
-            vision_config = getattr(getattr(self.model, "config", None), "vision_config", None)
-            merge_size = getattr(vision_config, "spatial_merge_size", None)
-            if merge_size is None:
-                image_processor = getattr(self.processing_class, "image_processor", None)
-                merge_size = getattr(image_processor, "merge_size", 2)
-            self._catan_merge_size = int(merge_size)
-            if self._catan_merge_size <= 0:
-                raise ValueError("vision spatial merge size must be positive")
             self._catan_metrics: dict[str, list[float]] = defaultdict(list)
             self._catan_basis_cache: dict[str, torch.Tensor] = {}
 
@@ -1808,12 +2226,21 @@ def _trainer_class(config: TrainConfig, components: ModelComponents, setup: Toke
             return_outputs: bool = False,
             num_items_in_batch: torch.Tensor | None = None,
         ) -> Any:
-            token_ids = inputs.pop("spatial_target_token_ids")
-            bboxes = inputs.pop("spatial_target_bboxes")
-            target_mask = inputs.pop("spatial_target_mask")
-            image_grid_thw = inputs.get("image_grid_thw")
+            if config.text_only:
+                # TRL 1.12 prediction_step sets this flag; its compute_loss must
+                # receive and pop it before forwarding model kwargs. Do not admit
+                # arbitrary underscore-prefixed fields or drop the eval intent.
+                if "_prediction_loss_only" in inputs and not isinstance(inputs["_prediction_loss_only"], bool):
+                    raise ValueError("_prediction_loss_only must be a trainer-owned boolean")
+                if set(inputs) - {"input_ids", "attention_mask", "labels", "_prediction_loss_only"}:
+                    raise ValueError("text loss accepts only input_ids, attention_mask, and labels")
+            else:
+                token_ids = inputs.pop("spatial_target_token_ids")
+                bboxes = inputs.pop("spatial_target_bboxes")
+                target_mask = inputs.pop("spatial_target_mask")
+                image_grid_thw = inputs.get("image_grid_thw")
+                self._catan_vision_capture.output = None
             labels = inputs.get("labels")
-            self._catan_vision_capture.output = None
             self._catan_hidden_capture.output = None
             nll_loss, outputs = super().compute_loss(
                 model,
@@ -1821,21 +2248,26 @@ def _trainer_class(config: TrainConfig, components: ModelComponents, setup: Toke
                 return_outputs=True,
                 num_items_in_batch=num_items_in_batch,
             )
-            if image_grid_thw is None:
-                raise RuntimeError("Qwen processor did not return image_grid_thw")
-            pooled = self._catan_vision_capture.take()
             unwrapped = self.accelerator.unwrap_model(model, keep_torch_compile=False)
-            token_embeddings = unwrapped.get_input_embeddings()(token_ids)
-            patch_loss, patch_accuracy, target_count = spatial_patch_loss(
-                pooled,
-                image_grid_thw,
-                token_embeddings,
-                bboxes,
-                target_mask,
-                merge_size=self._catan_merge_size,
-                temperature=config.patch_temperature,
-            )
-            total_loss = nll_loss + config.patch_loss_weight * patch_loss
+            total_loss = nll_loss
+            if not config.text_only:
+                if image_grid_thw is None:
+                    raise RuntimeError("Qwen processor did not return image_grid_thw")
+                pooled = self._catan_vision_capture.take()
+                token_embeddings = unwrapped.get_input_embeddings()(token_ids)
+                patch_loss, patch_accuracy, target_count = spatial_patch_loss(
+                    pooled,
+                    image_grid_thw,
+                    token_embeddings,
+                    bboxes,
+                    target_mask,
+                    merge_size=self._catan_merge_size,
+                    temperature=config.patch_temperature,
+                )
+                total_loss = nll_loss + config.patch_loss_weight * patch_loss
+                self._catan_metrics["patch_loss"].append(float(patch_loss.detach()))
+                self._catan_metrics["patch_top1_tolerant_accuracy"].append(float(patch_accuracy.detach()))
+                self._catan_metrics["patch_target_count"].append(float(target_count))
             bases = getattr(unwrapped, "_catan_orthogonal_bases", None)
             if bases is not None and config.orthogonal_lambda > 0:
                 orth, fraction, unprotected = orthogonal_penalty(unwrapped, bases, self._catan_basis_cache)
@@ -1855,11 +2287,6 @@ def _trainer_class(config: TrainConfig, components: ModelComponents, setup: Toke
                 for name, value in answer.items():
                     self._catan_metrics[name].append(value)
             self._catan_metrics["nll_loss"].append(float(nll_loss.detach()))
-            self._catan_metrics["patch_loss"].append(float(patch_loss.detach()))
-            self._catan_metrics["patch_top1_tolerant_accuracy"].append(
-                float(patch_accuracy.detach())
-            )
-            self._catan_metrics["patch_target_count"].append(float(target_count))
             return (total_loss, outputs) if return_outputs else total_loss
 
         def log(self, logs: dict[str, float], *args: Any, **kwargs: Any) -> None:
@@ -1901,13 +2328,15 @@ def _trainer_class(config: TrainConfig, components: ModelComponents, setup: Toke
                 save_embedding_layers=False,
             )
             self.processing_class.save_pretrained(target_dir)
+            if config.text_only:
+                carry_processor_assets(config.initial_bundle, target_dir)
             torch.save(self.args, target_dir / TRAINING_ARGS_NAME)
             is_checkpoint = Path(self.args.output_dir).resolve() in target_dir.resolve().parents
             save_visual_state(
                 unwrapped,
                 components,
                 target_dir,
-                dtype=None if is_checkpoint else torch.bfloat16,
+                dtype=None if is_checkpoint or config.text_only else torch.bfloat16,
             )
             audit_trainable_scope(
                 unwrapped,
@@ -1926,6 +2355,8 @@ def _trainer_class(config: TrainConfig, components: ModelComponents, setup: Toke
                 for source in frozen_adapter_files(Path(frozen_dir)):
                     shutil.copy2(source, carried / source.name)
                 write_json_atomic(target_dir / FROZEN_BUNDLE_FILE, {"schema": "catan_trl_frozen_bundle_pointer/v1", "path": str(frozen_dir), "carried_adapter": str(carried), "orthogonal_lambda": config.orthogonal_lambda})
+            if config.text_only:
+                return
             write_json_atomic(
                 target_dir / PATCH_METRICS_FILE,
                 {
@@ -1944,9 +2375,12 @@ def _trainer_class(config: TrainConfig, components: ModelComponents, setup: Toke
             resume_from_checkpoint: str,
             model: torch.nn.Module | None = None,
         ) -> None:
+            validate_resume_mode(resume_from_checkpoint, config.input_mode)
             super()._load_from_checkpoint(resume_from_checkpoint, model=model)
             target = self.model if model is None else model
-            if config.olora:
+            if config.text_only:
+                freeze_visual_weights(target, components)
+            elif config.olora:
                 freeze_visual_except_lora(target, components)
             else:
                 promote_visual_master_weights(target, components)
@@ -1955,22 +2389,31 @@ def _trainer_class(config: TrainConfig, components: ModelComponents, setup: Toke
     return CatanSFTTrainer
 
 
-def _load_base_model_and_processor(config: TrainConfig) -> tuple[Any, torch.nn.Module]:
-    from transformers import AutoModelForMultimodalLM, AutoProcessor
-
-    processor = AutoProcessor.from_pretrained(
-        config.model_id,
-        size={
-            "shortest_edge": config.image_min_pixels,
-            "longest_edge": config.image_max_pixels,
-        },
-    )
-    model = AutoModelForMultimodalLM.from_pretrained(
+def _load_base_model_and_processor(
+    config: TrainConfig, *, processor: Any = None,
+) -> tuple[Any, torch.nn.Module]:
+    transformers = importlib.import_module("transformers")
+    if processor is None:
+        if config.text_only:
+            processor = load_checkpoint_text_tokenizer(
+                config.initial_bundle, load_token_inventory(config.token_inventory)["tokens"],
+            )
+        else:
+            processor = transformers.AutoProcessor.from_pretrained(
+                config.model_id,
+                size={
+                    "shortest_edge": config.image_min_pixels,
+                    "longest_edge": config.image_max_pixels,
+                },
+            )
+    model = transformers.AutoModelForMultimodalLM.from_pretrained(
         config.model_id,
         dtype=torch.bfloat16,
         attn_implementation="sdpa",
         low_cpu_mem_usage=True,
     )
+    if config.text_only:
+        validate_text_context_budget(model, config.max_sequence_length)
     model.config.use_cache = False
     return processor, model
 
@@ -1983,7 +2426,7 @@ def build_sft_config(
 ) -> Any:
     """Build the single authoritative TRL loss/data configuration."""
 
-    from trl import SFTConfig
+    SFTConfig = importlib.import_module("trl").SFTConfig
 
     return SFTConfig(
         output_dir=str(output_dir),
@@ -2035,11 +2478,16 @@ def validate_saved_bundle(
     inventory: JsonDict,
     expected_setup: TokenSetup,
 ) -> JsonDict:
-    from peft import PeftModel
-    from transformers import AutoModelForMultimodalLM, AutoProcessor
-
-    processor = AutoProcessor.from_pretrained(final_dir)
-    base = AutoModelForMultimodalLM.from_pretrained(
+    transformers = importlib.import_module("transformers")
+    processor = (
+        load_checkpoint_text_tokenizer(final_dir, inventory["tokens"]) if config.text_only
+        else transformers.AutoProcessor.from_pretrained(final_dir)
+    )
+    if config.text_only:
+        processor_assets = processor_asset_hashes(final_dir)
+        if processor_assets != processor_asset_hashes(config.initial_bundle):
+            raise RuntimeError("saved processor configuration assets differ from the parent")
+    base = transformers.AutoModelForMultimodalLM.from_pretrained(
         config.model_id,
         dtype=torch.bfloat16,
         attn_implementation="sdpa",
@@ -2048,18 +2496,26 @@ def validate_saved_bundle(
     setup, components = prepare_semantic_tokens(processor, base, inventory)
     if setup.token_ids != expected_setup.token_ids:
         raise RuntimeError("saved tokenizer changed the semantic token IDs")
+    if config.text_only:
+        validate_text_adapter(base, final_dir, setup, components, config=config)
     if (final_dir / FROZEN_ADAPTER_DIR).is_dir():
         base, _ = apply_frozen_adapter(base, final_dir / FROZEN_ADAPTER_DIR)
     reloaded = PeftModel.from_pretrained(base, final_dir)
+    if config.text_only:
+        freeze_visual_weights(reloaded, components)
     visual = load_visual_state(reloaded, final_dir)
     report = {
         "schema": "catan_trl_reload_validation/v1",
         "valid": True,
         "model_id": config.model_id,
+        "input_mode": config.input_mode,
         "components": components.as_dict(),
         "semantic_tokens": setup.as_dict(),
         "visual_state": visual,
     }
+    if config.text_only:
+        report["processor_assets_sha256"] = processor_assets
+        report.update(lora_rank=config.lora_rank, lora_alpha=config.lora_alpha)
     write_json_atomic(final_dir / RELOAD_REPORT_FILE, report)
     del reloaded, base, processor
     gc.collect()
@@ -2067,8 +2523,6 @@ def validate_saved_bundle(
 
 
 def publish_bundle(config: TrainConfig, final_dir: Path) -> JsonDict:
-    from huggingface_hub import HfApi
-
     if not os.environ.get("HF_TOKEN"):
         raise RuntimeError("HF_TOKEN is required to publish the validated bundle")
     api = HfApi(token=os.environ["HF_TOKEN"])
@@ -2089,14 +2543,23 @@ def publish_bundle(config: TrainConfig, final_dir: Path) -> JsonDict:
     return report
 
 
-def run_training(config: TrainConfig) -> JsonDict:
+def run_training(config: TrainConfig, *, extra_callbacks: Sequence[Any] | None = None) -> JsonDict:
     config.validate()
     versions = assert_runtime_versions()
     inventory = load_token_inventory(config.token_inventory)
-    dataset, dataset_report = load_training_dataset(config)
+    processor = (
+        load_checkpoint_text_tokenizer(config.initial_bundle, inventory["tokens"])
+        if config.text_only else None
+    )
+    dataset, dataset_report = load_training_dataset(config, tokenizer=processor)
     eval_dataset = None
     eval_dataset_report = None
-    if config.eval_jsonl is not None and config.eval_image_root is not None:
+    if config.text_only and config.eval_jsonl is not None:
+        eval_dataset, eval_dataset_report = load_text_dataset(
+            config.eval_jsonl, tokenizer=processor,
+            max_sequence_length=config.max_sequence_length, require_curriculum=False,
+        )
+    elif config.eval_jsonl is not None and config.eval_image_root is not None:
         eval_dataset, eval_dataset_report = load_vision_dataset(
             config.eval_jsonl,
             config.eval_image_root,
@@ -2112,7 +2575,7 @@ def run_training(config: TrainConfig) -> JsonDict:
     )
     write_json_atomic(output_dir / RUN_CONFIG_FILE, asdict(config))
 
-    processor, base_model = _load_base_model_and_processor(config)
+    processor, base_model = _load_base_model_and_processor(config, processor=processor)
     setup, components = prepare_semantic_tokens(processor, base_model, inventory)
     initial_bundle_report = None
     frozen_bundle_report = None
@@ -2152,6 +2615,9 @@ def run_training(config: TrainConfig) -> JsonDict:
         eval_dataset=eval_dataset,
         processing_class=processor,
     )
+    # Append after constructor-installed callbacks and the existing bundle save machinery.
+    for callback in extra_callbacks or ():
+        trainer.add_callback(callback)
     train_result = trainer.train(resume_from_checkpoint=config.resume_from_checkpoint)
     # The periodic eval already ran on the last step whenever max_steps is a
     # multiple of eval_steps; only evaluate again when it did not.
@@ -2203,7 +2669,9 @@ def run_training(config: TrainConfig) -> JsonDict:
 def parse_args(argv: Iterable[str] | None = None) -> TrainConfig:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--train-jsonl", required=True)
-    parser.add_argument("--image-root", required=True)
+    parser.add_argument("--image-root")
+    parser.add_argument("--input-mode", choices=INPUT_MODES, default="vision")
+    parser.add_argument("--max-sequence-length", type=int, help="Required text token budget; never truncates")
     parser.add_argument("--token-inventory", required=True)
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--eval-jsonl")
@@ -2252,6 +2720,8 @@ def parse_args(argv: Iterable[str] | None = None) -> TrainConfig:
     return TrainConfig(
         train_jsonl=args.train_jsonl,
         image_root=args.image_root,
+        input_mode=args.input_mode,
+        max_sequence_length=args.max_sequence_length,
         token_inventory=args.token_inventory,
         output_dir=args.output_dir,
         eval_jsonl=args.eval_jsonl,

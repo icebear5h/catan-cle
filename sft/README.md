@@ -10,6 +10,44 @@ comes only after grounding and leakage checks pass. See
 [`EXPERIMENT_DESIGN.md`](EXPERIMENT_DESIGN.md) for the curriculum and trainable
 scope ladder.
 
+## Latest symbolic board-fluency pilot (2026-09-15)
+
+`board-fluency-sft-20260915-r06` completed 128 text-only SFT steps from the
+September 12 checkpoint-128, with function-preserving r8/alpha16 → r16/alpha32
+expansion, 154 retained atlas rows and frozen vision/base weights. Its 3,200-state
+corpus covers 20 board operations; the pilot consumed 1,024 examples (0.32 epoch).
+Checkpoints 32/64/96/128 are committed on the `catan-sft-runs` Modal volume.
+
+Unchanged review accuracy improved **24/200→58/200 (12%→29%)**; exact matched
+held-out 144 improved **21/144→69/144 (14.6%→47.9%)**. Full postvalidation is
+**87/190 (45.8%)**, with only 144 baseline responses available. Reachable-node
+enumeration and pip totals remain weak. The app is stopped with zero tasks.
+See [results, checkpoint, verification and compute estimate](../reports/sft/2026-09-15-symbolic-board-fluency-sft.md).
+
+A 128-step extension (`board-fluency-extension-20260915-r01`, cumulative 256
+updates over rows 1025–2048) moved held-out190 **87→96 (45.8%→50.5%)** while
+review200 stayed flat at **57/200 (28.5%)**. Pip totals and reachable-node sets
+remain the weak operations. Cumulative recorded-window compute is about $11.26
+of the approved $15.
+
+A second 256-step extension (cumulative 512 updates, full 1.0 epoch over all
+3,200 rows plus 896 repeats) moved review200 **57→76 (28.5%→38.0%)** and
+held-out190 **96→116 (50.5%→61.1%)**, with malformed answers down to 3/390.
+Reachable nodes and pip totals finally moved off zero on held-out. Cumulative
+compute is about $16.43 of the user-approved $21 ceiling.
+
+A third 512-step extension (cumulative 1,024 updates: full second epoch plus a
+partial third) moved review200 **76→103 (38.0%→51.5%)** and held-out190
+**116→126 (61.1%→66.3%)**, with only 2 malformed answers left in 390 rows.
+Held-out pip totals are now 5/5. Cumulative compute is about $26.09 of the
+user-approved $31 ceiling.
+
+The scoped launcher is `sft/modal_board_fluency_sft.py` (dry-run by default);
+`sft/scripts/build_board_fluency_dataset.py` owns corpus admission and
+`sft/board_fluency_scoring.py` exact answer contracts. Frozen visual invariance
+uses canonical tensor hashes because safetensors serialization bytes can differ
+without any changed tensor values.
+
 ## Safety contract
 
 CatanBoardBench-100 is held out. Never train on its game IDs, images, contracts, QA,
@@ -154,6 +192,77 @@ nodes and 19 tiles, with balanced yes/no hard negatives, plus 3,072 robber rows
 train state). The staged output is written to
 `artifacts/generated/board_recognition/replay_v1/spatial_robber_v1/`. It is a
 supplement, not yet the final composed production curriculum.
+
+Direction-token questions now keep the same displayed candidates across each
+inverse pair, so the correct choice alternates first/second. This balances both
+node and tile pools and every two-row state sample without changing answers,
+relation labels, or IDs. The shared fix also applies to newly generated
+spatial-localization stage-2 rows; it removes a choice-position shortcut, not
+the fixed-atlas nature of these questions.
+
+The corrected September 8 export is separate from historical data:
+
+```bash
+uv run python -m scripts.export_catan_spatial_robber_sft \
+  --output-dir artifacts/generated/board_recognition/replay_v1/spatial_robber_choice_order_v1
+uv run python -m scripts.export_catan_spatial_robber_sft \
+  --output-dir artifacts/generated/board_recognition/replay_v1/spatial_robber_choice_order_v1 \
+  --validate-only
+```
+
+That export has 86 first-choice and 86 second-choice train answers, 10/10 in
+validation and test, and 32/32 in the color diagnostic. Existing generated
+`spatial_robber_v1`, spatial-localization stage-2, production, and eval files
+retain the old bias. Production and the default eval build still select
+`spatial_robber_v1`. Select the corrected source explicitly for new evaluations;
+existing outputs require `--overwrite` rather than being silently replaced:
+
+```bash
+uv run python -m scripts.build_catan_board_recognition_eval_suite \
+  --supplement-dir artifacts/generated/board_recognition/replay_v1/spatial_robber_choice_order_v1 \
+  --split validation --spatial-only --answer-only \
+  --output artifacts/generated/board_recognition/replay_v1/evals/spatial_choice_order_answer_only_validation_v1.jsonl
+```
+
+`--answer-only` adds explicit output-format guidance without changing labels;
+omit it to preserve the original wording. Both conditions use distinct eval IDs
+and leave historical files intact. The latest full-board checkpoint scored
+57/120 (47.5%) with answer-only instructions versus 1/120 with original wording;
+the latter was dominated by whole-answer formatting misses. See the
+[completed spatial eval](../reports/sft/2026-09-08-corrected-spatial-eval.md).
+
+The approved 128-step mixed continuation completed as
+`spatial-continuation-20260909-r01`: 16 steps each of directions,
+adjacency/connectivity, touching tiles, shortest paths, local neighborhoods,
+and dice production, plus 32 interleaved full-board readout steps. It uses
+1,024 distinct existing training images and explicit task-aware scoring:
+touching-tile sets are unordered, paths ordered with all shortest ties accepted.
+The pipeline baselines new tasks first, trains once, then compares all six
+panels. Production improved from 16/64 to 46/64 and touching tiles from 0/54 to
+19/54, but original spatial QA fell from 57/120 to 53/120 and exact readouts
+from 64/64 to 53/64 (occupied locations still 1,193/1,204 correct). The new
+checkpoint is experimental, not a promoted replacement for the parent. See
+[completed results and receipts](../reports/sft/2026-09-09-mixed-spatial-continuation.md).
+
+`sft/scripts/build_spatial_continuation_dataset.py` owns its immutable data
+projection; `sft/modal_spatial_continuation.py` is dry-run by default and needs
+`--execute` to upload and launch. Do not restart the existing run name or use
+the older spatial/robber production mixture in its place.
+
+The 256-additional-step extension, `spatial-continuation-20260912-r01`, was
+cancelled during training at the user's request. Modal confirmed the app stopped
+with zero tasks at 20:04:36 UTC on September 12. CPU preflight had passed; the
+final six-panel evaluation did not run. The planned two additional passes and
+384 cumulative updates are not completed-result claims. See the
+[extension status and commands](../reports/sft/2026-09-12-mixed-spatial-extension.md).
+
+```bash
+# Read current status without starting compute:
+.venv/bin/python -B -m sft.scripts.verify_spatial_extension --download --status-only
+
+# For completed pipelines only; this cancelled run has no final response set:
+.venv/bin/python -B -m sft.scripts.verify_spatial_extension --download
+```
 
 The same export also writes `curriculum_smoke_32.jsonl`: eight ordered rows per
 stage, mixing the immutable source rows with the new supplement. At gradient
@@ -524,6 +633,12 @@ intentionally resets optimizer, scheduler, and RNG state. It is distinct from
 Run exact-match and causal visual controls with
 `sft/modal_qwen_series_eval.py`. Its `--image-variant` accepts `original`,
 `blank`, `shuffle`, `target_occlusion`, and `control_occlusion`.
+
+For periodic checkpoints with FP32 visual master weights, pass
+`--bits 16 --preserve-visual-fp32`. This promotes the visual module before
+restoring the saved state, then generates under BF16 autocast, matching the
+full-board evaluator. The receipt records source/runtime visual dtypes.
+Without this opt-in, the existing BF16 restore behavior remains unchanged.
 
 Every eval also records a location-only score. For rows with a closed answer
 set (atlas-token answers restrict to tokens of the requested entity type,

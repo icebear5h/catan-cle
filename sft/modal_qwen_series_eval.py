@@ -167,6 +167,7 @@ def _run_eval(
     candidate_scoring: bool = True,
     long_max_new_tokens: int = 512,
     long_batch_size: int = 8,
+    preserve_visual_fp32: bool = False,
 ) -> dict:
     command = [
         "python",
@@ -201,6 +202,8 @@ def _run_eval(
         command.extend(["--limit", str(limit)])
     if not candidate_scoring:
         command.append("--no-candidate-scoring")
+    if preserve_visual_fp32:
+        command.append("--preserve-visual-fp32")
 
     print("running:", " ".join(command))
     subprocess.run(command, check=True)
@@ -238,6 +241,7 @@ def eval_remote(
     candidate_scoring: bool = True,
     long_max_new_tokens: int = 512,
     long_batch_size: int = 8,
+    preserve_visual_fp32: bool = False,
 ) -> dict:
     return _run_eval(
         eval_jsonl,
@@ -254,6 +258,7 @@ def eval_remote(
         candidate_scoring,
         long_max_new_tokens,
         long_batch_size,
+        preserve_visual_fp32=preserve_visual_fp32,
     )
 
 
@@ -282,6 +287,7 @@ def eval_h200(
     candidate_scoring: bool = True,
     long_max_new_tokens: int = 512,
     long_batch_size: int = 8,
+    preserve_visual_fp32: bool = False,
 ) -> dict:
     return _run_eval(
         eval_jsonl,
@@ -298,6 +304,7 @@ def eval_h200(
         candidate_scoring,
         long_max_new_tokens,
         long_batch_size,
+        preserve_visual_fp32=preserve_visual_fp32,
     )
 
 
@@ -321,6 +328,7 @@ def main(
     long_max_new_tokens: int = 512,
     long_batch_size: int = 8,
     spawn_eval: bool = False,
+    preserve_visual_fp32: bool = False,
 ):
     if bits not in {4, 8, 16}:
         raise ValueError("--bits must be 4, 8, or 16")
@@ -375,6 +383,7 @@ def main(
         "candidate_scoring": candidate_scoring,
         "long_max_new_tokens": long_max_new_tokens,
         "long_batch_size": long_batch_size,
+        "preserve_visual_fp32": preserve_visual_fp32,
     }
     remote_function = eval_h200 if gpu == "h200" else eval_remote
     if spawn_eval:

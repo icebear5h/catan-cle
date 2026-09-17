@@ -5,21 +5,46 @@ from __future__ import annotations
 import argparse
 import importlib
 import json
+import math
 import re
 from collections import Counter, defaultdict
+from contextlib import nullcontext
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from safetensors import safe_open
+
 from sft.behavior_diagnostics import summarize_behaviors
+from sft.board_fluency_scoring import (
+    SCHEMA, SCHEMAS as BOARD_FLUENCY_SCHEMAS, score_board_fluency, validate_board_fluency_metadata,
+)
 from sft.board_state_readout import TASK as FULL_BOARD_TASK, score_board_state, summarize_board_states
 from sft.paths import resolve_dataset_asset, resolve_dataset_image
 from sft.scripts.train_trl_catan_vision import (
+    INPUT_MODES,
+    RUN_CONFIG_FILE,
     VISUAL_STATE_FILE,
+    _message_pair,
+    assert_runtime_versions,
+    encode_text_pair,
+    freeze_visual_weights,
+    load_checkpoint_text_tokenizer,
     load_token_inventory,
     load_visual_state,
+    native_tokenizer,
+    pad_text_inputs,
     prepare_semantic_tokens,
+    resolve_wrapped_module,
+    text_chat_ids,
+    validate_text_adapter,
+    validate_text_budget,
+    validate_text_context_budget,
 )
+from sft.spatial_tasks import TASK_TYPES as SPATIAL_TASK_TYPES, score_spatial_task
+from sft.symbolic_board_tasks import SYMBOLIC_TASKS, score_symbolic_task, symbolic_task_role
+
+BOARD_FLUENCY_SCHEMA = SCHEMA
 
 
 def iter_jsonl(path: Path):
@@ -127,9 +152,22 @@ def score_readout(expected: str, response: str) -> dict[str, Any]:
     }
 
 
-def score_response(expected: str, response: str) -> dict[str, Any]:
+def score_response(
+    expected: str, response: str, *, metadata: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    if metadata is not None:
+        board_fluency_score = score_board_fluency(expected, response, metadata)
+        if board_fluency_score is not None:
+            return board_fluency_score
+        symbolic_score = score_symbolic_task(expected, response, metadata)
+        if symbolic_score is not None:
+            return symbolic_score
     expected_norm = normalize_text(expected)
     response_norm = normalize_text(response)
+    if metadata is not None:
+        spatial_score = score_spatial_task(expected_norm, response_norm, metadata)
+        if spatial_score is not None:
+            return spatial_score
     if "; robber " in expected_norm and len(readout_items(expected_norm)) >= 154:
         return score_board_state(expected_norm, response_norm)
     if len(readout_items(expected_norm)) >= 4:
@@ -248,7 +286,14 @@ def image_reference(row: dict[str, Any]) -> str:
     raise ValueError("eval row must reference exactly one image")
 
 
-def build_qwen_messages(row: dict[str, Any]) -> list[dict[str, Any]]:
+def build_qwen_messages(
+    row: dict[str, Any], *, input_mode: str = "vision",
+) -> list[dict[str, Any]]:
+    if input_mode == "text":
+        prompt, _ = _message_pair(row, line_number=0, input_mode="text")
+        return [{"role": "user", "content": prompt}]
+    if input_mode != "vision":
+        raise ValueError(f"unsupported input_mode: {input_mode}")
     return [
         {
             "role": "user",
@@ -316,39 +361,74 @@ def generate_responses(
     shuffled_images: dict[str, str] | None = None,
     occlusion_margin: float = 0.03,
     return_first_logits: bool = True,
+    preserve_visual_fp32: bool = False,
+    input_mode: str = "vision",
+    max_sequence_length: int | None = None,
 ) -> tuple[list[str], Any]:
     """Generate answers and return the raw first-step logits per row."""
 
     torch = importlib.import_module("torch")
 
-    messages = [build_qwen_messages(row) for row in rows]
-    prompts = [
-        processor.apply_chat_template(
-            item,
-            tokenize=False,
-            add_generation_prompt=True,
-            enable_thinking=False,
+    if input_mode == "text":
+        validate_text_budget(max_sequence_length)
+        validate_text_context_budget(model, max_sequence_length)
+        if image_variant != "original" or shuffled_images is not None:
+            raise ValueError("text mode does not support image variants")
+        if max_new_tokens <= 0:
+            raise ValueError("max_new_tokens must be positive")
+        tokenizer = native_tokenizer(processor)
+        features = []
+        for row in rows:
+            prompt, answer = _message_pair(row, line_number=0, input_mode="text")
+            encode_text_pair(tokenizer, prompt, answer, max_sequence_length=max_sequence_length)
+            ids = text_chat_ids(tokenizer, build_qwen_messages(row, input_mode="text"), generation=True)
+            if len(ids) + max_new_tokens > max_sequence_length:
+                raise ValueError(
+                    f"text prompt ({len(ids)}) + generation budget ({max_new_tokens}) exceeds "
+                    f"max_sequence_length={max_sequence_length}; truncation is forbidden"
+                )
+            features.append({"input_ids": ids})
+        inputs = {
+            key: tensor.to(model.device)
+            for key, tensor in pad_text_inputs(tokenizer, features, left=True).items()
+        }
+        decoder = tokenizer
+    else:
+        messages = [build_qwen_messages(row, input_mode=input_mode) for row in rows]
+        prompts = [
+            processor.apply_chat_template(
+                item,
+                tokenize=False,
+                add_generation_prompt=True,
+                enable_thinking=False,
+            )
+            for item in messages
+        ]
+        images = [
+            evaluation_image(
+                row,
+                variant=image_variant,
+                shuffled_images=shuffled_images,
+                occlusion_margin=occlusion_margin,
+            )
+            for row in rows
+        ]
+        inputs = processor(
+            text=prompts,
+            images=images,
+            padding=True,
+            return_tensors="pt",
         )
-        for item in messages
-    ]
-    images = [
-        evaluation_image(
-            row,
-            variant=image_variant,
-            shuffled_images=shuffled_images,
-            occlusion_margin=occlusion_margin,
-        )
-        for row in rows
-    ]
-    inputs = processor(
-        text=prompts,
-        images=images,
-        padding=True,
-        return_tensors="pt",
-    )
-    inputs = inputs.to(model.device)
+        inputs = inputs.to(model.device)
+        decoder = processor
 
-    with torch.inference_mode():
+    # A disabled autocast context would override autocast owned by imported callers.
+    autocast = (
+        torch.autocast(model.device.type, dtype=torch.bfloat16)
+        if preserve_visual_fp32 and input_mode == "vision"
+        else nullcontext()
+    )
+    with torch.inference_mode(), autocast:
         generated = model.generate(
             **inputs,
             do_sample=False,
@@ -357,10 +437,10 @@ def generate_responses(
             return_dict_in_generate=True,
         )
 
-    input_width = inputs.input_ids.shape[1]
+    input_width = inputs["input_ids"].shape[1]
     trimmed = [output_ids[input_width:] for output_ids in generated.sequences]
     first_logits = generated.logits[0].detach().float().cpu() if return_first_logits else None
-    texts = list(processor.batch_decode(
+    texts = list(decoder.batch_decode(
         trimmed,
         skip_special_tokens=False,
         clean_up_tokenization_spaces=False,
@@ -598,6 +678,8 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
         "curriculum_stage",
         "task_family",
         "task_type",
+        "family",
+        "operation",
         "entity_type",
         "relationship",
         "polarity",
@@ -620,11 +702,62 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
         summary["full_board"] = summarize_board_states(board_records)
     summary["neighbor_confusion"] = summarize_neighbor_confusion(attempted)
     summary["by_behavior"] = summarize_behaviors(attempted)
+    symbolic = [r for r in attempted if r["score"].get("scoring") in SYMBOLIC_TASKS]
+    if symbolic:
+        families = defaultdict(list)
+        for record in symbolic:
+            families[record["score"]["scoring"]].append(record)
+        summary["symbolic_families"] = {}
+        for family, group in sorted(families.items()):
+            weighted = ["macro_weight" in r["metadata"] for r in group]
+            if any(weighted) and not all(weighted):
+                raise ValueError("incomplete symbolic macro weights")
+            weights = [r["metadata"]["macro_weight"] if all(weighted) else 1.0 for r in group]
+            if any(type(w) not in (float, int) or not math.isfinite(w) or w <= 0 for w in weights):
+                raise ValueError("invalid symbolic macro weights")
+            summary["symbolic_families"][family] = {
+                "rows": len(group), "correct": sum(r["score"]["correct"] for r in group),
+                "accuracy": sum(w * r["score"]["correct"] for w, r in zip(weights, group, strict=True)) / sum(weights),
+                "weighting": "state_mode_polarity_macro" if all(weighted) else "row",
+                "by_mode": summarize_dimension(group, "evaluation_mode"),
+                "by_polarity": summarize_dimension(group, "polarity"),
+            }
     return summary
 
 
 def evaluation_metadata(row: dict[str, Any], *, image_variant: str) -> dict[str, Any]:
     metadata = dict(row.get("metadata", {}))
+    schemas = [source["schema"] for source in (row, metadata) if "schema" in source]
+    if (any(schema in BOARD_FLUENCY_SCHEMAS for schema in schemas)
+            or any(str(schema).startswith("catan_board_fluency") for schema in schemas)
+            or row.get("class") == "board_fluency" or metadata.get("class") == "board_fluency"):
+        if not schemas or any(schema != schemas[0] for schema in schemas):
+            raise ValueError("missing/conflicting board-fluency schema declarations")
+        metadata["schema"] = schemas[0]
+        for key in ("split", "task_role", "review_only", "admitted_for_training", "class",
+                    "family", "operation", "target", "answer", "provenance"):
+            if key in row:
+                if key in metadata and (type(row[key]) is not type(metadata[key])
+                                        or row[key] != metadata[key]):
+                    raise ValueError(f"conflicting board-fluency {key}")
+                metadata[key] = row[key]
+        validate_board_fluency_metadata(metadata)
+    declared = [source["task_type"] for source in (row, metadata) if "task_type" in source]
+    spatial = [value for value in declared + [row.get("category"), metadata.get("category")]
+               if value in SPATIAL_TASK_TYPES or value in SYMBOLIC_TASKS]
+    if spatial and any(value != spatial[0] for value in declared + spatial):
+        raise ValueError("conflicting spatial task declarations")
+    if spatial and spatial[0] in SYMBOLIC_TASKS:
+        for key in ("training_family", "task_role", "split"):
+            if key in row and key in metadata and row[key] != metadata[key]:
+                raise ValueError(f"conflicting symbolic {key}")
+            if key in row:
+                metadata[key] = row[key]
+        if metadata.get("training_family", spatial[0]) != spatial[0]:
+            raise ValueError("conflicting symbolic training family")
+        if "task_role" in metadata or "split" in metadata:
+            if metadata.get("task_role") != symbolic_task_role(spatial[0], metadata.get("split")):
+                raise ValueError("conflicting symbolic task role")
     for key in (
         "category",
         "suite",
@@ -728,18 +861,48 @@ def load_model(
     bits: int,
     disable_flash_attn2: bool,
     token_inventory: str | None = None,
+    preserve_visual_fp32: bool = False,
+    input_mode: str = "vision",
+    model_revision: str | None = None,
 ) -> tuple[Any, Any, dict[str, Any]]:
+    if input_mode not in INPUT_MODES:
+        raise ValueError(f"unsupported input_mode: {input_mode}")
+    text_only = input_mode == "text"
+    adapter_path = Path(adapter_dir) if adapter_dir else None
+    if text_only:
+        if adapter_path is None:
+            raise ValueError("text mode requires --adapter-dir with a saved tokenizer and atlas rows")
+        preserve_visual_fp32 = True
+    if preserve_visual_fp32 and (
+        adapter_path is None or not (adapter_path / VISUAL_STATE_FILE).is_file()
+    ):
+        raise ValueError(
+            f"--preserve-visual-fp32 requires an --adapter-dir containing {VISUAL_STATE_FILE}"
+        )
+
     torch = importlib.import_module("torch")
     peft = importlib.import_module("peft")
     transformers = importlib.import_module("transformers")
 
-    adapter_path = Path(adapter_dir) if adapter_dir else None
     processor_source = (
         adapter_path
         if adapter_path is not None and (adapter_path / "tokenizer_config.json").is_file()
         else model_id
     )
-    processor = transformers.AutoProcessor.from_pretrained(processor_source)
+    inventory = None
+    revision_kwargs = {"revision": model_revision} if model_revision is not None else {}
+    if text_only:
+        if token_inventory is None:
+            raise ValueError("--token-inventory is required for semantic-token evaluation")
+        inventory = load_token_inventory(token_inventory)
+        processor = load_checkpoint_text_tokenizer(adapter_path, inventory["tokens"])
+        parent = json.loads((adapter_path / RUN_CONFIG_FILE).read_text())
+        if parent.get("model_id") != model_id:
+            raise ValueError("text adapter base model differs from --model-id")
+    else:
+        processor = transformers.AutoProcessor.from_pretrained(
+            processor_source, **(revision_kwargs if processor_source == model_id else {}),
+        )
     if hasattr(processor, "tokenizer"):
         processor.tokenizer.padding_side = "left"
 
@@ -763,6 +926,7 @@ def load_model(
 
     model = transformers.AutoModelForMultimodalLM.from_pretrained(
         model_id,
+        **revision_kwargs,
         device_map="auto",
         dtype=torch.bfloat16,
         attn_implementation="sdpa" if disable_flash_attn2 else "flash_attention_2",
@@ -776,8 +940,11 @@ def load_model(
         )
     if token_inventory is None:
         raise ValueError("--token-inventory is required for semantic-token evaluation")
-    inventory = load_token_inventory(token_inventory)
-    token_setup, _ = prepare_semantic_tokens(processor, model, inventory)
+    inventory = inventory if inventory is not None else load_token_inventory(token_inventory)
+    token_setup, components = prepare_semantic_tokens(processor, model, inventory)
+    if text_only:
+        validate_text_adapter(model, adapter_path, token_setup, components)
+        model.requires_grad_(False)
     print(
         f"semantic_tokens={len(token_setup.tokens)} "
         f"token_ids={min(token_setup.token_ids)}-{max(token_setup.token_ids)} "
@@ -791,6 +958,8 @@ def load_model(
         "visual_state": {"loaded": False, "path": None, "tensors": 0},
         "non_lora_state": {"loaded": False, "path": None, "tensors": 0},
     }
+    if text_only:
+        adapter_evidence["input_mode"] = "text"
     if adapter_dir:
         assert adapter_path is not None
         visual_path = adapter_path / VISUAL_STATE_FILE
@@ -810,14 +979,42 @@ def load_model(
             print(f"merged_frozen_adapter={frozen_dir}")
         model = peft.PeftModel.from_pretrained(model, adapter_dir)
         if visual_path.is_file():
+            if preserve_visual_fp32:
+                # PEFT must establish the saved key layout first. Promote before
+                # copying the source, not after a lossy FP32 -> BF16 restore.
+                visual = resolve_wrapped_module(model, "model.visual")
+                visual.float()
             visual_evidence = load_visual_state(model, adapter_path)
             adapter_evidence["visual_state"] = {
                 "loaded": True,
                 **visual_evidence,
             }
+            if preserve_visual_fp32:
+                with safe_open(visual_path, framework="pt", device="cpu") as source:
+                    source_dtypes = Counter(source.get_slice(key).get_dtype() for key in source.keys())
+                loaded_state = visual.state_dict()
+                loaded_dtypes = Counter(str(tensor.dtype) for tensor in loaded_state.values())
+                if any(
+                    tensor.is_floating_point() and tensor.dtype != torch.float32
+                    for tensor in loaded_state.values()
+                ):
+                    raise RuntimeError("visual floating-point state is not fully FP32 after restore")
+                adapter_evidence["visual_precision"] = {
+                    "base_load_dtype": str(torch.bfloat16),
+                    "promoted_before_restore": True,
+                    "source_dtypes": dict(source_dtypes),
+                    "loaded_dtypes": dict(loaded_dtypes),
+                }
+                print(
+                    "visual_precision="
+                    + json.dumps(adapter_evidence["visual_precision"], sort_keys=True)
+                )
         adapter_evidence["adapter_loaded"] = True
         print(f"loaded_adapter={adapter_dir}")
 
+    if text_only:
+        freeze_visual_weights(model, components)
+        model.requires_grad_(False)
     model.eval()
     return model, processor, adapter_evidence
 
@@ -835,8 +1032,24 @@ def run_eval_job(
     """Score one eval set under one image variant with an already-loaded model."""
 
     eval_path = Path(eval_jsonl)
+    input_mode = getattr(args, "input_mode", "vision")
+    if input_mode not in INPUT_MODES:
+        raise ValueError(f"unsupported input_mode: {input_mode}")
+    text_only = input_mode == "text"
+    max_sequence_length = getattr(args, "max_sequence_length", None)
+    if text_only:
+        validate_text_budget(max_sequence_length)
+        if image_variant != "original":
+            raise ValueError("text mode does not support image variants")
     rows = [row for _, row in iter_jsonl(eval_path)]
-    for row in rows:
+    for line_number, row in enumerate(rows, start=1):
+        if text_only:
+            prompt, answer = _message_pair(row, line_number=line_number, input_mode="text")
+            encode_text_pair(
+                native_tokenizer(processor), prompt, answer,
+                max_sequence_length=max_sequence_length,
+            )
+            continue
         reference = image_reference(row)
         image_path = (
             resolve_dataset_image(Path(args.image_root), reference)
@@ -862,8 +1075,9 @@ def run_eval_job(
     records_path = output_dir / "records.jsonl"
 
     atlas_tokens = list(adapter_evidence["semantic_tokens"]["tokens"])
-    tokenizer = processor.tokenizer
+    tokenizer = native_tokenizer(processor)
     candidate_ids_cache: dict[tuple[str, ...], list[int]] = {}
+    preserve_visual_fp32 = getattr(args, "preserve_visual_fp32", False)
 
     records = []
     short_rows = [row for row in rows if not is_long_answer(row)]
@@ -882,6 +1096,9 @@ def run_eval_job(
                 shuffled_images=shuffled_images,
                 occlusion_margin=args.occlusion_margin,
                 return_first_logits=args.candidate_scoring,
+                preserve_visual_fp32=preserve_visual_fp32,
+                input_mode=input_mode,
+                max_sequence_length=max_sequence_length,
             )
             for offset, (row, response) in enumerate(zip(batch, responses, strict=True)):
                 index = batch_start + offset + 1
@@ -889,8 +1106,10 @@ def run_eval_job(
                     batch_start += len(batch)
                 target = expected_text(row)
                 metadata = evaluation_metadata(row, image_variant=image_variant)
+                if text_only:
+                    metadata["input_mode"] = "text"
                 category = metadata.get("category") or metadata.get("task_type", "")
-                score = score_response(target, response)
+                score = score_response(target, response, metadata=metadata)
                 candidate_score = None
                 if args.candidate_scoring:
                     candidates = candidate_answers(row, target, atlas_tokens)
@@ -944,6 +1163,7 @@ def run_eval_job(
     summary.update(
         {
             "model_id": args.model_id,
+            "model_revision": getattr(args, "model_revision", None),
             "adapter_dir": args.adapter_dir,
             "eval_jsonl": eval_jsonl,
             "bits": args.bits,
@@ -951,17 +1171,27 @@ def run_eval_job(
             "max_new_tokens": args.max_new_tokens,
             "long_max_new_tokens": args.long_max_new_tokens,
             "adapter_evidence": adapter_evidence,
-            "image_root": args.image_root,
+            "image_root": None if text_only else args.image_root,
             "token_inventory": args.token_inventory,
             "reasoning_enabled": False,
             "image_variant": image_variant,
             "occlusion_margin": args.occlusion_margin,
             "candidate_scoring": bool(args.candidate_scoring),
+            "precision": {
+                "preserve_visual_fp32": preserve_visual_fp32 or text_only,
+                "generation_autocast": (
+                    {"device_type": model.device.type, "dtype": "torch.bfloat16"}
+                    if preserve_visual_fp32 and not text_only
+                    else {"policy": "caller_context"}
+                ),
+            },
             "rows_skipped_without_spatial_target": skipped_without_target,
             "eval_set_id": next(iter(eval_set_ids), None),
             "eval_source_sha256": next(iter(eval_source_hashes), None),
         }
     )
+    if text_only:
+        summary.update({"input_mode": "text", "max_sequence_length": max_sequence_length, "truncation": False})
     (output_dir / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
     print(json.dumps(summary, indent=2, sort_keys=True))
     return summary
@@ -977,6 +1207,13 @@ def eval_jobs(args: argparse.Namespace) -> list[dict[str, str]]:
 
     eval_sets = list(args.eval_jsonl)
     variants = [item.strip() for item in args.image_variant.split(",") if item.strip()]
+    input_mode = getattr(args, "input_mode", "vision")
+    if input_mode not in INPUT_MODES:
+        raise ValueError(f"unsupported input_mode: {input_mode}")
+    if input_mode == "text":
+        validate_text_budget(getattr(args, "max_sequence_length", None))
+        if variants != ["original"]:
+            raise ValueError("text mode does not support image variants")
     for variant in variants:
         if variant not in IMAGE_VARIANTS:
             raise ValueError(f"unsupported image variant: {variant}")
@@ -999,12 +1236,17 @@ def run_eval(args: argparse.Namespace) -> dict[str, Any]:
     """Load the adapter once, then score every requested set and variant."""
 
     jobs = eval_jobs(args)
+    if getattr(args, "input_mode", "vision") == "text":
+        assert_runtime_versions()
     model, processor, adapter_evidence = load_model(
         model_id=args.model_id,
         adapter_dir=args.adapter_dir,
         bits=args.bits,
         disable_flash_attn2=args.disable_flash_attn2,
         token_inventory=args.token_inventory,
+        preserve_visual_fp32=getattr(args, "preserve_visual_fp32", False),
+        input_mode=getattr(args, "input_mode", "vision"),
+        model_revision=getattr(args, "model_revision", None),
     )
     results = []
     for job in jobs:
@@ -1028,6 +1270,8 @@ def run_eval(args: argparse.Namespace) -> dict[str, Any]:
                 "eval_source_sha256": summary.get("eval_source_sha256"),
             }
         )
+        if getattr(args, "input_mode", "vision") == "text":
+            results[-1]["input_mode"] = "text"
     if len(jobs) == 1:
         return results[0]
     batch = {
@@ -1035,8 +1279,11 @@ def run_eval(args: argparse.Namespace) -> dict[str, Any]:
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "adapter_dir": args.adapter_dir,
         "model_id": args.model_id,
+        "model_revision": getattr(args, "model_revision", None),
         "jobs": results,
     }
+    if getattr(args, "input_mode", "vision") == "text":
+        batch.update({"input_mode": "text", "max_sequence_length": args.max_sequence_length})
     batch_path = Path(args.output_dir) / "batch_summary.json"
     batch_path.parent.mkdir(parents=True, exist_ok=True)
     batch_path.write_text(json.dumps(batch, indent=2, sort_keys=True) + "\n")
@@ -1044,7 +1291,7 @@ def run_eval(args: argparse.Namespace) -> dict[str, Any]:
     return batch
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--eval-jsonl",
@@ -1054,10 +1301,21 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--model-id", default="Qwen/Qwen3-VL-4B-Instruct")
+    parser.add_argument("--model-revision", help="Pinned base-model revision (branch, tag, or commit)")
     parser.add_argument("--adapter-dir")
     parser.add_argument("--image-root")
+    parser.add_argument("--input-mode", choices=INPUT_MODES, default="vision")
+    parser.add_argument("--max-sequence-length", type=int, help="Required text context budget including generation")
     parser.add_argument("--token-inventory")
     parser.add_argument("--bits", type=int, default=4, choices=[4, 8, 16])
+    parser.add_argument(
+        "--preserve-visual-fp32",
+        action="store_true",
+        help=(
+            "Restore visual_model.safetensors into FP32 visual weights and generate under "
+            "BF16 autocast. Use --bits 16 to match the full-board checkpoint evaluation."
+        ),
+    )
     parser.add_argument("--batch-size", type=int, default=1)
     parser.add_argument("--limit", type=int)
     parser.add_argument("--max-new-tokens", type=int, default=256)
@@ -1076,7 +1334,7 @@ def parse_args() -> argparse.Namespace:
         help="Also rank the row's closed answer set by first-token log-probability.",
     )
     parser.add_argument("--disable-flash-attn2", action="store_true", default=True)
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def main() -> int:

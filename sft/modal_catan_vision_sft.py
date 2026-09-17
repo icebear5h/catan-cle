@@ -73,7 +73,7 @@ sft_data = modal.Volume.from_name("catan-sft-data", create_if_missing=True)
 sft_runs = modal.Volume.from_name("catan-sft-runs", create_if_missing=True)
 hf_secret = modal.Secret.from_name(HF_SECRET_NAME, required_keys=["HF_TOKEN"])
 
-training_image = (
+training_base_image = (
     modal.Image.debian_slim(python_version="3.12")
     .pip_install(
         f"torch=={TORCH_VERSION}",
@@ -98,7 +98,10 @@ training_image = (
             "PYTHONUNBUFFERED": "1",
         }
     )
-    .add_local_python_source("cle")
+)
+
+training_image = (
+    training_base_image.add_local_python_source("cle")
     .add_local_python_source("evals")
     .add_local_python_source("sft")
 )

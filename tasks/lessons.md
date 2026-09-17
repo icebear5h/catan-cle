@@ -620,3 +620,23 @@
   new attempt budget with its failure checkpointed, so the backend and its
   in-memory game never need a restart. Keep one hard stop for failures the trace
   store could not record.
+- [gotcha] Provider speed does not rescue low reasoning effort. On Cerebras
+  `qwen-3.8-27b` with shared_v1 (seed 1, 2026-09-16) only `reasoning_effort=high`
+  produced valid actions every call (~18s and ~22k reasoning tokens per call).
+  `off` reasons inside `content` and fences the JSON; `low`/`medium` run ~3s per
+  call but pick unavailable nodes and burn the 3-attempt budget during setup.
+  Measure with `scripts/time_live_game.py` before assuming a faster setting works.
+- [gotcha] Fresh-context prompts must state turn-scoped facts explicitly. "Last
+  dice roll: (4, 3)" never said whose roll it was, so with no memory of rolling
+  the model re-sent `roll_dice` mid-turn: 24 of 50 rejected decisions in one
+  OpenRouter qwen3.8-27b game, always attempt 1, always with `end_turn` legal.
+  Shared phase_info now renders `Dice this turn: ALREADY ROLLED/NOT ROLLED YET`
+  from `PlayerObservation.turn_player_has_rolled`. When a rejection class is
+  always first-attempt and always recovers, look for a missing fact in the
+  prompt before blaming the model.
+- [arch] The engine sequences independent simultaneous choices (discards after a
+  7) one seat at a time; the sandbox, not the engine, is where they parallelize.
+  `_step_barrier` takes `allowed`/`label`, `_discard_barrier_contexts` prompts all
+  remaining discarders together, and `_is_action_valid` checks a later discarder
+  from their own seat because `validate_discard` requires `current_color()`.
+  Commit order stays the engine's seat order via the staged replay.

@@ -187,10 +187,12 @@ async def test_seven_window_after_all_discards_once_across_retry_and_snapshot(di
     engine.step(Action(Color.RED, ActionType.ROLL, (3, 4)), force=True)
     sb, ts = sandbox(engine)
     while engine.state.current_prompt == ActionPrompt.DISCARD:
-        actor = engine.state.current_color()
-        count = sb.decision_context().discard_count
-        ts[actor].replies = [{"tool": "discard", "arguments": {"cards": {"WOOD": count}}}]
-        await sb.step()
+        # Every discarder of one 7 is prompted in the same step.
+        for color in COLORS[:2]:
+            count = sb.decision_context(color, (Action(color, ActionType.DISCARD, None),)).discard_count
+            ts[color].replies = [{"tool": "discard", "arguments": {"cards": {"WOOD": count}}}]
+        result = await sb.step()
+        assert [context.actor for context in result.contexts] == list(COLORS[:2])
         assert not sb.communication_trace
     assert engine.state.current_prompt == ActionPrompt.MOVE_ROBBER
     for color in COLORS[1:]:

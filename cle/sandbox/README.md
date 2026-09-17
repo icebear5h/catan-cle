@@ -85,7 +85,11 @@ waits for all responses, and applies them in table order. Model latency never
 changes game semantics. In a trade barrier, opponents may independently signal
 willingness or decline; these responses never execute a trade. Control returns
 to the turn player, who may select one exact `TradeCandidate` or ignore every
-candidate. Counteroffers are addressed only to the turn player. One cooperative
+candidate. Counteroffers are addressed only to the turn player. In a discard
+barrier, every player still over the discard limit after one 7 chooses cards in
+the same step, as at a real table; discards touch only the owner's hand and the
+bank, commit in seat order, and a lone discarder keeps the ordinary single-player
+step. One cooperative
 `SandboxPool` can run many games while vLLM continuously batches their shared
 asynchronous transport requests.
 
@@ -123,5 +127,5 @@ failure cannot undo gameplay or notes. Historical post-action cancellation remai
 preserves that result before its thread bridge and records an applied-step warning.
 
 Live/headless engines do not copy full state before every action. Full staging
-is limited to trade barriers and bundled Knight preflight. Snapshotting is
+is limited to trade and discard barriers and bundled Knight preflight. Snapshotting is
 explicit; replay/debug engines may opt into history capture.

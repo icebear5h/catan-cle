@@ -41,11 +41,20 @@ from cle.sandbox.decision import build_decision_context
 from cle.sandbox.trade_preauthorization import AutomaticTradeAction, TradePreauthorization
 from cle.sandbox.action_batches import AutomaticBatchAction, PendingActionBatch
 from cle.game_engine.events import EngineTransition, GameEvent, project_event
-from cle.game_engine.game import GameEngine
+from cle.game_engine.game import GameEngine, is_valid_action
 from cle.game_engine.models.actions import generate_playable_actions, trade_response_actions
-from cle.game_engine.models.enums import Action, ActionType
+from cle.game_engine.models.enums import Action, ActionPrompt, ActionType
 from cle.game_engine.models.player import Color
 from cle.game_engine.state import GameState, ensure_trade_window
+from cle.game_engine.state_functions import player_num_resource_cards
+
+
+_TRADE_BARRIER_ACTIONS = frozenset({
+    ActionType.COUNTER_OFFER,
+    ActionType.ACCEPT_TRADE,
+    ActionType.REJECT_TRADE,
+})
+_DISCARD_BARRIER_ACTIONS = frozenset({ActionType.DISCARD})
 
 
 class SandboxError(RuntimeError):
@@ -236,6 +245,12 @@ class CatanSandbox:
         if self._trade_preauthorization is not None:
             self._resolve_trade_preauthorization()
 
+        discard_contexts = self._discard_barrier_contexts()
+        if discard_contexts:
+            return await self._step_barrier(
+                discard_contexts, allowed=_DISCARD_BARRIER_ACTIONS, label="discard",
+            )
+
         playable_actions = tuple(self.game_engine.state.playable_actions)
         forced_roll = (
             len(playable_actions) == 1 and playable_actions[0].action_type == ActionType.ROLL
@@ -353,6 +368,9 @@ class CatanSandbox:
     async def _step_barrier(
         self,
         contexts: tuple[PlayerContext, ...],
+        *,
+        allowed: frozenset[ActionType] = _TRADE_BARRIER_ACTIONS,
+        label: str = "trade",
     ) -> SandboxStepResult:
         revision = self.revision
         players = tuple(self.players[context.actor] for context in contexts)
@@ -380,12 +398,8 @@ class CatanSandbox:
                             max_notes_chars=getattr(players[index], "max_notes_chars", MAX_NOTES_CHARS),
                         )
                         self._validate_context_update(players[index], attempt.model_request, context)
-                        if action.action_type not in {
-                            ActionType.COUNTER_OFFER,
-                            ActionType.ACCEPT_TRADE,
-                            ActionType.REJECT_TRADE,
-                        }:
-                            raise ValueError("Unsupported trade barrier response")
+                        if action.action_type not in allowed:
+                            raise ValueError(f"Unsupported {label} barrier response")
                         if action.action_type == ActionType.COUNTER_OFFER:
                             ensure_trade_window(staged.state).validate_offer(action.value)
                         staged.step(deepcopy(action))
@@ -408,7 +422,7 @@ class CatanSandbox:
                 replace(
                     pending[context.actor],
                     validation_error=(
-                        "Decision withheld: trade barrier did not commit: "
+                        f"Decision withheld: {label} barrier did not commit: "
                         f"{str(exc) or type(exc).__name__}"
                     ),
                 )
@@ -426,7 +440,7 @@ class CatanSandbox:
             self.game_engine.state.playable_actions = generate_playable_actions(
                 self.game_engine.state
             )
-        if self._trade_preauthorization is not None:
+        if label == "trade" and self._trade_preauthorization is not None:
             self._trade_preauthorization = replace(
                 self._trade_preauthorization, response_revision=self.revision,
             )
@@ -445,9 +459,13 @@ class CatanSandbox:
                 ),
             ))
             player.accept(accepted_attempt, accepted_result)
+        limits = self.game_engine.communication_limits
         return await self._post_action_communication(
             result,
-            max_rounds=self.game_engine.communication_limits.max_trade_reaction_rounds,
+            max_rounds=(
+                limits.max_trade_reaction_rounds if label == "trade"
+                else limits.max_general_reaction_rounds
+            ),
         )
 
     async def _post_action_communication(
@@ -945,7 +963,7 @@ class CatanSandbox:
                 if action.action_type in {ActionType.OFFER_TRADE, ActionType.COUNTER_OFFER}:
                     staged = copy(self.game_engine.state)
                     ensure_trade_window(staged).validate_offer(action.value)
-                if not self.game_engine.is_action_valid(action):
+                if not self._is_action_valid(action):
                     raise ValueError(
                         "The selected action parameters are no longer legal or "
                         "affordable. Choose again from the current context."
@@ -973,6 +991,21 @@ class CatanSandbox:
             tuple(failed_attempts),
             feedback or "Return one valid action index.",
         )
+
+    def _is_action_valid(self, action: Action) -> bool:
+        state = self.game_engine.state
+        if (
+            action.action_type == ActionType.DISCARD
+            and state.current_prompt == ActionPrompt.DISCARD
+            and action.color in state.colors[state.current_player_index + 1:]
+        ):
+            # The engine asks discarders one seat at a time. A later discarder in
+            # the barrier is checked from their own seat; the barrier still replays
+            # every discard in engine order before anything commits.
+            staged = copy(state)
+            staged.current_player_index = state.colors.index(action.color)
+            return self.game_engine.winning_color() is None and is_valid_action(staged, action)
+        return self.game_engine.is_action_valid(action)
 
     def _check_revision(self, revision: int) -> None:
         if self.revision != revision or self.game_engine.state is not self._step_state:
@@ -1051,6 +1084,30 @@ class CatanSandbox:
         self._pre_robber_sequence = snapshot.pre_robber_sequence
         self._trade_preauthorization = authorization
         self._pending_action_batch = deepcopy(batch)
+
+    def _discard_barrier_contexts(self) -> tuple[PlayerContext, ...]:
+        """Prompt every remaining discarder of one 7 together, as at a real table.
+
+        Each discard touches only that player's hand and the bank, so the choices
+        are independent. They still commit in the engine's seat order.
+        """
+        state = self.game_engine.state
+        if (
+            state.current_prompt != ActionPrompt.DISCARD
+            or self._pending_decision_revision is not None
+        ):
+            return ()
+        # Seats before the current one already discarded and may still hold > limit.
+        discarders = tuple(
+            color for color in state.colors[state.current_player_index:]
+            if player_num_resource_cards(state, color) > state.discard_limit
+        )
+        if len(discarders) < 2:
+            return ()
+        return tuple(
+            self.decision_context(color, (Action(color, ActionType.DISCARD, None),))
+            for color in discarders
+        )
 
     def _trade_barrier_contexts(self) -> tuple[PlayerContext, ...]:
         state = self.game_engine.state

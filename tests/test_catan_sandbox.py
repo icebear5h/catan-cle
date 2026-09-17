@@ -1600,3 +1600,102 @@ async def test_communication_callbacks_and_pending_response_metadata_are_detache
     assert sandbox.communication_trace[0].choice.model_response.native_reasoning_details == ({"text": "original"},)
     result.messages[0].private_overlays[0][1]["text"] = "edited result"
     assert engine.project_messages(Color.RED)[-1].payload["text"] == "Trade?"
+
+
+def _discarding_engine(hands):
+    """A rolled 7 whose over-limit seats still owe a discard."""
+    engine = GameEngine(COLORS, seed=7, shuffle_players=False)
+    state = engine.state
+    state.is_initial_build_phase = False
+    state.current_prompt = ActionPrompt.DISCARD
+    state.is_discarding = True
+    for index, wood in hands.items():
+        state.player_state[f"P{index}_WOOD_IN_HAND"] = wood
+        state.resource_freqdeck[0] -= wood
+    state.current_player_index = min(hands)
+    state.playable_actions = generate_playable_actions(state)
+    return engine
+
+
+@pytest.mark.asyncio
+async def test_discarders_of_one_seven_are_prompted_together_and_commit_in_seat_order():
+    engine = _discarding_engine({0: 8, 2: 10})
+    state = engine.state
+    waiting = set()
+    both_waiting = asyncio.Event()
+
+    class ConcurrentDiscarder(FirstLegalPlayer):
+        async def choose(self, context, feedback=None):
+            waiting.add(self.color)
+            if len(waiting) == 2:
+                both_waiting.set()
+            # A sequential prompt would deadlock here instead of overlapping.
+            await asyncio.wait_for(both_waiting.wait(), timeout=2)
+            return PlayerAttempt(
+                context.context_id,
+                PlayerChoice(0, discard_cards=("WOOD",) * context.discard_count),
+            )
+
+    players = {color: FirstLegalPlayer(color) for color in COLORS}
+    players[Color.RED] = ConcurrentDiscarder(Color.RED)
+    players[Color.WHITE] = ConcurrentDiscarder(Color.WHITE)
+    sandbox = CatanSandbox(
+        engine, players, retry_policy=RetryPolicy(1), communication_policy=NoCommunicationPolicy()
+    )
+
+    result = await sandbox.step()
+
+    assert [context.actor for context in result.contexts] == [Color.RED, Color.WHITE]
+    assert [context.discard_count for context in result.contexts] == [4, 5]
+    assert [t.resolved_action.color for t in result.transitions] == [Color.RED, Color.WHITE]
+    assert state.player_state["P0_WOOD_IN_HAND"] == 4
+    assert state.player_state["P2_WOOD_IN_HAND"] == 5
+    assert state.current_prompt == ActionPrompt.MOVE_ROBBER
+    assert state.current_color() == COLORS[state.current_turn_index]
+
+
+@pytest.mark.asyncio
+async def test_single_discarder_keeps_the_ordinary_decision_path():
+    engine = _discarding_engine({1: 8})
+    sandbox = CatanSandbox(
+        engine,
+        {color: FirstLegalPlayer(color) for color in COLORS},
+        retry_policy=RetryPolicy(1),
+        communication_policy=NoCommunicationPolicy(),
+    )
+
+    assert sandbox._discard_barrier_contexts() == ()
+    result = await sandbox.step()
+
+    assert result.context.actor == Color.BLUE
+    assert engine.state.current_prompt == ActionPrompt.MOVE_ROBBER
+
+
+@pytest.mark.asyncio
+async def test_discard_barrier_retries_only_the_seat_that_answered_illegally():
+    engine = _discarding_engine({0: 8, 2: 10})
+    calls = {Color.RED: 0, Color.WHITE: 0}
+
+    class CountingDiscarder(FirstLegalPlayer):
+        async def choose(self, context, feedback=None):
+            calls[self.color] += 1
+            count = context.discard_count
+            if self.color == Color.WHITE and calls[self.color] == 1:
+                count -= 1
+            return PlayerAttempt(
+                context.context_id, PlayerChoice(0, discard_cards=("WOOD",) * count),
+            )
+
+    players = {color: FirstLegalPlayer(color) for color in COLORS}
+    players[Color.RED] = CountingDiscarder(Color.RED)
+    players[Color.WHITE] = CountingDiscarder(Color.WHITE)
+    sandbox = CatanSandbox(
+        engine, players, retry_policy=RetryPolicy(2), communication_policy=NoCommunicationPolicy()
+    )
+
+    result = await sandbox.step()
+
+    assert calls == {Color.RED: 1, Color.WHITE: 2}
+    assert len(result.transitions) == 2
+    assert engine.state.player_state["P2_WOOD_IN_HAND"] == 5
+    assert [a.validation_error is not None for a in sandbox.decision_trace].count(True) == 1

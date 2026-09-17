@@ -12,6 +12,14 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
+from cle.game_engine.board_tokens import (
+    _check_range as _check_range,
+    canonical_edge as canonical_edge,
+    edge_token as edge_token,
+    node_token as node_token,
+    port_token as port_token,
+    tile_token as tile_token,
+)
 from cle.game_engine.models.enums import ActionType, RESOURCES, CITY, ROAD, SETTLEMENT
 from cle.game_engine.models.map import (
     BASE_MAP_TEMPLATE,
@@ -69,26 +77,6 @@ class CatanTokenSpec:
     value: Any
 
 
-def node_token(node_id: NodeId) -> str:
-    _check_range("node_id", node_id, NUM_NODES)
-    return f"<N{node_id:02d}>"
-
-
-def tile_token(tile_id: TileId) -> str:
-    _check_range("tile_id", tile_id, NUM_TILES)
-    return f"<T{tile_id:02d}>"
-
-
-def port_token(port_id: PortId) -> str:
-    _check_range("port_id", port_id, 9)
-    return f"<P{port_id:02d}>"
-
-
-def edge_token(edge: EdgeId) -> str:
-    a, b = canonical_edge(edge)
-    return f"<E{a:02d}_{b:02d}>"
-
-
 def resource_token(resource: str | None) -> str:
     return "<DESERT>" if resource is None else f"<{resource}>"
 
@@ -136,15 +124,6 @@ def recognition_answer_tokens() -> List[str]:
 
 def building_token(building_type: str) -> str:
     return f"<{building_type}>"
-
-
-def canonical_edge(edge: EdgeId) -> EdgeId:
-    a, b = edge
-    if a == b:
-        raise ValueError(f"edge endpoints must differ: {edge}")
-    _check_range("edge node", a, NUM_NODES)
-    _check_range("edge node", b, NUM_NODES)
-    return (a, b) if a < b else (b, a)
 
 
 def base_catan_map() -> CatanMap:
@@ -368,8 +347,3 @@ def _coordinate_for_tile(catan_map: CatanMap, target: LandTile | Port) -> Tuple[
         if tile is target:
             return coordinate
     raise ValueError(f"tile not found: {target}")
-
-
-def _check_range(name: str, value: int, size: int) -> None:
-    if value < 0 or value >= size:
-        raise ValueError(f"{name} must be in [0, {size - 1}], got {value}")

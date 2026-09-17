@@ -1,15 +1,51 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import BenchmarkVerifier from './BenchmarkVerifier'
 import DecisionSpotChecks from './DecisionSpotChecks'
 import TextFormatV3 from './TextFormatV3'
 import ReasoningTraces from './ReasoningTraces'
 import SftDataExplorer from './SftDataExplorer'
 import SftEvalResults from './SftEvalResults'
+import BoardFluencyReview from './BoardFluencyReview'
 
-type EvalSuite = 'decisions' | 'board' | 'sft-data' | 'sft-eval' | 'text-v3' | 'reasoning'
+type EvalSuite = 'decisions' | 'board' | 'board-fluency' | 'sft-data' | 'sft-eval' | 'text-v3' | 'reasoning'
+
+function navigationFromUrl(): { suite: EvalSuite; rowId: string } {
+  const params = new URLSearchParams(window.location.search)
+  const tab = params.get('tab')
+  const suite = tab === 'decisions' || tab === 'board' || tab === 'board-fluency'
+    || tab === 'sft-eval' || tab === 'text-v3' || tab === 'reasoning'
+    ? tab : 'sft-data'
+  return { suite, rowId: suite === 'board-fluency' ? params.get('row') || '' : '' }
+}
 
 function App() {
-  const [suite, setSuite] = useState<EvalSuite>('sft-data')
+  const [navigation, setNavigation] = useState(navigationFromUrl)
+  const { suite, rowId } = navigation
+
+  useEffect(() => {
+    const onPopState = () => setNavigation(navigationFromUrl())
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
+
+  const setSuite = (next: EvalSuite) => {
+    if (next === suite) return
+    const url = new URL(window.location.href)
+    url.searchParams.set('tab', next)
+    url.searchParams.delete('row')
+    window.history.pushState(null, '', url)
+    setNavigation({ suite: next, rowId: '' })
+  }
+
+  const selectBoardRow = useCallback((nextRowId: string) => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('tab', 'board-fluency')
+    if (nextRowId) url.searchParams.set('row', nextRowId)
+    else url.searchParams.delete('row')
+    // Row browsing keeps the current URL shareable without flooding Back history.
+    window.history.replaceState(null, '', url)
+    setNavigation((current) => ({ ...current, rowId: nextRowId }))
+  }, [])
 
   return (
     <div className="app">
@@ -33,6 +69,12 @@ function App() {
             onClick={() => setSuite('board')}
           >
             Board Perception
+          </button>
+          <button
+            className={suite === 'board-fluency' ? 'active' : ''}
+            onClick={() => setSuite('board-fluency')}
+          >
+            Board Fluency
           </button>
           <button
             className={suite === 'sft-data' ? 'active' : ''}
@@ -62,6 +104,7 @@ function App() {
       </header>
       {suite === 'decisions' && <DecisionSpotChecks />}
       {suite === 'board' && <BenchmarkVerifier />}
+      {suite === 'board-fluency' && <BoardFluencyReview selectedRowId={rowId} onSelectRow={selectBoardRow} />}
       {suite === 'sft-data' && <SftDataExplorer />}
       {suite === 'sft-eval' && <SftEvalResults />}
       {suite === 'text-v3' && <TextFormatV3 />}
@@ -76,6 +119,9 @@ function suiteSubtitle(suite: EvalSuite) {
   }
   if (suite === 'board') {
     return 'board perception / human verification'
+  }
+  if (suite === 'board-fluency') {
+    return 'symbolic board fluency / exact dataset review'
   }
   if (suite === 'sft-data') {
     return 'training corpora / board and patch inspection'

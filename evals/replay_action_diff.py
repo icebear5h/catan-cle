@@ -29,7 +29,7 @@ from cle.harness.reasoning import (
     reasoning_token_count,
 )
 from cle.harness.suite import load_context_suite
-from cle.players.validation import action_from_choice
+from cle.players.validation import action_from_choice, choice_followup_action
 from cle.sandbox.decision import build_decision_context
 from evals.decision_buckets import (
     classify_decision_records,
@@ -48,7 +48,8 @@ from cle.replay.runtime.step_executor import (
 from playground.game_viewer.state import server_state
 
 SCHEMA_VERSION = "replay-action-diff-v2"
-COMPARISON_PARSER_VERSION = "shared-action-parser-v3"
+COMPARISON_PARSER_VERSION = "contract-aware-action-parser-v4"
+SELECTION_CONTRACT = "validated-player-choice-v1"
 COMPOUND_ACTIONS = {
     "PLAY_MONOPOLY": "MONOPOLY_RESOURCE",
     "PLAY_YEAR_OF_PLENTY": "YEAR_OF_PLENTY_RESOURCES",
@@ -849,35 +850,74 @@ def _parse_shared_action_index(
 
 
 def normalize_response_selection(row: Dict[str, Any]) -> Dict[str, Any]:
-    """Reparse immutable raw output with the current comparison parser."""
+    """Preserve player-parser receipts; reparse only historical indexed output."""
     normalized = deepcopy(row)
     normalized["comparison_parser_version"] = COMPARISON_PARSER_VERSION
     if normalized.get("error") or not normalized.get("result"):
         return normalized
 
     result = normalized["result"]
-    if "raw_response" not in result:
-        return normalized
     available_actions = result.get("available_actions") or []
-    action_index, parse_error = _parse_shared_action_index(
-        str(result.get("raw_response") or ""),
-        len(available_actions),
+    # Unmarked shared-harness receipts through v10 used indexed XML.
+    historical_indexed = (
+        "selection_contract" not in result
+        and (
+            result.get("context_version") in (None, "replay-decision-v2")
+            or re.fullmatch(
+                r"catan-agent@(?:[1-9]|10)\.[0-9]+\.[0-9]+",
+                str(result.get("context_version") or ""),
+            ) is not None
+        )
     )
-    selected = (
-        available_actions[action_index]
-        if isinstance(action_index, int) and 0 <= action_index < len(available_actions)
-        else None
-    )
-    result.update(
-        {
-            "action_index": action_index,
-            "action": selected.get("action") if selected else None,
-            "action_description": selected.get("description") if selected else None,
-            "parse_error": parse_error,
-        }
-    )
+    if historical_indexed:
+        if "raw_response" not in result:
+            return normalized
+        action_index, parse_error = _parse_shared_action_index(
+            str(result.get("raw_response") or ""),
+            len(available_actions),
+        )
+        selected = available_actions[action_index] if action_index is not None else None
+        result.update(
+            {
+                "action_index": action_index,
+                "action": selected.get("action") if selected else None,
+                "action_description": selected.get("description") if selected else None,
+                "parse_error": parse_error,
+            }
+        )
+    else:
+        # Semantic calls require the original context to parse. Their stored
+        # PlayerChoice, not numbers embedded in model text, is authoritative.
+        action_index = result.get("action_index")
+        if (
+            result.get("selection_contract") != SELECTION_CONTRACT
+            or "parse_error" not in result
+            or result["parse_error"] is not None
+            or type(action_index) is not int
+            or not 0 <= action_index < len(available_actions)
+            or not result.get("action")
+        ):
+            action_index = None
+            result.update(
+                {
+                    "action_index": None,
+                    "action": None,
+                    "action_description": None,
+                    "requested_action_sequence": [],
+                    "knight_destination": None,
+                    "parse_error": result.get("parse_error")
+                    or "Stored player selection is not a validated action in the call menu",
+                }
+            )
     normalized["model_action_index"] = action_index
-    normalized["agreement"] = action_index == normalized.get("human_action_index")
+    normalized["agreement"] = (
+        action_index is not None and action_index == normalized.get("human_action_index")
+    )
+    has_followup = result.get("knight_destination") is not None
+    normalized["agreement_scope"] = "primary_action"
+    normalized["agreement_is_coarse"] = has_followup
+    normalized["followup_scoring"] = "unscored" if has_followup else "not_requested"
+    normalized["followup_agreement"] = None
     return normalized
 
 
@@ -984,12 +1024,17 @@ def _query_model(
         }
         for index, action in enumerate(context.legal_actions)
     ]
-    action_index = choice.action_index if choice is not None else None
     selected = (
         action_from_choice(context, choice)
         if choice is not None and attempt.validation_error is None
         else None
     )
+    action_index = choice.action_index if selected is not None else None
+    requested_actions = [] if selected is None else [selected]
+    if selected is not None:
+        followup = choice_followup_action(context, choice)
+        if followup is not None:
+            requested_actions.append(followup)
     native_returned = native_reasoning_returned(
         response.native_reasoning,
         response.native_reasoning_details,
@@ -998,12 +1043,24 @@ def _query_model(
     messages = attempt.model_request.messages if attempt.model_request is not None else ()
     return {
         "context_version": f"{suite.id}@{suite.version}",
+        "selection_contract": SELECTION_CONTRACT,
+        "response_format": suite.response.format,
+        "context_suite_sha256": hashlib.sha256(suite.model_dump_json().encode("utf-8")).hexdigest(),
         "game_plan": choice.game_plan if choice is not None else "",
         "action_index": action_index,
         "action": str(selected) if selected is not None else None,
+        "requested_action_sequence": [str(action) for action in requested_actions],
+        "knight_destination": (
+            list(choice.knight_destination)
+            if selected is not None and choice.knight_destination is not None
+            else None
+        ),
         "action_description": (
-            formatter._format_single_action(selected, context.observation)
-            if selected is not None
+            "; then ".join(
+                formatter._format_single_action(action, context.observation)
+                for action in requested_actions
+            )
+            if requested_actions
             else None
         ),
         "parse_error": attempt.validation_error,
@@ -1122,7 +1179,7 @@ def query_replay(
                             try:
                                 result = future.result()
                                 model_action_index = result.get("action_index")
-                                row = {
+                                row = normalize_response_selection({
                                     "schema_version": SCHEMA_VERSION,
                                     "recorded_at": utc_now(),
                                     "decision_id": record["decision_id"],
@@ -1135,7 +1192,7 @@ def query_replay(
                                     == record["human"]["action_index"],
                                     "error": None,
                                     "result": result,
-                                }
+                                })
                             except Exception as exc:
                                 row = {
                                     "schema_version": SCHEMA_VERSION,
@@ -1246,6 +1303,12 @@ def build_comparisons(
                 "action": selected.get("action") if selected else None,
                 "description": selected.get("description") if selected else None,
                 "agreement": agreement,
+                "agreement_scope": "primary_action",
+                "agreement_is_coarse": bool(response and response.get("agreement_is_coarse")),
+                "followup_scoring": response.get("followup_scoring") if response else None,
+                "followup_agreement": None,
+                "knight_destination": result.get("knight_destination") if result else None,
+                "requested_action_sequence": result.get("requested_action_sequence") if result else None,
             }
 
         if human_candidates:
@@ -1388,6 +1451,9 @@ def summarize_run(
             "api_errors": api_errors,
             "parse_errors": parse_errors,
             "agreements": agreements,
+            "unscored_followups": sum(
+                row.get("followup_scoring") == "unscored" for row in valid_rows
+            ),
             "agreement_rate_valid": _percent(agreements, len(valid_rows)),
             "strict_agreement_rate": _percent(agreements, eligible),
             "forced": subset_stats(forced_items),
@@ -1449,6 +1515,7 @@ def summarize_run(
                     same_alternative += 1
         model_pair = {
             "models": [left, right],
+            "selection_scope": "primary_action",
             "both_valid": both_valid,
             "same_selection": same_selection,
             "same_selection_rate": _percent(same_selection, both_valid),
@@ -1462,6 +1529,7 @@ def summarize_run(
     return {
         "schema_version": SCHEMA_VERSION,
         "comparison_parser_version": COMPARISON_PARSER_VERSION,
+        "agreement_scope": "primary_action",
         "generated_at": utc_now(),
         "game_id": scan["game_id"],
         "target_player_id": scan["target_player_id"],
@@ -1508,6 +1576,7 @@ def render_report(
         ),
         "Policy calls: stateless; model actions were never executed",
         "Replay stepping: `allow_lookahead=False`",
+        "Agreement scope: primary action only; Knight destinations/follow-ups are unscored (coarse).",
         "",
         "## Decision coverage",
         "",

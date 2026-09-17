@@ -1,0 +1,115 @@
+.board-fluency .board-fluency-note {
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  margin-top: 0.6rem;
+}
+
+.board-fluency .board-fluency-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem 1.2rem;
+  margin-top: 0.8rem;
+}
+
+.board-fluency a {
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+}
+
+.board-fluency .sft-controls {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.2fr) auto;
+}
+
+.board-fluency .sft-select-wrap select {
+  text-transform: none;
+}
+
+.board-fluency .sft-row-list {
+  max-height: 70vh;
+}
+
+.board-fluency .sft-row-list > button {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.board-fluency .sft-detail-topline > div:first-child > code {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  overflow-wrap: anywhere;
+}
+
+.board-fluency .sft-example-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+}
+
+.board-fluency .sft-conversation > header code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.board-fluency pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono);
+}
+
+.board-fluency .sft-message pre {
+  color: var(--text);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-top: 0.55rem;
+}
+
+.board-fluency .sft-message.assistant pre {
+  color: var(--cyan);
+  font-size: 1.1rem;
+}
+
+.board-fluency .board-fluency-board {
+  min-width: 0;
+}
+
+.board-fluency .board-fluency-board figcaption {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0 0 0.7rem;
+  overflow-wrap: anywhere;
+}
+
+.board-fluency .board-frame {
+  min-height: 0;
+}
+
+.board-fluency .board-fluency-disclosure,
+.board-fluency .bench-loading,
+.board-fluency .sft-error .sft-reset {
+  margin-top: 1rem;
+}
+
+.board-fluency .board-fluency-disclosure summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
+.board-fluency .board-fluency-disclosure pre {
+  margin-top: 0.8rem;
+}
+
+@media (max-width: 1180px) {
+  .board-fluency .sft-example-grid { grid-template-columns: minmax(0, 1fr); }
+  .board-fluency .sft-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 820px) {
+  .board-fluency .sft-row-list { max-height: 16rem; }
+}
+
+@media (max-width: 600px) {
+  .board-fluency .sft-controls { grid-template-columns: minmax(0, 1fr); }
+}

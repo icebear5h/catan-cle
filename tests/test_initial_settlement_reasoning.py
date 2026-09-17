@@ -14,6 +14,9 @@ from scripts.eval_catan_initial_settlement_reasoning import (
 from cle.harness.suite import load_context_suite
 
 
+ROOT = Path(__file__).resolve().parents[1]
+
+
 def test_fresh_initial_settlement_input_is_deterministic_and_history_free():
     first = build_seed_input(117)
     second = build_seed_input(117)
@@ -39,9 +42,9 @@ def test_fresh_initial_settlement_input_is_deterministic_and_history_free():
 
 
 def test_strategy_variant_changes_only_the_prompt_contract():
-    variant_path = Path("evals/suites/catan_initial_settlement_strategy_v2.json")
+    variant_path = ROOT / "evals/suites/catan_initial_settlement_strategy_v2.json"
     base_suite = load_context_suite(
-        Path("cle/harness/suites/catan_v8.yaml")
+        ROOT / "cle/harness/suites/catan_v8.yaml"
     )
     guided_suite, variant = load_prompt_variant(variant_path, base_suite)
     baseline = build_seed_input(117, suite=base_suite)
@@ -64,20 +67,36 @@ def test_strategy_variant_changes_only_the_prompt_contract():
     assert guided.manifest["context_suite"].startswith("catan-agent@8.0.0+")
     guided_prompt = guided.manifest["messages"][-1]["content"]
     assert "Maximizing raw pip count is not the objective" in guided_prompt
-    assert "nominal diversity without buildable combinations can be weak" in (
+    assert "opening archetype" in (
         guided_prompt
     )
     assert "Maximizing raw pip count is not the objective" not in (
         baseline.manifest["messages"][-1]["content"]
     )
 
-    active_live_default = build_seed_input(117)
-    assert active_live_default.suite.version == "9.0.0"
-    assert active_live_default.manifest["messages"] == guided.manifest["messages"]
-    assert active_live_default.manifest["board_presentation"] == (
+    historical_v9 = build_seed_input(
+        117, suite=load_context_suite(ROOT / "cle/harness/suites/catan_v9.yaml")
+    )
+    assert historical_v9.manifest["messages"] != guided.manifest["messages"]
+
+    current_default = build_seed_input(117)
+    assert current_default.suite.version == "11.0.0"
+    assert current_default.suite.response.format == "json"
+    assert current_default.suite.response.tags == ("game_plan", "tool", "arguments")
+    assert current_default.suite.phase_guidance["initial_settlement_1"] == (
+        guided_suite.phase_guidance["initial_settlement_1"]
+    )
+    current_prompt = current_default.manifest["messages"][-1]["content"]
+    assert '"tool"' in current_prompt
+    assert '"arguments"' in current_prompt
+    assert "<N00>" in current_prompt
+    assert "action_index" not in current_prompt
+    assert "<action>" not in current_prompt
+    assert current_default.manifest["messages"] != guided.manifest["messages"]
+    assert current_default.manifest["board_presentation"] == (
         guided.manifest["board_presentation"]
     )
-    assert active_live_default.manifest["legal_actions_sha256"] == (
+    assert current_default.manifest["legal_actions_sha256"] == (
         guided.manifest["legal_actions_sha256"]
     )
 
@@ -142,10 +161,10 @@ async def test_capture_trace_omits_max_tokens_and_separates_native_reasoning():
 
     client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
     base_suite = load_context_suite(
-        Path("cle/harness/suites/catan_v8.yaml")
+        ROOT / "cle/harness/suites/catan_v8.yaml"
     )
     guided_suite, variant = load_prompt_variant(
-        Path("evals/suites/catan_initial_settlement_strategy_v2.json"),
+        ROOT / "evals/suites/catan_initial_settlement_strategy_v2.json",
         base_suite,
     )
     trace = await capture_trace(

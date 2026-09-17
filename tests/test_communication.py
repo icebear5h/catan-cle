@@ -42,7 +42,7 @@ def test_default_communication_suite_separates_role_from_policy():
     request = build_communication_request(context, "session:BLUE", suite)
     system, user = request.messages
 
-    assert suite.version == 5
+    assert suite.version == 5  # legacy default: communication_v5.yaml
     assert system.content == (
         "You are playing a game of Catan. You are playing as BLUE."
     )
@@ -104,7 +104,8 @@ def test_component_communication_suite_rejects_invalid_structure_and_strings():
         CommunicationSuite.model_validate(oversized)
 
 
-def test_communication_parser_drops_social_comments_but_keeps_trade_messages():
+def test_communication_parser_ignores_intent_labels_and_keeps_text():
+    """The legacy XML contract asked for an intent tag; it is no longer read or policed."""
     social = parse_communication_response(
         ModelResponse(
             content=(
@@ -128,11 +129,12 @@ def test_communication_parser_drops_social_comments_but_keeps_trade_messages():
         participants=COLORS,
     )
 
-    assert social.mode == CommunicationMode.SILENCE
+    assert social.mode == CommunicationMode.SAY
+    assert social.text == "Nice settlement!"
+    assert social.audience == COLORS[1:]
     assert trade.mode == CommunicationMode.SAY
     assert trade.text == "I can give WOOD for ORE."
     assert trade.audience == (Color.BLUE,)
-    assert trade.intent == "TRADE"
 
 
 @pytest.mark.parametrize(
@@ -243,7 +245,6 @@ def test_communication_parser_preserves_valid_audiences(audience, expected):
 
 @pytest.mark.parametrize("text", [
     "<!-- <message>Trade WOOD for ORE?</message><intent>TRADE</intent> -->",
-    "<message>Trade WOOD for ORE?</message><!-- <intent>TRADE</intent> -->",
     "<message>Trade WOOD for ORE?</message><intent>TRADE</intent><intent>TRADE</intent>",
     "<message>Trade WOOD for ORE?</message><message>SILENCE</message><intent>TRADE</intent>",
     '<message kind="private">Trade WOOD for ORE?</message><intent>TRADE</intent>',
@@ -314,7 +315,6 @@ def test_communication_rendering_preserves_template_syntax_in_message_data():
         speaker=Color.RED,
         text=text,
         audience=(Color.BLUE,),
-        intent="TRADE",
         causation_id="literal-template-data",
         commitment=("If {{ wood }} is available", "Offer {{ ore }}", 3),
     )
@@ -351,7 +351,6 @@ class TalkPlayer(FirstLegalPlayer):
             mode=CommunicationMode.SAY,
             text=self.messages.pop(0),
             audience=self.audiences,
-            intent="COMMENT",
             commitment=self.commitment,
         )
 
@@ -412,7 +411,6 @@ def test_message_events_do_not_retrigger_communication_opportunities():
         speaker=Color.BLUE,
         text="I can trade WOOD for ORE.",
         audience=(Color.RED,),
-        intent="TRADE",
         causation_id="test",
     )
 
@@ -432,7 +430,6 @@ async def test_private_message_projects_only_to_speaker_and_audience():
         speaker=Color.BLUE,
         text="Private offer",
         audience=(Color.RED,),
-        intent="TRADE",
         causation_id="test",
     )
 
@@ -449,7 +446,6 @@ async def test_commitment_is_pinned_exactly_and_expires_on_engine_step():
         speaker=Color.BLUE,
         text="Do not rob me and I will trade later.",
         audience=(Color.RED,),
-        intent="BRIBE",
         causation_id="robber:1",
         commitment=("RED does not rob BLUE", "BLUE offers ORE", 0),
     )
@@ -476,7 +472,6 @@ def test_debug_undo_restores_commitment_status_with_engine_state():
         speaker=Color.BLUE,
         text="Promise",
         audience=(Color.RED,),
-        intent="BRIBE",
         causation_id="test",
         commitment=("condition", "promise", 0),
     )
@@ -496,7 +491,6 @@ def test_message_window_is_bounded_but_game_events_are_complete():
             speaker=Color.RED,
             text=f"message-{index}",
             audience=COLORS[1:],
-            intent="COMMENT",
             causation_id=f"message:{index}",
         )
     engine.step(engine.state.playable_actions[0])

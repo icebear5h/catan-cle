@@ -14,6 +14,7 @@ from cle.game_engine.communication import CommitmentStatus
 from cle.game_engine.models.enums import Action, ActionType
 from cle.game_engine.models.player import Color
 from cle.harness import ContextAssembler, ModelResponse
+from cle.harness.suite import load_context_suite
 from cle.players.agent import AgentPlayer
 from cle.players.baseline import FirstLegalPlayer
 from cle.players.contracts import CommunicationChoice, CommunicationMode
@@ -170,7 +171,7 @@ def test_replay_checkpoint_is_reusable_and_restores_private_events_and_commitmen
     engine = sandbox.game_engine
     engine.append_message(
         speaker=Color.RED, text="private promise", audience=(Color.BLUE,),
-        intent="TRADE", causation_id="initial-promise",
+        causation_id="initial-promise",
         commitment=("offer wood", "return brick", 1),
     )
     checkpoint = ReplayStepCheckpoint.capture(runtime)
@@ -182,7 +183,7 @@ def test_replay_checkpoint_is_reusable_and_restores_private_events_and_commitmen
         engine.commitments[0].status = CommitmentStatus.EXPIRED
         engine.append_message(
             speaker=Color.BLUE, text="future promise", audience=(Color.RED,),
-            intent="TRADE", causation_id="future-promise",
+            causation_id="future-promise",
             commitment=("offer brick", "return wood", 3),
         )
         checkpoint.restore(runtime)
@@ -219,7 +220,7 @@ def test_failed_replay_step_rolls_back_events_rng_commitments_and_metadata(
         engine.rng.random()
         engine.append_message(
             speaker=Color.RED, text="must disappear", audience=COLORS,
-            intent="TRADE", causation_id="failed-action",
+            causation_id="failed-action",
             commitment=("offer wood", "return brick", 2),
         )
         state.replay_trade_ledger["prior"]["responses"].clear()
@@ -284,7 +285,7 @@ def test_branch_event_mutation_cannot_contaminate_engine_or_snapshot():
     engine = GameEngine(COLORS, seed=4, shuffle_players=False)
     engine.append_message(
         speaker=Color.RED, text="original", audience=COLORS,
-        intent="TRADE", causation_id="audit",
+        causation_id="audit",
     )
     snapshot = engine.snapshot()
     branch = engine.copy()
@@ -307,7 +308,7 @@ class TradeSpeaker(FirstLegalPlayer):
     async def communicate(self, context):
         return CommunicationChoice(
             mode=CommunicationMode.SAY, text="I can offer WOOD.",
-            audience=(Color.RED,), intent="TRADE",
+            audience=(Color.RED,),
         )
 
 
@@ -417,14 +418,19 @@ def test_pickled_snapshot_reproduces_stochastic_continuation():
 class OpeningTransport:
     async def complete(self, request):
         return ModelResponse(
-            content="<game_plan>expand toward wheat</game_plan><action>0</action>",
+            content=(
+                '{"game_plan":"expand toward wheat","tool":"build_settlement",'
+                '"arguments":{"node":"<N00>"}}'
+            ),
             model="test/model",
         )
 
 
 def test_fresh_player_reconstructs_identical_session_and_next_request():
     engine = GameEngine(COLORS, seed=7, shuffle_players=False)
-    red = AgentPlayer(Color.RED, OpeningTransport(), session_id=f"{engine.id}:RED")
+    red = AgentPlayer(
+        Color.RED, OpeningTransport(), session_id=f"{engine.id}:RED", suite=load_context_suite(),
+    )
     players = {color: FirstLegalPlayer(color) for color in COLORS}
     players[Color.RED] = red
     sandbox = CatanSandbox(engine, players)

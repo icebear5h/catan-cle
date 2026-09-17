@@ -10,18 +10,20 @@ from dataclasses import dataclass
 from hashlib import sha256
 from pathlib import Path
 from threading import RLock
-from typing import Iterator
+from typing import Iterator, Literal
 
 from cle.harness.communication import (
     default_communication_suite_path,
     parse_communication_suite,
 )
 from cle.harness.suite import default_suite_path, parse_context_suite
+from cle.harness.shared_suite import default_shared_suite_path, parse_shared_prompt_suite
 
 
 DEFAULT_PROMPT_SUITE_DIR = Path(".cle/prompt_suites")
 _DECISION_FILENAME = "decision.yaml"
 _COMMUNICATION_FILENAME = "communication.yaml"
+_SHARED_FILENAME = "shared.yaml"
 _LOCK_FILENAME = ".prompt-suites.lock"
 _PROCESS_LOCK = RLock()
 
@@ -35,6 +37,7 @@ class PromptSuiteDocument:
     kind: str
     id: str
     version: str
+    status: str
     sha256: str
     source: str
     overridden: bool
@@ -42,8 +45,9 @@ class PromptSuiteDocument:
 
 @dataclass(frozen=True, slots=True)
 class ActivePromptSuites:
-    decision: PromptSuiteDocument
-    communication: PromptSuiteDocument
+    decision: PromptSuiteDocument | None = None
+    communication: PromptSuiteDocument | None = None
+    shared: PromptSuiteDocument | None = None
 
 
 def prompt_suite_directory() -> Path:
@@ -54,9 +58,107 @@ def prompt_suite_directory() -> Path:
 def load_active_prompt_suites(
     directory: str | Path | None = None,
 ) -> ActivePromptSuites:
+    """Historical pair API. New consumers must use resolve_prompt_suites()."""
     target = _directory(directory)
     with _store_lock(target):
         return _load_active_unlocked(target)
+
+
+def resolve_prompt_suites(
+    *,
+    shared_path: str | Path | None = None,
+    decision_path: str | Path | None = None,
+    communication_path: str | Path | None = None,
+    directory: str | Path | None = None,
+    legacy: bool = False,
+    use_environment: bool = True,
+) -> ActivePromptSuites:
+    """Resolve one source snapshot, never independent shared references.
+
+    Explicit legacy selection fills missing members from the historical local
+    pair/built-ins. A persisted pair remains legacy until explicitly reset.
+    """
+    if use_environment:
+        shared_path = shared_path or os.getenv("CATAN_SHARED_SUITE") or None
+        decision_path = decision_path or os.getenv("CATAN_CONTEXT_SUITE") or None
+        communication_path = communication_path or os.getenv("CATAN_COMMUNICATION_SUITE") or None
+    if shared_path is not None and (legacy or decision_path or communication_path):
+        raise ValueError("Conflicting shared and legacy prompt suite sources")
+    target = _directory(directory)
+    with _store_lock(target):
+        if shared_path is not None:
+            return validate_shared_prompt_source(
+                Path(shared_path).read_text(encoding="utf-8"), overridden=False,
+            )
+        if legacy or decision_path is not None or communication_path is not None:
+            return _load_active_unlocked(target, decision_path, communication_path)
+        return _resolve_active_unlocked(target)
+
+
+def _resolve_active_unlocked(directory: Path) -> ActivePromptSuites:
+    shared_path = directory / _SHARED_FILENAME
+    has_pair = any((directory / name).exists() for name in (
+        _DECISION_FILENAME, _COMMUNICATION_FILENAME,
+    ))
+    if has_pair:
+        if shared_path.exists():
+            raise ValueError("Conflicting shared and legacy local prompt suite overrides")
+        return _load_active_unlocked(directory)
+    overridden = shared_path.exists()
+    source = (shared_path if overridden else default_shared_suite_path()).read_text(
+        encoding="utf-8",
+    )
+    return validate_shared_prompt_source(source, overridden=overridden)
+
+
+def validate_shared_prompt_source(
+    source: str, *, overridden: bool = True,
+) -> ActivePromptSuites:
+    suite = parse_shared_prompt_suite(source)
+    # Validate the actual runtime contracts before admitting the authored bundle.
+    suite.decision_suite()
+    suite.communication_suite()
+    return ActivePromptSuites(shared=PromptSuiteDocument(
+        kind="shared", id=suite.id, version=str(suite.version), status=suite.status,
+        sha256=_digest(source),
+        source=source, overridden=overridden,
+    ))
+
+
+def save_shared_prompt_override(
+    *,
+    source: str,
+    expected_sha256: str,
+    directory: str | Path | None = None,
+) -> ActivePromptSuites:
+    validated = validate_shared_prompt_source(source)
+    target = _directory(directory)
+    with _store_lock(target):
+        _check_shared_hash(_resolve_active_unlocked(target), expected_sha256)
+        temporary = _write_temp(target, source)
+        try:
+            os.replace(temporary, target / _SHARED_FILENAME)
+        finally:
+            temporary.unlink(missing_ok=True)
+    return validated
+
+
+def reset_shared_prompt_override(
+    *, expected_sha256: str, directory: str | Path | None = None,
+) -> ActivePromptSuites:
+    target = _directory(directory)
+    with _store_lock(target):
+        _check_shared_hash(_resolve_active_unlocked(target), expected_sha256)
+        replacement = validate_shared_prompt_source(
+            default_shared_suite_path().read_text(encoding="utf-8"), overridden=False,
+        )
+        (target / _SHARED_FILENAME).unlink(missing_ok=True)
+        return replacement
+
+
+def _check_shared_hash(current: ActivePromptSuites, expected: str) -> None:
+    if current.shared is None or current.shared.sha256 != expected:
+        raise PromptSuiteConflictError("Active prompt suites changed; refresh before saving")
 
 
 def validate_prompt_suite_sources(
@@ -87,6 +189,8 @@ def save_prompt_suite_overrides(
     )
     target = _directory(directory)
     with _store_lock(target):
+        if (target / _SHARED_FILENAME).exists():
+            raise PromptSuiteConflictError("A shared override is active; refresh before saving")
         current = _load_active_unlocked(target)
         _check_expected_hashes(
             current,
@@ -107,39 +211,51 @@ def reset_prompt_suite_overrides(
     expected_decision_sha256: str,
     expected_communication_sha256: str,
     directory: str | Path | None = None,
+    shared_default: bool = False,
 ) -> ActivePromptSuites:
-    """Atomically remove local overrides and return immutable built-ins."""
+    """Validate the replacement before removing a pair in one store transaction.
+
+    Historical callers retain pair defaults; Studio explicitly selects the shared default.
+    """
     target = _directory(directory)
     with _store_lock(target):
+        if (target / _SHARED_FILENAME).exists():
+            raise PromptSuiteConflictError("A shared override is active; refresh before resetting")
         current = _load_active_unlocked(target)
         _check_expected_hashes(
             current,
             expected_decision_sha256,
             expected_communication_sha256,
         )
+        replacement = (
+            validate_shared_prompt_source(
+                default_shared_suite_path().read_text(encoding="utf-8"), overridden=False,
+            )
+            if shared_default else _load_active_unlocked(
+                target, default_suite_path(), default_communication_suite_path(),
+            )
+        )
         _remove_pair(
             target / _DECISION_FILENAME,
             target / _COMMUNICATION_FILENAME,
         )
-        return _load_active_unlocked(target)
+        return replacement
 
 
 def resolve_decision_suite_document(
     explicit_path: str | Path | None = None,
 ) -> PromptSuiteDocument:
-    if explicit_path is not None:
-        source = Path(explicit_path).read_text(encoding="utf-8")
-        return _decision_document(source, overridden=False)
-    return load_active_prompt_suites().decision
+    target = _directory(None)
+    with _store_lock(target):
+        return _load_legacy_document(target, "decision", explicit_path)
 
 
 def resolve_communication_suite_document(
     explicit_path: str | Path | None = None,
 ) -> PromptSuiteDocument:
-    if explicit_path is not None:
-        source = Path(explicit_path).read_text(encoding="utf-8")
-        return _communication_document(source, overridden=False)
-    return load_active_prompt_suites().communication
+    target = _directory(None)
+    with _store_lock(target):
+        return _load_legacy_document(target, "communication", explicit_path)
 
 
 def _directory(directory: str | Path | None) -> Path:
@@ -162,28 +278,32 @@ def _store_lock(directory: Path) -> Iterator[None]:
                 fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
 
 
-def _load_active_unlocked(directory: Path) -> ActivePromptSuites:
-    decision_path = directory / _DECISION_FILENAME
-    communication_path = directory / _COMMUNICATION_FILENAME
-    decision_override = decision_path.exists()
-    communication_override = communication_path.exists()
-    decision_source = (
-        decision_path.read_text(encoding="utf-8")
-        if decision_override
-        else default_suite_path().read_text(encoding="utf-8")
-    )
-    communication_source = (
-        communication_path.read_text(encoding="utf-8")
-        if communication_override
-        else default_communication_suite_path().read_text(encoding="utf-8")
-    )
+def _load_active_unlocked(
+    directory: Path,
+    decision_path: str | Path | None = None,
+    communication_path: str | Path | None = None,
+) -> ActivePromptSuites:
     return ActivePromptSuites(
-        decision=_decision_document(decision_source, decision_override),
-        communication=_communication_document(
-            communication_source,
-            communication_override,
-        ),
+        decision=_load_legacy_document(directory, "decision", decision_path),
+        communication=_load_legacy_document(directory, "communication", communication_path),
     )
+
+
+def _load_legacy_document(
+    directory: Path,
+    kind: Literal["decision", "communication"],
+    explicit_path: str | Path | None,
+) -> PromptSuiteDocument:
+    filename = _DECISION_FILENAME if kind == "decision" else _COMMUNICATION_FILENAME
+    overridden = explicit_path is None and (directory / filename).exists()
+    if explicit_path is not None:
+        path = Path(explicit_path)
+    elif overridden:
+        path = directory / filename
+    else:
+        path = default_suite_path() if kind == "decision" else default_communication_suite_path()
+    document = _decision_document if kind == "decision" else _communication_document
+    return document(path.read_text(encoding="utf-8"), overridden)
 
 
 def _decision_document(source: str, overridden: bool) -> PromptSuiteDocument:
@@ -194,6 +314,7 @@ def _decision_document(source: str, overridden: bool) -> PromptSuiteDocument:
         kind="decision",
         id=suite.id,
         version=str(suite.version),
+        status=suite.status,
         sha256=_digest(source),
         source=source,
         overridden=overridden,
@@ -211,6 +332,7 @@ def _communication_document(
         kind="communication",
         id=suite.id,
         version=str(suite.version),
+        status=suite.status,
         sha256=_digest(source),
         source=source,
         overridden=overridden,

@@ -68,7 +68,6 @@ def _message(engine, **changes):
         "speaker": Color.RED,
         "text": "Leave the robber elsewhere and I will offer ORE.",
         "audience": (Color.BLUE,),
-        "intent": "BRIBE",
         "causation_id": "talk:boundary",
         "commitment": ("Leave the robber elsewhere", "Offer ORE", 2),
     }
@@ -463,7 +462,6 @@ def test_invalid_direct_commitment_never_appends_a_partial_message(engine, commi
         {"audience": ("BLUE",)},
         {"audience": ([],)},
         {"audience": (Color.BLACK,)},
-        {"intent": 3},
         {"causation_id": None},
         {"causation_id": ""},
     ],

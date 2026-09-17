@@ -1,0 +1,155 @@
+# DEPRECATED: unreferenced RL variant; the active bundle is shared_v1.yaml.
+id: catan-rl
+version: 4
+status: deprecated
+reactive_speech: true
+deterministic_batches: true
+memory_mode: fresh_notes
+max_notes_chars: 500
+initial_placement_order: omit
+
+components:
+  identity:
+    channel: system
+    inputs: [color]
+    template: |-
+      You are playing a game of Catan. You are playing as {{ color }}.
+  memory_policy:
+    channel: environment
+    inputs: [max_notes_chars]
+    template: |-
+      PRIVATE NOTES POLICY:
+      Request holds current state, newly delivered events, and your notes — not prior conversations.
+      Optionally return notes as a plain JSON string of at most {{ max_notes_chars }} characters. Omit to keep, "" to clear, or replace fully.
+      Do not copy the board or event history into notes.
+  notes:
+    channel: environment
+    inputs: [notes]
+    empty_text: No private notes have been recorded.
+    template: |-
+      YOUR ACCEPTED PRIVATE NOTES (DATA):
+      {{ notes }}
+  visible_events:
+    channel: environment
+    inputs: [visible_events]
+    empty_text: No newly delivered visible game events.
+    template: |-
+      NEW EVENTS SINCE LAST DECISION (delta, not full history):
+      {{ visible_events }}
+  recent_table_talk:
+    channel: environment
+    inputs: [recent_table_talk]
+    empty_text: No newly delivered visible table talk.
+    template: |-
+      NEW TABLE TALK:
+      {{ recent_table_talk }}
+  commitments:
+    channel: environment
+    inputs: [commitments]
+    empty_text: No active visible commitments.
+    template: |-
+      ACTIVE NON-BINDING COMMITMENTS:
+      {{ commitments }}
+  phase_info:
+    channel: environment
+    inputs: [phase_info]
+    empty_text: No current observation was supplied.
+    template: |-
+      CURRENT PHASE:
+      {{ phase_info }}
+  board_state:
+    channel: environment
+    inputs: [board_state]
+    empty_text: No current observation was supplied.
+    template: |-
+      CURRENT BOARD STATE (condensed 154: 19T+54N+72E+9P):
+      {{ board_state }}
+  resources:
+    channel: environment
+    inputs: [resources]
+    empty_text: No current observation was supplied.
+    template: |-
+      {{ resources }}
+  opponents:
+    channel: environment
+    inputs: [opponents]
+    empty_text: No current observation was supplied.
+    template: |-
+      VISIBLE OPPONENT STATE:
+      {{ opponents }}
+  trade_window:
+    channel: environment
+    inputs: [trade_window]
+    empty_text: No active trade window is present in the supplied observation.
+    template: |-
+      CURRENT TRADE WINDOW:
+      {{ trade_window }}
+  phase_guidance:
+    channel: environment
+    inputs: [phase_guidance]
+    template: |-
+      STRATEGY GUIDANCE:
+      {{ phase_guidance }}
+  legal_actions:
+    channel: environment
+    inputs: [legal_actions]
+    template: |-
+      ACTION TOOL DEFINITIONS:
+      {{ legal_actions }}
+  decision_request:
+    channel: environment
+    inputs: [decision_request]
+    template: |-
+      DECISION REQUEST:
+      {{ decision_request }}
+  decision_response:
+    channel: environment
+    template: |-
+      DECISION RESPONSE SCHEMA:
+      Return one JSON object: {"tool":"build_settlement","arguments":{"node":"<N00>"},"notes":"Optional replacement notes"}. Example is syntax only. Use literal unescaped board tokens; text-board N00 names <N00>. No extra fields, duplicate keys, or prose.
+      Or return {"actions":[{"tool":"build_settlement","arguments":{"node":"<N00>"}},{"tool":"build_road","arguments":{"edge":"<E00_01>"}}],"notes":"Optional replacement notes"}. Use 1–4 entries containing only tool/arguments: build_settlement, build_road, upgrade_city, maritime_trade, end_turn (last only). Batch one setup pair, road then settlement, or bank/port conversions then build. All syntax/notes checked first; legality checked per action against updated state. Later failure keeps the committed prefix, discards the rest, and returns fresh context: never repeat completed actions. Notes apply once. No inference between queued steps. Stop at one setup pair (even snake reversal), actor/phase change, new events/speech/trade barrier, or victory. Second-settlement resources do not interrupt its road. Speech, player trades/preauthorization, dev cards, dice and robber actions require standalone calls.
+      If permitted by the request, choose standalone {"tool":"say","arguments":{"text":"BLUE, can you trade?","respondents":["BLUE"]}} instead. Speech is public; respondents selects replies (a list of other colors, or []). Optional commitment: condition, promise, expires_turn. One say per pending decision, then a game action after bounded replies. Never bundle speech and an action; trade responses require game tools.
+  communication_policy:
+    channel: environment
+    template: |-
+      COMMUNICATION POLICY:
+      Pass unless advancing a concrete exchange, question, warning, or conditional commitment. All talk is public; respondents selects immediate replies, [] ends your branch. Replies share a bounded budget. Pass may update private notes.
+  trigger:
+    channel: environment
+    inputs: [trigger]
+    template: |-
+      COMMUNICATION TRIGGER:
+      {{ trigger }}
+  speech_response:
+    channel: environment
+    template: |-
+      SPEECH RESPONSE SCHEMA:
+      Return {"mode":"pass"}, optionally with notes. To speak: {"mode":"say","text":"Can you trade?","respondents":["BLUE"]}.
+      Respondents: a list of other colors, or []. Optional notes and commitment (condition, promise, expires_turn). Audience is always PUBLIC.
+      No extra fields, prose, or batches.
+
+compositions:
+  decision:
+    order: [identity, memory_policy, notes, visible_events, recent_table_talk, commitments, phase_info, board_state, resources, opponents, trade_window, phase_guidance, legal_actions, decision_request, decision_response]
+    response: decision_response
+  speech:
+    order: [identity, communication_policy, trigger, memory_policy, notes, phase_info, board_state, resources, opponents, visible_events, recent_table_talk, commitments, speech_response]
+    response: speech_response
+
+phase_guidance:
+  initial_settlement_1: |-
+    First settlement of a coupled pair; second follows all opponents. Pick a coherent engine (expansion or city/cards), name backups. No starting cards from this placement.
+  initial_settlement_2: |-
+    Complement first settlement; preserve expansion. One card per adjacent non-desert tile.
+  initial_road_1: |-
+    Aim at multiple expansion spots and useful ports. Second settlement stays independent.
+  initial_road_2: |-
+    Aim at open spots complementing production; keep branches.
+  initial_placement: |-
+    Coherent two-settlement opening; point roads at useful futures.
+  discarding: |-
+    Discard exactly the required count with named resource counts, e.g. {"tool":"discard","arguments":{"cards":{"WOOD":2,"SHEEP":2}}}.
+  robber: |-
+    Block best opponent production without over-exposing yourself. Tiles are <T00>-<T18>.
+  main_game: |-
+    Win now if you can. Otherwise trade/convert, then build/buy/end. Tiles <T00>-<T18>, nodes <N00>-<N53>.

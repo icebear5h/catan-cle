@@ -63,6 +63,7 @@ from cle.game_engine.state_functions import (
 from cle.game_engine.trading import TradeCandidate, TradeOffer
 from cle.harness.context import ContextAssembler
 from cle.harness.models import ModelRequest, ModelResponse
+from cle.harness.suite import default_suite_path, load_context_suite
 from cle.players.agent import AgentPlayer
 from cle.players.baseline import FirstLegalPlayer
 from cle.players.contracts import CommunicationChoice
@@ -584,7 +585,10 @@ class _AuditPlayer(AgentPlayer):
     """The original pip/build-priority audit policy over visible context only."""
 
     def __init__(self, color, seed, rng):
-        super().__init__(color, _LocalCompletion(), session_id=f"audit-{seed}:{color.value}")
+        super().__init__(
+            color, _LocalCompletion(), session_id=f"audit-{seed}:{color.value}",
+            suite=load_context_suite(default_suite_path().with_name("catan_v10.yaml")),
+        )
         self.rng = rng
 
     async def communicate(self, context):

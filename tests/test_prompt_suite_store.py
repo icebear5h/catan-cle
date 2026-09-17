@@ -7,8 +7,10 @@ from cle.harness.prompt_store import (
     PromptSuiteConflictError,
     load_active_prompt_suites,
     reset_prompt_suite_overrides,
+    resolve_prompt_suites,
     save_prompt_suite_overrides,
 )
+from cle.harness.shared_suite import parse_shared_prompt_suite
 from cle.harness.suite import default_suite_path, parse_context_suite
 from cle.sandbox.factory import (
     LiveSandboxConfig,
@@ -46,7 +48,7 @@ def _edited_sources():
 
 def test_static_prompt_overrides_save_reset_and_detect_stale_edits(tmp_path):
     current = load_active_prompt_suites(tmp_path)
-    assert current.decision.version == "10.0.0"
+    assert current.decision.version == "11.0.0"
     assert current.communication.version == "5"
     decision_source, communication_source = _edited_sources()
 
@@ -197,12 +199,18 @@ def test_factory_prefers_explicit_suite_path_over_local_override(
     )
 
 
-def test_persisted_v9_override_and_recorded_source_are_not_upgraded(tmp_path, monkeypatch):
+@pytest.mark.parametrize("version", ["9.0.0", "10.0.0"])
+def test_persisted_override_and_recorded_source_are_not_upgraded(tmp_path, monkeypatch, version):
     monkeypatch.setenv("CATAN_PROMPT_SUITE_DIR", str(tmp_path))
+    monkeypatch.delenv("CATAN_SHARED_SUITE", raising=False)
     monkeypatch.delenv("CATAN_CONTEXT_SUITE", raising=False)
     monkeypatch.delenv("CATAN_COMMUNICATION_SUITE", raising=False)
     builtins = load_active_prompt_suites()
-    old_source = default_suite_path().with_name("catan_v9.yaml").read_text(encoding="utf-8")
+    old_source = (
+        default_suite_path()
+        .with_name(f"catan_v{version.split('.')[0]}.yaml")
+        .read_text(encoding="utf-8")
+    )
     saved = save_prompt_suite_overrides(
         decision_source=old_source,
         communication_source=builtins.communication.source,
@@ -211,19 +219,33 @@ def test_persisted_v9_override_and_recorded_source_are_not_upgraded(tmp_path, mo
     )
     assert load_active_prompt_suites().decision.source == old_source
     frozen = materialize_live_prompt_suites(LiveSandboxConfig())
-    assert frozen.decision_suite.version == "9.0.0"
+    assert frozen.decision_suite.version == version
     assert frozen.decision_suite.sha256 == saved.decision.sha256
-    assert parse_context_suite(frozen.decision_suite.source).context.social_context is False
-    assert "discard" not in parse_context_suite(frozen.decision_suite.source).response.tags
+    historical = parse_context_suite(frozen.decision_suite.source)
+    assert historical.response.format == "xml"
+    assert historical.context.social_context == (version == "10.0.0")
+    assert ("discard" in historical.response.tags) == (version == "10.0.0")
 
     reset_prompt_suite_overrides(
         expected_decision_sha256=saved.decision.sha256,
         expected_communication_sha256=saved.communication.sha256,
     )
     current = materialize_live_prompt_suites(LiveSandboxConfig())
-    assert current.decision_suite.version == "10.0.0"
-    assert parse_context_suite(current.decision_suite.source).context.social_context is True
-    assert "discard" in parse_context_suite(current.decision_suite.source).response.tags
+    active = resolve_prompt_suites()
+    assert active.decision is active.communication is None
+    assert active.shared is not None
+    assert active.shared.overridden is False
+    assert current.decision_suite is current.communication_suite is None
+    assert current.shared_suite.source == active.shared.source
+    assert current.shared_suite.sha256 == active.shared.sha256
+    default_suite = parse_shared_prompt_suite(current.shared_suite.source).decision_suite()
+    assert default_suite.context.mode == "shared"
+    assert default_suite.context.memory_mode == "fresh_notes"
+    assert default_suite.response.format == "json"
+    assert default_suite.response.tags == ("tool", "arguments", "notes")
+    assert default_suite.context.social_context is True
     restored = materialize_live_prompt_suites(frozen)
+    assert restored.shared_suite is None
     assert restored.decision_suite == frozen.decision_suite
     assert restored.decision_suite.source == old_source
+    assert restored.communication_suite == frozen.communication_suite

@@ -11,6 +11,7 @@ from cle.game_engine.state_functions import player_freqdeck_add
 from cle.harness import ModelResponse, PlayerResponseParseError, PlayerResponseParser
 from cle.harness.communication import parse_communication_response
 from cle.harness.response_xml import parse_response_fields
+from cle.harness.suite import default_suite_path, load_context_suite
 from cle.players.agent import AgentPlayer
 from cle.players.baseline import FirstLegalPlayer
 from cle.players.contracts import CommunicationChoice, CommunicationMode
@@ -55,7 +56,10 @@ def response_case(request, oversized_integer):
     kind = request.param
     engine = GameEngine(COLORS, seed=7, shuffle_players=False)
     transport = QueuedTransport()
-    player = AgentPlayer(Color.RED, transport, session_id=f"{engine.id}:RED")
+    player = AgentPlayer(
+        Color.RED, transport, session_id=f"{engine.id}:RED",
+        suite=load_context_suite(default_suite_path().with_name("catan_v10.yaml")),
+    )
     players = {color: FirstLegalPlayer(color) for color in COLORS}
     players[Color.RED] = player
     sandbox = CatanSandbox(

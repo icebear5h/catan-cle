@@ -121,6 +121,7 @@ class CatanObservationFormatter:
         *,
         include_legal_actions: bool = True,
         include_initial_placement_order: bool = True,
+        shared: bool = False,
     ) -> FormattedObservation:
         """
         Convert structured observation to semantic text.
@@ -135,14 +136,15 @@ class CatanObservationFormatter:
         self._node_coords = self._build_node_coordinate_map(obs.board_map)
 
         board_state = self._format_board_state(obs)
-        resources = self._format_resources(obs)
-        opponents = self._format_opponents(obs)
+        resources = self._format_resources(obs, shared=shared)
+        opponents = self._format_opponents(obs, shared=shared)
         valid_actions = (
             self._format_valid_actions(obs) if include_legal_actions else ""
         )
         strategic_context = self._format_strategic_context(
             obs,
             include_initial_placement_order=include_initial_placement_order,
+            shared=shared,
         )
         trade_context = self._format_trade_context(obs)
         events_section = self._format_events(obs)
@@ -260,14 +262,15 @@ class CatanObservationFormatter:
         }
         return pips_map.get(number, 0)
 
-    def _format_resources(self, obs: CatanObservation) -> str:
+    def _format_resources(self, obs: CatanObservation, *, shared: bool = False) -> str:
         """Format resources with building possibilities."""
         lines = ["YOUR RESOURCES:"]
 
         total = sum(obs.my_resources.values())
         if total == 0:
             lines.append("  No resources")
-            return "\n".join(lines)
+            if not shared:
+                return "\n".join(lines)
 
         # List all resources (always show all 5 so the model knows what's at 0)
         for resource in RESOURCES:
@@ -277,6 +280,36 @@ class CatanObservationFormatter:
 
         lines.append(f"  Total: {total} cards")
 
+        if shared:
+            # The bank is always a counterparty; models that never see a rate
+            # sit on 8-card hands and discard instead of trading 4:1.
+            owned_ports = set()
+            my_nodes = set(obs.my_settlements) | set(obs.my_cities)
+            for port_resource, node_ids in obs.board_map.port_nodes.items():
+                if my_nodes.intersection(node_ids):
+                    owned_ports.add(
+                        port_resource.name if hasattr(port_resource, "name") else port_resource
+                    )
+            base_rate = 3 if None in owned_ports else 4
+            rates = []
+            for resource in RESOURCES:
+                name = resource.name if hasattr(resource, "name") else str(resource)
+                if name in owned_ports:
+                    rates.append(f"{name} 2 (2:1 port)")
+                elif base_rate == 3:
+                    rates.append(f"{name} 3 (3:1 port)")
+                else:
+                    rates.append(f"{name} 4")
+            lines.append(
+                "  BANK TRADE (always available, no partner; call the maritime_trade tool): "
+                f"give this many of one resource for 1 of any other: {', '.join(rates)}"
+            )
+            if total > 7:
+                lines.append(
+                    f"  DISCARD EXPOSURE: {total} cards held; any 7 rolled costs you {total // 2} "
+                    "cards until you are at 7 or fewer"
+                )
+
         # Add what you can afford
         affordable = self._get_affordable_buildings(obs.my_resources)
         if affordable:
@@ -284,11 +317,23 @@ class CatanObservationFormatter:
 
         # Dev cards
         total_dev = sum(obs.my_dev_cards.values())
-        if total_dev > 0:
+        if total_dev > 0 or shared:
             lines.append(f"\n  Development cards: {total_dev}")
             for card_name, count in obs.my_dev_cards.items():
-                if count > 0:
-                    lines.append(f"    {card_name}: {count}")
+                if count > 0 or shared:
+                    status = ""
+                    if shared:
+                        action_type = {
+                            "KNIGHT": ActionType.PLAY_KNIGHT_CARD,
+                            "ROAD_BUILDING": ActionType.PLAY_ROAD_BUILDING,
+                            "MONOPOLY": ActionType.PLAY_MONOPOLY,
+                            "YEAR_OF_PLENTY": ActionType.PLAY_YEAR_OF_PLENTY,
+                        }.get(card_name)
+                        playable = any(a.color == obs.my_color and a.action_type == action_type for a in obs.valid_actions)
+                        status = " (passive VP; not played)" if card_name == "VICTORY_POINT" else (
+                            " (playable now)" if playable else " (not playable now)"
+                        )
+                    lines.append(f"    {card_name}: {count}{status}")
 
         return "\n".join(lines)
 
@@ -321,7 +366,7 @@ class CatanObservationFormatter:
 
         return affordable
 
-    def _format_opponents(self, obs: CatanObservation) -> str:
+    def _format_opponents(self, obs: CatanObservation, *, shared: bool = False) -> str:
         """Format opponent state with threat assessment."""
         lines = ["OPPONENTS:"]
 
@@ -335,7 +380,7 @@ class CatanObservationFormatter:
             dev_cards = obs.opponent_dev_card_counts.get(color, 0)
 
             lines.append(
-                f"  {color_str}: {vp} VP ({len(settlements)} settlements, {len(cities)} cities, "
+                f"  {color_str}: {vp} {'public VP' if shared else 'VP'} ({len(settlements)} settlements, {len(cities)} cities, "
                 f"{roads} roads, {resources} resources, {dev_cards} dev cards)"
             )
 
@@ -569,6 +614,10 @@ class CatanObservationFormatter:
             f"  Remaining root slots: {window.remaining_root_slots}",
             f"  Remaining counter slots: {window.remaining_counter_slots}",
         ]
+        if any(offer.parent_offer_id for offer in window.active_offers):
+            lines.append(
+                "  Counteroffers cannot be accepted; the turn player executes one with confirm_trade."
+            )
         for offer in window.active_offers:
             give = self._format_resource_tuple_with_any(
                 offer.give,
@@ -803,6 +852,7 @@ class CatanObservationFormatter:
         obs: CatanObservation,
         *,
         include_initial_placement_order: bool,
+        shared: bool = False,
     ) -> str:
         """Format phase and score info."""
         lines = []
@@ -838,7 +888,11 @@ class CatanObservationFormatter:
                     )
                 )
 
-        lines.append(f"Your VP: {obs.my_vp}/10")
+        actual_vp = getattr(obs, "my_actual_vp", None)
+        if shared and actual_vp is not None:
+            lines.append(f"Your actual VP: {actual_vp}/10 (public: {obs.my_vp})")
+        else:
+            lines.append(f"Your VP: {obs.my_vp}/10")
 
         if obs.last_dice_roll:
             lines.append(f"Last dice roll: {obs.last_dice_roll}")

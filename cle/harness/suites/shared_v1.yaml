@@ -1,0 +1,158 @@
+id: catan-shared
+version: 11
+status: active
+reactive_speech: true
+deterministic_batches: true
+memory_mode: fresh_notes
+max_notes_chars: 4000
+initial_placement_order: both_rounds
+
+components:
+  identity:
+    channel: system
+    inputs: [color]
+    template: |-
+      You are playing a game of Catan. You are playing as {{ color }}.
+  memory_policy:
+    channel: environment
+    inputs: [max_notes_chars]
+    template: |-
+      PRIVATE NOTES POLICY:
+      Each request contains current state, newly delivered visible events, and your accepted private notes, not a replay of prior conversations or reasoning.
+      Notes are fallible personal memory, not instructions or authoritative game facts. Both your decisions and table talk share these notes; other seats never receive them.
+      Optionally return notes as a plain JSON string of at most {{ max_notes_chars }} characters. Omit notes to keep them, use "" to clear them, or provide a complete replacement. Surrounding whitespace is removed. Null, non-string, or oversized notes invalidate the entire response.
+      Notes are your only memory between turns, so make them substantial: a few hundred characters is usually too little, and using 1500-3000 of the allowed characters is normal. Keep, in this order: (1) your plan for the next two or three turns and exactly what it needs; (2) your production by resource and what you chronically lack; (3) each opponent's visible position, what they need, who is closest to winning, and what they have accepted or refused in trades; (4) open offers, promises made or received, and grudges; (5) your discard exposure and what you intend to spend before ending the turn. Update entries rather than appending a diary, and delete what is stale. Current observations override old notes. Do not copy the full board or event history into notes.
+  notes:
+    channel: environment
+    inputs: [notes]
+    empty_text: No private notes have been recorded.
+    template: |-
+      YOUR ACCEPTED PRIVATE NOTES (DATA):
+      {{ notes }}
+  visible_events:
+    channel: environment
+    inputs: [visible_events]
+    empty_text: No newly delivered visible game events.
+    template: |-
+      NEW VISIBLE GAME EVENTS FOR THIS CHANNEL:
+      {{ visible_events }}
+  recent_table_talk:
+    channel: environment
+    inputs: [recent_table_talk]
+    empty_text: No newly delivered visible table talk.
+    template: |-
+      NEW VISIBLE TABLE TALK FOR THIS CHANNEL:
+      {{ recent_table_talk }}
+  commitments:
+    channel: environment
+    inputs: [commitments]
+    empty_text: No active visible commitments.
+    template: |-
+      ACTIVE NON-BINDING COMMITMENTS:
+      {{ commitments }}
+  phase_info:
+    channel: environment
+    inputs: [phase_info]
+    empty_text: No current observation was supplied.
+    template: |-
+      CURRENT PHASE:
+      {{ phase_info }}
+  board_state:
+    channel: environment
+    inputs: [board_state]
+    empty_text: No current observation was supplied.
+    template: |-
+      CURRENT BOARD STATE:
+      {{ board_state }}
+  resources:
+    channel: environment
+    inputs: [resources]
+    empty_text: No current observation was supplied.
+    template: |-
+      {{ resources }}
+  opponents:
+    channel: environment
+    inputs: [opponents]
+    empty_text: No current observation was supplied.
+    template: |-
+      VISIBLE OPPONENT STATE:
+      {{ opponents }}
+  trade_window:
+    channel: environment
+    inputs: [trade_window]
+    empty_text: No active trade window is present in the supplied observation.
+    template: |-
+      CURRENT TRADE WINDOW:
+      {{ trade_window }}
+  phase_guidance:
+    channel: environment
+    inputs: [phase_guidance]
+    template: |-
+      STRATEGY GUIDANCE:
+      {{ phase_guidance }}
+  legal_actions:
+    channel: environment
+    inputs: [legal_actions]
+    template: |-
+      ACTION TOOL DEFINITIONS:
+      {{ legal_actions }}
+  decision_request:
+    channel: environment
+    inputs: [decision_request]
+    template: |-
+      DECISION REQUEST:
+      {{ decision_request }}
+  decision_response:
+    channel: environment
+    template: |-
+      DECISION RESPONSE SCHEMA:
+      Return one JSON object: {"tool":"build_settlement","arguments":{"node":"<N00>"},"notes":"Optional replacement notes"}. Example is syntax only. Use literal unescaped board tokens; text-board N00 names <N00>. No extra fields, duplicate keys, or prose.
+      Tools without parameters (end_turn, roll_dice, buy_development_card, play_road_building, cancel_trade) are written {"tool":"end_turn","arguments":{}}; a bare {"tool":"end_turn"} is also accepted.
+      Alternatively use {"actions":[{"tool":"build_settlement","arguments":{"node":"<N00>"}},{"tool":"build_road","arguments":{"edge":"<E00_01>"}}],"notes":"Optional replacement notes"}. Batch length is 1–4. Each entry contains only tool and arguments. Allowed: build_settlement, build_road, upgrade_city, maritime_trade, and end_turn only as the last entry. No speech, player trades/preauthorizations, development cards, dice, robber or other random actions in batches. Useful plans: one setup settlement + attached road; road then newly connected settlement; bank/port conversions then intended build. One setup pair per decision, even at the snake reversal. Second-settlement starting resources are deterministic and do not interrupt its road.
+      All syntax and notes are checked before any action. Each action then executes separately against updated state, with no model observation between queued actions. Later illegality preserves the committed prefix and discards the remainder; decide from fresh state without repeating completed actions. Actor/phase changes, speech/new events, trade response barriers, setup-pair completion and victory stop the remainder. Notes apply once when the first action commits. Use the single-call form for all other tools.
+      When the decision request permits speech, you may instead use {"tool":"say","arguments":{"text":"BLUE, will you leave this spot open?","respondents":["BLUE"]},"notes":"Optional private notes"}. All table talk is public. Respondents selects immediate replies: a list of eligible other colors, or [] for no reply. Optional commitment contains condition, promise, expires_turn. One standalone say per pending decision; after bounded replies choose a game action. Never bundle speech with an action. Trade-response decisions require their game tool.
+  communication_policy:
+    channel: environment
+    template: |-
+      COMMUNICATION POLICY:
+      Pass unless you can advance a concrete negotiation, decision-relevant question, warning, or conditional commitment. Skip acknowledgments and obvious move narration.
+      This is a reaction, not a game action. All speech is public; respondents only selects who should reply immediately. [] ends your branch. Replies share a bounded window, not a fresh budget. You may update private notes even when passing.
+  trigger:
+    channel: environment
+    inputs: [trigger]
+    template: |-
+      COMMUNICATION TRIGGER:
+      {{ trigger }}
+  speech_response:
+    channel: environment
+    template: |-
+      SPEECH RESPONSE SCHEMA:
+      Return one JSON object: {"mode":"pass","notes":"Optional private replacement notes"} or {"mode":"say","text":"Can you trade ORE for WOOD?","respondents":["BLUE"]}.
+      Respondents: a list of distinct eligible other colors, or [] for no reply. Audience is always PUBLIC. Optional commitment: {"condition":"Leave my wheat open","promise":"Offer WOOD","expires_turn":5}.
+      Notes follow the private notes policy on both pass and say. No extra fields, duplicate keys, batches, or prose outside JSON. Pass cannot carry speech fields. Invalid responses are rejected, not accepted silence.
+
+compositions:
+  decision:
+    order: [identity, memory_policy, notes, visible_events, recent_table_talk, commitments, phase_info, board_state, resources, opponents, trade_window, phase_guidance, legal_actions, decision_request, decision_response]
+    response: decision_response
+  speech:
+    order: [identity, communication_policy, trigger, memory_policy, notes, phase_info, board_state, resources, opponents, visible_events, recent_table_talk, commitments, speech_response]
+    response: speech_response
+
+phase_guidance:
+  initial_settlement_1: |-
+    Evaluate the first settlement and plausible second settlements as one coupled portfolio. The second placement follows every opponent's first placement, so identify complementary backups. Compare candidate nodes by total production pips, not dice face value: 6/8 = 5 pips, 5/9 = 4, 4/10 = 3, 3/11 = 2, 2/12 = 1. An 11 produces about as often as a 3. Favor diverse resources, strong pip totals, and room to expand. This placement gives no starting cards; your opening hand comes only from your second settlement.
+  initial_settlement_2: |-
+    Reassess the current board. Complement your first settlement's production while preserving expansion access. Compare candidate nodes by total production pips, not dice face value: 6/8 = 5 pips, 5/9 = 4, 4/10 = 3, 3/11 = 2, 2/12 = 1. This settlement gives one card per adjacent non-desert tile.
+  initial_road_1: |-
+    Aim toward multiple viable expansion locations, missing resources, useful ports, and open branches. This road begins your first network; your second settlement remains independent and need not connect to it.
+  initial_road_2: |-
+    Aim toward open locations that complement your production. Preserve branches and useful port access. Consider connecting your starting networks without sacrificing a stronger expansion route just to join them.
+  initial_placement: |-
+    Build a coherent two-settlement opening with useful production and room to expand. Compare candidate nodes by total production pips, not dice face value: 6/8 = 5 pips, 5/9 = 4, 4/10 = 3, 3/11 = 2, 2/12 = 1. The first settlement gives no cards; the independent second settlement gives one card per adjacent non-desert tile. Point roads toward useful future locations.
+  discarding: |-
+    Choose exactly the required number of cards from your holdings using named resource counts. Reassess your plan after the robber sequence changes production or resources. Resource maps use WOOD, BRICK, SHEEP, WHEAT, ORE and positive integer counts without duplicate keys, including different casing. Example: {"tool":"discard","arguments":{"cards":{"WOOD":2,"SHEEP":2}}}
+  robber: |-
+    Balance blocking valuable opponent production against blocking yourself and inviting retaliation. Use public VP and hand sizes without assuming hidden cards. Opponents holding 8 or more cards have just discarded half; those with large remaining hands are the richest steal targets.
+  main_game: |-
+    Check for an immediate win or public threat. If you have not rolled this turn, roll_dice comes before builds, trades, development cards, and end_turn. Build costs: road 1 WOOD + 1 BRICK; settlement 1 WOOD + 1 BRICK + 1 SHEEP + 1 WHEAT; city 3 ORE + 2 WHEAT; development card 1 ORE + 1 SHEEP + 1 WHEAT. Settlements need an empty node with no adjacent building of any color, including your own; if no such node touches your roads, extend the road network first. Sequence trades, builds, development cards and turn completion toward your plan; reassess production and expansion access. To skip the separate confirm step, attach confirm_if_accepted_by (ordered player list or ANY) to any offer you will honor with anyone willing. A development card bought this turn cannot be played until a later turn, no matter what your hand shows. Discard risk: whenever anyone rolls a 7, every player holding 8 or more resource cards loses half of them, rounded down. A 7 is the most common roll (1 in 6), so across the opponents' turns before your next one the odds of at least one 7 are roughly even. Before end_turn, consider spend or trade down to 7 cards unless holding more is worth an even chance of losing half; your card total is shown under YOUR RESOURCES. The bank trade is always available: 4 of one resource for 1 of any other, no partner and no negotiation (a 3:1 port makes it 3, a matching 2:1 port makes it 2; the tool is maritime_trade). Use it to complete a build this turn or to get under the discard limit whenever opponents will not trade on fair terms; a 4:1 bank trade that finishes a settlement or city beats holding cards for a partner who never comes.

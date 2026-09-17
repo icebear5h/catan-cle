@@ -9,6 +9,7 @@ from typing import Any
 from cle.game_engine.models.enums import Action, CITY, RESOURCES, ROAD, SETTLEMENT
 from cle.game_engine.models.player import Color
 from cle.game_engine.state_functions import (
+    get_actual_victory_points,
     get_dev_cards_in_hand,
     get_longest_road_length,
     get_player_buildings,
@@ -48,6 +49,23 @@ class PlayerObservation:
     is_my_turn: bool
     turn_player_color: Color
     recent_events: list[Action] = field(default_factory=list)
+    my_actual_vp: int | None = None
+    current_prompt: str = ""
+    setup_road_anchor: int | None = None
+    free_roads_available: int = 0
+
+    def __setstate__(self, state) -> None:
+        """Keep older slotted observation pickles readable after additive facts."""
+        _, stored = state
+        values = {
+            "my_actual_vp": None,
+            "current_prompt": "",
+            "setup_road_anchor": None,
+            "free_roads_available": 0,
+            **stored,
+        }
+        for name, value in values.items():
+            setattr(self, name, value)
 
 
 def observe_state(
@@ -145,4 +163,12 @@ def observe_state(
         is_my_turn=player_color == turn_player_color,
         turn_player_color=turn_player_color,
         recent_events=list(recent_events or ()),
+        my_actual_vp=get_actual_victory_points(game_state, player_color),
+        current_prompt=game_state.current_prompt.value,
+        setup_road_anchor=(
+            game_state.buildings_by_color[game_state.current_color()][SETTLEMENT][-1]
+            if game_state.is_initial_build_phase
+            and game_state.current_prompt.value == "BUILD_INITIAL_ROAD" else None
+        ),
+        free_roads_available=game_state.free_roads_available if game_state.is_road_building else 0,
     ))

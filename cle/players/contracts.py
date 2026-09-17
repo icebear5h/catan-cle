@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, fields
+from dataclasses import MISSING, dataclass, fields
 from enum import Enum
 from typing import Any, Mapping, Protocol, runtime_checkable
 
@@ -12,6 +12,18 @@ from cle.game_engine.models.enums import Action
 from cle.game_engine.models.player import Color
 from cle.game_engine.observation import PlayerObservation
 from cle.game_engine.trading import TradeOffer
+
+
+def _restore_contract_slots(self: Any, state: list[Any]) -> None:
+    """Fill appended defaults when loading historical frozen/slotted pickles."""
+    items = fields(self)
+    if len(state) > len(items) or any(
+        item.default is MISSING for item in items[len(state):]
+    ):
+        raise ValueError(f"Invalid stored {type(self).__name__} field count")
+    values = [*state, *(item.default for item in items[len(state):])]
+    for item, value in zip(items, values, strict=True):
+        object.__setattr__(self, item.name, value)
 
 
 @dataclass(frozen=True, slots=True)
@@ -29,6 +41,11 @@ class PlayerContext:
     recent_messages: tuple[PlayerEvent, ...] = ()
     active_commitments: tuple[SocialCommitment, ...] = ()
     discard_count: int = 0
+    visible_through_sequence: int | None = None
+    visible_messages: tuple[PlayerEvent, ...] = ()
+    speech_allowed: bool = False
+
+    __setstate__ = _restore_contract_slots
 
     def action_at(self, index: int) -> Action:
         if index < 0 or index >= len(self.legal_actions):
@@ -59,13 +76,16 @@ class PlayerChoice:
     provider_request_id: str | None = None
     provider_native_finish_reason: str | None = None
     discard_cards: tuple[str, ...] | None = None
+    knight_destination: tuple[int, int, int] | None = None
+    notes_update: str | None = None
 
-    def __setstate__(self, state: list[Any]) -> None:
-        # Persisted pre-discard receipts contain the original 15 positional slots.
-        if len(state) == 15:
-            state = [*state, None]
-        for item, value in zip(fields(self), state, strict=True):
-            object.__setattr__(self, item.name, value)
+    # Proposer authorization, not responder willingness. None is a normal probe.
+    confirm_if_accepted_by: tuple[Color, ...] | str | None = None
+
+    # Complete admitted semantic envelope; only its first action uses action_index.
+    batch_actions: tuple[dict[str, Any], ...] = ()
+
+    __setstate__ = _restore_contract_slots
 
 
 @dataclass(frozen=True, slots=True)
@@ -73,7 +93,7 @@ class PlayerAttempt:
     """One typed attempt returned by a player implementation."""
 
     context_id: str
-    choice: PlayerChoice | None
+    choice: PlayerChoice | CommunicationChoice | None
     validation_error: str | None = None
     model_request: Any = None
     model_response: Any = None
@@ -96,6 +116,11 @@ class TalkContext:
     game_events: tuple[PlayerEvent, ...]
     recent_messages: tuple[PlayerEvent, ...]
     active_commitments: tuple[Any, ...] = ()
+    observation: PlayerObservation | None = None
+    visible_messages: tuple[PlayerEvent, ...] = ()
+    trigger_reason: str | None = None
+
+    __setstate__ = _restore_contract_slots
 
 
 class CommunicationMode(str, Enum):
@@ -108,10 +133,15 @@ class CommunicationChoice:
     mode: CommunicationMode = CommunicationMode.SILENCE
     text: str = ""
     audience: tuple[Color, ...] = ()
-    intent: str | None = None
     commitment: CommitmentProposal | None = None
     model_request: Any = None
     model_response: Any = None
+    notes_update: str | None = None
+    validation_error: str | None = None
+    # None retains historical audience semantics; reactive speech is always public.
+    respondents: tuple[Color, ...] | None = None
+
+    __setstate__ = _restore_contract_slots
 
 
 @runtime_checkable

@@ -727,7 +727,7 @@ def test_new_trade_window_preview_is_pure_and_ignores_speech_revision():
     assert engine.state.trade_window is None
     engine.append_message(
         speaker=Color.RED, text="Considering a trade", audience=COLORS[1:],
-        intent=None, causation_id="test-trade-window",
+        causation_id="test-trade-window",
     )
     assert new_trade_window(engine.state) == first
     assert engine.state.trade_window is None

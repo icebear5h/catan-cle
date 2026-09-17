@@ -176,10 +176,14 @@ class GameEngine:
                 tuple(copy.deepcopy(self.commitments)),
             )
 
+        trade_offers = (
+            copy.deepcopy(self.state.trade_window.offers)
+            if self.state.trade_window is not None else {}
+        )
         resolved_action = apply_action(self.state, action, force=force)
         if history_entry is not None:
             self.history.append(history_entry)
-        action_event = event_from_action(resolved_action, before_revision)
+        action_event = event_from_action(resolved_action, before_revision, trade_offers=trade_offers)
         event = self.publish_event(
             action_event.event_type,
             action_event.actor,
@@ -295,9 +299,9 @@ class GameEngine:
         speaker: Color,
         text: str,
         audience: tuple[Color, ...],
-        intent: str | None,
         causation_id: str,
         commitment: tuple[str, str, int] | None = None,
+        respondents: tuple[Color, ...] | None = None,
     ) -> GameEvent:
         if speaker not in self.state.colors:
             raise ValueError(f"Speaker {speaker} is not a participant")
@@ -305,8 +309,6 @@ class GameEngine:
             raise ValueError("Message text must be a nonempty string")
         if not isinstance(audience, (tuple, list)):
             raise ValueError("Message audience must be a sequence of participants")
-        if intent is not None and not isinstance(intent, str):
-            raise ValueError("Message intent must be a string or None")
         if not isinstance(causation_id, str) or not causation_id:
             raise ValueError("Message causation ID must be a nonempty string")
         audience = tuple(audience)
@@ -315,6 +317,12 @@ class GameEngine:
         recipients = tuple(dict.fromkeys((speaker, *audience)))
         if any(color not in self.state.colors for color in recipients):
             raise ValueError("Message audience contains a non-participant")
+        if respondents is not None and (
+            not isinstance(respondents, tuple) or len(set(respondents)) != len(respondents)
+            or any(not isinstance(color, Color) or color == speaker or color not in audience for color in respondents)
+            or set(recipients) != set(self.state.colors)
+        ):
+            raise ValueError("Respondents require public speech and distinct eligible other players")
         sequence = self.revision
         proposed_commitment = None
         if commitment is not None:
@@ -339,8 +347,9 @@ class GameEngine:
             "speaker": speaker,
             "text": text,
             "audience": audience,
-            "intent": intent,
         }
+        if respondents is not None:
+            payload["respondents"] = respondents
         is_public = set(recipients) == set(self.state.colors)
         event = self.publish_event(
             "MESSAGE_SENT",

@@ -105,7 +105,9 @@ async def test_commented_message_must_not_publish_private_draft(sandbox):
             "<message>SILENCE</message><audience>PUBLIC</audience><intent>TRADE</intent>"
         ]
     )
-    sandbox.register_player(AgentPlayer(Color.BLUE, transport, session_id="audit:BLUE"))
+    sandbox.register_player(AgentPlayer(
+        Color.BLUE, transport, session_id="audit:BLUE", suite=load_context_suite(),
+    ))
     sandbox.communication_policy = CommunicationPolicy()
 
     result = await sandbox.step()
@@ -130,9 +132,10 @@ async def test_commented_message_must_not_publish_private_draft(sandbox):
 )
 def test_malformed_or_conflicting_action_xml_must_be_rejected(sandbox, text):
     context = sandbox.decision_context()
+    suite = load_context_suite(default_suite_path().with_name("catan_v10.yaml"))
     assert len(context.legal_actions) > 2
     try:
-        choice = PlayerResponseParser(load_context_suite()).parse(
+        choice = PlayerResponseParser(suite).parse(
             context, ModelResponse(content=text)
         )
     except PlayerResponseParseError:
@@ -144,6 +147,7 @@ def test_malformed_or_conflicting_action_xml_must_be_rejected(sandbox, text):
 
 def test_duplicate_trade_offer_xml_must_be_rejected(trade_sandbox):
     context = trade_sandbox.decision_context()
+    suite = load_context_suite(default_suite_path().with_name("catan_v10.yaml"))
     index = next(
         i
         for i, action in enumerate(context.legal_actions)
@@ -155,7 +159,7 @@ def test_duplicate_trade_offer_xml_must_be_rejected(trade_sandbox):
         '<trade_offer>{"give":{"WOOD":4},"receive":{"ORE":1}}</trade_offer>'
     )
     try:
-        choice = PlayerResponseParser(load_context_suite()).parse(
+        choice = PlayerResponseParser(suite).parse(
             context, ModelResponse(content=text)
         )
     except PlayerResponseParseError:
@@ -173,7 +177,6 @@ async def test_invalid_commitment_must_not_poison_next_step(sandbox, monkeypatch
             mode=CommunicationMode.SAY,
             text="Trade?",
             audience=(Color.RED,),
-            intent="BRIBE",
             commitment=CommitmentProposal("condition", "promise", "tomorrow"),
         )
 
@@ -453,14 +456,18 @@ async def test_decision_prompt_must_retain_visible_table_talk_and_commitments(tr
         speaker=Color.BLUE,
         text=markers[0],
         audience=(Color.RED,),
-        intent="BRIBE",
         causation_id="audit:private-bribe",
         commitment=("Spare BLUE", markers[1], 9),
     )
     assert engine.project_messages(Color.WHITE) == ()
     assert engine.active_commitments(Color.WHITE) == ()
-    transport = LocalTransport(["<message>SILENCE</message>", "<action>0</action>"])
-    sandbox.register_player(AgentPlayer(Color.RED, transport, session_id="audit:RED"))
+    transport = LocalTransport([
+        "<message>SILENCE</message>",
+        '{"game_plan":"wait","tool":"end_turn","arguments":{}}',
+    ])
+    sandbox.register_player(AgentPlayer(
+        Color.RED, transport, session_id="audit:RED", suite=load_context_suite(),
+    ))
     sandbox.communication_policy = CommunicationPolicy()
 
     await sandbox.step()

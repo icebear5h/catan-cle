@@ -64,7 +64,7 @@ class GameEngineSnapshot:
     )
 
 
-def event_from_action(action: Action, sequence: int) -> GameEvent:
+def event_from_action(action: Action, sequence: int, *, trade_offers: dict[str, TradeOffer] | None = None) -> GameEvent:
     """Build the canonical public payload plus private participant overlays."""
     public_payload = action.value
     private_overlays: tuple[tuple[Color, Any], ...] = ()
@@ -89,11 +89,24 @@ def event_from_action(action: Action, sequence: int) -> GameEvent:
         and isinstance(action.value, TradeOffer)
     ):
         public_payload = action.value.to_payload()
-    elif (
-        action.action_type == ActionType.CONFIRM_TRADE
-        and isinstance(action.value, TradeCandidate)
-    ):
+
+    if action.action_type == ActionType.CONFIRM_TRADE and isinstance(action.value, TradeCandidate):
         public_payload = action.value.to_payload()
+
+    # Lifecycle events must remain understandable after the offer window closes
+    # and after a recipient has acknowledged the original proposal.
+    offers = trade_offers or {}
+    if action.action_type in {ActionType.OFFER_TRADE, ActionType.COUNTER_OFFER} and isinstance(action.value, TradeOffer):
+        parent = offers.get(action.value.parent_offer_id)
+        if parent is not None:
+            public_payload["original"] = parent.to_payload()
+    elif action.action_type in {ActionType.ACCEPT_TRADE, ActionType.REJECT_TRADE, ActionType.CANCEL_TRADE, ActionType.CONFIRM_TRADE}:
+        offer_id = action.value.offer_id if isinstance(action.value, TradeCandidate) else action.value
+        offer = offers.get(offer_id) if isinstance(offer_id, str) else None
+        if offer is not None:
+            public_payload = {"offer": offer.to_payload()}
+            if isinstance(action.value, TradeCandidate):
+                public_payload.update(action.value.to_payload())
 
     return GameEvent(
         sequence=sequence,

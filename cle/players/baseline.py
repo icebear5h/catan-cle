@@ -5,19 +5,24 @@ from __future__ import annotations
 import asyncio
 import json
 from collections import deque
+from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterable
+from typing import TYPE_CHECKING, Any, Callable, Iterable
 
 from cle.players.contracts import (
     CommunicationChoice,
     PlayerAttempt,
     PlayerChoice,
     PlayerContext,
+    TalkContext,
 )
 from cle.game_engine.models.player import Color
 from cle.game_engine.models.enums import ActionType
 from cle.game_engine.trading import RESOURCE_NAMES
 from cle.players.validation import action_from_choice
+
+if TYPE_CHECKING:
+    from cle.harness.models import ModelRequest
 
 
 @dataclass
@@ -58,6 +63,16 @@ class FirstLegalPlayer:
     async def communicate(self, context: Any) -> CommunicationChoice:
         return CommunicationChoice()
 
+    def validate_context_update(
+        self,
+        request: ModelRequest | None,
+        context: PlayerContext | TalkContext,
+    ) -> None:
+        """Non-model players have no private model-context update to validate."""
+
+    def accept_communication(self, context: TalkContext, choice: CommunicationChoice) -> None:
+        self.acknowledge_events(context.visible_through_sequence + 1)
+
     def accept(self, attempt: PlayerAttempt, result: Any) -> None:
         self.accepted_choices += 1
         context = getattr(result, "context", None)
@@ -81,7 +96,14 @@ class FirstLegalPlayer:
     def snapshot(self) -> tuple[int, int]:
         return self.event_cursor, self.accepted_choices
 
+    def validate_restore(self, snapshot: tuple[int, int]) -> None:
+        if not isinstance(snapshot, tuple) or len(snapshot) != 2:
+            raise ValueError("First-legal snapshot must contain cursor and accepted count")
+        if any(type(value) is not int or value < 0 for value in snapshot):
+            raise ValueError("Player snapshot counters must be non-negative integers")
+
     def restore(self, snapshot: tuple[int, int]) -> None:
+        self.validate_restore(snapshot)
         self.event_cursor, self.accepted_choices = snapshot
 
 
@@ -113,11 +135,23 @@ class ScriptedPlayer(FirstLegalPlayer):
         return status
 
     def snapshot(self) -> tuple[int, int, tuple[PlayerChoice | int, ...]]:
-        return self.event_cursor, self.accepted_choices, tuple(self.choices)
+        return self.event_cursor, self.accepted_choices, deepcopy(tuple(self.choices))
+
+    def validate_restore(self, snapshot: tuple[int, int, tuple[PlayerChoice | int, ...]]) -> None:
+        if not isinstance(snapshot, tuple) or len(snapshot) != 3:
+            raise ValueError("Scripted snapshot must contain cursor, accepted count, and choices")
+        super().validate_restore(snapshot[:2])
+        choices = snapshot[2]
+        if not isinstance(choices, tuple) or any(
+            type(choice) is not int and not isinstance(choice, PlayerChoice) for choice in choices
+        ):
+            raise ValueError("Scripted snapshot choices must be a tuple of choices or indices")
 
     def restore(self, snapshot: tuple[int, int, tuple[PlayerChoice | int, ...]]) -> None:
-        self.event_cursor, self.accepted_choices, choices = snapshot
-        self.choices = deque(choices)
+        self.validate_restore(snapshot)
+        choices = deque(deepcopy(snapshot[2]))
+        self.event_cursor, self.accepted_choices = snapshot[:2]
+        self.choices = choices
 
 
 class HumanPlayer(FirstLegalPlayer):

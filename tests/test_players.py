@@ -1,9 +1,11 @@
 from dataclasses import dataclass, field, replace
+import json
+import pickle
 from types import SimpleNamespace
 
 import pytest
 
-from cle.harness import ModelResponse, PlayerSession, load_context_suite
+from cle.harness import ModelResponse, PlayerSession, default_suite_path, load_context_suite
 from cle.harness.communication import CommunicationSuite, load_communication_suite
 from cle.players import (
     CommunicationMode,
@@ -47,15 +49,27 @@ def _context(engine, prompt_key="initial_settlement_1"):
     )
 
 
-def test_default_player_suite_uses_single_trade_offer_surface():
+def test_default_player_suite_uses_semantic_json_call_surface():
     suite = load_context_suite()
 
-    assert suite.version == "10.0.0"
+    assert suite.version == "11.0.0"
+    assert suite.response.format == "json"
+    assert suite.response.tags == ("game_plan", "tool", "arguments")
     assert "rationale" not in suite.response.tags
     assert "<rationale>" not in suite.response.instruction
-    assert "trade_offer" in suite.response.tags
-    assert "trade_terms" not in suite.response.tags
-    assert "discard" in suite.response.tags
+    assert "action_index" not in suite.response.instruction
+    assert "<action>" not in suite.response.instruction
+
+
+def test_bare_agent_player_defaults_to_shared_fresh_suites():
+    player = AgentPlayer(
+        Color.RED, AsyncFixedTransport([]), session_id="default:RED",
+    )
+
+    assert player.suite.id == "catan-shared"
+    assert player.suite.context.memory_mode == "fresh_notes"
+    assert player.suite.response.tags == ("tool", "arguments", "notes")
+    assert player.session.context_policy == "fresh_notes"
 
 
 @pytest.mark.asyncio
@@ -63,10 +77,11 @@ async def test_agent_player_assembles_full_context_and_records_only_accepted_att
     engine = GameEngine(COLORS, seed=9, shuffle_players=False)
     transport = AsyncFixedTransport([
         ModelResponse(
-            content=(
-                "<game_plan>expand toward wheat</game_plan>"
-                "<action>0</action>"
-            ),
+            content=json.dumps({
+                "game_plan": "expand toward wheat",
+                "tool": "build_settlement",
+                "arguments": {"node": f"<N{engine.state.playable_actions[0].value:02d}>"},
+            }),
             model="test/model",
         )
     ])
@@ -81,6 +96,8 @@ async def test_agent_player_assembles_full_context_and_records_only_accepted_att
     attempt = await player.choose(context)
 
     assert attempt.choice is not None
+    assert attempt.choice.action_index == 0
+    assert player.suite.version == "11.0.0"
     assert player.session.messages == []
     assert transport.requests[0].messages[-1].role == "user"
 
@@ -129,6 +146,7 @@ async def test_agent_player_parses_parameterized_trade_choice():
             )
         ]),
         session_id="game:RED",
+        suite=load_context_suite(default_suite_path().with_name("catan_v10.yaml")),
     )
 
     attempt = await player.choose(context)
@@ -168,6 +186,7 @@ async def test_agent_player_rejects_positional_trade_tuple():
             )
         ]),
         session_id="game:RED",
+        suite=load_context_suite(default_suite_path().with_name("catan_v10.yaml")),
     )
 
     attempt = await player.choose(context)
@@ -183,6 +202,7 @@ async def test_agent_player_returns_validation_error_for_bad_menu_index():
         Color.RED,
         AsyncFixedTransport([ModelResponse(content="<action>999</action>")]),
         session_id="game:RED",
+        suite=load_context_suite(default_suite_path().with_name("catan_v10.yaml")),
     )
 
     attempt = await player.choose(_context(engine))
@@ -224,7 +244,11 @@ async def test_agent_player_communication_uses_bounded_structured_contract():
             )
         )
     ])
-    player = AgentPlayer(Color.BLUE, transport, session_id="game:BLUE")
+    player = AgentPlayer(
+        Color.BLUE, transport, session_id="game:BLUE",
+        suite=load_context_suite(),
+        communication_suite=load_communication_suite(),
+    )
     cause = engine.project_events(Color.BLUE)[0]
     context = TalkContext(
         context_id="talk:1:BLUE",
@@ -255,7 +279,7 @@ async def test_agent_communication_trusts_only_authored_schema_echo_and_keeps_pr
     engine = GameEngine(COLORS, seed=9, shuffle_players=False)
     engine.append_message(
         speaker=Color.RED, text="DYNAMIC PRIVATE TABLE TALK", audience=(Color.BLUE,),
-        intent="TRADE", causation_id="prior-talk",
+        causation_id="prior-talk",
     )
     data = load_communication_suite().model_dump()
     instruction = "LOCAL AUTHORED SCHEMA:\n" + data["sections"]["response_schema"]["template"]
@@ -274,7 +298,8 @@ async def test_agent_communication_trusts_only_authored_schema_echo_and_keeps_pr
 
     players = {color: FirstLegalPlayer(color) for color in COLORS}
     players[Color.BLUE] = AgentPlayer(
-        Color.BLUE, EchoTransport(), session_id="private-echo:BLUE", communication_suite=suite,
+        Color.BLUE, EchoTransport(), session_id="private-echo:BLUE",
+        suite=load_context_suite(), communication_suite=suite,
     )
     sandbox = CatanSandbox(engine, players)
     result = await sandbox.step()
@@ -409,7 +434,10 @@ def test_action_materializer_supports_exact_discard_and_legacy_none(trade_contex
 
 @pytest.mark.asyncio
 async def test_agent_receipts_cached_choices_and_snapshots_are_detached(trade_context):
-    player = AgentPlayer(Color.RED, AsyncFixedTransport([]), session_id="snapshot:RED")
+    player = AgentPlayer(
+        Color.RED, AsyncFixedTransport([]), session_id="snapshot:RED",
+        suite=load_context_suite(),
+    )
     choice = PlayerChoice(
         0,
         trade_offer=TradeOffer(Color.RED, frozenset(COLORS[1:]), (1, 0, 0, 0, 0), (0, 0, 0, 0, 1)),
@@ -421,8 +449,10 @@ async def test_agent_receipts_cached_choices_and_snapshots_are_detached(trade_co
     choice.native_reasoning_details[0]["text"] = "edited"
     receipt = player.session.receipts[trade_context.context_id]
     assert receipt.choice.trade_offer.give == (1, 0, 0, 0, 0)
-    assert receipt.choice.native_reasoning_details == ({"text": "original"},)
+    # Receipts keep the decision, never the trace: reasoning lives in model_calls.
+    assert receipt.choice.native_reasoning_details == ()
     cached = await player.choose(trade_context)
+    assert cached.choice.native_reasoning_details == ()
     cached.choice.trade_offer.give = (3, 0, 0, 0, 0)
     assert receipt.choice.trade_offer.give == (1, 0, 0, 0, 0)
     snapshot = player.snapshot()
@@ -436,9 +466,67 @@ async def test_agent_receipts_cached_choices_and_snapshots_are_detached(trade_co
 @pytest.mark.asyncio
 async def test_agent_detaches_mutable_provider_response_metadata():
     engine = GameEngine(COLORS, seed=9, shuffle_players=False)
-    response = ModelResponse(content="<action>0</action>", native_reasoning_details=({"text": "original"},))
-    player = AgentPlayer(Color.RED, AsyncFixedTransport([response]), session_id="provider:RED")
+    response = ModelResponse(
+        content=json.dumps({
+            "game_plan": "expand",
+            "tool": "build_settlement",
+            "arguments": {"node": f"<N{engine.state.playable_actions[0].value:02d}>"},
+        }),
+        native_reasoning_details=({"text": "original"},),
+    )
+    player = AgentPlayer(
+        Color.RED, AsyncFixedTransport([response]), session_id="provider:RED",
+        suite=load_context_suite(),
+    )
     attempt = await player.choose(_context(engine))
     response.native_reasoning_details[0]["text"] = "edited"
     assert attempt.model_response.native_reasoning_details == ({"text": "original"},)
     assert attempt.choice.native_reasoning_details == ({"text": "original"},)
+
+
+@pytest.mark.asyncio
+async def test_receipts_keep_the_decision_and_drop_the_reasoning_trace(trade_context):
+    player = AgentPlayer(
+        Color.RED, AsyncFixedTransport([]), session_id="slim:RED",
+        suite=load_context_suite(),
+    )
+    reasoning = "REASONING-SENTINEL " * 2000
+    choice = PlayerChoice(
+        0,
+        trade_offer=TradeOffer(Color.RED, frozenset(COLORS[1:]), (1, 0, 0, 0, 0), (0, 0, 0, 0, 1)),
+        game_plan="expand toward ore",
+        notes_update="need brick",
+        knight_destination=(0, 1, -1),
+        raw_response="{...}",
+        native_reasoning=reasoning,
+        native_reasoning_details=({"text": reasoning},),
+        reasoning_request=(("effort", "high"),),
+        usage=(("prompt_tokens", 157147),),
+        provider_response_id="gen-1",
+    )
+    player.accept(
+        PlayerAttempt(trade_context.context_id, choice),
+        SimpleNamespace(context=trade_context, after_revision=1),
+    )
+
+    receipt = player.session.receipts[trade_context.context_id].choice
+    assert receipt.action_index == 0
+    assert receipt.trade_offer == choice.trade_offer
+    assert receipt.game_plan == "expand toward ore"
+    assert receipt.notes_update == "need brick"
+    assert receipt.knight_destination == (0, 1, -1)
+    assert receipt.provider_response_id == "gen-1"
+    assert receipt.native_reasoning == ""
+    assert receipt.native_reasoning_details == ()
+    assert receipt.reasoning_request == ()
+    assert receipt.raw_response == ""
+    assert receipt.usage == ()
+
+    # Redelivery answers with the same decision, and the session snapshot no
+    # longer carries the model's reasoning at all.
+    cached = await player.choose(trade_context)
+    assert cached.choice.action_index == 0
+    assert cached.choice.knight_destination == (0, 1, -1)
+    snapshot_bytes = pickle.dumps(player.snapshot())
+    assert b"REASONING-SENTINEL" not in snapshot_bytes
+    assert len(snapshot_bytes) < 8 * 1024

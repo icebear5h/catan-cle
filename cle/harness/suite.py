@@ -3,15 +3,24 @@
 from __future__ import annotations
 
 import re
+import warnings
 from pathlib import Path
 from typing import Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from cle.harness.components import (
+    MAX_COMPONENT_TEMPLATE_CHARS,
+    MAX_SUITE_AUTHORED_CHARS,
+    ComponentComposition,
+    SuiteStatus,
+    ComponentDefinition,
+    render_template,
+    validate_component_composition,
+)
 
-MAX_COMPONENT_TEMPLATE_CHARS = 12_000
-MAX_SUITE_AUTHORED_CHARS = 60_000
+
 _TEMPLATE_VARIABLE = re.compile(r"{{\s*([A-Za-z_][A-Za-z0-9_]*)\s*}}")
 _COMPONENT_ORDER = (
     "trajectory",
@@ -44,10 +53,14 @@ class TrajectoryConfig(_StrictModel):
 
 class ContextConfig(_StrictModel):
     order: tuple[str, ...]
-    mode: Literal["legacy", "components"] = "legacy"
+    mode: Literal["legacy", "components", "shared"] = "legacy"
+    memory_mode: Literal["legacy", "fresh_notes"] = "legacy"
+    max_notes_chars: int = Field(default=4000, ge=1, le=4000, strict=True)
     initial_placement_order: Literal["omit", "both_rounds"] = "omit"
     trajectory: TrajectoryConfig = TrajectoryConfig()
     social_context: bool = False
+    reactive_speech: bool = False
+    deterministic_batches: bool = False
 
 
 class SectionConfig(_StrictModel):
@@ -62,7 +75,7 @@ class SectionConfig(_StrictModel):
 
 
 class ResponseConfig(_StrictModel):
-    format: Literal["xml"] = "xml"
+    format: Literal["xml", "json"] = "xml"
     tags: tuple[str, ...]
     instruction: str = Field(min_length=1, max_length=MAX_COMPONENT_TEMPLATE_CHARS)
     fallback: Literal["first_legal"] = "first_legal"
@@ -73,14 +86,53 @@ class ContextSuite(_StrictModel):
 
     id: str = Field(min_length=1)
     version: str = Field(min_length=1)
-    system: SystemConfig
+    status: SuiteStatus = "active"
+    system: SystemConfig | None = None
     context: ContextConfig
     sections: dict[str, SectionConfig]
     phase_guidance: dict[str, str]
     response: ResponseConfig
+    components: dict[str, ComponentDefinition] = Field(default_factory=dict)
+    response_component: str | None = None
 
     @model_validator(mode="after")
     def validate_layout(self) -> "ContextSuite":
+        if self.context.deterministic_batches and self.context.mode != "shared":
+            raise ValueError("Deterministic batches require the shared/fresh contract")
+        if self.context.reactive_speech and self.context.mode != "shared":
+            raise ValueError("Reactive speech requires the shared contract")
+        if self.context.mode == "shared":
+            if self.context.memory_mode != "fresh_notes" or self.response.format != "json":
+                raise ValueError("shared context requires fresh_notes and JSON responses")
+            if self.sections or self.system is not None:
+                raise ValueError("shared context cannot contain historical system or sections")
+            validate_component_composition(
+                self.components,
+                ComponentComposition(order=self.context.order, response=self.response_component),
+                consumer="decision",
+            )
+            if set(self.response.tags) != {"tool", "arguments", "notes"}:
+                raise ValueError("fresh response.tags must contain tool, arguments, notes")
+            instruction = render_template(
+                self.components[self.response_component].template,
+                {"max_notes_chars": str(self.context.max_notes_chars)},
+            )
+            if self.response.instruction != instruction:
+                raise ValueError("shared response instruction must match its component")
+            authored = [
+                *(item.template for item in self.components.values()),
+                *(item.empty_text for item in self.components.values()),
+                *self.phase_guidance.values(),
+            ]
+            if any(len(value) > MAX_COMPONENT_TEMPLATE_CHARS for value in authored):
+                raise ValueError(f"suite strings may not exceed {MAX_COMPONENT_TEMPLATE_CHARS} characters")
+            if sum(map(len, authored)) > MAX_SUITE_AUTHORED_CHARS:
+                raise ValueError(f"suite authored text may not exceed {MAX_SUITE_AUTHORED_CHARS} characters")
+            return self
+        if self.components or self.response_component is not None:
+            raise ValueError("shared definitions require shared context mode")
+        if self.system is None:
+            raise ValueError("historical suites require system.template")
         order = self.context.order
         if len(order) != len(set(order)):
             raise ValueError("context.order contains duplicate sections")
@@ -129,7 +181,16 @@ class ContextSuite(_StrictModel):
                         f"{sorted(unknown_variables)}"
                     )
 
-        required_tags = {"game_plan", "action"}
+        if self.context.memory_mode == "fresh_notes" and self.response.format != "json":
+            raise ValueError("fresh_notes requires JSON responses")
+        if self.context.memory_mode == "fresh_notes":
+            required_tags = {"tool", "arguments"}
+        else:
+            required_tags = (
+                {"game_plan", "tool", "arguments"}
+                if self.response.format == "json"
+                else {"game_plan", "action"}
+            )
         missing_tags = required_tags - set(self.response.tags)
         if missing_tags:
             raise ValueError(f"response.tags is missing required tags: {sorted(missing_tags)}")
@@ -157,7 +218,7 @@ class ContextSuite(_StrictModel):
 
 def default_suite_path() -> Path:
     """Return the built-in text-only Catan suite path."""
-    return Path(__file__).resolve().parent / "suites" / "catan_v10.yaml"
+    return Path(__file__).resolve().parent / "suites" / "catan_v11.yaml"
 
 
 def parse_context_suite(
@@ -175,7 +236,15 @@ def parse_context_suite(
 def load_context_suite(path: str | Path | None = None) -> ContextSuite:
     """Load and validate one YAML suite without caching edited content."""
     suite_path = Path(path) if path is not None else default_suite_path()
-    return parse_context_suite(
+    suite = parse_context_suite(
         suite_path.read_text(encoding="utf-8"),
         source_name=str(suite_path),
     )
+    warn_if_deprecated(suite.status, suite_path)
+    return suite
+
+
+def warn_if_deprecated(status: SuiteStatus, source: Path) -> None:
+    """Loading a deprecated suite file is allowed for replay, but never silent."""
+    if status == "deprecated":
+        warnings.warn(f"Prompt suite {source} is deprecated", DeprecationWarning, stacklevel=3)

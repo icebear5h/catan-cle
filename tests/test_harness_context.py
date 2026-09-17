@@ -19,6 +19,7 @@ from cle.players.contracts import PlayerChoice
 from cle.players.validation import action_from_choice
 from cle.harness.response_xml import parse_response_fields
 from cle.sandbox import CatanSandbox
+from cle.game_engine.board_tokens import node_token
 from cle.game_engine.game import GameEngine
 from cle.game_engine.models.actions import generate_playable_actions, trade_response_actions
 from cle.game_engine.models.enums import Action, ActionType
@@ -66,7 +67,12 @@ class NoCommunicationPolicy:
 def _sandbox_and_player(responses):
     engine = GameEngine(COLORS, seed=7, shuffle_players=False)
     transport = FixedTransport(list(responses))
-    red = AgentPlayer(Color.RED, transport, session_id=f"{engine.id}:RED")
+    red = AgentPlayer(
+        Color.RED,
+        transport,
+        session_id=f"{engine.id}:RED",
+        suite=load_context_suite(default_suite_path().with_name("catan_v10.yaml")),
+    )
     players = {Color.RED: red}
     players.update({color: FirstLegalPlayer(color) for color in COLORS[1:]})
     return (
@@ -94,6 +100,69 @@ def trade_sandbox():
     return sandbox
 
 
+@pytest.mark.parametrize("suite_file", ["catan_v10.yaml", "catan_v11.yaml"])
+@pytest.mark.parametrize("content", ["", " \n\t"])
+@pytest.mark.parametrize("reasoning_channel", [None, "text", "details"])
+def test_missing_final_answer_is_not_parsed_from_reasoning(
+    suite_file, content, reasoning_channel
+):
+    sandbox, _, _ = _sandbox_and_player([])
+    context = sandbox.decision_context()
+    parser = PlayerResponseParser(
+        load_context_suite(default_suite_path().with_name(suite_file))
+    )
+    valid_action = (
+        "<action>0</action>"
+        if parser.suite.response.format == "xml"
+        else json.dumps({
+            "tool": "build_settlement",
+            "arguments": {"node": node_token(context.legal_actions[0].value)},
+        })
+    )
+    assert parser.parse(context, ModelResponse(content=valid_action)).action_index == 0
+    response = ModelResponse(
+        content=content,
+        native_reasoning=valid_action if reasoning_channel == "text" else "",
+        native_reasoning_details=(
+            ({"type": "reasoning.text", "text": valid_action},)
+            if reasoning_channel == "details" else ()
+        ),
+        finish_reason="stop",
+        provider_native_finish_reason="stop",
+    )
+
+    with pytest.raises(PlayerResponseParseError) as error:
+        parser.parse(context, response)
+
+    assert str(error.value) == (
+        "The provider returned reasoning but no final answer."
+        if reasoning_channel else "The provider returned no final answer."
+    )
+
+
+@pytest.mark.parametrize(
+    ("finish_reason", "native_finish_reason"),
+    [("length", None), (None, "max_tokens"), (None, "length")],
+)
+def test_missing_final_answer_reports_only_explicit_completion_limits(
+    finish_reason, native_finish_reason
+):
+    sandbox, player, _ = _sandbox_and_player([])
+    response = ModelResponse(
+        content="", native_reasoning="unfinished analysis",
+        finish_reason=finish_reason,
+        provider_native_finish_reason=native_finish_reason,
+    )
+
+    with pytest.raises(PlayerResponseParseError) as error:
+        PlayerResponseParser(player.suite).parse(sandbox.decision_context(), response)
+
+    assert str(error.value) == (
+        "The provider returned reasoning but no final answer. "
+        "The provider reported a completion-token limit."
+    )
+
+
 def test_default_yaml_suite_is_strict_and_separately_loadable():
     first = load_context_suite()
     second = load_context_suite()
@@ -101,7 +170,10 @@ def test_default_yaml_suite_is_strict_and_separately_loadable():
     assert first == second
     assert first is not second
     assert first.id == "catan-agent"
-    assert first.version == "10.0.0"
+    assert first.version == "11.0.0"
+    assert first.response.format == "json"
+    assert first.response.tags == ("game_plan", "tool", "arguments")
+    assert "action_mode" not in first.response.model_dump()
     assert first.context.mode == "components"
     assert first.context.social_context is True
     assert first.context.initial_placement_order == "both_rounds"
@@ -122,9 +194,13 @@ def test_default_yaml_suite_is_strict_and_separately_loadable():
         "response_schema",
     )
     assert first.context.trajectory.max_messages is None
-    response_fields, _ = parse_response_fields(first.response.instruction)
-    assert set(response_fields) == set(first.response.tags)
-    assert all(len(values) == 1 for values in response_fields.values())
+    assert "<action>" not in first.response.instruction
+    assert "<game_plan>" not in first.response.instruction
+    assert "action_index" not in first.response.instruction
+    for name in first.response.tags:
+        assert f'"{name}"' in first.response.instruction
+    for token in ("<N00>", "<E00_01>", "<T00>"):
+        assert token in first.response.instruction
 
     guidance_word_counts = {
         key: len(value.split())
@@ -140,13 +216,13 @@ def test_default_yaml_suite_is_strict_and_separately_loadable():
         "robber",
         "main_game",
     }
-    assert guidance_word_counts["initial_settlement_1"] == 256
+    assert guidance_word_counts["initial_settlement_1"] == 213
     assert all(
-        10 <= count <= 110
+        10 <= count <= 300
         for key, count in guidance_word_counts.items()
         if key != "initial_settlement_1"
     )
-    assert 600 <= sum(guidance_word_counts.values()) <= 700
+    assert 600 <= sum(guidance_word_counts.values()) <= 950
 
     strategy_variant = json.loads(
         default_suite_path()
@@ -160,6 +236,30 @@ def test_default_yaml_suite_is_strict_and_separately_loadable():
     )
     assert first.phase_guidance["initial_settlement_1"] == (
         strategy_variant["guidance"]
+    )
+
+    historical_v10 = load_context_suite(
+        default_suite_path().with_name("catan_v10.yaml")
+    )
+    assert historical_v10.response.format == "xml"
+    response_fields, _ = parse_response_fields(historical_v10.response.instruction)
+    assert set(response_fields) == set(historical_v10.response.tags)
+    assert all(len(values) == 1 for values in response_fields.values())
+    assert first.system == historical_v10.system
+    assert first.context == historical_v10.context
+    unchanged_guidance = (
+        "initial_settlement_2",
+        "initial_road_1",
+        "initial_road_2",
+        "initial_placement",
+    )
+    assert all(
+        first.phase_guidance[key] == historical_v10.phase_guidance[key]
+        for key in unchanged_guidance
+    )
+    response_changes = {"format", "tags", "instruction"}
+    assert first.response.model_dump(exclude=response_changes) == (
+        historical_v10.response.model_dump(exclude=response_changes)
     )
 
     historical_v8 = load_context_suite(
@@ -215,6 +315,7 @@ def test_legacy_decision_suite_remains_loadable():
     suite = load_context_suite(default_suite_path().with_name("catan_v5.yaml"))
 
     assert suite.version == "5.0.0"
+    assert suite.response.format == "xml"
     assert suite.context.mode == "legacy"
     assert suite.sections["observation"].template is None
 
@@ -356,13 +457,13 @@ def test_every_phase_key_renders_concise_player_facing_guidance():
     assert "one coupled portfolio" in (
         rendered_guidance["initial_settlement_1"]
     )
-    assert "nominal diversity without buildable combinations can be weak" in (
+    assert "opening archetype" in (
         rendered_guidance["initial_settlement_1"]
     )
     assert "at least two reachable expansion targets" in (
         rendered_guidance["initial_settlement_1"]
     )
-    assert "second settlement is independent of the first road" in (
+    assert "placed independently of this road" in (
         rendered_guidance["initial_settlement_1"]
     )
     assert "one starting card from each adjacent non-desert tile" in (
@@ -374,11 +475,10 @@ def test_every_phase_key_renders_concise_player_facing_guidance():
     assert "eventually join your two starting networks" in (
         rendered_guidance["initial_road_2"]
     )
-    assert rendered_guidance["discarding"] == (
+    assert rendered_guidance["discarding"].startswith(
         "DECISION FACTS:\n"
         "Resolve the required discard. Choose exactly the stated number of cards "
-        "from your holdings using named resource counts. Reassess your plan after the robber "
-        "sequence changes production or resources."
+        "from your holdings using named resource counts."
     )
     assert "movement and victim selection may be separate choices" in (
         rendered_guidance["robber"]
@@ -609,8 +709,9 @@ async def test_sandbox_retries_invalid_player_output_with_feedback():
 def test_action_parser_preserves_exact_indices_and_explicit_fallbacks(text, index, fallback):
     sandbox, _, _ = _sandbox_and_player([])
     context = sandbox.decision_context()
+    suite = load_context_suite(default_suite_path().with_name("catan_v10.yaml"))
 
-    choice = PlayerResponseParser(load_context_suite()).parse(
+    choice = PlayerResponseParser(suite).parse(
         context, ModelResponse(content=text)
     )
 
@@ -669,7 +770,9 @@ def test_action_parser_treats_historical_rationale_as_inert_data(suite_name, sel
 )
 def test_action_parser_keeps_real_selections_when_schema_has_no_placeholder(instruction):
     sandbox, _, _ = _sandbox_and_player([])
-    suite_data = load_context_suite().model_dump(mode="python")
+    suite_data = load_context_suite(
+        default_suite_path().with_name("catan_v10.yaml")
+    ).model_dump(mode="python")
     suite_data["response"]["instruction"] = instruction
     parser = PlayerResponseParser(ContextSuite.model_validate(suite_data))
     context = sandbox.decision_context()
@@ -688,9 +791,10 @@ def test_action_parser_keeps_real_selections_when_schema_has_no_placeholder(inst
 )
 def test_action_parser_rejects_non_integer_or_out_of_range_indices(template, value):
     sandbox, _, _ = _sandbox_and_player([])
+    suite = load_context_suite(default_suite_path().with_name("catan_v10.yaml"))
 
     with pytest.raises(PlayerResponseParseError):
-        PlayerResponseParser(load_context_suite()).parse(
+        PlayerResponseParser(suite).parse(
             sandbox.decision_context(), ModelResponse(content=template.format(value))
         )
 
@@ -713,9 +817,10 @@ def test_action_parser_rejects_non_integer_or_out_of_range_indices(template, val
 )
 def test_action_parser_does_not_infer_an_index_from_plan_trade_or_prose(text):
     sandbox, _, _ = _sandbox_and_player([])
+    suite = load_context_suite(default_suite_path().with_name("catan_v10.yaml"))
 
     with pytest.raises(PlayerResponseParseError):
-        PlayerResponseParser(load_context_suite()).parse(
+        PlayerResponseParser(suite).parse(
             sandbox.decision_context(), ModelResponse(content=text)
         )
 
@@ -731,16 +836,18 @@ def test_action_parser_does_not_infer_an_index_from_plan_trade_or_prose(text):
 )
 def test_action_parser_rejects_conflicting_selections(text):
     sandbox, _, _ = _sandbox_and_player([])
+    suite = load_context_suite(default_suite_path().with_name("catan_v10.yaml"))
 
     with pytest.raises(PlayerResponseParseError, match="conflicting"):
-        PlayerResponseParser(load_context_suite()).parse(
+        PlayerResponseParser(suite).parse(
             sandbox.decision_context(), ModelResponse(content=text)
         )
 
 
 def test_counteroffer_parser_preserves_engine_generated_parent_id(trade_sandbox):
     engine = trade_sandbox.game_engine
-    parser = PlayerResponseParser(load_context_suite())
+    suite = load_context_suite(default_suite_path().with_name("catan_v10.yaml"))
+    parser = PlayerResponseParser(suite)
     context = trade_sandbox.decision_context()
     index = next(
         i
@@ -807,6 +914,7 @@ def test_counteroffer_parser_preserves_engine_generated_parent_id(trade_sandbox)
 )
 def test_trade_parser_rejects_duplicate_json_keys(trade_sandbox, payload):
     context = trade_sandbox.decision_context()
+    suite = load_context_suite(default_suite_path().with_name("catan_v10.yaml"))
     index = next(
         i
         for i, action in enumerate(context.legal_actions)
@@ -814,7 +922,7 @@ def test_trade_parser_rejects_duplicate_json_keys(trade_sandbox, payload):
     )
 
     with pytest.raises(PlayerResponseParseError, match="Duplicate"):
-        PlayerResponseParser(load_context_suite()).parse(
+        PlayerResponseParser(suite).parse(
             context,
             ModelResponse(content=f"<action>{index}</action><trade_offer>{payload}</trade_offer>"),
         )
@@ -825,7 +933,11 @@ def test_template_rendering_preserves_template_syntax_in_plan_data():
     suite = load_context_suite()
     context = sandbox.decision_context()
     plan = "Save {{ wood }} and {{ value }} for a road"
-    choice = PlayerResponseParser(suite).parse(context, _response(plan=plan))
+    choice = PlayerResponseParser(suite).parse(context, ModelResponse(content=json.dumps({
+        "game_plan": plan,
+        "tool": "build_settlement",
+        "arguments": {"node": f"<N{context.legal_actions[0].value:02d}>"},
+    })))
     player.session.strategic_memory = choice.game_plan
 
     components = ContextAssembler(suite).render_components(context, player.session)
@@ -836,7 +948,7 @@ def test_template_rendering_preserves_template_syntax_in_plan_data():
         ContextAssembler._render_template("{{ missing }}", {"value": plan})
 
 
-def test_year_of_plenty_menu_names_singleton_resources(trade_sandbox):
+def test_v10_year_of_plenty_menu_names_singleton_resources(trade_sandbox):
     engine = trade_sandbox.game_engine
     engine.state.development_listdeck.remove("YEAR_OF_PLENTY")
     engine.state.player_state["P0_YEAR_OF_PLENTY_IN_HAND"] = 1
@@ -850,7 +962,7 @@ def test_year_of_plenty_menu_names_singleton_resources(trade_sandbox):
     engine.state.resource_freqdeck[:] = bank
     engine.state.playable_actions = generate_playable_actions(engine.state)
     context = trade_sandbox.decision_context()
-    suite = load_context_suite()
+    suite = load_context_suite(default_suite_path().with_name("catan_v10.yaml"))
     components = ContextAssembler(suite).render_components(
         context, PlayerSession(context.actor, "year-of-plenty")
     )
@@ -882,7 +994,6 @@ def test_v10_social_sections_use_only_supplied_perspective_and_leave_game_histor
             speaker=Color.BLUE,
             text=f"visible-offer-{index}",
             audience=(Color.RED,),
-            intent="TRADE",
             causation_id=f"offer:{index}",
             commitment=("RED avoids BLUE", "BLUE offers ORE", 5) if index == 0 else None,
         )
@@ -890,7 +1001,6 @@ def test_v10_social_sections_use_only_supplied_perspective_and_leave_game_histor
         speaker=Color.WHITE,
         text="private-white-orange",
         audience=(Color.ORANGE,),
-        intent="TRADE",
         causation_id="private",
         commitment=("private condition", "private promise", 5),
     )
@@ -899,7 +1009,7 @@ def test_v10_social_sections_use_only_supplied_perspective_and_leave_game_histor
         recent_messages=engine.project_messages(Color.RED),
         active_commitments=engine.active_commitments(Color.RED),
     )
-    suite = load_context_suite()
+    suite = load_context_suite(default_suite_path().with_name("catan_v10.yaml"))
     request = ContextAssembler(suite).assemble(context, player.session)
     components = {item.id: item for item in request.components}
     talk = components["environment.recent_table_talk"].value
@@ -930,7 +1040,7 @@ def test_v10_social_sections_use_only_supplied_perspective_and_leave_game_histor
     assert "visible-offer-14" not in "\n".join(item.rendered for item in legacy_components)
 
 
-@pytest.mark.parametrize("suite_name", ["catan_v9.yaml", "catan_v10.yaml"])
+@pytest.mark.parametrize("suite_name", ["catan_v9.yaml", "catan_v10.yaml", "catan_v11.yaml"])
 def test_component_order_requires_explicit_social_policy(suite_name):
     suite = load_context_suite(default_suite_path().with_name(suite_name))
     data = suite.model_dump(mode="python")
@@ -966,7 +1076,7 @@ def test_v10_discard_parser_and_menu_use_exact_named_bundle(discard_context):
     count = context.discard_count
     payload = f'{{"ore":{count - 2},"wood":2}}'
     text = f"<game_plan>Keep building cards</game_plan><action>0</action><discard>{payload}</discard>"
-    suite = load_context_suite()
+    suite = load_context_suite(default_suite_path().with_name("catan_v10.yaml"))
     choice = PlayerResponseParser(suite).parse(context, ModelResponse(content=text))
 
     assert choice.discard_cards == ("WOOD", "WOOD") + ("ORE",) * (count - 2)
@@ -982,11 +1092,12 @@ def test_v10_discard_parser_and_menu_use_exact_named_bundle(discard_context):
     assert "<discard>" in menu
 
 
-def test_parsed_discard_bundle_is_the_exact_engine_action(discard_sandbox, discard_context):
+def test_v10_parsed_discard_bundle_is_the_exact_engine_action(discard_sandbox, discard_context):
     context = discard_context
     engine = discard_sandbox.game_engine
     before = dict(engine.observe(context.actor).my_resources)
-    choice = PlayerResponseParser(load_context_suite()).parse(
+    suite = load_context_suite(default_suite_path().with_name("catan_v10.yaml"))
+    choice = PlayerResponseParser(suite).parse(
         context,
         ModelResponse(content=(
             '<action>0</action><discard>{"WOOD":2,"ORE":'
@@ -1010,16 +1121,18 @@ def test_parsed_discard_bundle_is_the_exact_engine_action(discard_sandbox, disca
     '{"ANY":4}', '{"wood":2,"WOOD":2}', '{"WOOD":2,"WOOD":2}',
     '{"WOOD":999}', '{"WOOD":1}', '{"ORE":100000000000000000000}',
 ])
-def test_discard_parser_rejects_invalid_json_resources_counts_and_holdings(discard_context, payload):
+def test_v10_discard_parser_rejects_invalid_json_resources_counts_and_holdings(discard_context, payload):
+    suite = load_context_suite(default_suite_path().with_name("catan_v10.yaml"))
     with pytest.raises(PlayerResponseParseError):
-        PlayerResponseParser(load_context_suite()).parse(
+        PlayerResponseParser(suite).parse(
             discard_context, ModelResponse(content=f"<action>0</action><discard>{payload}</discard>")
         )
 
 
 def test_discard_requirement_is_suite_opt_in_and_old_menu_is_unchanged(discard_context):
     context = discard_context
-    parser = PlayerResponseParser(load_context_suite())
+    suite = load_context_suite(default_suite_path().with_name("catan_v10.yaml"))
+    parser = PlayerResponseParser(suite)
     with pytest.raises(PlayerResponseParseError, match="requires <discard>"):
         parser.parse(context, _response())
     historical = load_context_suite(default_suite_path().with_name("catan_v9.yaml"))
@@ -1032,7 +1145,7 @@ def test_discard_requirement_is_suite_opt_in_and_old_menu_is_unchanged(discard_c
     assert next(item.value for item in components if item.id == "environment.legal_actions") == (
         "0. Discard resources"
     )
-    data = load_context_suite().model_dump(mode="python")
+    data = suite.model_dump(mode="python")
     data["response"]["tags"] = tuple(tag for tag in data["response"]["tags"] if tag != "discard")
     assert PlayerResponseParser(ContextSuite.model_validate(data)).parse(
         context, _response()
@@ -1051,10 +1164,11 @@ def test_legacy_suite_keeps_automatic_discard_execution(discard_sandbox, discard
     '<discard>{"WOOD":4}</discard>',
     '<trade_offer>{"give":{"WOOD":1},"receive":{"ORE":1}}</trade_offer>',
 ])
-def test_parser_rejects_parameters_on_wrong_action(parameter):
+def test_v10_parser_rejects_parameters_on_wrong_action(parameter):
     sandbox, _, _ = _sandbox_and_player([])
+    suite = load_context_suite(default_suite_path().with_name("catan_v10.yaml"))
     with pytest.raises(PlayerResponseParseError, match="only valid"):
-        PlayerResponseParser(load_context_suite()).parse(
+        PlayerResponseParser(suite).parse(
             sandbox.decision_context(), ModelResponse(content=f"<action>0</action>{parameter}")
         )
 
@@ -1071,19 +1185,21 @@ def test_parser_rejects_parameters_on_wrong_action(parameter):
 ])
 def test_decision_parser_rejects_malformed_repeated_and_comment_only_controls(text):
     sandbox, _, _ = _sandbox_and_player([])
+    suite = load_context_suite(default_suite_path().with_name("catan_v10.yaml"))
     with pytest.raises(PlayerResponseParseError):
-        PlayerResponseParser(load_context_suite()).parse(
+        PlayerResponseParser(suite).parse(
             sandbox.decision_context(), ModelResponse(content=text)
         )
 
 
 def test_decision_parser_keeps_xml_escaped_prose_and_raw_output_separate():
     sandbox, _, _ = _sandbox_and_player([])
+    suite = load_context_suite(default_suite_path().with_name("catan_v10.yaml"))
     text = (
         "<!-- <action>2</action> action_index: 3 -->"
         "<game_plan>ORE &gt; WOOD &amp; wheat &lt; sheep</game_plan><action>0</action>"
     )
-    choice = PlayerResponseParser(load_context_suite()).parse(
+    choice = PlayerResponseParser(suite).parse(
         sandbox.decision_context(), ModelResponse(content=text)
     )
     assert choice.action_index == 0

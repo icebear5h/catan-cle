@@ -16,9 +16,16 @@ from cle.players.contracts import (
     PlayerChoice,
     PlayerContext,
 )
+from cle.players.notes import MAX_NOTES_CHARS, validate_notes
+from cle.players.action_batches import validate_batch_actions
 
 
-def action_from_choice(context: PlayerContext, choice: PlayerChoice) -> Action:
+def action_from_choice(
+    context: PlayerContext,
+    choice: PlayerChoice,
+    *,
+    max_notes_chars: int = MAX_NOTES_CHARS,
+) -> Action:
     """Return detached parameters bound to the exact menu; never mutate state.
 
     Invalid types, values, or menu associations raise ValueError. Affordability
@@ -26,6 +33,20 @@ def action_from_choice(context: PlayerContext, choice: PlayerChoice) -> Action:
     """
     if not isinstance(choice, PlayerChoice):
         raise ValueError("Player choice must be a PlayerChoice")
+    if not isinstance(choice.batch_actions, tuple):
+        raise ValueError("batch_actions must be a tuple")
+    if choice.batch_actions:
+        validate_batch_actions(choice.batch_actions, stored=True)
+        if any(value is not None for value in (
+            choice.trade_offer, choice.confirm_if_accepted_by,
+            choice.knight_destination, choice.discard_cards,
+        )):
+            raise ValueError("Batches cannot carry trade, discard or Knight instructions")
+    if choice.notes_update is not None:
+        try:
+            validate_notes(choice.notes_update, max_notes_chars)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"PlayerChoice.notes_update: {exc}") from exc
     if isinstance(choice.action_index, bool) or not isinstance(choice.action_index, int):
         raise ValueError("Action index must be an integer")
     try:
@@ -125,6 +146,21 @@ def action_from_choice(context: PlayerContext, choice: PlayerChoice) -> Action:
         if isinstance(action.value, str):
             action = Action(action.color, action.action_type, validated)
 
+    priority = choice.confirm_if_accepted_by
+    if priority is not None:
+        if action.action_type != ActionType.OFFER_TRADE or offer is None or offer.parent_offer_id is not None:
+            raise ValueError("confirm_if_accepted_by is only allowed on a root OFFER_TRADE")
+        if context.actor != context.observation.turn_player_color:
+            raise ValueError("Only the turn-player proposer may preauthorize confirmation")
+        if offer.give_any or offer.receive_any:
+            raise ValueError("Preauthorization requires exact terms without wildcards")
+        if priority != "ANY" and (
+            not isinstance(priority, tuple) or not priority
+            or any(not isinstance(color, Color) or color not in offer.audience for color in priority)
+            or len(set(priority)) != len(priority)
+        ):
+            raise ValueError("confirm_if_accepted_by must be ANY or distinct ordered players in the offer audience")
+
     cards = choice.discard_cards
     if cards is not None:
         if action.action_type != ActionType.DISCARD:
@@ -140,10 +176,40 @@ def action_from_choice(context: PlayerContext, choice: PlayerChoice) -> Action:
         if action.value is not None and Counter(action.value) != Counter(cards):
             raise ValueError("discard_cards cannot replace a concrete menu action")
         action = Action(action.color, action.action_type, cards)
+
+    destination = choice.knight_destination
+    if destination is not None:
+        if action.action_type != ActionType.PLAY_KNIGHT_CARD:
+            raise ValueError("knight_destination is only allowed for PLAY_KNIGHT_CARD")
+        if not isinstance(destination, tuple) or len(destination) != 3 or any(
+            type(coordinate) is not int for coordinate in destination
+        ):
+            raise ValueError("knight_destination must be a tuple of three integer coordinates")
+        if context.observation.board_map is None or destination not in context.observation.board_map.land_tiles:
+            raise ValueError("knight_destination must be a land tile")
+        if destination == context.observation.robber_position:
+            raise ValueError("knight_destination must differ from the current robber tile")
     return deepcopy(action)
 
 
-def validate_player_attempt(context: PlayerContext, attempt: PlayerAttempt) -> Action:
+def choice_followup_action(context: PlayerContext, choice: PlayerChoice) -> Action | None:
+    """Return the checked requested followup, not a simulation of its execution.
+
+    The caller must stop at an engine victory before applying this action.
+    Legacy choices leave the next decision to the player.
+    """
+    if isinstance(choice, CommunicationChoice) or choice.knight_destination is None:
+        return None
+    action = action_from_choice(context, choice)
+    return Action(action.color, ActionType.MOVE_ROBBER, choice.knight_destination)
+
+
+def validate_player_attempt(
+    context: PlayerContext,
+    attempt: PlayerAttempt,
+    *,
+    max_notes_chars: int = MAX_NOTES_CHARS,
+) -> Action | CommunicationChoice:
     """Validate a returned attempt before accessing its choice parameters."""
     if not isinstance(attempt, PlayerAttempt):
         raise ValueError("Player attempt must be a PlayerAttempt")
@@ -153,9 +219,20 @@ def validate_player_attempt(context: PlayerContext, attempt: PlayerAttempt) -> A
         raise ValueError("Player attempt validation_error must be a string or None")
     if attempt.choice is None:
         raise ValueError(attempt.validation_error or "Return one valid PlayerChoice")
-    if attempt.validation_error:
+    if attempt.validation_error is not None:
         raise ValueError("Player attempt cannot contain both a choice and a validation error")
-    return action_from_choice(context, attempt.choice)
+    if isinstance(attempt.choice, CommunicationChoice):
+        if not context.speech_allowed or attempt.choice.mode != CommunicationMode.SAY:
+            raise ValueError("This decision requires a game action; standalone speech is unavailable")
+        validate_communication_choice(
+            attempt.choice, speaker=context.actor,
+            participants=(context.actor, *context.observation.opponent_resource_counts),
+            max_notes_chars=max_notes_chars,
+        )
+        if attempt.choice.respondents is None:
+            raise ValueError("Standalone speech requires explicit respondents")
+        return deepcopy(attempt.choice)
+    return action_from_choice(context, attempt.choice, max_notes_chars=max_notes_chars)
 
 
 def validate_communication_choice(
@@ -163,10 +240,20 @@ def validate_communication_choice(
     *,
     speaker: Color,
     participants: tuple[Color, ...],
+    max_notes_chars: int = MAX_NOTES_CHARS,
 ) -> None:
     """Reject malformed typed speech before any message or commitment is appended."""
     if not isinstance(choice, CommunicationChoice):
         raise ValueError("Communication choice must be a CommunicationChoice")
+    if choice.validation_error is not None:
+        if not isinstance(choice.validation_error, str):
+            raise ValueError("CommunicationChoice.validation_error must be a string or None")
+        raise ValueError(choice.validation_error or "Invalid communication response")
+    if choice.notes_update is not None:
+        try:
+            validate_notes(choice.notes_update, max_notes_chars)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"CommunicationChoice.notes_update: {exc}") from exc
     if not isinstance(choice.mode, CommunicationMode):
         raise ValueError("CommunicationChoice.mode must be a CommunicationMode")
     if not isinstance(choice.text, str):
@@ -179,8 +266,16 @@ def validate_communication_choice(
         raise ValueError("Message audience contains a non-participant")
     if speaker in choice.audience:
         raise ValueError("Message audience must contain other participants, not the speaker")
-    if choice.intent is not None and not isinstance(choice.intent, str):
-        raise ValueError("CommunicationChoice.intent must be a string or None")
+    if choice.respondents is not None:
+        if not isinstance(choice.respondents, tuple) or len(set(choice.respondents)) != len(choice.respondents) or any(
+            not isinstance(color, Color) or color == speaker or color not in participants
+            for color in choice.respondents
+        ):
+            raise ValueError("Respondents must be distinct eligible other participants")
+        if choice.mode == CommunicationMode.SAY and set(choice.audience) != set(participants) - {speaker}:
+            raise ValueError("Reactive table talk must be public")
+        if choice.mode == CommunicationMode.SILENCE and choice.respondents:
+            raise ValueError("Pass cannot request respondents")
     if choice.mode == CommunicationMode.SAY and (not choice.text.strip() or not choice.audience):
         raise ValueError("Spoken messages require nonempty text and an audience")
     proposal = choice.commitment
@@ -199,6 +294,6 @@ def validate_communication_choice(
         ):
             raise ValueError("Commitment expires_turn must be a non-negative integer")
     if choice.mode == CommunicationMode.SILENCE and (
-        choice.text or choice.audience or choice.intent is not None or proposal is not None
+        choice.text or choice.audience or proposal is not None
     ):
-        raise ValueError("Silence cannot carry a message, audience, intent, or commitment")
+        raise ValueError("Silence cannot carry a message, audience, or commitment")

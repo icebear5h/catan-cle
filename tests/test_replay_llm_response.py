@@ -1,9 +1,11 @@
 from threading import Lock
 from types import SimpleNamespace
 
+import pytest
 from flask import Flask
 
 from cle.harness.models import ModelResponse
+from cle.harness.prompt_store import resolve_prompt_suites
 from cle.replay.activity import (
     format_visible_replay_activity,
     select_recent_activity_rows,
@@ -13,6 +15,16 @@ from cle.sandbox.replay import ReplaySandbox
 from cle.game_engine.game import GameEngine
 from cle.game_engine.models.player import Color
 from playground.game_viewer.routes.replay import replay_bp
+
+
+@pytest.fixture
+def legacy_prompt_pair(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        "playground.game_viewer.replay.decision_preview.resolve_prompt_suites",
+        lambda: resolve_prompt_suites(
+            directory=tmp_path, legacy=True, use_environment=False,
+        ),
+    )
 
 
 def _make_game():
@@ -38,8 +50,8 @@ def _replay_data(parsed_actions=None):
 def _fake_general_provider_response(**kwargs):
     return {
         "content": (
-            "<game_plan>Prioritize production and expansion.</game_plan>"
-            "<action>0</action>"
+            '{"game_plan":"Prioritize production and expansion.",'
+            '"tool":"build_settlement","arguments":{"node":"<N00>"}}'
         ),
         "model": kwargs["model"],
         "usage": {
@@ -386,7 +398,7 @@ def test_activity_formatter_redacts_hidden_cards_and_steals():
     assert visible_steal == "BLUE: stole WHEAT from RED"
 
 
-def test_replay_llm_route_returns_response_without_advancing_cursor():
+def test_replay_llm_route_returns_response_without_advancing_cursor(legacy_prompt_pair):
     game = _make_game()
     state = SimpleNamespace(
         replay_mode=True,
@@ -415,6 +427,9 @@ def test_replay_llm_route_returns_response_without_advancing_cursor():
     assert payload["replay_index"] == 0
     assert payload["stale"] is False
     assert payload["game_plan"] == "Prioritize production and expansion."
+    assert payload["parse_error"] is None
+    assert payload["action_index"] == 0
+    assert '"tool":"build_settlement"' in payload["raw_response"]
     assert "rationale" not in payload
     assert payload["native_reasoning"] == "private native analysis"
     assert payload["native_reasoning_returned"] is True
@@ -435,7 +450,7 @@ def test_replay_llm_route_returns_response_without_advancing_cursor():
     assert len(game.history) == before_history_length
 
 
-def test_replay_llm_route_marks_response_stale_if_cursor_moves_during_query():
+def test_replay_llm_route_marks_response_stale_if_cursor_moves_during_query(legacy_prompt_pair):
     game = _make_game()
     state = SimpleNamespace(
         replay_mode=True,
@@ -463,7 +478,7 @@ def test_replay_llm_route_marks_response_stale_if_cursor_moves_during_query():
     }
 
 
-def test_replay_llm_route_preserves_explicit_reasoning_off():
+def test_replay_llm_route_preserves_explicit_reasoning_off(legacy_prompt_pair):
     game = _make_game()
     state = SimpleNamespace(
         replay_mode=True,
@@ -486,7 +501,7 @@ def test_replay_llm_route_preserves_explicit_reasoning_off():
     assert response.get_json()["reasoning_request"] == {"enabled": False}
 
 
-def test_replay_llm_route_rejects_invalid_model_and_concurrent_request():
+def test_replay_llm_route_rejects_invalid_model_and_concurrent_request(legacy_prompt_pair):
     game = _make_game()
     state = SimpleNamespace(
         replay_mode=True,

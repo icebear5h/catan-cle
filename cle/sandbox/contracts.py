@@ -5,7 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from cle.players.contracts import PlayerAttempt, PlayerContext
+from cle.players.contracts import PlayerAttempt, PlayerContext, _restore_contract_slots
+from cle.sandbox.communication import CommunicationOpportunity
+from cle.sandbox.trade_preauthorization import AutomaticTradeAction, TradePreauthorization
+from cle.sandbox.action_batches import AutomaticBatchAction, PendingActionBatch
 from cle.game_engine.events import EngineTransition, GameEngineSnapshot, GameEvent, PlayerEvent
 from cle.game_engine.models.enums import Action
 from cle.game_engine.models.player import Color
@@ -29,6 +32,9 @@ class SandboxStepResult:
     attempts: tuple[PlayerAttempt, ...]
     transitions: tuple[EngineTransition, ...]
     messages: tuple[GameEvent, ...] = ()
+    automatic_action: AutomaticTradeAction | AutomaticBatchAction | None = None
+
+    __setstate__ = _restore_contract_slots
 
     @property
     def context(self) -> PlayerContext | None:
@@ -40,7 +46,7 @@ class SandboxStepResult:
 
     @property
     def after_revision(self) -> int:
-        return self.transitions[-1].after_revision
+        return self.transitions[-1].after_revision if self.transitions else self.messages[-1].sequence + 1
 
     @property
     def winner(self) -> Color | None:
@@ -64,3 +70,12 @@ class SandboxView:
 class SandboxSnapshot:
     engine: GameEngineSnapshot
     player_states: tuple[tuple[Color, Any], ...]
+    pending_decision_revision: int | None = None
+    speech_used: bool = False
+    speech_calls_remaining: int | None = None
+    pending_reactions: tuple[CommunicationOpportunity, ...] = ()
+    pre_robber_sequence: int | None = None
+    trade_preauthorization: TradePreauthorization | None = None
+    pending_action_batch: PendingActionBatch | None = None
+
+    __setstate__ = _restore_contract_slots

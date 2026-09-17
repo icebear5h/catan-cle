@@ -151,12 +151,12 @@ def test_decision_social_facts_are_projected_bounded_and_detached(actor, overflo
     engine = GameEngine(COLORS, seed=7, shuffle_players=False)
     engine.communication_limits = replace(engine.communication_limits, recent_message_window=2)
     engine.append_message(
-        speaker=Color.BLUE, text="private promise", audience=(Color.RED,), intent="BRIBE",
+        speaker=Color.BLUE, text="private promise", audience=(Color.RED,),
         causation_id="private", commitment=("spare BLUE", "BLUE offers ORE", 9),
     )
     for index in range(3 if overflow else 1):
         engine.append_message(
-            speaker=Color.RED, text=f"public-{index}", audience=COLORS[1:], intent="TRADE",
+            speaker=Color.RED, text=f"public-{index}", audience=COLORS[1:],
             causation_id=f"public:{index}",
         )
     engine.step(engine.state.playable_actions[0])

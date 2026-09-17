@@ -66,6 +66,10 @@ def build_decision_context(
             if any(action.action_type == ActionType.DISCARD for action in legal_actions)
             else 0
         ),
+        visible_through_sequence=cutoff,
+        visible_messages=tuple(
+            event for event in visible if event.event_type == "MESSAGE_SENT"
+        ),
     ))
 
 

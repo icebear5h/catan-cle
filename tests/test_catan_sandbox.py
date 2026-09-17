@@ -509,7 +509,10 @@ async def test_step_rejects_overlap_and_restore_until_pending_choice_finishes():
             await release.wait()
             return ModelResponse(content="<game_plan>opening</game_plan><action>0</action>")
 
-    red = AgentPlayer(Color.RED, PendingTransport(), session_id="pending:RED")
+    red = AgentPlayer(
+        Color.RED, PendingTransport(), session_id="pending:RED",
+        suite=load_context_suite(default_suite_path().with_name("catan_v10.yaml")),
+    )
     sandbox, _ = _sandbox(red)
     sandbox.communication_policy = NoCommunicationPolicy()
     snapshot = sandbox.snapshot()
@@ -566,7 +569,6 @@ async def test_stale_choice_is_rejected_even_if_selected_action_remains_legal(ba
             speaker=Color.RED,
             text="New information",
             audience=COLORS[1:],
-            intent="TRADE",
             causation_id="external",
         )
     else:
@@ -634,7 +636,10 @@ async def test_pre_action_messages_advance_revision_without_invalidating_followi
     )
     engine = _trade_engine()
     players = {color: FirstLegalPlayer(color) for color in COLORS}
-    red = AgentPlayer(Color.RED, transport, session_id="pre-action:RED")
+    red = AgentPlayer(
+        Color.RED, transport, session_id="pre-action:RED",
+        suite=load_context_suite(default_suite_path().with_name("catan_v10.yaml")),
+    )
     players[Color.RED] = red
     sandbox = CatanSandbox(engine, players)
 
@@ -674,9 +679,15 @@ async def test_post_action_speech_failure_preserves_accepted_agent_history(barri
         transport = FixedTransport(
             [ModelResponse(content=f"<game_plan>{color.value} plan</game_plan><action>0</action>")]
         )
-        players[color] = FailingSpeaker(color, transport, session_id=f"post:{color.value}")
+        players[color] = FailingSpeaker(
+            color, transport, session_id=f"post:{color.value}",
+            suite=load_context_suite(default_suite_path().with_name("catan_v10.yaml")),
+        )
     if not barrier:
-        players[Color.BLUE] = FailingSpeaker(Color.BLUE, FixedTransport([]), session_id="post:BLUE")
+        players[Color.BLUE] = FailingSpeaker(
+            Color.BLUE, FixedTransport([]), session_id="post:BLUE",
+            suite=load_context_suite(default_suite_path().with_name("catan_v10.yaml")),
+        )
     sandbox = CatanSandbox(engine, players)
     pending = asyncio.create_task(sandbox.step())
     await asyncio.wait_for(entered.wait(), 1)
@@ -706,7 +717,6 @@ async def test_post_action_error_carries_already_emitted_messages():
                 mode=CommunicationMode.SAY,
                 text=f"{self.color.value} offer",
                 audience=(Color.RED,) if self.color == Color.BLUE else (Color.BLACK,),
-                intent="TRADE",
             )
 
     sandbox, players = _sandbox()
@@ -739,7 +749,7 @@ async def test_communication_message_limit_counts_each_emitted_message_once(limi
     class Speaker(FirstLegalPlayer):
         async def communicate(self, context):
             return CommunicationChoice(
-                mode=CommunicationMode.SAY, text="Trade?", audience=(Color.RED,), intent="TRADE"
+                mode=CommunicationMode.SAY, text="Trade?", audience=(Color.RED,)
             )
 
     sandbox, _ = _sandbox()
@@ -781,7 +791,7 @@ async def test_acquired_speech_is_recorded_withheld_when_sibling_request_fails(c
             if self.color == Color.BLUE:
                 acquired.set()
                 return CommunicationChoice(
-                    mode=CommunicationMode.SAY, text="Trade?", audience=(Color.RED,), intent="TRADE"
+                    mode=CommunicationMode.SAY, text="Trade?", audience=(Color.RED,)
                 )
             if self.color == Color.WHITE:
                 await release.wait()
@@ -987,7 +997,10 @@ async def test_failed_capacity_barrier_preserves_each_completed_call_once(retry)
         ]
         responses.update((reply.provider_response_id, reply) for reply in replies)
         transports[color] = FixedTransport(replies)
-        players[color] = AgentPlayer(color, transports[color], session_id=color.value)
+        players[color] = AgentPlayer(
+            color, transports[color], session_id=color.value,
+            suite=load_context_suite(default_suite_path().with_name("catan_v10.yaml")),
+        )
     sandbox = CatanSandbox(
         engine, players, retry_policy=RetryPolicy(1 if retry == "none" else 2),
         communication_policy=NoCommunicationPolicy(),
@@ -1062,7 +1075,13 @@ async def test_barrier_failure_retains_completed_sibling_and_awaits_blocked_chil
 
     transport = ControlledTransport()
     players = {Color.RED: FirstLegalPlayer(Color.RED)}
-    players.update({color: AgentPlayer(color, transport, session_id=color.value) for color in COLORS[1:]})
+    players.update({
+        color: AgentPlayer(
+            color, transport, session_id=color.value,
+            suite=load_context_suite(default_suite_path().with_name("catan_v10.yaml")),
+        )
+        for color in COLORS[1:]
+    })
     sandbox = CatanSandbox(
         engine, players, retry_policy=RetryPolicy(1), communication_policy=NoCommunicationPolicy()
     )
@@ -1140,7 +1159,10 @@ async def test_invalid_offer_retries_with_error_and_only_commits_valid_response(
             ModelResponse(content="<game_plan>accepted</game_plan><action>0</action>"),
         ]
     )
-    red = AgentPlayer(Color.RED, transport, session_id="duplicate:RED")
+    red = AgentPlayer(
+        Color.RED, transport, session_id="duplicate:RED",
+        suite=load_context_suite(default_suite_path().with_name("catan_v10.yaml")),
+    )
     players = {color: FirstLegalPlayer(color) for color in COLORS}
     players[Color.RED] = red
     sandbox = CatanSandbox(
@@ -1443,7 +1465,7 @@ def test_talk_context_filters_cutoff_before_message_window_and_commitments():
     engine.communication_limits = replace(engine.communication_limits, recent_message_window=2)
     for index in range(5):
         engine.append_message(
-            speaker=Color.BLUE, text=f"private-{index}", audience=(Color.RED,), intent="BRIBE",
+            speaker=Color.BLUE, text=f"private-{index}", audience=(Color.RED,),
             causation_id=f"talk:{index}", commitment=("condition", f"promise-{index}", 9),
         )
     cause = engine.project_events(Color.RED)[1]
@@ -1497,9 +1519,11 @@ async def test_discard_choice_reaches_strict_engine_without_force(kind):
     if kind == "typed":
         players[Color.RED] = DiscardPlayer(Color.RED)
     else:
-        response = "<action>0</action>"
-        if kind == "agent":
-            response += '<discard>{"WOOD":1,"ORE":3}</discard>'
+        response = (
+            '{"game_plan":"keep building cards","tool":"discard",'
+            '"arguments":{"cards":{"WOOD":1,"ORE":3}}}'
+            if kind == "agent" else "<action>0</action>"
+        )
         suite = load_context_suite(
             default_suite_path().with_name("catan_v9.yaml") if kind == "legacy-agent" else None
         )
@@ -1535,7 +1559,7 @@ async def test_communication_callbacks_and_pending_response_metadata_are_detache
     sandbox, _ = _sandbox()
     engine = sandbox.game_engine
     engine.append_message(
-        speaker=Color.RED, text="original", audience=COLORS[1:], intent="BRIBE",
+        speaker=Color.RED, text="original", audience=COLORS[1:],
         causation_id="prior", commitment=("condition", "original promise", 9),
     )
     entered, release = asyncio.Event(), asyncio.Event()

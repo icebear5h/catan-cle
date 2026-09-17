@@ -18,6 +18,9 @@ class ReactionReason(str, Enum):
     ROBBER = "robber"
     MAJOR_BUILD = "major_build"
     TURN_CHANGE = "turn_change"
+    ADDRESSED_SPEECH = "addressed_speech"
+    STANDALONE_SPEECH = "standalone_speech"
+    PRE_ROBBER = "pre_robber"
 
 
 @dataclass(frozen=True, slots=True)
@@ -131,3 +134,18 @@ class CommunicationPolicy:
     @staticmethod
     def _recipients(engine: GameEngine, event: GameEvent) -> tuple[Color, ...]:
         return tuple(color for color in engine.state.colors if color != event.actor)
+
+    @staticmethod
+    def addressed(engine: GameEngine, events: tuple[GameEvent, ...], *, round_number: int = 0) -> tuple[CommunicationOpportunity, ...]:
+        """Model-declared respondents, never inferred from message text."""
+        opportunities = []
+        for event in events:
+            if event.event_type != "MESSAGE_SENT" or not isinstance(event.public_payload, dict):
+                continue
+            for color in event.public_payload.get("respondents", ()):
+                projected = project_event(event, color)
+                if projected is not None and color != event.actor and color in engine.state.colors:
+                    opportunities.append(CommunicationOpportunity(
+                        color, projected, event.sequence, ReactionReason.ADDRESSED_SPEECH, round_number,
+                    ))
+        return tuple(opportunities)

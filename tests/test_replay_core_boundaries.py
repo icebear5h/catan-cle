@@ -1,6 +1,7 @@
 import asyncio
 from copy import deepcopy
 from pathlib import Path
+import json
 import pickle
 import random
 from types import SimpleNamespace
@@ -8,6 +9,7 @@ from types import SimpleNamespace
 import pytest
 
 from cle.harness import ContextAssembler, ModelResponse, PlayerSession, load_context_suite
+from cle.harness.prompt_store import resolve_prompt_suites
 from cle.sandbox.decision import build_decision_context
 from cle.sandbox.replay import ReplaySandbox
 from cle.game_engine.game import GameEngine
@@ -28,7 +30,7 @@ def opening_replay():
     )
     game.append_message(
         speaker=Color.RED, text="initial promise", audience=(Color.BLUE,),
-        intent="TRADE", causation_id="opening",
+        causation_id="opening",
         commitment=("offer wood", "return brick", 1),
     )
     runtime = SimpleNamespace(
@@ -165,7 +167,13 @@ def test_source_completion_overrides_live_threshold_without_score_sync_events(op
     assert _checkpoint_values(engine) == final
 
 
-def test_ongoing_replay_preview_bypasses_only_terminal_gating(opening_replay):
+def test_ongoing_replay_preview_bypasses_only_terminal_gating(opening_replay, tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        "playground.game_viewer.replay.decision_preview.resolve_prompt_suites",
+        lambda: resolve_prompt_suites(
+            directory=tmp_path, legacy=True, use_environment=False,
+        ),
+    )
     runtime, sandbox = opening_replay
     engine = sandbox.game_engine
     engine.vps_to_win = 1
@@ -173,7 +181,7 @@ def test_ongoing_replay_preview_bypasses_only_terminal_gating(opening_replay):
     assert engine.winning_color() == Color.RED
     engine.append_message(
         speaker=Color.BLUE, text="private-to-blue-and-white", audience=(Color.WHITE,),
-        intent="TRADE", causation_id="private-test",
+        causation_id="private-test",
         commitment=("private condition", "private promise", 2),
     )
     before_snapshot = engine.snapshot()
@@ -198,7 +206,12 @@ def test_ongoing_replay_preview_bypasses_only_terminal_gating(opening_replay):
     class PreviewTransport:
         async def complete(self, request):
             requests.append(request)
-            return ModelResponse(content="<game_plan>continue</game_plan><action>0</action>")
+            a, b = sorted(expected_actions[0].value)
+            return ModelResponse(content=json.dumps({
+                "game_plan": "continue",
+                "tool": "build_road",
+                "arguments": {"edge": f"<E{a:02d}_{b:02d}>"},
+            }))
 
     preview = asyncio.run(generate_decision_preview(
         sandbox, model="test/model", game_plan="", reasoning_request={"enabled": False},
@@ -250,9 +263,14 @@ def test_replay_context_uses_the_same_general_suite_as_live_games():
         "You are playing a game of Catan. You are playing as RED."
     )
     assert "YOUR CURRENT GAME PLAN:\nBuild a city." in request.messages[-1].content
-    assert "VALID ACTIONS:" in request.messages[-1].content
+    assert suite.version == "11.0.0"
+    assert suite.response.format == "json"
+    assert "build_settlement" in request.messages[-1].content
     assert "<rationale>" not in request.messages[-1].content
-    assert "<action>" in request.messages[-1].content
+    assert "<action>" not in request.messages[-1].content
+    assert "action_index" not in request.messages[-1].content
+    assert '"tool"' in request.messages[-1].content
+    assert '"arguments"' in request.messages[-1].content
     assert request.components[0].id == "system.identity"
     assert request.components[-1].id == "environment.response_schema"
 

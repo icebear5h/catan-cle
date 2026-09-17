@@ -1,6 +1,7 @@
 """Core replay_step logic, decomposed from the monolithic function."""
 
 from copy import deepcopy
+from dataclasses import replace
 import time
 import traceback
 
@@ -211,9 +212,30 @@ def _regenerate_playable_actions(game_state):
     game_state.playable_actions = generate_playable_actions(game_state)
 
 
+def _recorded_trade_payload(game, offer_id):
+    """Resolve exact source IDs only, including proposals absent from the typed board."""
+    if offer_id is None:
+        return None
+    for event in reversed(game.events):
+        if event.event_type not in {"OFFER_TRADE", "COUNTER_OFFER"}:
+            continue
+        payload = event.public_payload
+        if isinstance(payload, dict) and payload.get("id") == offer_id:
+            return deepcopy(payload)
+    return None
+
+
 def _publish_replay_action(game, action):
     """Record an already-applied action using the engine's privacy rules."""
     event = event_from_action(action, game.revision)
+    if action.action_type in {ActionType.ACCEPT_TRADE, ActionType.REJECT_TRADE, ActionType.CANCEL_TRADE}:
+        offer = _recorded_trade_payload(game, action.value)
+        if offer is not None:
+            event = replace(event, public_payload={"offer": offer})
+    elif action.action_type == ActionType.COUNTER_OFFER and isinstance(action.value, TradeOffer):
+        original = _recorded_trade_payload(game, action.value.parent_offer_id)
+        if original is not None:
+            event = replace(event, public_payload={**event.public_payload, "original": original})
     game.state.actions.append(deepcopy(action))
     return game.publish_event(
         event.event_type,
@@ -245,6 +267,7 @@ def _publish_trade_overlay(state, action_hint):
                     parent_color = parent_offer.offered_by
             if parent_color is None or parent_color == player:
                 # Source-only counteroffers have no authoritative typed audience.
+                original = _recorded_trade_payload(game, parent_id)
                 game.publish_event(action_type, player, {
                     "id": action_hint.get("trade_id"),
                     "offered_by": player.value,
@@ -253,6 +276,7 @@ def _publish_trade_overlay(state, action_hint):
                     "give_any": give_any,
                     "receive_any": receive_any,
                     "parent_offer_id": parent_id,
+                    **({"original": original} if original is not None else {}),
                 })
                 return
             audience = frozenset({parent_color})
@@ -275,10 +299,11 @@ def _publish_trade_overlay(state, action_hint):
                 elif response == "rejected":
                     value.declined_by.add(responder)
     elif action_type == "CLEAR_TRADE_RESPONSE":
+        offer = _recorded_trade_payload(game, action_hint.get("trade_id"))
         game.publish_event(
             action_type,
             player,
-            {"offer_id": action_hint.get("trade_id")},
+            {"offer_id": action_hint.get("trade_id"), **({"offer": offer} if offer is not None else {})},
             causation_id=f"replay:{state.replay_index}:event:{action_hint.get('index')}",
         )
         return
@@ -368,6 +393,7 @@ def _apply_trade_closures(action_hint, state):
         if creator is None and offer is not None:
             creator = offer.offered_by
         if creator is not None:
+            terms = _recorded_trade_payload(game, trade_id)
             game.publish_event(
                 "CLOSE_TRADE",
                 creator,
@@ -375,6 +401,7 @@ def _apply_trade_closures(action_hint, state):
                     "offer_id": trade_id,
                     "parent_offer_id": closure.get("counter_offer_to"),
                     "reason": closure.get("reason"),
+                    **({"offer": terms} if terms is not None else {}),
                 },
                 causation_id=f"replay:{state.replay_index}:event:{action_hint.get('index')}",
             )

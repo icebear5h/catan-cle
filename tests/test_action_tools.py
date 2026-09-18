@@ -1158,3 +1158,43 @@ def test_reduced_interrupt_and_roll_menus_execute_strictly(tool):
     action = action_from_choice(context, choice)
     assert engine.is_action_valid(action)
     engine.step(action)
+
+
+@pytest.mark.parametrize(
+    ("extra", "expected"),
+    [
+        ({}, frozenset(COLORS[1:])),
+        ({"player": "BLUE"}, frozenset({Color.BLUE})),
+        ({"player": "blue"}, frozenset({Color.BLUE})),
+        ({"audience": ["BLUE", "WHITE"]}, frozenset({Color.BLUE, Color.WHITE})),
+    ],
+)
+def test_shared_offer_trade_targets_a_player_or_audience_on_the_parameterized_menu(extra, expected):
+    context, arguments, _ = _case("offer_trade")
+    choice = parse_tool_choice(context, "offer_trade", {**arguments, **extra}, shared=True)
+    assert choice.trade_offer.audience == expected
+    assert choice.trade_offer.offered_by == context.actor
+
+
+@pytest.mark.parametrize(
+    ("extra", "match"),
+    [
+        ({"player": "BLUE", "audience": ["BLUE"]}, "not both"),
+        ({"player": "RED"}, "other participants"),
+        ({"player": 3}, "must be a string"),
+        ({"audience": []}, "nonempty"),
+        ({"player": "BLUE", "confirm_if_accepted_by": ["WHITE"]}, "audience"),
+    ],
+)
+def test_shared_offer_trade_rejects_bad_targets(extra, match):
+    context, arguments, _ = _case("offer_trade")
+    with pytest.raises(ValueError, match=match):
+        choice = parse_tool_choice(context, "offer_trade", {**arguments, **extra}, shared=True)
+        action_from_choice(context, choice)
+
+
+def test_shared_offer_trade_doc_describes_targeting():
+    context, _, _ = _case("offer_trade")
+    rendered = render_action_tools(context, shared=True)
+    assert "player or audience optional" in rendered
+    assert "Never pass a player" not in rendered

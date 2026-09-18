@@ -209,7 +209,10 @@ Accept/reject/cancel and each counter term object also support `give_any` and
 `receive_any` (default zero). Wildcards describe nonexecutable proposals; acceptance
 does not transfer resources. Only the turn player confirms an exact exchange.
 Cancellation withdraws your whole matching offer, including all its recipients.
-New offers address the other seats; counters address the turn player only.
+New offers address the other seats unless `player` (one color) or `audience`
+(a color array) narrows them; only the audience sees and answers a targeted
+offer, so it costs one response call per named seat instead of three. Counters
+address the turn player only.
 Resolution checks current visible active offers before filtering by legality, so
 multiple equal-term offers remain ambiguous even if only one is executable. No
 model-facing IDs or guessed tie-breaking; the legacy ID parser remains separate.

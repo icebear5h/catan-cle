@@ -338,3 +338,24 @@ def test_all_shorthand_is_rejected_in_favor_of_explicit_colors():
                 {"mode": "say", "text": "Trade?", "respondents": shorthand},
                 speaker=Color.RED, participants=COLORS, max_notes_chars=4000,
             )
+
+
+@pytest.mark.asyncio
+async def test_targeted_offer_prompts_only_its_audience():
+    engine = main_engine()
+    key = player_key(engine.state, Color.RED)
+    engine.state.player_state[f"{key}_WOOD_IN_HAND"] = 2
+    engine.step(Action(Color.RED, ActionType.ROLL, (3, 5)), force=True)
+    sb, ts = sandbox(engine)
+    ts[Color.RED].replies = [{
+        "tool": "offer_trade",
+        "arguments": {"give": {"WOOD": 1}, "receive": {"ORE": 1}, "player": "BLUE"},
+    }]
+    ts[Color.BLUE].replies = [{"tool": "reject_offer", "arguments": {"give": {"ORE": 1}, "receive": {"WOOD": 1}, "player": "RED"}}]
+
+    offered = await sb.step()
+    assert offered.transitions[0].resolved_action.value.audience == frozenset({Color.BLUE})
+
+    responded = await sb.step()
+    assert [context.actor for context in responded.contexts] == [Color.BLUE]
+    assert all(not ts[color].requests for color in COLORS[2:])

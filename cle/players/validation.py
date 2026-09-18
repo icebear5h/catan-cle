@@ -113,8 +113,12 @@ def action_from_choice(
                 audience = frozenset({context.observation.turn_player_color})
             if offer.parent_offer_id != parent:
                 raise ValueError("trade_offer parent must match the selected menu entry")
-            if offer.audience != audience:
-                raise ValueError("trade_offer audience must match the selected menu entry")
+            if action.action_type == ActionType.COUNTER_OFFER:
+                if offer.audience != audience:
+                    raise ValueError("trade_offer audience must match the selected menu entry")
+            elif not offer.audience or not offer.audience <= audience:
+                # A root offer may target any nonempty subset of the other seats.
+                raise ValueError("trade_offer audience must name other participants only")
         elif isinstance(action.value, TradeOffer):
             if offer is not None and offer != action.value:
                 raise ValueError("trade_offer cannot replace a concrete menu action")

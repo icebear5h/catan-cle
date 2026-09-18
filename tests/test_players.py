@@ -347,7 +347,9 @@ def trade_context():
     ("status", TradeOfferStatus.WITHDRAWN, "lifecycle"),
     ("status", "active", "lifecycle"),
     ("offered_by", Color.BLUE, "offerer"),
-    ("audience", frozenset({Color.BLUE}), "audience"),
+    # A narrowed audience is a legal targeted offer; self or outsiders are not.
+    ("audience", frozenset({Color.RED, Color.BLUE}), "audience"),
+    ("audience", frozenset(), "audience"),
     ("parent_offer_id", "some-root", "parent"),
     ("give", [1, 0, 0, 0, 0], "bundles"),
     ("give", (True, 0, 0, 0, 0), "integers"),

@@ -10,6 +10,55 @@ comes only after grounding and leakage checks pass. See
 [`EXPERIMENT_DESIGN.md`](EXPERIMENT_DESIGN.md) for the curriculum and trainable
 scope ladder.
 
+## Matched atlas / coordinate diagnostic (2026-09-21)
+
+Implemented and locally verified; GPU evaluation is pending code review.
+`coordinate_comparison.py` renders **200 canonical cases twice**: existing atomic
+atlas identifiers versus ordinary integer-coordinate text. The panel covers
+direction, neighbors, incidence, and ownership. Nodes/tiles use a doubled integer
+render grid; edges and ports use typed midpoints. No tokenizer tokens are added.
+
+Both arms retain identical state/query semantics and entity order. Static prompts
+include the same entity inventory; the coordinate arm also explains its geometry.
+Gold answers are independently recomputed, coordinate outputs are mapped back to
+canonical entities, and strict exact scoring reports paired wins/losses and format
+failures. The evaluator keeps pairs adjacent with equal generation budgets and
+records prompt/answer token counts.
+
+```bash
+.venv/bin/python -m sft.scripts.build_coordinate_comparison
+.venv/bin/python -m pytest tests/test_coordinate_comparison.py -q
+```
+
+Generated files are under `artifacts/generated/sft/coordinate_comparison_v1/`;
+`preview.md` shows real paired prompts/answers and `manifest.json` pins source and
+mapping hashes. Building requires the existing local `symbolic_board_v2` corpus
+and a new output directory. After review, the bounded launch is:
+
+```bash
+MODAL_PROFILE=icebear5h .venv/bin/python -m modal run -m sft.modal_board_fluency_eval \
+  --run-name coordinate-comparison-20260921-r01 \
+  --adapter-dir /runs/catan-vision-sft/board-fluency-extension-20260915-r04/training/checkpoints/checkpoint-512 \
+  --eval-jsonl artifacts/generated/sft/coordinate_comparison_v1/paired.jsonl \
+  --token-inventory artifacts/generated/sft/symbolic_board_fluency_sft_v1/trainable_tokens.json
+```
+
+The launcher validates the saved tokenizer/context on CPU before one H200 call
+(30-minute outer timeout, no retries). The trainer inventory above differs from
+the symbolic corpus's `token_inventory.json` metadata format.
+
+This measures representation usability on the **atlas-trained r04 checkpoint**,
+not equal-budget retraining or tokenization alone. Static topology can have prior
+exposure; 198 cases retain their source test split and two port-incidence cases
+come from validation. Dynamic cases cover 61 source states, so the 200 pairs are
+not independent observations.
+
+Verification: seven comparison tests pass. Two existing text-model loader tests
+fail identically on HEAD and this change under local Transformers 4.57.1 because
+PEFT's import chain replaces the lazy Transformers module after test monkeypatch
+references are captured. The remote evaluator uses its pinned 5.16.1 runtime;
+checkpoint-specific CPU preflight and real generation have not yet run.
+
 ## Latest symbolic board-fluency pilot (2026-09-15)
 
 `board-fluency-sft-20260915-r06` completed 128 text-only SFT steps from the

@@ -20,6 +20,13 @@ from sft.board_fluency_scoring import (
     SCHEMA, SCHEMAS as BOARD_FLUENCY_SCHEMAS, score_board_fluency, validate_board_fluency_metadata,
 )
 from sft.board_state_readout import TASK as FULL_BOARD_TASK, score_board_state, summarize_board_states
+from sft.coordinate_comparison import (
+    SCHEMA as COORDINATE_COMPARISON_SCHEMA,
+    paired_summary,
+    score_coordinate_comparison,
+    validate_comparison_metadata,
+    validate_comparison_rows,
+)
 from sft.paths import resolve_dataset_asset, resolve_dataset_image
 from sft.scripts.train_trl_catan_vision import (
     INPUT_MODES,
@@ -156,6 +163,9 @@ def score_response(
     expected: str, response: str, *, metadata: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if metadata is not None:
+        comparison_score = score_coordinate_comparison(expected, response, metadata)
+        if comparison_score is not None:
+            return comparison_score
         board_fluency_score = score_board_fluency(expected, response, metadata)
         if board_fluency_score is not None:
             return board_fluency_score
@@ -692,6 +702,7 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
         "eval_variant",
         "pair_kind",
         "negative_distance",
+        "representation",
     ):
         summary[f"by_{key}"] = summarize_dimension(attempted, key)
     summary["categories"] = summary["by_category"]
@@ -702,6 +713,9 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
         summary["full_board"] = summarize_board_states(board_records)
     summary["neighbor_confusion"] = summarize_neighbor_confusion(attempted)
     summary["by_behavior"] = summarize_behaviors(attempted)
+    comparison = [r for r in attempted if r["score"].get("scoring") == COORDINATE_COMPARISON_SCHEMA]
+    if comparison:
+        summary["coordinate_comparison"] = paired_summary(comparison)
     symbolic = [r for r in attempted if r["score"].get("scoring") in SYMBOLIC_TASKS]
     if symbolic:
         families = defaultdict(list)
@@ -728,6 +742,10 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
 def evaluation_metadata(row: dict[str, Any], *, image_variant: str) -> dict[str, Any]:
     metadata = dict(row.get("metadata", {}))
     schemas = [source["schema"] for source in (row, metadata) if "schema" in source]
+    if COORDINATE_COMPARISON_SCHEMA in schemas:
+        if any(schema != COORDINATE_COMPARISON_SCHEMA for schema in schemas):
+            raise ValueError("conflicting coordinate-comparison schema declarations")
+        validate_comparison_metadata(metadata)
     if (any(schema in BOARD_FLUENCY_SCHEMAS for schema in schemas)
             or any(str(schema).startswith("catan_board_fluency") for schema in schemas)
             or row.get("class") == "board_fluency" or metadata.get("class") == "board_fluency"):
@@ -1042,6 +1060,13 @@ def run_eval_job(
         if image_variant != "original":
             raise ValueError("text mode does not support image variants")
     rows = [row for _, row in iter_jsonl(eval_path)]
+    comparison_panel = any(row.get("schema") == COORDINATE_COMPARISON_SCHEMA for row in rows)
+    if comparison_panel:
+        validate_comparison_rows(rows)
+        if not text_only or args.candidate_scoring or args.limit is not None:
+            raise ValueError("coordinate comparison requires complete text-only greedy generation")
+        if args.batch_size != args.long_batch_size or args.max_new_tokens != args.long_max_new_tokens:
+            raise ValueError("coordinate comparison requires identical budgets and batch sizes")
     for line_number, row in enumerate(rows, start=1):
         if text_only:
             prompt, answer = _message_pair(row, line_number=line_number, input_mode="text")
@@ -1084,6 +1109,10 @@ def run_eval_job(
     long_rows = [row for row in rows if is_long_answer(row)]
     batches = [short_rows[start : start + args.batch_size] for start in range(0, len(short_rows), args.batch_size)]
     batches += [long_rows[start : start + args.long_batch_size] for start in range(0, len(long_rows), args.long_batch_size)]
+    if comparison_panel:
+        # Keep paired arms together rather than sorting them by representation-dependent
+        # gold character length. Inference requests remain independent within a batch.
+        batches = [rows[start : start + args.batch_size] for start in range(0, len(rows), args.batch_size)]
     with records_path.open("w") as handle:
         batch_start = 0
         for batch in batches:
@@ -1132,6 +1161,16 @@ def run_eval_job(
                     "score": score,
                     "candidate_score": candidate_score,
                 }
+                if comparison_panel:
+                    record["token_counts"] = {
+                        "prompt": len(text_chat_ids(
+                            tokenizer, build_qwen_messages(row, input_mode="text"), generation=True,
+                        )),
+                        "response_text": len(tokenizer.encode(
+                            score["raw_response_normalized"], add_special_tokens=False,
+                        )),
+                        "gold_text": len(tokenizer.encode(target, add_special_tokens=False)),
+                    }
                 records.append(record)
                 handle.write(json.dumps(record, sort_keys=True) + "\n")
                 candidate_note = (

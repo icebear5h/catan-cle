@@ -1,42 +1,22 @@
-"""The Prompt Studio's payload builders, split by concern."""
+"""The Prompt Studio, layered as request parsing, service and presentation."""
 
-from .access import (
-    _require_local_selection,
-    _response,
-    _saving_locked,
-    _state,
-)
-from .editor import _component_payload, _editor_payload, _metadata
-from .edits import _shared_expected, _shared_source
-from .errors import (
-    PromptSuiteEditError,
-    _exact_keys,
-    _mapping,
-    _string,
-    _validation_error,
-)
-from .previews import (
-    _communication_preview,
-    _decision_preview,
-    _latest_communication_request,
-)
+from .access import json_response, server_state
+from .commands import read_reset, read_save, read_validate
+from .deps import PROMPT_STUDIO_DEPS, PromptStudioDeps, studio_deps
+from .errors import validation_error
+from .presentation import studio_payload
+from .service import PromptStudioService
 
 __all__ = [
-    "PromptSuiteEditError",
-    "_communication_preview",
-    "_component_payload",
-    "_decision_preview",
-    "_editor_payload",
-    "_exact_keys",
-    "_latest_communication_request",
-    "_mapping",
-    "_metadata",
-    "_require_local_selection",
-    "_response",
-    "_saving_locked",
-    "_shared_expected",
-    "_shared_source",
-    "_state",
-    "_string",
-    "_validation_error",
+    "PROMPT_STUDIO_DEPS",
+    "PromptStudioDeps",
+    "PromptStudioService",
+    "json_response",
+    "read_reset",
+    "read_save",
+    "read_validate",
+    "server_state",
+    "studio_deps",
+    "studio_payload",
+    "validation_error",
 ]

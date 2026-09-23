@@ -19,7 +19,7 @@ from cle.harness import (
 )
 from cle.sandbox import CatanSandbox
 
-from .support import _response, _sandbox_and_player
+from .support import _response, _sandbox_and_player, allows_deprecated_suite
 
 
 def test_every_phase_key_renders_concise_player_facing_guidance() -> None:
@@ -104,6 +104,7 @@ def test_template_rendering_preserves_template_syntax_in_plan_data() -> None:
         ContextAssembler._render_template("{{ missing }}", {"value": plan})
 
 
+@allows_deprecated_suite
 def test_v10_year_of_plenty_menu_names_singleton_resources(trade_sandbox: CatanSandbox) -> None:
     engine: Any = trade_sandbox.game_engine
     engine.state.development_listdeck.remove("YEAR_OF_PLENTY")
@@ -141,6 +142,7 @@ def test_v10_year_of_plenty_menu_names_singleton_resources(trade_sandbox: CatanS
     assert seen == set(expected)
 
 
+@allows_deprecated_suite
 def test_v10_social_sections_use_only_supplied_perspective_and_leave_game_history_complete() -> None:
     sandbox, player, _ = _sandbox_and_player([])
     engine = sandbox.game_engine

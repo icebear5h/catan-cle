@@ -19,7 +19,7 @@ from cle.game_engine.state import ensure_trade_window as ensure_trade_window
 from cle.game_engine.state_functions import player_num_resource_cards as player_num_resource_cards
 from cle.harness.action_tools import legal_tool_names as legal_tool_names
 from cle.harness.action_tools import parse_tool_choice as parse_tool_choice
-from cle.players.contracts import PlayerAttempt, PlayerContext, SandboxPlayer
+from cle.players.contracts import PlayerAttempt, PlayerContext, SandboxPlayer, TalkContext
 from cle.players.validation import action_from_choice as action_from_choice
 from cle.players.validation import choice_followup_action as choice_followup_action
 from cle.players.validation import validate_communication_choice as validate_communication_choice
@@ -170,6 +170,10 @@ class CatanSandbox:
     ) -> PlayerContext:
         """Build the shared perspective-safe context for one exact decision."""
         return choices.decision_context(self, actor, advertised_actions)
+
+    def talk_context(self, opportunity: CommunicationOpportunity) -> TalkContext:
+        """Build the perspective-safe talk context one speech opportunity renders from."""
+        return self._talk_context(opportunity)
 
     def snapshot(self) -> SandboxSnapshot:
         return checkpoints.snapshot(self)

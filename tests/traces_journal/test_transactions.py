@@ -10,7 +10,8 @@ import pytest
 from cle.harness.models import ModelResponse
 from cle.sandbox import CatanSandbox
 from cle.traces.journal import CommandRecord, JournalConflict, SQLiteSandboxJournal, database
-from tests.traces_journal.support import POLICY, REQUEST_JSON, REQUEST_SHA, advance, ticket_for
+
+from .support import POLICY, REQUEST_JSON, REQUEST_SHA, advance, ticket_for
 
 
 def test_two_instances_racing_begin_allow_one_pending_command(

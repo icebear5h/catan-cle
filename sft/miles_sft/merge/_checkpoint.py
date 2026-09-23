@@ -64,7 +64,10 @@ def inspect_checkpoint(root: Path) -> Checkpoint:
         shards[name] = tuple(sorted(found))
     size = sum(tensor_bytes(header) for header in headers.values())
     metadata = object_map(index.get("metadata"))
-    require(integer(metadata.get("total_size")) == size, "index total_size does not match tensors")
+    # The pinned Qwen index spells its exact byte count as 55562855904.0.
+    declared_size = metadata.get("total_size")
+    require(type(declared_size) in (int, float) and declared_size == size,
+            "index total_size does not match tensors")
     validate_base_config(root, headers)
     return Checkpoint(weights, headers, shards, size)
 

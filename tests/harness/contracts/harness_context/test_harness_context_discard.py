@@ -20,9 +20,10 @@ from cle.players.contracts import PlayerChoice, PlayerContext
 from cle.players.validation import action_from_choice
 from cle.sandbox import CatanSandbox
 
-from .support import _response, _sandbox_and_player
+from .support import _response, _sandbox_and_player, allows_deprecated_suite
 
 
+@allows_deprecated_suite
 def test_v10_discard_parser_and_menu_use_exact_named_bundle(discard_context: PlayerContext) -> None:
     context = discard_context
     count: Any = context.discard_count
@@ -44,6 +45,7 @@ def test_v10_discard_parser_and_menu_use_exact_named_bundle(discard_context: Pla
     assert "<discard>" in menu
 
 
+@allows_deprecated_suite
 def test_v10_parsed_discard_bundle_is_the_exact_engine_action(discard_sandbox: CatanSandbox, discard_context: PlayerContext) -> None:
     context: Any = discard_context
     engine: Any = discard_sandbox.game_engine
@@ -66,6 +68,7 @@ def test_v10_parsed_discard_bundle_is_the_exact_engine_action(discard_sandbox: C
     }
 
 
+@allows_deprecated_suite
 @pytest.mark.parametrize("payload", [
     "", "null", "[]", '["WOOD"]', '"WOOD"', "{}", '{"WOOD":true}',
     '{"WOOD":-1}', '{"WOOD":0}', '{"WOOD":1.5}', '{"WOOD":1e1}',
@@ -81,6 +84,7 @@ def test_v10_discard_parser_rejects_invalid_json_resources_counts_and_holdings(d
         )
 
 
+@allows_deprecated_suite
 def test_discard_requirement_is_suite_opt_in_and_old_menu_is_unchanged(discard_context: PlayerContext) -> None:
     context: Any = discard_context
     suite = load_context_suite(default_suite_path().with_name("catan_v10.yaml"))
@@ -104,6 +108,7 @@ def test_discard_requirement_is_suite_opt_in_and_old_menu_is_unchanged(discard_c
     ).discard_cards is None
 
 
+@allows_deprecated_suite
 def test_legacy_suite_keeps_automatic_discard_execution(discard_sandbox: CatanSandbox, discard_context: PlayerContext) -> None:
     suite = load_context_suite(default_suite_path().with_name("catan_v9.yaml"))
     choice: Any = PlayerResponseParser(suite).parse(discard_context, _response())
@@ -112,6 +117,7 @@ def test_legacy_suite_keeps_automatic_discard_execution(discard_sandbox: CatanSa
     assert len(transition.resolved_action.value) == discard_context.discard_count
 
 
+@allows_deprecated_suite
 @pytest.mark.parametrize("parameter", [
     '<discard>{"WOOD":4}</discard>',
     '<trade_offer>{"give":{"WOOD":1},"receive":{"ORE":1}}</trade_offer>',

@@ -87,6 +87,7 @@ async def test_agent_player_assembles_full_context_and_records_only_accepted_att
     assert len(player.session.receipts) == 1
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 @pytest.mark.asyncio
 async def test_agent_player_parses_parameterized_trade_choice() -> None:
     engine = GameEngine(COLORS, seed=9, shuffle_players=False)
@@ -129,6 +130,7 @@ async def test_agent_player_parses_parameterized_trade_choice() -> None:
     )
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 @pytest.mark.asyncio
 async def test_agent_player_rejects_positional_trade_tuple() -> None:
     engine = GameEngine(COLORS, seed=9, shuffle_players=False)
@@ -165,6 +167,7 @@ async def test_agent_player_rejects_positional_trade_tuple() -> None:
     assert "JSON object" in attempt.validation_error
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 @pytest.mark.asyncio
 async def test_agent_player_returns_validation_error_for_bad_menu_index() -> None:
     engine = GameEngine(COLORS, seed=9, shuffle_players=False)

@@ -62,6 +62,7 @@ def test_strict_envelope(payload: dict[str, Any] | dict[str, list[dict[str, Any]
         PlayerResponseParser(load_shared_prompt_suite().decision_suite()).parse(game.decision_context(), ModelResponse(json.dumps(payload)))
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 def test_historical_contracts_do_not_admit_batches_and_old_slots_default_empty() -> None:
     game, _ = sandbox()
     response = ModelResponse(batch(*pair(game.game_engine)))

@@ -118,8 +118,10 @@ def test_standalone_trade_closure_is_parsed_executed_and_undoable() -> None:
     assert [event.event_type for event in state.current_game.events] == [
         "OFFER_TRADE", "CLOSE_TRADE",
     ]
+    # Closures carry the recorded proposal so they stay readable after the window closes.
     assert state.current_game.events[-1].public_payload == {
         "offer_id": "trade-1", "parent_offer_id": None, "reason": "cancelled",
+        "offer": state.current_game.events[0].public_payload,
     }
     assert [action.action_type for action in state.current_game.state.actions] == [
         ActionType.OFFER_TRADE,

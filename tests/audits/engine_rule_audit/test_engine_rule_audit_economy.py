@@ -144,6 +144,7 @@ def test_player_can_choose_which_held_cards_to_discard() -> None:
     )
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 @pytest.mark.asyncio
 async def test_local_audit_player_supplies_exact_discard_parameters() -> None:
     game = _position()

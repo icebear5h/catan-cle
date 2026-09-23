@@ -59,7 +59,8 @@ def test_real_no_image_generation_matches_direct_language_forward(tmp_path: Path
         factory_calls.append((model_id, kwargs))
         return TinyTextVLM().bfloat16()
 
-    monkeypatch.setattr(transformers, "AutoModelForMultimodalLM", SimpleNamespace(from_pretrained=factory), raising=False)
+    # Dotted target: importing peft replaces sys.modules["transformers"] after collection.
+    monkeypatch.setattr("transformers.AutoModelForMultimodalLM", SimpleNamespace(from_pretrained=factory), raising=False)
     model, saved_tokenizer, evidence = evaluator.load_model(
         model_id="offline-tiny", adapter_dir=str(tmp_path / "parent"), bits=16,
         disable_flash_attn2=True, token_inventory=str(inventory_path), input_mode="text",
@@ -180,7 +181,7 @@ def test_text_eval_entrypoint_enforces_pinned_runtime_before_model_load(monkeypa
         "--eval-jsonl", "e", "--output-dir", "o", "--input-mode", "text",
         "--max-sequence-length", "8192",
     ])
-    monkeypatch.setattr(transformers, "__version__", "offline-unpinned")
+    monkeypatch.setattr("transformers.__version__", "offline-unpinned")
     with pytest.raises(RuntimeError, match="runtime version mismatch"):
         evaluator.run_eval(args)
 

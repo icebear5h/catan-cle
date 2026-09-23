@@ -4,8 +4,7 @@ from typing import Any
 
 import pytest
 
-from cle.harness import prompt_store
-from cle.harness.prompt_store import load_active_prompt_suites, save_prompt_suite_overrides
+from cle.harness.prompt_store import resolution
 from cle.harness.shared_suite import default_shared_suite_path
 from cle.sandbox.factory import LiveSandboxConfig
 
@@ -26,37 +25,6 @@ def test_loaded_game_save_and_reset_lock(
     ):
         assert response.status_code == 409
         assert response.headers["Cache-Control"] == "no-store"
-
-
-def test_existing_legacy_pair_remains_editable(studio: Studio) -> None:
-    client, _ = studio
-    active: Any = load_active_prompt_suites()
-    save_prompt_suite_overrides(
-        decision_source=active.decision.source, communication_source=active.communication.source,
-        expected_decision_sha256=active.decision.sha256,
-        expected_communication_sha256=active.communication.sha256,
-    )
-    original: Any = client.get("/api/prompt-suite").json
-    assert original["mode"] == "legacy"
-    edits: Any = {
-        "decision": {key: original["decision"][key] for key in (
-            "system_identity", "components", "phase_guidance", "response_instruction",
-        )},
-        "communication": {key: original["communication"][key] for key in ("system_identity", "components")},
-    }
-    edits["decision"]["components"]["board_state"] = "LEGACY EDIT:\n{{ value }}"
-    saved: Any = client.put("/api/prompt-suite", json={
-        **edits, "expected": {key: original[key]["sha256"] for key in ("decision", "communication")},
-    })
-    assert saved.status_code == 200
-    assert saved.json["mode"] == "legacy"
-    assert saved.json["decision"]["components"]["board_state"].startswith("LEGACY EDIT:")
-    reset: Any = client.delete("/api/prompt-suite", json={
-        "expected": {key: saved.json[key]["sha256"] for key in ("decision", "communication")},
-    })
-    assert reset.status_code == 200
-    assert reset.json["mode"] == "shared"
-    assert reset.json["shared"] == client.get("/api/prompt-suite").json["shared"]
 
 
 def test_environment_source_is_visible_but_cannot_be_shadowed_by_editor(studio: Studio, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -100,35 +68,27 @@ def test_shared_payload_rejects_legacy_or_unknown_root_keys(studio: Studio) -> N
     assert reset.status_code == 400
 
 
-@pytest.mark.parametrize("mode", ["shared", "legacy"])
+# Pair-mode overrides are retired; the shared-only ids stay stable.
+@pytest.mark.parametrize("mode", ["shared"])
 @pytest.mark.parametrize("failure", ["missing", "invalid"])
 def test_reset_endpoint_preserves_override_when_shared_default_cannot_load(studio: Studio, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, mode: str, failure: str) -> None:
     client, _ = studio
-    if mode == "legacy":
-        pair: Any = load_active_prompt_suites()
-        save_prompt_suite_overrides(
-            decision_source=pair.decision.source, communication_source=pair.communication.source,
-            expected_decision_sha256=pair.decision.sha256,
-            expected_communication_sha256=pair.communication.sha256,
-        )
-    else:
-        initial: Any = client.get("/api/prompt-suite").json
-        saved = client.put("/api/prompt-suite", json={
-            "shared": initial["shared"]["document"], "expected": {"shared": initial["shared"]["sha256"]},
-        })
-        assert saved.status_code == 200
+    initial: Any = client.get("/api/prompt-suite").json
+    saved = client.put("/api/prompt-suite", json={
+        mode: initial[mode]["document"], "expected": {mode: initial[mode]["sha256"]},
+    })
+    assert saved.status_code == 200
     original: Any = client.get("/api/prompt-suite").json
-    kinds: Any = ("shared",) if mode == "shared" else ("decision", "communication")
-    files = [tmp_path / "prompts" / f"{kind}.yaml" for kind in kinds]
-    before = [path.read_bytes() for path in files]
+    path = tmp_path / "prompts" / f"{mode}.yaml"
+    before = path.read_bytes()
     replacement = tmp_path / "broken-default.yaml"
     if failure == "invalid":
         replacement.write_text("invalid: [", encoding="utf-8")
-    monkeypatch.setattr(prompt_store, "default_shared_suite_path", lambda: replacement)
+    monkeypatch.setattr(resolution, "default_shared_suite_path", lambda: replacement)
     response = client.delete("/api/prompt-suite", json={
-        "expected": {kind: original[kind]["sha256"] for kind in kinds},
+        "expected": {mode: original[mode]["sha256"]},
     })
     assert response.status_code == 400
     assert response.headers["Cache-Control"] == "no-store"
-    assert [path.read_bytes() for path in files] == before
+    assert path.read_bytes() == before
     assert client.get("/api/prompt-suite").json == original

@@ -10,7 +10,8 @@ from cle.traces.journal import (
     JournalConflict,
     SQLiteSandboxJournal,
 )
-from tests.traces_journal.support import POLICY, advance, ticket_for, with_notes
+
+from .support import POLICY, advance, ticket_for, with_notes
 
 
 def test_initialize_is_insert_only_and_validates_identity(

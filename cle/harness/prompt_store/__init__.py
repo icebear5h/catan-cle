@@ -2,16 +2,6 @@
 
 from __future__ import annotations
 
-# Re-exported so atomic replacement stays patchable at this module path.
-import os as os
-
-# Suite helpers stay resolvable here so tests can replace them at call time.
-from cle.harness.communication import (
-    default_communication_suite_path as default_communication_suite_path,
-)
-from cle.harness.communication import (
-    parse_communication_suite as parse_communication_suite,
-)
 from cle.harness.prompt_store.compile import (
     RuntimeSuites,
     compile_active_suites,
@@ -40,17 +30,6 @@ from cle.harness.prompt_store.resolution import (
     resolve_prompt_suites,
 )
 from cle.harness.prompt_store.storage import DEFAULT_PROMPT_SUITE_DIR, prompt_suite_directory
-
-# The store lock is replaced by tests through this module path at call time.
-from cle.harness.prompt_store.storage import _store_lock as _store_lock
-from cle.harness.shared_suite import (
-    default_shared_suite_path as default_shared_suite_path,
-)
-from cle.harness.shared_suite import (
-    parse_shared_prompt_suite as parse_shared_prompt_suite,
-)
-from cle.harness.suite import default_suite_path as default_suite_path
-from cle.harness.suite import parse_context_suite as parse_context_suite
 
 __all__ = [
     "COMMUNICATION_SUITE_ENV",

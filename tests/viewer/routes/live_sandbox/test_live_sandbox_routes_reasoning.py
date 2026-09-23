@@ -85,7 +85,11 @@ def test_live_openrouter_reasoning_only_rejects_legal_json_until_manual_step(liv
 
         assert failed.status_code == 422, failed.get_json()
         payload: Any = failed.get_json()
-        diagnostic = "The provider returned reasoning but no final answer."
+        # Retry feedback names the exact legal menu after a failed decision.
+        diagnostic = (
+            "The provider returned reasoning but no final answer. "
+            "Your currently legal tools: build_settlement."
+        )
         assert payload["error"] == "Model returned no valid action"
         assert payload["details"] == (
             f"{diagnostic} No final model output was returned. "

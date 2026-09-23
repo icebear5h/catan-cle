@@ -107,6 +107,7 @@ async def test_default_trade_capacity_is_preflighted_without_partial_live_action
     assert len(sandbox.decision_trace) == 1 + int(initial_invalid) + len(withheld)
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 @pytest.mark.asyncio
 @pytest.mark.parametrize("retry", ["none", "invalid", "valid_then_peer_fails"])
 async def test_failed_capacity_barrier_preserves_each_completed_call_once(retry: str) -> None:
@@ -177,6 +178,7 @@ async def test_failed_capacity_barrier_preserves_each_completed_call_once(retry:
     assert all(player.session.messages == [] and player.session.receipts == {} for player in players.values() if isinstance(player, AgentPlayer))
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 @pytest.mark.asyncio
 @pytest.mark.parametrize("failure", ["exhausted", "callback", "cancel"])
 async def test_barrier_failure_retains_completed_sibling_and_awaits_blocked_children(failure: str) -> None:

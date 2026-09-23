@@ -51,6 +51,7 @@ async def test_commented_message_must_not_publish_private_draft(sandbox: CatanSa
     assert all(sandbox.game_engine.project_messages(color) == () for color in COLORS)
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 @pytest.mark.parametrize(
     "text",
     [

@@ -10,10 +10,8 @@ from cle.harness.models import ModelRequest
 from cle.harness.prompt_store import (
     PromptSuiteConflictError,
     follow_latest_enabled,
-    load_active_prompt_suites,
-    reset_prompt_suite_overrides,
+    reset_shared_prompt_override,
     resolve_prompt_suites,
-    save_prompt_suite_overrides,
     save_shared_prompt_override,
 )
 from cle.harness.shared_suite import default_shared_suite_path, parse_shared_prompt_suite
@@ -24,122 +22,93 @@ from cle.sandbox.factory import (
     materialize_live_prompt_suites,
 )
 
+SHARED_DISCARD = "Choose exactly the required number of cards from your holdings"
+EDITED_DISCARD = "TEST OVERRIDE: choose exactly the required number of cards from your holdings"
+
 
 class NeverTransport:
     async def complete(self, request: ModelRequest) -> None:
         raise AssertionError("Prompt-store tests do not perform inference")
 
 
-def _sources() -> tuple[str, str]:
-    return (
-        default_suite_path().read_text(encoding="utf-8"),
-        default_communication_suite_path().read_text(encoding="utf-8"),
-    )
+def _edited_shared_source() -> str:
+    source = default_shared_suite_path().read_text(encoding="utf-8")
+    assert SHARED_DISCARD in source
+    return source.replace(SHARED_DISCARD, EDITED_DISCARD)
 
 
-def _edited_sources() -> tuple[str, str]:
-    decision, communication = _sources()
-    return (
-        decision.replace(
-            "Resolve the required discard.",
-            "TEST OVERRIDE: resolve the required discard.",
-        ),
-        communication.replace(
-            "Default to SILENCE.",
-            "Default to SILENCE unless negotiation changes a decision.",
-        ),
-    )
+def _clear_pins(monkeypatch: pytest.MonkeyPatch) -> None:
+    for var in ("CATAN_SHARED_SUITE", "CATAN_CONTEXT_SUITE", "CATAN_COMMUNICATION_SUITE",
+                "CATAN_PROMPT_SUITE_FOLLOW_LATEST"):
+        monkeypatch.delenv(var, raising=False)
 
 
 def test_static_prompt_overrides_save_reset_and_detect_stale_edits(tmp_path: Path) -> None:
-    current: Any = load_active_prompt_suites(tmp_path)
-    assert current.decision.version == "11.0.0"
-    assert current.communication.version == "5"
-    decision_source, communication_source = _edited_sources()
+    current: Any = resolve_prompt_suites(directory=tmp_path, use_environment=False)
+    assert current.decision is current.communication is None
+    assert current.shared.overridden is False
+    assert current.shared.source == default_shared_suite_path().read_text(encoding="utf-8")
+    edited = _edited_shared_source()
 
-    saved: Any = save_prompt_suite_overrides(
-        decision_source=decision_source,
-        communication_source=communication_source,
-        expected_decision_sha256=current.decision.sha256,
-        expected_communication_sha256=current.communication.sha256,
-        directory=tmp_path,
+    saved: Any = save_shared_prompt_override(
+        source=edited, expected_sha256=current.shared.sha256, directory=tmp_path,
     )
 
-    assert saved.decision.overridden is True
-    assert saved.communication.overridden is True
-    assert load_active_prompt_suites(tmp_path) == saved
-    assert default_suite_path().read_text(encoding="utf-8") != decision_source
+    assert saved.shared.overridden is True
+    assert resolve_prompt_suites(directory=tmp_path, use_environment=False) == saved
+    assert (tmp_path / "shared.yaml").read_text(encoding="utf-8") == edited
+    assert default_shared_suite_path().read_text(encoding="utf-8") != edited
 
     with pytest.raises(PromptSuiteConflictError, match="refresh"):
-        save_prompt_suite_overrides(
-            decision_source=decision_source,
-            communication_source=communication_source,
-            expected_decision_sha256=current.decision.sha256,
-            expected_communication_sha256=current.communication.sha256,
-            directory=tmp_path,
+        save_shared_prompt_override(
+            source=edited, expected_sha256=current.shared.sha256, directory=tmp_path,
         )
+    with pytest.raises(PromptSuiteConflictError, match="refresh"):
+        reset_shared_prompt_override(expected_sha256=current.shared.sha256, directory=tmp_path)
 
-    reset: Any = reset_prompt_suite_overrides(
-        expected_decision_sha256=saved.decision.sha256,
-        expected_communication_sha256=saved.communication.sha256,
-        directory=tmp_path,
+    reset: Any = reset_shared_prompt_override(
+        expected_sha256=saved.shared.sha256, directory=tmp_path,
     )
 
-    assert reset.decision.overridden is False
-    assert reset.communication.overridden is False
-    assert reset.decision.source == default_suite_path().read_text(encoding="utf-8")
-    assert not (tmp_path / "decision.yaml").exists()
-    assert not (tmp_path / "communication.yaml").exists()
+    assert reset.shared.overridden is False
+    assert reset.shared.source == default_shared_suite_path().read_text(encoding="utf-8")
+    assert reset == current
+    assert not (tmp_path / "shared.yaml").exists()
 
 
-def test_invalid_pair_never_changes_either_active_suite(tmp_path: Path) -> None:
-    before: Any = load_active_prompt_suites(tmp_path)
-    decision_source, communication_source = _edited_sources()
+def test_invalid_shared_source_never_changes_active_suite(tmp_path: Path) -> None:
+    before: Any = resolve_prompt_suites(directory=tmp_path, use_environment=False)
+    invalid = before.shared.source.replace("{{ resources }}", "{{ hidden_hand }}", 1)
 
     with pytest.raises(ValueError):
-        save_prompt_suite_overrides(
-            decision_source=decision_source.replace(
-                "{{ value }}",
-                "{{ hidden_hand }}",
-                1,
-            ),
-            communication_source=communication_source,
-            expected_decision_sha256=before.decision.sha256,
-            expected_communication_sha256=before.communication.sha256,
-            directory=tmp_path,
+        save_shared_prompt_override(
+            source=invalid, expected_sha256=before.shared.sha256, directory=tmp_path,
         )
 
-    assert load_active_prompt_suites(tmp_path) == before
+    assert resolve_prompt_suites(directory=tmp_path, use_environment=False) == before
+    assert not (tmp_path / "shared.yaml").exists()
 
 
-def test_pair_write_rolls_back_if_second_atomic_replace_fails(
+def test_failed_atomic_replace_keeps_active_suite_and_cleans_temp_file(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    before: Any = load_active_prompt_suites(tmp_path)
-    decision_source, communication_source = _edited_sources()
-    real_replace = os.replace
-    failed = False
+    before: Any = resolve_prompt_suites(directory=tmp_path, use_environment=False)
 
-    def fail_second_replace(source: str | Path, destination: str | Path) -> None:
-        nonlocal failed
-        if str(destination).endswith("communication.yaml") and not failed:
-            failed = True
-            raise OSError("simulated second replace failure")
-        return real_replace(source, destination)
+    def fail_replace(source: str | Path, destination: str | Path) -> None:
+        raise OSError("simulated replace failure")
 
-    monkeypatch.setattr("cle.harness.prompt_store.os.replace", fail_second_replace)
+    # overrides.py calls os.replace through the os module, so patch it there.
+    monkeypatch.setattr(os, "replace", fail_replace)
 
     with pytest.raises(OSError, match="simulated"):
-        save_prompt_suite_overrides(
-            decision_source=decision_source,
-            communication_source=communication_source,
-            expected_decision_sha256=before.decision.sha256,
-            expected_communication_sha256=before.communication.sha256,
+        save_shared_prompt_override(
+            source=_edited_shared_source(), expected_sha256=before.shared.sha256,
             directory=tmp_path,
         )
 
-    assert load_active_prompt_suites(tmp_path) == before
+    assert resolve_prompt_suites(directory=tmp_path, use_environment=False) == before
+    assert not list(tmp_path.glob(".prompt-suite-*.tmp"))
 
 
 def test_factory_explicit_paths_keep_legacy_suites_loadable() -> None:
@@ -164,18 +133,14 @@ def test_factory_prefers_explicit_suite_path_over_local_override(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    override_dir = tmp_path / "overrides"
-    monkeypatch.setenv("CATAN_PROMPT_SUITE_DIR", str(override_dir))
-    current: Any = load_active_prompt_suites()
-    decision_source, communication_source = _edited_sources()
-    save_prompt_suite_overrides(
-        decision_source=decision_source,
-        communication_source=communication_source,
-        expected_decision_sha256=current.decision.sha256,
-        expected_communication_sha256=current.communication.sha256,
+    _clear_pins(monkeypatch)
+    monkeypatch.setenv("CATAN_PROMPT_SUITE_DIR", str(tmp_path / "overrides"))
+    current: Any = resolve_prompt_suites()
+    saved: Any = save_shared_prompt_override(
+        source=_edited_shared_source(), expected_sha256=current.shared.sha256,
     )
-    explicit_source: Any = decision_source.replace(
-        "TEST OVERRIDE: resolve the required discard.",
+    explicit_source = default_suite_path().read_text(encoding="utf-8").replace(
+        "Resolve the required discard.",
         "EXPLICIT PATH DISCARD GUIDANCE.",
     )
     explicit_path = tmp_path / "explicit.yaml"
@@ -184,11 +149,13 @@ def test_factory_prefers_explicit_suite_path_over_local_override(
     resolved: Any = materialize_live_prompt_suites(
         LiveSandboxConfig(context_suite_path=str(explicit_path))
     )
-    active: Any = load_active_prompt_suites()
 
+    assert resolved.shared_suite is None
     assert resolved.decision_suite.source == explicit_source
-    assert resolved.communication_suite.source == communication_source
-    assert resolved.decision_suite.sha256 != active.decision.sha256
+    assert resolved.communication_suite.source == (
+        default_communication_suite_path().read_text(encoding="utf-8")
+    )
+    assert resolved.decision_suite.sha256 != saved.shared.sha256
 
     sandbox: Any = create_live_sandbox(
         LiveSandboxConfig(
@@ -199,42 +166,26 @@ def test_factory_prefers_explicit_suite_path_over_local_override(
         ),
         transport=NeverTransport(),
     )
-    assert "TEST OVERRIDE: resolve the required discard." in (
-        sandbox.players[Color.RED].suite.phase_guidance["discarding"]
-    )
+    assert EDITED_DISCARD in sandbox.players[Color.RED].suite.phase_guidance["discarding"]
 
 
 @pytest.mark.parametrize("version", ["9.0.0", "10.0.0"])
-def test_persisted_override_and_recorded_source_are_not_upgraded(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, version: str) -> None:
+def test_recorded_legacy_source_is_not_upgraded(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, version: str) -> None:
+    _clear_pins(monkeypatch)
     monkeypatch.setenv("CATAN_PROMPT_SUITE_DIR", str(tmp_path))
-    monkeypatch.delenv("CATAN_SHARED_SUITE", raising=False)
-    monkeypatch.delenv("CATAN_CONTEXT_SUITE", raising=False)
-    monkeypatch.delenv("CATAN_COMMUNICATION_SUITE", raising=False)
-    builtins: Any = load_active_prompt_suites()
-    old_source: Any = (
-        default_suite_path()
-        .with_name(f"catan_v{version.split('.')[0]}.yaml")
-        .read_text(encoding="utf-8")
+    old_path = default_suite_path().with_name(f"catan_v{version.split('.')[0]}.yaml")
+    old_source = old_path.read_text(encoding="utf-8")
+    frozen: Any = materialize_live_prompt_suites(
+        LiveSandboxConfig(context_suite_path=str(old_path))
     )
-    saved: Any = save_prompt_suite_overrides(
-        decision_source=old_source,
-        communication_source=builtins.communication.source,
-        expected_decision_sha256=builtins.decision.sha256,
-        expected_communication_sha256=builtins.communication.sha256,
-    )
-    assert load_active_prompt_suites().decision.source == old_source
-    frozen: Any = materialize_live_prompt_suites(LiveSandboxConfig())
+    assert frozen.shared_suite is None
     assert frozen.decision_suite.version == version
-    assert frozen.decision_suite.sha256 == saved.decision.sha256
+    assert frozen.decision_suite.source == old_source
     historical = parse_context_suite(frozen.decision_suite.source)
     assert historical.response.format == "xml"
     assert historical.context.social_context == (version == "10.0.0")
     assert ("discard" in historical.response.tags) == (version == "10.0.0")
 
-    reset_prompt_suite_overrides(
-        expected_decision_sha256=saved.decision.sha256,
-        expected_communication_sha256=saved.communication.sha256,
-    )
     current: Any = materialize_live_prompt_suites(LiveSandboxConfig())
     active: Any = resolve_prompt_suites()
     assert active.decision is active.communication is None
@@ -256,11 +207,26 @@ def test_persisted_override_and_recorded_source_are_not_upgraded(tmp_path: Path,
     assert restored.communication_suite == frozen.communication_suite
 
 
+def test_legacy_pair_override_files_are_ignored(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    builtin: Any = resolve_prompt_suites(directory=tmp_path, use_environment=False)
+    (tmp_path / "decision.yaml").write_text(
+        default_suite_path().read_text(encoding="utf-8"), encoding="utf-8",
+    )
+
+    with caplog.at_level("WARNING", logger="cle.harness.prompt_store.resolution"):
+        active: Any = resolve_prompt_suites(directory=tmp_path, use_environment=False)
+
+    assert active == builtin
+    assert active.decision is None
+    assert "Ignoring legacy prompt pair override files decision.yaml" in caplog.text
+
+
 def test_follow_latest_ignores_stale_pins(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("CATAN_PROMPT_SUITE_DIR", str(tmp_path))
-    for var in ("CATAN_SHARED_SUITE", "CATAN_CONTEXT_SUITE", "CATAN_COMMUNICATION_SUITE",
-                "CATAN_PROMPT_SUITE_FOLLOW_LATEST"):
-        monkeypatch.delenv(var, raising=False)
+    _clear_pins(monkeypatch)
     assert follow_latest_enabled(None) is False
     assert follow_latest_enabled(True) is True
     builtin: Any = resolve_prompt_suites()

@@ -27,6 +27,7 @@ from .players import _AuditPlayer
 from .support import AUDIT_SEED_COUNT, COLORS, _assert_inventory, _assert_road_scores
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 @pytest.mark.skipif(
     os.environ.get("CATAN_FULL_GAME_AUDIT") != "1",
     reason="Opt in with CATAN_FULL_GAME_AUDIT=1; CATAN_AUDIT_SEEDS defaults to 32",

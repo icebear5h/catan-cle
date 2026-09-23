@@ -21,6 +21,7 @@ from cle.sandbox.catan import PlayerResponseError
 from .support import COLORS, FixedTransport, NoCommunicationPolicy, _trade_engine, _trade_offer
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 @pytest.mark.asyncio
 @pytest.mark.parametrize("attempt_limit", [1, 2])
 @pytest.mark.parametrize("give_count,error", [(1, "Equivalent offer"), (9, "affordable")])

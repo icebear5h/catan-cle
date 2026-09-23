@@ -11,7 +11,8 @@ from cle.traces.journal import (
     JournalConflict,
     SQLiteSandboxJournal,
 )
-from tests.traces_journal.support import POLICY, REQUEST_JSON, REQUEST_SHA, ticket_for
+
+from .support import POLICY, REQUEST_JSON, REQUEST_SHA, ticket_for
 
 
 def test_unknown_call_requires_explicit_retry_even_after_reopen_and_recovery(

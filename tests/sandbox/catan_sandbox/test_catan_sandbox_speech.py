@@ -60,6 +60,7 @@ async def test_pre_action_speech_rejects_stale_results_before_emitting_or_acknow
     assert engine.revision == 1
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 @pytest.mark.asyncio
 async def test_pre_action_messages_advance_revision_without_invalidating_following_choice() -> None:
     transport = FixedTransport(
@@ -91,6 +92,7 @@ async def test_pre_action_messages_advance_revision_without_invalidating_followi
     assert len(red.session.receipts) == 1
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 @pytest.mark.asyncio
 @pytest.mark.parametrize("barrier", [False, True])
 @pytest.mark.parametrize("cancel", [False, True])

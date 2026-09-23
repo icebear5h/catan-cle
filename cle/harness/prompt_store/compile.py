@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
-from cle.harness import prompt_store
-from cle.harness.communication import CommunicationSuite
-from cle.harness.prompt_store.documents import ActivePromptSuites
-from cle.harness.shared_suite import SharedPromptSuite
-from cle.harness.suite import ContextSuite
+from typing import TYPE_CHECKING
+
+from cle.harness.communication import CommunicationSuite, parse_communication_suite
+from cle.harness.shared_suite import SharedPromptSuite, parse_shared_prompt_suite
+from cle.harness.suite import ContextSuite, parse_context_suite
+
+if TYPE_CHECKING:
+    # documents.py validates through compile_runtime_suites, so this is type-only.
+    from cle.harness.prompt_store.documents import ActivePromptSuites
 
 RuntimeSuites = tuple[ContextSuite, CommunicationSuite]
 
@@ -25,14 +29,14 @@ def compile_runtime_suites(
             raise ValueError("Conflicting shared and legacy prompt suite sources")
         bundle = (
             shared if isinstance(shared, SharedPromptSuite)
-            else prompt_store.parse_shared_prompt_suite(shared)
+            else parse_shared_prompt_suite(shared)
         )
         return bundle.decision_suite(), bundle.communication_suite()
     if decision is None or communication is None:
         raise ValueError("A legacy prompt suite pair needs decision and communication sources")
     return (
-        prompt_store.parse_context_suite(decision),
-        prompt_store.parse_communication_suite(communication),
+        parse_context_suite(decision),
+        parse_communication_suite(communication),
     )
 
 

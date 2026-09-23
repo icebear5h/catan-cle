@@ -116,6 +116,7 @@ def response_case(
     return sandbox, player, transport, invalid, valid
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 def test_oversized_numeric_fields_raise_controlled_parse_errors(response_case: tuple[CatanSandbox, AgentPlayer, QueuedTransport, str, str]) -> None:
     sandbox, player, _, invalid, _ = response_case
 
@@ -129,6 +130,7 @@ def test_oversized_numeric_fields_raise_controlled_parse_errors(response_case: t
     assert "limit" in str(caught.value.__cause__)
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 @pytest.mark.asyncio
 async def test_numeric_rejection_retries_once_and_traces_first_validation(response_case: tuple[CatanSandbox, AgentPlayer, QueuedTransport, str, str]) -> None:
     sandbox, player, transport, invalid, valid = response_case
@@ -155,6 +157,7 @@ async def test_numeric_rejection_retries_once_and_traces_first_validation(respon
     assert player.session.messages[-1].content == valid
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 @pytest.mark.asyncio
 async def test_numeric_rejection_respects_retry_budget_and_leaves_second_response_queued(response_case: tuple[CatanSandbox, AgentPlayer, QueuedTransport, str, str]) -> None:
     sandbox, player, transport, invalid, valid = response_case
@@ -176,6 +179,7 @@ async def test_numeric_rejection_respects_retry_budget_and_leaves_second_respons
     assert not player.session.receipts
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 @pytest.mark.parametrize("response_case", ["trade_give", "discard"], indirect=True)
 @pytest.mark.parametrize("error_type", [ValueError, RuntimeError])
 def test_json_callback_errors_are_not_normalized_as_numeric_rejections(

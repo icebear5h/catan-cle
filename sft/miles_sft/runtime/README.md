@@ -7,7 +7,7 @@
 - [x] Implement preencoded real-Sample ingestion and strict training configuration admission.
 - [x] Audit actual trainable parameters and collect finite-gradient/update witnesses.
 - [x] Validate native adapter shards and merged HF exports; finalize only after cursor save.
-- [ ] Exercise CPU contracts and run the repository quality gate.
+- [x] Exercise CPU contracts and run the repository quality gate.
 
 The full-checkpoint merge (including historical token rows), launcher, CLI,
 image/Bridge pin, and preflight are owned by main. This package owns runtime
@@ -94,6 +94,52 @@ Required launch constraints are checked by `admission.validate_args`:
 
 ## Evidence and limits
 
+### Complete HF composition
+
+Configure `--save-hf` as `OUTPUT/exports/rollout-{rollout_id}/bridge`. The
+post-save hook checks that exact configured raw path and assembles the sibling
+`OUTPUT/exports/rollout-N/model` as the final, complete HF checkpoint.
+
+```python
+from sft.miles_sft.export import assemble_complete_export, validate_complete_export
+
+manifest_path = assemble_complete_export(base, bridge_export, bridge_export.parent / "model")
+manifest = validate_complete_export(base, bridge_export.parent / "model")
+```
+
+All arguments are `Path`s. Assembly returns the new `composition_manifest.json`
+path. It requires a fully validated merged base with its sealed `merge_manifest.json`;
+the source merge manifest is the authority for the trained-key and asset inventories.
+Production has 496 trained HF keys, selected by `operation == "lora_fp32_then_bf16"`.
+Every selected key must exist in Bridge with the base shape/dtype. Unexpected
+Bridge tensor keys fail. Bridge may omit frozen tensors or round frozen FP32 values.
+
+Composition processes one base-shaped shard at a time, replacing **only** admitted
+trained keys. All other tensors—including MTP, FP32 visual weights, complete
+embedding/head matrices with historical token rows, and norms—come directly from
+the base. Source and serialized output tensor bytes are SHA256-compared without
+dtype conversion. The HF index is rebuilt in full; config, tokenizer, template
+(including nested `chat_templates/`), and processor assets are byte-copied from the
+base manifest's asset/output inventory. Bridge's reserialized assets are not used.
+
+Outputs must be fresh. Raw Bridge files are read-only. A failed assembly can leave
+an incomplete output directory, and retries reject that directory. Base merge
+manifests/markers are not copied into the new model. The new composition manifest
+records the base manifest hash, source/output file SHA256s, and per-tensor
+source selection, shape, dtype, shard, and source/output byte hashes. Its own
+`.complete` seal is written last, after payload validation.
+
+Checkpoint receipts record `bridge_checkpoint_dir` separately from final
+`hf_checkpoint_dir`, and `hf.composition_manifest_sha256` pins composition identity.
+`finalize_run` derives both paths from the configured raw path and revalidates the
+final export against this pinned digest; both paths are also top-level fields in
+the returned `run.json`. `validate_complete_export` additionally accepts keyword
+arguments `bridge_export` and `expected_sha256` for these bindings. Validation
+checks coverage/dtypes, manifest-authorized frozen/trained identities, byte-identical
+asset identities, and all composed/raw tensor-file hashes. This relies on identity
+established during composition and its externally pinned manifest hash; it is not
+an authenticity claim about an untrusted, independently resealed manifest.
+
 Offline admission/audits/artifact validation do not import Miles or Megatron.
 Only `rollout.py` and `hooks.py` bind real remote modules at module import time;
 there are no fake Sample classes, fake adapter classes, or fallback loaders.
@@ -115,9 +161,32 @@ Files are exclusive, flushed writes; a reused directory or interrupted partial
 JSON fails closed. Before/after step receipts distinguish failed/skipped steps.
 Checkpoint receipts stay `complete: false`, `model_saved_cursor_pending` even
 when model artifacts pass. Finalization rechecks native adapter tensor
-names/shapes/finiteness, optimizer/scheduler state and hashes, merged HF marker,
-exact base tensor-name/shape coverage through safetensors headers, shard sizes,
-and byte-identical tokenizer assets. It verifies cursor sample counters against
-all completed rollouts. It does not hash the 27B base on each step or claim a
-full frozen-weight byte comparison. Base merge/token-row provenance belongs to
-the merge/preflight receipt.
+names/shapes/finiteness, optimizer/scheduler state and hashes, the complete HF
+composition described above, and cursor counters against all completed rollouts.
+The 27B base shards are hash-checked as they are consumed during composition;
+finalization binds to that base manifest without rehashing the full base. Large
+raw/final artifact hashing occurs only at export/finalization, never each step.
+
+## Verification review
+
+- `uv run --no-sync python -m pytest tests/miles_sft/test_runtime.py -q`:
+  **6 passed, 1 skipped**. Tests cover a real CPU Torch backward/SGD update,
+  Megatron `main_grad` precedence, missing/nonfinite gradients, skipped optimizer
+  rejection, trainable scope, frozen matrices, GDN coverage, native serialization,
+  and cursor-gated finalization. The real-Miles Sample integration test is skipped
+  because Miles is not installed locally; it never substitutes a fake module.
+- `uv run --no-sync python -m scripts.quality`: **passed**, including strict mypy,
+  Ruff, the 300-line source cap and 15-direct-file cap.
+- Remote Miles/Megatron/Bridge execution remains the main-owned runtime preflight.
+
+Focused composition repair review:
+
+- `uv run --no-sync python -m pytest tests/miles_sft/test_export.py tests/miles_sft/test_runtime.py -q`:
+  **22 passed, 1 skipped** (real Miles is not installed locally).
+- Real safetensors tests exercise different base/Bridge shard layouts, dropped MTP,
+  changed/rounded frozen tensors, exact asset copies, shape/dtype/key admission,
+  fresh-only output, incomplete-source rejection, payload/manifest tampering, and
+  raw/final path binding through cursor-gated run finalization.
+- Scoped Ruff and strict mypy pass for the repair. The repository-required quality
+  check passes structure and mypy; Ruff reports unrelated import-order failures in
+  `tests/traces_journal/test_calls.py`, `test_commands.py`, and `test_transactions.py`.

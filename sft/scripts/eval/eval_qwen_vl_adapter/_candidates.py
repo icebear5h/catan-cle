@@ -4,7 +4,7 @@ import importlib
 import re
 from collections.abc import Mapping
 from contextlib import nullcontext
-from typing import TYPE_CHECKING, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, cast
 
 from sft.json_types import JsonDict, as_dict, as_float, as_list, as_str
 from sft.scripts.eval import eval_qwen_vl_adapter as evaluator
@@ -37,7 +37,6 @@ class _GenerationOutput(Protocol):
     logits: tuple[torch_module.Tensor, ...] | None
 
 
-@runtime_checkable
 class _Generator(Protocol):
     """What ``generate_responses`` needs beyond ``nn.Module``: HF/PEFT ``generate``."""
 
@@ -179,8 +178,11 @@ def generate_responses(
     """Generate answers and return the raw first-step logits per row."""
 
     torch = importlib.import_module("torch")
-    if not isinstance(model, _Generator):
+    # Not a runtime Protocol check: Python 3.12 resolves members statically, and
+    # PEFT wrappers forward ``device`` through ``__getattr__``.
+    if not callable(getattr(model, "generate", None)):
         raise TypeError(f"{type(model).__name__} has no generate()")
+    generator = cast("_Generator", model)
     inputs: Mapping[str, torch_module.Tensor]
     decoder: _Decoder = processor
     if input_mode == "text":
@@ -205,7 +207,7 @@ def generate_responses(
                 )
             features.append({"input_ids": ids})
         inputs = {
-            key: tensor.to(model.device)
+            key: tensor.to(generator.device)
             for key, tensor in pad_text_inputs(tokenizer, features, left=True).items()
         }
         decoder = tokenizer
@@ -233,16 +235,16 @@ def generate_responses(
             images=images,
             padding=True,
             return_tensors="pt",
-        ).to(model.device)
+        ).to(generator.device)
 
     # A disabled autocast context would override autocast owned by imported callers.
     autocast = (
-        torch.autocast(model.device.type, dtype=torch.bfloat16)
+        torch.autocast(generator.device.type, dtype=torch.bfloat16)
         if preserve_visual_fp32 and input_mode == "vision"
         else nullcontext()
     )
     with torch.inference_mode(), autocast:
-        generated = model.generate(
+        generated = generator.generate(
             **inputs,
             do_sample=False,
             max_new_tokens=max_new_tokens,

@@ -28,6 +28,7 @@ from cle.traces import SQLiteLiveTraceStore
 from .support import COLORS, SequenceTransport
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 @pytest.mark.parametrize("discarding", [False, True])
 def test_stored_context_retains_only_visible_messages_commitments_and_discard_facts(
     tmp_path: Path, discarding: bool
@@ -93,6 +94,7 @@ def test_stored_context_retains_only_visible_messages_commitments_and_discard_fa
     assert receipt.choice.discard_cards == (("WOOD",) * 4 if discarding else None)
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 @pytest.mark.parametrize("completed_steps", [0, 1])
 def test_trace_store_failures_survive_reopen_and_success_without_changing_resume(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, completed_steps: int

@@ -14,10 +14,17 @@ from cle.harness import (
     load_context_suite,
 )
 
-from .support import _response, _sandbox_and_player
+from .support import (
+    LEGACY_XML_SUITE,
+    _response,
+    _sandbox_and_player,
+    _setup_tool_response,
+    allows_deprecated_suite,
+)
 
 
-@pytest.mark.parametrize("suite_file", ["catan_v10.yaml", "catan_v11.yaml"])
+@allows_deprecated_suite
+@pytest.mark.parametrize("suite_file", [LEGACY_XML_SUITE, "catan_v11.yaml"])
 @pytest.mark.parametrize("content", ["", " \n\t"])
 @pytest.mark.parametrize("reasoning_channel", [None, "text", "details"])
 def test_missing_final_answer_is_not_parsed_from_reasoning(
@@ -80,10 +87,13 @@ def test_missing_final_answer_reports_only_explicit_completion_limits(
     )
 
 
+@allows_deprecated_suite
 @pytest.mark.asyncio
 async def test_agent_player_keeps_full_conversation_and_full_visible_events() -> None:
+    # Asserts catan_v10's XML menu and setup-guidance text.
     sandbox, player, transport = _sandbox_and_player(
-        [_response(), _response(plan="connect the opening road"), _response()]
+        [_response(), _response(plan="connect the opening road"), _response()],
+        LEGACY_XML_SUITE,
     )
 
     first: Any = await sandbox.step()
@@ -192,9 +202,11 @@ async def test_agent_player_keeps_full_conversation_and_full_visible_events() ->
 
 @pytest.mark.asyncio
 async def test_sandbox_snapshot_restores_private_player_conversation() -> None:
-    sandbox, player, _ = _sandbox_and_player([_response(), _response()])
+    sandbox, player, transport = _sandbox_and_player([])
+    transport.responses.append(_setup_tool_response(sandbox.decision_context().legal_actions[0]))
     await sandbox.step()
     snapshot = sandbox.snapshot()
+    transport.responses.append(_setup_tool_response(sandbox.decision_context().legal_actions[0]))
 
     await sandbox.step()
     assert len(player.session.messages) == 4
@@ -208,9 +220,11 @@ async def test_sandbox_snapshot_restores_private_player_conversation() -> None:
 
 @pytest.mark.asyncio
 async def test_sandbox_retries_invalid_player_output_with_feedback() -> None:
-    sandbox, _, transport = _sandbox_and_player(
-        [ModelResponse(content="<action>999</action>"), _response()]
-    )
+    sandbox, _, transport = _sandbox_and_player([])
+    transport.responses += [
+        ModelResponse(content='{"tool":"build_settlement","arguments":{"node":"<N99>"}}'),
+        _setup_tool_response(sandbox.decision_context().legal_actions[0]),
+    ]
 
     result = await sandbox.step()
 

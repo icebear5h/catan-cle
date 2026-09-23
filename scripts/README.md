@@ -15,10 +15,13 @@ The Modal probe remains a Modal entrypoint:
 `modal run scripts/probes/vlm_benchmark_modal.py --help`.
 
 The root owns development, deployment, live-trace maintenance, replay diffing,
-archive import/visualization, and artifact-layout verification. `quality/` owns
+archive import/visualization, artifact-layout verification, and
+`gen_prompt_studio_types` (regenerates the Prompt Studio's shared-suite TS types
+from the pydantic model; `--check` fails when stale, and
+`tests/viewer/prompt_contract` runs the same check). `quality/` owns
 the existing quality tooling.
 
-Direct authored file counts, including initializers and documentation: root 12;
+Direct authored file counts, including initializers and documentation: root 13;
 `board_bench` 2; `board_bench/builders` 8; `board_bench/run` 5;
 `board_recognition` 10; `reasoning` 7; `probes` 5; `quality` 7. A script that
 grew past the 300-line file cap became a same-name package, so its `python -m`

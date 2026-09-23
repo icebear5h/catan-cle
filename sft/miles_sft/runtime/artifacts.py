@@ -6,9 +6,10 @@ from collections.abc import Mapping
 from pathlib import Path
 
 import torch
-from safetensors import safe_open
 
 from sft.json_types import JsonDict, JsonLikeDict, as_dict, as_str, load_json_dict
+from sft.miles_sft.export import validate_complete_export
+from sft.miles_sft.export._validation import COMPOSITION
 
 from .contracts import require
 from .storage import file_hash
@@ -61,50 +62,19 @@ def audit_native(
     return result
 
 
-def _weight_headers(directory: Path) -> tuple[dict[str, list[int]], dict[str, str]]:
-    index = directory / "model.safetensors.index.json"
-    _file(index)
-    weight_map = {key: as_str(value) for key, value in as_dict(load_json_dict(index)["weight_map"]).items()}
-    require(bool(weight_map), "empty merged HF weight index")
-    by_shard: dict[str, set[str]] = {}
-    for name, shard in weight_map.items():
-        require(Path(shard).name == shard and shard.endswith(".safetensors"), "unsafe HF shard path")
-        require(not any(term in name for term in (".adapter.", "lora_", "trainable_tokens")),
-                "HF export still contains unmerged adapter/token-row tensors")
-        by_shard.setdefault(shard, set()).add(name)
-    headers: dict[str, list[int]] = {}
-    for shard, names in by_shard.items():
-        path = directory / shard
-        _file(path)
-        with safe_open(path, framework="pt", device="cpu") as handle:
-            require(set(handle.keys()) == names, f"HF index/shard tensor mismatch: {shard}")
-            headers.update({name: list(handle.get_slice(name).get_shape()) for name in names})
-    return headers, weight_map
-
-
-def audit_hf_export(base: Path, exported: Path) -> JsonLikeDict:
-    require((exported / ".complete").is_file(), "merged HF export has no .complete marker")
-    expected, _ = _weight_headers(base)
-    actual, weights = _weight_headers(exported)
-    require(actual == expected, "merged HF export has missing/extra/reshaped base weights")
-    require(any("embed_tokens.weight" in n for n in actual)
-            and any(n.endswith("lm_head.weight") for n in actual)
-            and any("visual." in n or "vision_model." in n for n in actual),
-            "merged checkpoint must include vision and both full token matrices")
-    _file(exported / "config.json")
-    assets = ("tokenizer.json", "tokenizer_config.json")
-    asset_hashes: dict[str, str] = {}
-    for name in assets:
-        _file(base / name)
-        _file(exported / name)
-        asset_hashes[name] = file_hash(exported / name)
-        require(asset_hashes[name] == file_hash(base / name), f"export changed saved tokenizer: {name}")
-    for name in ("added_tokens.json", "special_tokens_map.json", "chat_template.jinja"):
-        if (base / name).is_file():
-            _file(exported / name)
-            asset_hashes[name] = file_hash(exported / name)
-            require(asset_hashes[name] == file_hash(base / name), f"export changed tokenizer asset: {name}")
-    return {"path": str(exported.resolve()), "tensor_count": len(actual),
-            "index_sha256": file_hash(exported / "model.safetensors.index.json"),
-            "tokenizer_sha256": asset_hashes,
-            "shards": {name: (exported / name).stat().st_size for name in sorted(set(weights.values()))}}
+def audit_hf_export(base: Path, exported: Path, *, bridge_export: Path | None = None,
+                    expected_sha256: str | None = None) -> JsonLikeDict:
+    validate_complete_export(base, exported, bridge_export=bridge_export, expected_sha256=expected_sha256)
+    manifest = load_json_dict(exported / COMPOSITION)
+    tensors = as_dict(manifest["tensors"])
+    files = as_dict(manifest["output_files"])
+    shards = {as_str(as_dict(entry)["shard"]) for entry in tensors.values()}
+    return {"path": str(exported.resolve()), "tensor_count": len(tensors),
+            "composition_manifest_sha256": file_hash(exported / COMPOSITION),
+            "base_manifest_sha256": manifest["base_manifest_sha256"],
+            "trained_keys": manifest["trained_keys"], "frozen_tensor_count": sum(
+                as_dict(entry)["source"] == "base" for entry in tensors.values()),
+            "index_sha256": as_dict(files["model.safetensors.index.json"])["sha256"],
+            "asset_sha256": {name: as_dict(entry)["sha256"] for name, entry in files.items()
+                             if name not in shards and name != "model.safetensors.index.json"},
+            "shards": {name: files[name] for name in sorted(shards)}}

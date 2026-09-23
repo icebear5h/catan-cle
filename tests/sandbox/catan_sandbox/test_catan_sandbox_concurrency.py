@@ -20,6 +20,7 @@ from cle.sandbox.catan import SandboxError
 from .support import COLORS, NoCommunicationPolicy, _sandbox, _trade_engine, _trade_offer
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 @pytest.mark.asyncio
 async def test_step_rejects_overlap_and_restore_until_pending_choice_finishes() -> None:
     entered = asyncio.Event()

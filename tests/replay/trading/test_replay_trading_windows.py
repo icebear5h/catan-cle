@@ -161,7 +161,9 @@ def test_trade_response_transitions_replace_and_clear_previous_state() -> None:
         "OFFER_TRADE", "ACCEPT_TRADE", "REJECT_TRADE", "ACCEPT_TRADE",
         "CLEAR_TRADE_RESPONSE",
     ]
-    assert state.current_game.events[-1].public_payload == {"offer_id": "trade-1"}
+    assert state.current_game.events[-1].public_payload == {
+        "offer_id": "trade-1", "offer": state.current_game.events[0].public_payload,
+    }
     assert len(state.current_game.state.actions) == 4
     events_after_clear = deepcopy(state.current_game.events)
     assert replay_undo_logic(state, lambda: None)["actions_undone"] == 0

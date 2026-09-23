@@ -1,5 +1,6 @@
 """Shared helpers for text-mode trl training contracts over the local catan stack."""
 
+import json
 from dataclasses import asdict, replace
 from pathlib import Path
 
@@ -80,20 +81,33 @@ class TinyLanguage(torch.nn.Module):
         return BaseModelOutput(last_hidden_state=hidden)
 
 
+class TinyBackbone(torch.nn.Module):
+    """Qwen's ``model`` wrapper: TRL 1.12 chunked NLL runs ``base_model`` without the head."""
+
+    def __init__(self, num_layers: int) -> None:
+        super().__init__()
+        self.language_model = TinyLanguage(num_layers)
+        self.visual = DormantVisual()
+
+    def forward(self, input_ids: torch.Tensor, attention_mask: torch.Tensor | None = None, **kwargs: object) -> BaseModelOutput:
+        assert not training.TEXT_MEDIA_KEYS.intersection(kwargs)
+        assert "_prediction_loss_only" not in kwargs
+        return self.language_model(input_ids)
+
+
 class TinyTextVLM(PreTrainedModel, GenerationMixin):
     """Real numerical forward/generation with Qwen's module paths and untied heads."""
 
     config_class = PretrainedConfig
+    base_model_prefix = "model"
 
     def __init__(self, num_layers: int = 1) -> None:
         super().__init__(PretrainedConfig(
-            vocab_size=256, hidden_size=8, tie_word_embeddings=False,
+            vocab_size=256, hidden_size=8, num_hidden_layers=num_layers, tie_word_embeddings=False,
             eos_token_id=2, pad_token_id=2, use_cache=False,
             max_position_embeddings=16384,
         ))
-        self.model = torch.nn.Module()
-        self.model.language_model = TinyLanguage(num_layers)
-        self.model.visual = DormantVisual()
+        self.model = TinyBackbone(num_layers)
         self.lm_head = torch.nn.Linear(8, 256, bias=False)
         with torch.no_grad():
             for parameter in self.parameters():
@@ -118,9 +132,7 @@ class TinyTextVLM(PreTrainedModel, GenerationMixin):
         labels: torch.Tensor | None = None,
         **kwargs: object,
     ) -> CausalLMOutputWithPast:
-        assert not training.TEXT_MEDIA_KEYS.intersection(kwargs)
-        assert "_prediction_loss_only" not in kwargs
-        hidden = self.model.language_model(input_ids).last_hidden_state
+        hidden = self.model(input_ids, attention_mask, **kwargs).last_hidden_state
         logits = self.lm_head(hidden)
         loss = None if labels is None else F.cross_entropy(
             logits[:, :-1].float().reshape(-1, 256), labels[:, 1:].reshape(-1),
@@ -169,7 +181,13 @@ def write_text_source(
         tokenizer=tokenizer, image_processor=CLIPImageProcessor(),
         chat_template=tokenizer.chat_template,
     )
-    processor.save_pretrained(bundle, legacy_serialization=legacy_processor_serialization)
+    processor.save_pretrained(bundle)
+    if legacy_processor_serialization:
+        # transformers 5 always nests the image processor; rebuild the 4.x split layout.
+        processor.image_processor.save_pretrained(bundle)
+        nested = json.loads((bundle / "processor_config.json").read_text())
+        nested.pop("image_processor")
+        training.write_json_atomic(bundle / "processor_config.json", nested)
     # Explicit video configuration fixture: preserve bytes without importing the
     # torchvision-dependent video processor or manufacturing video data.
     training.write_json_atomic(bundle / "video_preprocessor_config.json", {

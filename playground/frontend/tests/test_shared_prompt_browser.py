@@ -1,152 +1,46 @@
 """Real Prompt Studio browser flows, with isolated routes/storage and no inference.
 
-Run with .venv/bin/python -m pytest playground/frontend/tests/test_shared_prompt_browser.py.
-Requires installed frontend dependencies and Playwright Chromium. CATAN_BROWSER_TMPDIR
-can select an approved existing temp parent; the Vite build never touches dist.
+Run with uv run --no-sync python -m pytest playground/frontend/tests/test_shared_prompt_browser.py.
+Requires installed frontend dependencies and Playwright Chromium; see conftest.py.
 """
 
-import json
-import os
-import select
-import subprocess
-import sys
 from collections.abc import Iterator
 from copy import deepcopy
 from hashlib import sha256
 from pathlib import Path
-from tempfile import TemporaryDirectory, gettempdir
-from urllib.parse import urlsplit
 
 import playwright.sync_api as pw
 import pytest
-from playwright.sync_api import expect, sync_playwright
+from playwright.sync_api import expect
 
-FRONTEND = Path(__file__).resolve().parents[1]
-ROOT = FRONTEND.parents[1]
+from cle.harness.yaml_source import BUILTIN_SUITES_DIR
+from playground.frontend.tests.browser_support import (
+    fixture_server,
+    network_sandbox,
+    open_prompt_studio,
+)
+
 Studio = tuple[pw.Page, dict[str, object]]
-
-
-@pytest.fixture(scope="module")
-def browser_build() -> Iterator[tuple[pw.Browser, Path]]:
-    parent = Path(os.environ.get("CATAN_BROWSER_TMPDIR", gettempdir()))
-    subprocess.run(["ls", "-d", str(parent)], check=True, capture_output=True)
-    with TemporaryDirectory(prefix="shared-prompt-browser-", dir=parent) as directory:
-        build = Path(directory) / "build"
-        result = subprocess.run(
-            [str(FRONTEND / "node_modules/.bin/vite"), "build", "--outDir", str(build)],
-            cwd=FRONTEND, capture_output=True, text=True, timeout=120,
-        )
-        assert result.returncode == 0, result.stdout + result.stderr
-        print(f"Temporary Vite build (removed after suite): {build}")
-        with sync_playwright() as playwright:
-            browser = playwright.chromium.launch(headless=True)
-            try:
-                yield browser, build
-            finally:
-                browser.close()
-
-
-@pytest.fixture(params=[(1600, 1000), (390, 844)], ids=["desktop", "mobile"])
-def viewport(request: pytest.FixtureRequest) -> pw.ViewportSize:
-    width, height = request.param
-    return {"width": width, "height": height}
+LEGACY_PINS = {
+    "CATAN_CONTEXT_SUITE": str(BUILTIN_SUITES_DIR / "catan_v11.yaml"),
+    "CATAN_COMMUNICATION_SUITE": str(BUILTIN_SUITES_DIR / "communication_v5.yaml"),
+}
 
 
 @pytest.fixture
 def mounted_studio(request: pytest.FixtureRequest, browser_build: tuple[pw.Browser, Path],
                    viewport: pw.ViewportSize, tmp_path: Path) -> Iterator[Studio]:
+    """Studio over an `empty`, `loaded` (seeded game) or `legacy` (pinned pair) server."""
     browser, build = browser_build
-    env = {
-        **os.environ,
-        "PYTHONPATH": str(ROOT),
-        "PYTHON_DOTENV_DISABLED": "1",
-        "PYTHONDONTWRITEBYTECODE": "1",
-        "PYTHONHASHSEED": "0",
-        "CATAN_LIVE_TRACE_DB": str(tmp_path / "traces.sqlite3"),
-        "CATAN_PROMPT_SUITE_DIR": str(tmp_path / "prompts"),
-    }
-    for name in ("CATAN_SHARED_SUITE", "CATAN_CONTEXT_SUITE", "CATAN_COMMUNICATION_SUITE"):
-        env.pop(name, None)
     mode = getattr(request, "param", "empty")
-    with (tmp_path / "server.log").open("w+") as log:
-        process = subprocess.Popen(
-            [sys.executable, "-u", "-m", "playground.frontend.tests.shared_prompt_browser_fixture",
-             str(build), mode],
-            cwd=tmp_path, env=env, stdout=subprocess.PIPE, stderr=log, text=True,
-        )
-        context = browser.new_context(viewport=viewport, service_workers="block")
-        context.set_default_timeout(5000)
-        blocked, errors = [], []
-        try:
-            assert select.select([process.stdout], [], [], 30)[0], "Fixture startup timed out"
-            origin = process.stdout.readline().strip()
-            log.seek(0)
-            assert origin.startswith("http://127.0.0.1:"), log.read()
-
-            def intercept(route: pw.Route) -> None:
-                url = urlsplit(route.request.url)
-                if url.netloc == "127.0.0.1:5001" and (
-                    url.path in ("/api/prompt-suite", "/api/prompt-suite/validate", "/api/reset", "/api/start-game", "/api/state")
-                    or url.path.startswith("/api/live-traces")
-                    or url.path.startswith("/socket.io/")
-                ):
-                    response = route.fetch(url=f"{origin}{url.path}?{url.query}", max_redirects=0)
-                    route.fulfill(response=response, headers={
-                        **response.headers, "Access-Control-Allow-Origin": "*",
-                    })
-                elif route.request.url.startswith(f"{origin}/"):
-                    route.continue_()
-                else:
-                    blocked.append(route.request.url)
-                    route.abort()
-
-            def intercept_socket(route: pw.WebSocketRoute) -> None:
-                if route.url.startswith(origin.replace("http://", "ws://") + "/socket.io/"):
-                    route.connect_to_server()
-                else:
-                    blocked.append(route.url)
-                    route.close()
-
-            context.route("**/*", intercept)
-            context.route_web_socket("**/*", intercept_socket)
-            context.add_init_script(f"""
-                const NativeWebSocket = window.WebSocket;
-                window.WebSocket = class extends NativeWebSocket {{
-                    constructor(url, protocols) {{
-                        const target = new URL(url);
-                        if (target.host === '127.0.0.1:5001') {{
-                            target.host = new URL({json.dumps(origin)}).host;
-                        }}
-                        super(target.href, protocols);
-                    }}
-                }};
-            """)
-            page = context.new_page()
-            page.on("pageerror", lambda error: errors.append(str(error)))
-            page.on("console", lambda message: errors.append(message.text) if message.type == "error" else None)
-            page.goto(origin)
-            with page.expect_response(lambda response: response.url.endswith("/api/prompt-suite")) as initial:
-                page.get_by_role("button", name="Prompt Suite", exact=True).click()
-            assert initial.value.status == 200
-            payload = initial.value.json()
-            assert payload["mode"] == "shared"
-            expect(page.get_by_role("heading", name="Shared Definitions", exact=True)).to_be_visible()
-            yield page, payload
-        finally:
-            if context.pages:
-                screenshot = tmp_path / "browser.png"
-                context.pages[0].screenshot(path=str(screenshot))
-                print(f"Browser screenshot: {screenshot}")
-            context.close()
-            process.terminate()
-            try:
-                process.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                process.kill()
-                process.wait(timeout=5)
-            process.stdout.close()
-            assert not blocked, f"Unexpected network requests: {blocked}"
-            assert not errors, f"Browser errors: {errors}"
+    pins = LEGACY_PINS if mode == "legacy" else None
+    server_mode = "loaded" if mode == "loaded" else "empty"
+    with (fixture_server(build, server_mode, tmp_path, pins) as origin,
+          network_sandbox(browser, origin, viewport, tmp_path) as sandbox):
+        page = sandbox.open_page()
+        payload = open_prompt_studio(page)
+        assert payload["mode"] == ("legacy" if mode == "legacy" else "shared")
+        yield page, payload
 
 
 def select_component(page: pw.Page, name: str) -> pw.Locator:
@@ -273,28 +167,73 @@ def test_save_uses_current_source_hash_and_refresh_persists(
     expect(page.locator(".prompt-studio-footer")).to_contain_text("local override")
 
 
-@pytest.mark.parametrize("mounted_studio", ["session"], indirect=True)
-def test_new_game_returns_to_empty_setup_and_keeps_saved_session(mounted_studio: Studio) -> None:
-    page, _ = mounted_studio
-    origin = page.url
-    assert urlsplit(origin).port != 5001
-    before = page.request.get(f"{origin}api/live-traces").json()["games"]
-    assert len(before) == 1 and before[0]["step_count"] == 1
-    old_id = before[0]["game_id"]
-    page.get_by_role("button", name="Game", exact=True).click()
-    with page.expect_response(lambda response: response.url.endswith("/api/reset")) as reset:
-        page.get_by_role("button", name="New Game", exact=True).click()
-    assert reset.value.status == 200
-    expect(page.get_by_text("Start a game to view the board", exact=True)).to_be_visible()
-    start = page.get_by_role("button", name="Start Game (Random)", exact=True)
-    expect(start).to_be_enabled()
-    assert page.request.get(f"{origin}api/live-traces/{old_id}").json()["step_count"] == 1
-    with page.expect_response(lambda response: response.url.endswith("/api/start-game")) as created:
-        start.click()
-    assert created.value.status == 200
-    assert created.value.json()["trace_game_id"] != old_id
-    expect(page.get_by_role("button", name="New Game", exact=True)).to_be_enabled()
-    expect(start).to_have_count(0)
-    games = page.request.get(f"{origin}api/live-traces").json()["games"]
-    assert len(games) == 2
-    assert next(game for game in games if game["game_id"] == old_id)["step_count"] == 1
+def test_reset_restores_built_in_and_removes_override(mounted_studio: Studio, tmp_path: Path) -> None:
+    page, original = mounted_studio
+    built_in = original["shared"]["document"]["components"]["notes"]["template"]
+    override = tmp_path / "prompts/shared.yaml"
+    footer = page.locator(".prompt-studio-footer")
+    reset = page.get_by_role("button", name="Reset built-in", exact=True)
+    editor = select_component(page, "notes environment.notes")
+    editor.fill("OVERRIDE NOTES:\n{{ notes }}")
+    with page.expect_response(lambda response: response.request.method == "PUT") as saved:
+        page.get_by_role("button", name="Save active prompts", exact=True).click()
+    assert saved.value.status == 200, saved.value.text()
+    saved_hash = saved.value.json()["shared"]["sha256"]
+    expect(footer).to_contain_text("local override")
+
+    page.once("dialog", lambda dialog: dialog.dismiss())
+    reset.click()
+    expect(footer).to_contain_text("local override")
+    assert override.exists()
+
+    page.once("dialog", lambda dialog: dialog.accept())
+    with page.expect_response(lambda response: response.request.method == "DELETE") as result:
+        reset.click()
+    assert result.value.request.post_data_json == {"expected": {"shared": saved_hash}}
+    assert result.value.status == 200, result.value.text()
+    restored = result.value.json()["shared"]
+    assert restored["overridden"] is False
+    assert restored["sha256"] == original["shared"]["sha256"]
+    assert restored["document"] == original["shared"]["document"]
+    assert not override.exists()
+    expect(editor).to_have_value(built_in)
+    expect(footer).to_contain_text("source default")
+    expect(footer.locator("code")).to_have_attribute("title", original["shared"]["sha256"])
+    expect(page.locator(".prompt-studio-notice").filter(
+        has_text="Built-in prompts selected for the next inference boundary",
+    )).to_be_visible()
+    expect(page.locator(".prompt-studio-dirty")).to_have_count(0)
+
+
+@pytest.mark.parametrize("mounted_studio", ["legacy"], indirect=True)
+def test_pinned_legacy_pair_is_read_only(mounted_studio: Studio, tmp_path: Path) -> None:
+    page, payload = mounted_studio
+    assert payload["read_only"] is True
+    assert "shared" not in payload
+    for kind, suite_id, version in (
+        ("decision", "catan-agent", "11.0.0"), ("communication", "catan-communication", "5"),
+    ):
+        metadata = payload[kind]
+        assert (metadata["id"], metadata["version"]) == (suite_id, version)
+        assert (metadata["status"], metadata["overridden"]) == ("legacy", False)
+    expect(page.get_by_text("Pinned legacy decision and table talk suites; read-only.")).to_be_visible()
+    expect(page.locator(".prompt-studio-lock").filter(
+        has_text="A legacy prompt pair is pinned by environment or live config.",
+    )).to_be_visible()
+    expect(page.get_by_role("button", name="Save active prompts", exact=True)).to_be_disabled()
+    expect(page.get_by_role("button", name="Reset built-in", exact=True)).to_be_disabled()
+    expect(page.get_by_role("button", name="Refresh", exact=True)).to_be_enabled()
+    expect(page.get_by_role("button", name="Validate", exact=True)).to_have_count(0)
+    expect(page.get_by_role("navigation", name="Prompt components")).to_have_count(0)
+    expect(page.get_by_role("textbox")).to_have_count(0)
+    footer = page.locator(".prompt-studio-footer")
+    expect(footer).to_contain_text("Decision catan-agent@11.0.0 · legacy · built-in")
+    expect(footer).to_contain_text("Table talk catan-communication@5 · legacy · built-in")
+    for label, key in (("Decision", "decision"), ("Table talk", "communication")):
+        group = payload["preview"][key]
+        heading = f"{label} {payload[key]['id']}@{payload[key]['version']} / {group['status']}"
+        expect(page.get_by_role("heading", name=heading, exact=True)).to_be_visible()
+    with page.expect_response(lambda response: response.url.endswith("/api/prompt-suite")) as refreshed:
+        page.get_by_role("button", name="Refresh", exact=True).click()
+    assert refreshed.value.json()["mode"] == "legacy"
+    assert not (tmp_path / "prompts").exists()

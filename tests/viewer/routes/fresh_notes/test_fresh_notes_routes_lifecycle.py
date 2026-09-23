@@ -1,7 +1,7 @@
 """New live games keep saved traces, notes, and active shared sources."""
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from threading import Event
 from typing import Any
 
@@ -23,6 +23,7 @@ from cle.sandbox.factory import (
 from cle.sandbox.replay import ReplaySandbox
 from playground.game_viewer.routes import live_game
 from playground.game_viewer.routes import prompt_suite as prompt_routes
+from playground.game_viewer.routes.prompt_studio import PROMPT_STUDIO_DEPS, PromptStudioDeps
 from playground.game_viewer.state import ServerState
 
 from .conftest import LiveApp
@@ -173,7 +174,8 @@ def test_inflight_edit_keeps_old_admission_and_updates_next_actual_boundary(live
     editor: Any = client.get("/api/prompt-suite").json
     entered, release, published = Event(), Event(), Event()
     original_complete = transport.complete
-    original_save = prompt_routes.save_shared_prompt_override
+    defaults = PromptStudioDeps()
+    original_save = defaults.save_override
 
     async def paused(request: ModelRequest) -> ModelResponse:
         if request.channel == "action":
@@ -181,13 +183,13 @@ def test_inflight_edit_keeps_old_admission_and_updates_next_actual_boundary(live
             assert release.wait(5)
         return await original_complete(request)
 
-    def save_and_signal(**kwargs: object) -> ActivePromptSuites:
-        result: Any = original_save(**kwargs)
+    def save_and_signal(*, source: str, expected_sha256: str) -> ActivePromptSuites:
+        result: Any = original_save(source=source, expected_sha256=expected_sha256)
         published.set()
         return result
 
     monkeypatch.setattr(transport, "complete", paused)
-    monkeypatch.setattr(prompt_routes, "save_shared_prompt_override", save_and_signal)
+    client.application.config[PROMPT_STUDIO_DEPS] = replace(defaults, save_override=save_and_signal)
     document: Any = editor["shared"]["document"]
     document["components"]["board_state"]["template"] = "EDIT DURING INFERENCE\n{{ board_state }}"
     document["max_notes_chars"] = notes_limit

@@ -1,8 +1,13 @@
-"""Private subprocess app for test_shared_prompt_browser; never run the live app."""
+"""Private subprocess app for the frontend browser tests; never run the live app.
+
+Modes: `empty` (no game), `loaded` (a seeded LLM game at a main-game decision, for
+Prompt Studio previews) and `session` (one recorded random-game step, for game flow).
+"""
 
 import asyncio
 import os
 import sys
+from collections.abc import Callable
 from dataclasses import asdict
 from pathlib import Path
 
@@ -34,6 +39,49 @@ def deny_outbound_network(event: str, args: tuple[object, ...]) -> None:
         raise AssertionError("Outbound connections are forbidden in browser fixtures")
 
 
+def load_prompt_preview_game(state: ServerState) -> None:
+    sandbox = create_live_sandbox(LiveSandboxConfig(
+        mode="llm", seed=5, palette="canonical_four", shuffle_players=False,
+    ), transport=NeverTransport())
+    engine = sandbox.game_engine
+    # Reach a real decision AND pre-action speech opportunity without inference.
+    for _ in range(32):
+        if engine.observe(sandbox.current_actor()).current_phase == "main_game":
+            break
+        engine.step(engine.state.playable_actions[0])
+    else:
+        raise AssertionError("Seeded engine did not reach main game")
+    for color, player in sandbox.players.items():
+        player.session.strategic_memory = f"Accepted {color.value} notes: reserve wheat."
+    state.current_sandbox = sandbox
+    state.game_running = True
+
+
+def load_saved_session(state: ServerState) -> None:
+    config = materialize_live_prompt_suites(LiveSandboxConfig(mode="random", seed=5))
+    sandbox = create_live_sandbox(config)
+    state.current_sandbox = sandbox
+    state.game_running = True
+    state.live_trace_game_id = sandbox.game_engine.id
+    state.live_trace_store.start_game(
+        state.live_trace_game_id, config=asdict(config), snapshot=sandbox.snapshot(),
+    )
+    result = asyncio.run(sandbox.step())
+    state.live_trace_store.record_step(
+        state.live_trace_game_id, result=result, rejected_attempts=(),
+        public_state=build_game_state_snapshot(state), snapshot=sandbox.snapshot(),
+    )
+
+
+def load_nothing(state: ServerState) -> None:
+    pass
+
+
+MODES: dict[str, Callable[[ServerState], None]] = {
+    "empty": load_nothing, "loaded": load_prompt_preview_game, "session": load_saved_session,
+}
+
+
 def main() -> None:
     # The parent supplies these before Python imports any viewer/state modules.
     assert os.environ["PYTHON_DOTENV_DISABLED"] == "1"
@@ -42,36 +90,7 @@ def main() -> None:
     sys.addaudithook(deny_outbound_network)
     state = ServerState()
     state.live_trace_store = SQLiteLiveTraceStore(os.environ["CATAN_LIVE_TRACE_DB"])
-    if sys.argv[2] == "loaded":
-        sandbox = create_live_sandbox(LiveSandboxConfig(
-            mode="llm", seed=5, palette="canonical_four", shuffle_players=False,
-        ), transport=NeverTransport())
-        engine = sandbox.game_engine
-        # Reach a real decision AND pre-action speech opportunity without inference.
-        for _ in range(32):
-            if engine.observe(sandbox.current_actor()).current_phase == "main_game":
-                break
-            engine.step(engine.state.playable_actions[0])
-        else:
-            raise AssertionError("Seeded engine did not reach main game")
-        for color, player in sandbox.players.items():
-            player.session.strategic_memory = f"Accepted {color.value} notes: reserve wheat."
-        state.current_sandbox = sandbox
-        state.game_running = True
-    elif sys.argv[2] == "session":
-        config = materialize_live_prompt_suites(LiveSandboxConfig(mode="random", seed=5))
-        sandbox = create_live_sandbox(config)
-        state.current_sandbox = sandbox
-        state.game_running = True
-        state.live_trace_game_id = sandbox.game_engine.id
-        state.live_trace_store.start_game(
-            state.live_trace_game_id, config=asdict(config), snapshot=sandbox.snapshot(),
-        )
-        result = asyncio.run(sandbox.step())
-        state.live_trace_store.record_step(
-            state.live_trace_game_id, result=result, rejected_attempts=(),
-            public_state=build_game_state_snapshot(state), snapshot=sandbox.snapshot(),
-        )
+    MODES[sys.argv[2]](state)
 
     app = Flask(__name__)
     socketio = SocketIO(app, async_mode="threading", cors_allowed_origins="*")

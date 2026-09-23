@@ -10,9 +10,9 @@ from types import SimpleNamespace
 
 import pytest
 import torch
-from safetensors.torch import save_file
 
 from sft.json_types import load_json_dict
+from sft.miles_sft.export import assemble_complete_export
 from sft.miles_sft.runtime.admission import encoded_sample, validate_args
 from sft.miles_sft.runtime.artifacts import audit_hf_export, audit_native
 from sft.miles_sft.runtime.audits import adapter_parameters, audit_fresh_adapter, gradient_witness
@@ -20,6 +20,10 @@ from sft.miles_sft.runtime.contracts import MILES_COMMIT, REQUIRED_TARGETS, TARG
 from sft.miles_sft.runtime.receipts import finalize_run
 from sft.miles_sft.runtime.storage import file_hash, write_receipt
 from sft.miles_sft.runtime.witness import audited_train_step
+from tests.miles_sft import test_export
+
+bundle = test_export.bundle
+export_bundle = test_export.export_bundle
 
 
 class Outcome(Enum):
@@ -70,7 +74,7 @@ def _args(tmp_path: Path) -> SimpleNamespace:
         pipeline_model_parallel_size=1, context_parallel_size=1, expert_model_parallel_size=1,
         expert_tensor_parallel_size=1, virtual_pipeline_model_parallel_size=None,
         rank=0, world_size=1, hf_checkpoint=str(tmp_path / "base"), load=str(tmp_path / "base"),
-        save=str(tmp_path / "native"), save_hf=str(tmp_path / "hf-{rollout_id}"),
+        save=str(tmp_path / "native"), save_hf=str(tmp_path / "exports" / "rollout-{rollout_id}" / "bridge"),
         num_rollout=1, start_rollout_id=0, global_batch_size=1, no_save_optim=False,
     )
 
@@ -215,28 +219,18 @@ def _exercise_step(directory: Path, model: torch.nn.Module, args: SimpleNamespac
     return optimizer
 
 
-def _hf(directory: Path, complete: bool) -> None:
-    directory.mkdir()
-    state = {"model.language_model.embed_tokens.weight": torch.ones(32, 4),
-             "lm_head.weight": torch.ones(32, 4), "model.visual.weight": torch.ones(4, 4)}
-    save_file(state, directory / "model.safetensors")
-    write_receipt(directory / "model.safetensors.index.json",
-                  {"weight_map": {n: "model.safetensors" for n in state}})
-    for name in ("config.json", "tokenizer.json", "tokenizer_config.json"):
-        write_receipt(directory / name, {"test_fixture": True})
-    if complete:
-        (directory / ".complete").touch()
-
-
-def test_real_cpu_update_and_checkpoint_cursor_finalization(tmp_path: Path) -> None:
+def test_real_cpu_update_and_checkpoint_cursor_finalization(
+    tmp_path: Path, export_bundle: tuple[Path, Path, Path],
+) -> None:
     args, model = _args(tmp_path), _model()
+    base, bridge_path, hf_path = export_bundle
+    args.hf_checkpoint = args.load = str(base)
     directory = tmp_path / "receipts"
     optimizer = _exercise_step(directory, model, args)
     _, scope = adapter_parameters([model])
     write_receipt(directory / "scope-rank-0.json", scope)
-    _hf(Path(args.hf_checkpoint), False)
-    hf_path = Path(args.save_hf.format(rollout_id=0))
-    _hf(hf_path, True)
+    assert bridge_path == Path(args.save_hf.format(rollout_id=0))
+    assemble_complete_export(base, bridge_path, hf_path)
     checkpoint = Path(args.save) / "iter_0000000"
     adapter = checkpoint / "adapter"
     adapter.mkdir(parents=True)
@@ -245,10 +239,11 @@ def test_real_cpu_update_and_checkpoint_cursor_finalization(tmp_path: Path) -> N
     torch.save({"iteration": 0, "optimizer": optimizer.optimizer.state_dict(), "opt_param_scheduler": {"step": 1}},
                adapter / "training_state_rank0.pt")
     native = audit_native(checkpoint, 0, [scope])
-    hf = audit_hf_export(Path(args.hf_checkpoint), hf_path)
+    hf = audit_hf_export(base, hf_path, bridge_export=bridge_path)
     write_receipt(directory / "checkpoint-0.json", {
         "rollout_id": 0, "status": "model_saved_cursor_pending", "complete": False,
         "checkpoint_dir": str(checkpoint), "hf_checkpoint_dir": str(hf_path), "native": native, "hf": hf,
+        "bridge_checkpoint_dir": str(bridge_path),
     })
     input_path = tmp_path / "input.jsonl"
     input_path.write_text(json.dumps(_sample().metadata))
@@ -265,7 +260,15 @@ def test_real_cpu_update_and_checkpoint_cursor_finalization(tmp_path: Path) -> N
     cursor.mkdir()
     torch.save({"sample_index": 1, "sample_group_index": 1, "sample_offset": 1, "epoch_id": 0},
                cursor / "global_dataset_state_dict_0.pt")
-    assert finalize_run(directory)["complete"] is True
+    result = finalize_run(directory)
+    assert result["complete"] is True
+    assert result["hf_checkpoint_dir"] == str(hf_path)
+    assert result["bridge_checkpoint_dir"] == str(bridge_path)
+    post_save = load_json_dict(directory / "checkpoint-0.json")
+    post_save["bridge_checkpoint_dir"] = str(hf_path)
+    (directory / "checkpoint-0.json").write_text(json.dumps(post_save))
+    with pytest.raises(ValueError, match="paths disagree"):
+        finalize_run(directory)
     state["language_model.output_layer.weight"] = model.language_model.output_layer.weight.detach()
     torch.save(state, adapter / "adapter_megatron_rank0.pt")
     with pytest.raises(ValueError, match="names/shapes"):

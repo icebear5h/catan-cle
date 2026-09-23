@@ -1,5 +1,14 @@
 # Catan SFT Tooling
 
+## Miles/Megatron topology port
+
+[`miles_sft/README.md`](miles_sft/README.md) documents the new single-H200
+Miles/Megatron LoRA path. It separates 1,600 static topology examples from the
+broader symbolic corpus, merges the selected r04 checkpoint into a frozen base,
+and trains fresh language LoRA. Complete exports preserve inherited visual/MTP
+weights, token rows, and tokenizer assets. Local checks pass; real GPU acceptance
+and SGLang reload are tracked separately from implementation.
+
 `Sft` contains Catan-specific dataset builders, conversion utilities, and the
 native Hugging Face TRL/PEFT vision-SFT path. Generated datasets, diagnostics,
 checkpoints, and reports live outside this installable package.

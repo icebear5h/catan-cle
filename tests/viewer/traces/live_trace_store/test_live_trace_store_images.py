@@ -5,6 +5,8 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 from cle.game_engine.game import GameEngine
 from cle.game_engine.models.player import Color
 from cle.harness import (
@@ -23,6 +25,7 @@ from cle.traces.sqlite import unpack_blob
 from .support import COLORS, SequenceTransport
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 def test_trace_store_persists_image_metadata_without_image_bytes(tmp_path: Path) -> None:
     response = ModelResponse(
         content=(

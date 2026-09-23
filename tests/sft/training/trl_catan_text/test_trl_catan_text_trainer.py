@@ -90,7 +90,8 @@ def test_text_trainer_loss_metrics_and_checkpoint_final_roundtrip_on_local_stack
     def factory(*args: object, **kwargs: object) -> TinyTextVLM:
         return TinyTextVLM().bfloat16()
 
-    monkeypatch.setattr(transformers, "AutoModelForMultimodalLM", SimpleNamespace(from_pretrained=factory), raising=False)
+    # Dotted target: importing peft replaces sys.modules["transformers"] after collection.
+    monkeypatch.setattr("transformers.AutoModelForMultimodalLM", SimpleNamespace(from_pretrained=factory), raising=False)
     report = training.validate_saved_bundle(config, tmp_path / "final", semantic_recognition_token_inventory(), setup)
     assert report["valid"] and report["input_mode"] == "text"
     assert report["processor_assets_sha256"] == parent_assets
@@ -155,7 +156,7 @@ def test_trl_112_prediction_step_flag_reaches_parent_loss_but_never_model(tmp_pa
 
 
 def test_pinned_runtime_gate_is_explicit_and_fails_on_mismatch(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(transformers, "__version__", "offline-unpinned")
+    monkeypatch.setattr("transformers.__version__", "offline-unpinned")
     with pytest.raises(RuntimeError, match="runtime version mismatch.*5.16.1.*1.12.0"):
         training.assert_runtime_versions()
 

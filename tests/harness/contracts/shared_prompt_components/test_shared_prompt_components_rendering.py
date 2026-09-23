@@ -94,6 +94,7 @@ def test_perspective_mismatch_rejected(contexts: tuple[PlayerContext, TalkContex
         )
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 def test_legacy_paths_memory_rendering_and_validators_remain_unchanged(contexts: tuple[PlayerContext, TalkContext]) -> None:
     assert default_suite_path().name == "catan_v11.yaml"
     assert default_communication_suite_path().name == "communication_v5.yaml"

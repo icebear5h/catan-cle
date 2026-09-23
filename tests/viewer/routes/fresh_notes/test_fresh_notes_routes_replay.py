@@ -8,12 +8,7 @@ import pytest
 
 from cle.game_engine.models.player import Color
 from cle.harness.communication import default_communication_suite_path
-from cle.harness.prompt_store import (
-    ActivePromptSuites,
-    load_active_prompt_suites,
-    resolve_prompt_suites,
-    save_prompt_suite_overrides,
-)
+from cle.harness.prompt_store import ActivePromptSuites, resolve_prompt_suites
 from cle.harness.suite import default_suite_path
 from cle.sandbox import CatanSandbox
 from cle.sandbox.replay import ReplaySandbox
@@ -53,12 +48,9 @@ def test_replay_preview_resolves_once_and_never_promotes_notes_or_resets_sources
     )
     live.players[Color.RED].session.strategic_memory = "DO_NOT_COPY_RESIDENT_MEMORY"
     if legacy:
-        pair: Any = load_active_prompt_suites()
-        save_prompt_suite_overrides(
-            decision_source=pair.decision.source, communication_source=pair.communication.source,
-            expected_decision_sha256=pair.decision.sha256,
-            expected_communication_sha256=pair.communication.sha256,
-        )
+        # Pair overrides are gone; legacy suites are selected by explicit env pins.
+        monkeypatch.setenv("CATAN_CONTEXT_SUITE", str(default_suite_path()))
+        monkeypatch.setenv("CATAN_COMMUNICATION_SUITE", str(default_communication_suite_path()))
         transport.legacy = True
     sources: Any = resolve_prompt_suites()
     state.replay_mode = True

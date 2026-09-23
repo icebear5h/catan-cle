@@ -15,7 +15,7 @@ from cle.harness import (
 from cle.players.baseline import FirstLegalPlayer
 from cle.sandbox import CatanSandbox
 
-from .support import COLORS, NoCommunicationPolicy, _sandbox_and_player
+from .support import COLORS, NoCommunicationPolicy, _sandbox_and_player, allows_deprecated_suite
 
 
 @pytest.mark.asyncio
@@ -45,6 +45,7 @@ async def test_setup_prompt_routing_distinguishes_both_settlements_and_roads() -
     )
 
 
+@allows_deprecated_suite
 @pytest.mark.asyncio
 async def test_setup_order_uses_realized_snake_order_and_stays_setup_only() -> None:
     engine: Any = GameEngine(COLORS, seed=0, shuffle_players=True)
@@ -130,6 +131,7 @@ async def test_setup_order_uses_realized_snake_order_and_stays_setup_only() -> N
     assert "Initial placement order" not in main_phase
 
 
+@allows_deprecated_suite
 def test_legacy_shared_road_guidance_supports_current_routing() -> None:
     sandbox, player, _ = _sandbox_and_player([])
     context = sandbox.decision_context()

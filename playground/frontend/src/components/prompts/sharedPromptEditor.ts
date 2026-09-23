@@ -1,26 +1,14 @@
-export interface SharedComponentDefinition {
-  channel: 'system' | 'environment';
-  inputs: string[];
-  template: string;
-  empty: 'omit' | 'include';
-  empty_text: string;
-}
+import type { SharedPromptDocument } from './contract/sharedPromptSuite';
 
-export type SuiteStatus = 'active' | 'legacy' | 'deprecated';
-
-export interface SharedPromptDocument {
-  id: string;
-  version: number;
-  status: SuiteStatus;
-  memory_mode: 'fresh_notes';
-  max_notes_chars: number;
-  initial_placement_order: 'omit' | 'both_rounds';
-  reactive_speech?: boolean;
-  deterministic_batches?: boolean;
-  components: Record<string, SharedComponentDefinition>;
-  compositions: Record<'decision' | 'speech', { order: string[]; response: string }>;
-  phase_guidance: Record<string, string>;
-}
+// Generated from the pydantic SharedPromptSuite; see scripts/gen_prompt_studio_types.py.
+export type {
+  ComponentInput,
+  SharedComponentDefinition,
+  SharedComposition,
+  SharedCompositions,
+  SharedPromptDocument,
+  SuiteStatus,
+} from './contract/sharedPromptSuite';
 
 export function applyPromptEdit<T>(current: T, busy: boolean, update: (value: T) => T): T {
   return busy ? current : update(current);

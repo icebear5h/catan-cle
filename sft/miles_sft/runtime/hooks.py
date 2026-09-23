@@ -11,6 +11,7 @@ from typing import Protocol, cast
 import torch
 
 from sft.json_types import JsonLikeDict, load_json_dict
+from sft.miles_sft.export import assemble_complete_export
 
 from .admission import validate_args
 from .artifacts import audit_hf_export, audit_native
@@ -109,9 +110,13 @@ def post_save(
     directory = receipt_directory()
     scopes = [load_json_dict(directory / f"scope-rank-{rank}.json") for rank in range(args.world_size)]
     native = audit_native(expected, rollout_id, scopes)
-    exported = audit_hf_export(Path(args.hf_checkpoint), Path(hf_checkpoint_dir))
+    bridge_path = Path(hf_checkpoint_dir).resolve()
+    final_path = bridge_path.parent / "model"
+    assemble_complete_export(Path(args.hf_checkpoint), bridge_path, final_path)
+    exported = audit_hf_export(Path(args.hf_checkpoint), final_path, bridge_export=bridge_path)
     write_receipt(directory / f"checkpoint-{rollout_id}.json", {
         "rollout_id": rollout_id, "status": "model_saved_cursor_pending", "complete": False,
-        "checkpoint_dir": str(expected.resolve()), "hf_checkpoint_dir": str(Path(hf_checkpoint_dir).resolve()),
+        "checkpoint_dir": str(expected.resolve()), "bridge_checkpoint_dir": str(bridge_path),
+        "hf_checkpoint_dir": str(final_path),
         "native": native, "hf": exported,
     })

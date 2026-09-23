@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import shlex
 import subprocess
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -14,9 +14,7 @@ from sft.launchers.qwen_series._train_support import (
     QWEN_COMMIT,
     REMOTE_DATA_MOUNT,
     REMOTE_QWEN_DIR,
-    hf_cache,
     sft_data,
-    sft_runs,
 )
 from sft.launchers.qwen_series._vision_config import vision_config
 from sft.qwen_series_vision_sft import (
@@ -99,8 +97,9 @@ def _identity_dataset(dataset: Mapping[str, JsonLike]) -> JsonLikeDict:
     return {key: dataset[key] for key in keys}
 
 
-def _run_remote(
+def _run_training(
     *,
+    commit: Callable[[], None],
     hardware: str,
     train_json: str,
     image_folder: str,
@@ -184,5 +183,4 @@ def _run_remote(
             "artifacts": artifacts,
         }
     finally:
-        hf_cache.commit()
-        sft_runs.commit()
+        commit()

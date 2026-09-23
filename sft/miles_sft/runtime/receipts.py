@@ -92,8 +92,10 @@ def finalize_run(directory: Path) -> JsonDict:
             and checkpoint.get("rollout_id") == final_id, "invalid post-save receipt")
     root = Path(as_str(initial["save"]))
     native_path = root / f"iter_{final_id:07d}"
-    hf_path = Path(as_str(initial["save_hf"]).format(rollout_id=final_id))
+    bridge_path = Path(as_str(initial["save_hf"]).format(rollout_id=final_id)).resolve()
+    hf_path = bridge_path.parent / "model"
     require(str(native_path.resolve()) == checkpoint["checkpoint_dir"]
+            and str(bridge_path) == checkpoint["bridge_checkpoint_dir"]
             and str(hf_path.resolve()) == checkpoint["hf_checkpoint_dir"], "final checkpoint paths disagree")
     cursor = root / "rollout" / f"global_dataset_state_dict_{final_id}.pt"
     require(cursor.is_file(), "data-source state has not yet been saved")
@@ -109,7 +111,9 @@ def finalize_run(directory: Path) -> JsonDict:
     scopes = [load_json_dict(directory / f"scope-rank-{rank}.json") for rank in range(world)]
     require(audit_native(native_path, final_id, scopes) == checkpoint["native"],
             "native artifacts changed after post-save audit")
-    require(audit_hf_export(Path(as_str(initial["hf_checkpoint"])), hf_path) == checkpoint["hf"],
+    require(audit_hf_export(Path(as_str(initial["hf_checkpoint"])), hf_path, bridge_export=bridge_path,
+                           expected_sha256=as_str(as_dict(checkpoint["hf"])["composition_manifest_sha256"]))
+            == checkpoint["hf"],
             "HF export changed after post-save audit")
     receipt: JsonDict = {
         "schema": "catan_miles_sft_run/v1", "complete": True, "miles_commit": MILES_COMMIT,
@@ -117,6 +121,7 @@ def finalize_run(directory: Path) -> JsonDict:
         "optimizer_steps": len(steps) // world, "rank_step_receipts": len(steps),
         "input_sha256": initial["input_sha256"], "data_source_state_sha256": file_hash(cursor),
         "data_source_state": str(cursor.resolve()), "checkpoint": checkpoint,
+        "bridge_checkpoint_dir": str(bridge_path), "hf_checkpoint_dir": str(hf_path),
         "first_step_losses": steps[0]["losses"], "last_step_losses": steps[(len(steps) // world) - 1]["losses"],
     }
     write_receipt(directory / "run.json", receipt)

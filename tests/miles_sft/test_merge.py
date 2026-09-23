@@ -11,6 +11,7 @@ from safetensors.torch import load_file, save_file
 
 from sft.miles_sft.merge import load_manifest, merge_checkpoint, validate_merged_export
 from sft.miles_sft.merge.__main__ import main
+from sft.miles_sft.merge._checkpoint import inspect_checkpoint
 from sft.miles_sft.merge._contracts import (
     ADAPTER,
     COMPLETE,
@@ -271,3 +272,17 @@ def test_resealed_manifest_must_still_have_valid_provenance(bundle: tuple[Path, 
     write(output / COMPLETE, marker)
     with pytest.raises(ValueError, match="adapter keys"):
         validate_merged_export(output)
+
+
+@pytest.mark.parametrize("offset", [0.0, 0.5])
+def test_hf_index_allows_exact_float_byte_count(bundle: tuple[Path, Path, Path], offset: float) -> None:
+    base, _, _ = bundle
+    index = read_json(base / INDEX)
+    size = index["metadata"]["total_size"]
+    index["metadata"]["total_size"] = float(size) + offset
+    write(base / INDEX, index)
+    if offset:
+        with pytest.raises(ValueError, match="total_size"):
+            inspect_checkpoint(base)
+    else:
+        assert inspect_checkpoint(base).total_size == size

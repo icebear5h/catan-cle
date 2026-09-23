@@ -37,6 +37,7 @@ from playground.game_viewer.state import ServerState
 from .support import COLORS, SequenceTransport
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 def test_sqlite_trace_store_persists_full_attempts_and_restorable_snapshot(tmp_path: Path) -> None:
     invalid = ModelResponse(
         content="<action>999</action>",

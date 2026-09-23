@@ -12,9 +12,10 @@ from cle.harness import (
     load_context_suite,
 )
 
-from .support import _response, _sandbox_and_player
+from .support import _response, _sandbox_and_player, allows_deprecated_suite
 
 
+@allows_deprecated_suite
 @pytest.mark.parametrize(
     "text, index, fallback",
     [
@@ -56,6 +57,7 @@ def test_action_parser_preserves_exact_indices_and_explicit_fallbacks(text: str,
     assert sandbox.game_engine.is_action_valid(context.action_at(choice.action_index))
 
 
+@allows_deprecated_suite
 @pytest.mark.parametrize("suite_name", ["catan_v10.yaml", "catan_v9.yaml", "catan_v4.yaml"])
 @pytest.mark.parametrize("selection", ["<action>7</action>", "action_index: 7"])
 def test_action_parser_ignores_the_suites_echoed_schema(suite_name: str, selection: str) -> None:
@@ -71,6 +73,7 @@ def test_action_parser_ignores_the_suites_echoed_schema(suite_name: str, selecti
     assert choice.raw_response == response.content
 
 
+@allows_deprecated_suite
 @pytest.mark.parametrize("suite_name", ["catan_v4.yaml", "catan_v9.yaml"])
 @pytest.mark.parametrize("selection", ["<action>7</action>", "action_index: 7", "7"])
 @pytest.mark.parametrize(
@@ -96,6 +99,7 @@ def test_action_parser_treats_historical_rationale_as_inert_data(suite_name: str
     assert choice.raw_response == text
 
 
+@allows_deprecated_suite
 @pytest.mark.parametrize(
     "instruction",
     [
@@ -119,6 +123,7 @@ def test_action_parser_keeps_real_selections_when_schema_has_no_placeholder(inst
         parser.parse(context, ModelResponse(content="<action></action>action_index: 7"))
 
 
+@allows_deprecated_suite
 @pytest.mark.parametrize("template", ["<action>{}</action>", "action_index: {}", "{}"])
 @pytest.mark.parametrize(
     "value",
@@ -134,6 +139,7 @@ def test_action_parser_rejects_non_integer_or_out_of_range_indices(template: str
         )
 
 
+@allows_deprecated_suite
 @pytest.mark.parametrize(
     "text",
     [
@@ -160,6 +166,7 @@ def test_action_parser_does_not_infer_an_index_from_plan_trade_or_prose(text: st
         )
 
 
+@allows_deprecated_suite
 @pytest.mark.parametrize(
     "text",
     [

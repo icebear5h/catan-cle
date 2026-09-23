@@ -21,6 +21,7 @@ from cle.sandbox.catan import PlayerResponseError
 from .support import COLORS, BoundaryDefect, open_root
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 def test_duplicate_trade_offer_xml_must_be_rejected(trade_sandbox: CatanSandbox) -> None:
     context = trade_sandbox.decision_context()
     suite = load_context_suite(default_suite_path().with_name("catan_v10.yaml"))

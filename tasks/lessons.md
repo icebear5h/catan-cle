@@ -1,5 +1,20 @@
 # Lessons
 
+- [gotcha] Pin Bridge and Megatron Core as a tested pair. Miles PR #3336 records
+  Bridge 40b93089 + Core 73b54618 as compatible; Bridge 2e09c234 requires newer
+  Core (missing mla_qk_norm_config and a renamed GDN selector otherwise). A git
+  revision check alone is insufficient: import AutoBridge and build the actual
+  model provider before weight scans/loading. In this image Transformer Engine
+  links libcuda at import, so that final import check needs a CUDA-enabled worker;
+  CPU metadata/git checks cannot establish native backend compatibility.
+- [workflow] During an approved migration, timebox compatibility research, surface
+  material choices promptly, and ship the independent implementation pieces while
+  resolving them. Two user "stuck" checks mean progress updates were too sparse;
+  report concrete completed work and the remaining blocker before long tool waits.
+- [sft] The user selected a merged r04 checkpoint plus fresh Megatron LoRA for the
+  Miles port. Fold prior LoRA and replacement token rows into the frozen base;
+  label BF16 merge rounding and the new adapter parameterization explicitly.
+
 - [durability] A saved sandbox snapshot is not an idempotent command protocol.
   Use stable caller command IDs, a sandbox-local append sequence distinct from
   engine revision, atomic outcome/checkpoint settlement, and fenced recovery.

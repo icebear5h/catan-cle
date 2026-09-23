@@ -1,6 +1,7 @@
 """Shared prompt edits round-trip and strict schema rejects invalid writes."""
 import pickle
 from copy import deepcopy
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -8,13 +9,16 @@ from typing import Any
 import pytest
 
 from cle.game_engine.game import GameEngine
+from cle.harness.communication import CommunicationSuite
 from cle.harness.models import ModelMessage, ModelRequest
+from cle.harness.suite import ContextSuite
 from cle.players.baseline import FirstLegalPlayer
 from cle.players.contracts import CommunicationChoice, PlayerContext
 from cle.sandbox.catan import CatanSandbox
 from cle.sandbox.communication import CommunicationAdmission
 from cle.sandbox.factory import LiveSandboxConfig, create_live_sandbox
-from playground.game_viewer.routes import prompt_suite as prompt_routes
+from playground.game_viewer.routes.prompt_studio import PROMPT_STUDIO_DEPS, PromptStudioDeps
+from playground.game_viewer.state import ServerState
 
 from .conftest import COLORS, NeverTransport, Studio
 
@@ -101,7 +105,7 @@ def test_no_context_never_invents_rendered_game_values(studio: Studio) -> None:
     assert all(not item["rendered"] and not item["variables"] for item in communication["components"])
 
 
-def test_shared_candidate_renders_current_typed_context_not_recorded_text(studio: Studio, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_shared_candidate_renders_current_typed_context_not_recorded_text(studio: Studio) -> None:
     client, state = studio
     sandbox = create_live_sandbox(LiveSandboxConfig(
         mode="llm", seed=3, palette="canonical_four", shuffle_players=False,
@@ -124,25 +128,27 @@ def test_shared_candidate_renders_current_typed_context_not_recorded_text(studio
         )), accepted=True,
     ))
     original_snapshot = pickle.dumps(sandbox.snapshot())
-    original_decision_preview = prompt_routes._decision_preview
-    original_speech_preview = prompt_routes._communication_preview
-    original_saving_locked = prompt_routes._saving_locked
+    defaults = PromptStudioDeps()
+    original_decision_preview = defaults.decision_preview
+    original_speech_preview = defaults.communication_preview
+    original_saving_locked = defaults.saving_locked
 
-    def checked_decision(*args: object, **kwargs: object) -> dict[str, Any]:
+    def checked_decision(server: ServerState, suite: ContextSuite) -> dict[str, object]:
         assert state.replay_mutation_lock._is_owned()
-        return original_decision_preview(*args, **kwargs)
+        return original_decision_preview(server, suite)
 
-    def checked_speech(*args: object, **kwargs: object) -> dict[str, Any]:
+    def checked_speech(server: ServerState, suite: CommunicationSuite) -> dict[str, object]:
         assert state.replay_mutation_lock._is_owned()
-        return original_speech_preview(*args, **kwargs)
+        return original_speech_preview(server, suite)
 
-    def checked_saving_locked(*args: object, **kwargs: object) -> bool:
+    def checked_saving_locked(server: ServerState) -> bool:
         assert state.replay_mutation_lock._is_owned()
-        return original_saving_locked(*args, **kwargs)
+        return original_saving_locked(server)
 
-    monkeypatch.setattr(prompt_routes, "_decision_preview", checked_decision)
-    monkeypatch.setattr(prompt_routes, "_communication_preview", checked_speech)
-    monkeypatch.setattr(prompt_routes, "_saving_locked", checked_saving_locked)
+    client.application.config[PROMPT_STUDIO_DEPS] = replace(
+        defaults, decision_preview=checked_decision, communication_preview=checked_speech,
+        saving_locked=checked_saving_locked,
+    )
     document = client.get("/api/prompt-suite").json["shared"]["document"]
     document["components"]["board_state"]["template"] = "EDITED CURRENT BOARD:\n{{ board_state }}"
     validated: Any = client.post("/api/prompt-suite/validate", json={"shared": document})

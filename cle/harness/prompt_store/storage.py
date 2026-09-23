@@ -23,7 +23,7 @@ def prompt_suite_directory() -> Path:
     return Path(configured).expanduser() if configured else DEFAULT_PROMPT_SUITE_DIR
 
 
-def _directory(directory: str | Path | None) -> Path:
+def store_directory(directory: str | Path | None) -> Path:
     return (
         Path(directory).expanduser()
         if directory is not None
@@ -32,7 +32,7 @@ def _directory(directory: str | Path | None) -> Path:
 
 
 @contextmanager
-def _store_lock(directory: Path) -> Iterator[None]:
+def store_lock(directory: Path) -> Iterator[None]:
     directory.mkdir(parents=True, exist_ok=True)
     with _PROCESS_LOCK:
         with (directory / LOCK_FILENAME).open("a+b") as lock_file:
@@ -43,7 +43,7 @@ def _store_lock(directory: Path) -> Iterator[None]:
                 fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
 
 
-def _write_temp(directory: Path, source: str) -> Path:
+def write_temp_source(directory: Path, source: str) -> Path:
     descriptor, name = tempfile.mkstemp(
         prefix=".prompt-suite-",
         suffix=".tmp",

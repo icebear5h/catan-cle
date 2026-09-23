@@ -1,13 +1,30 @@
+# Focused complete Miles export repair (2026-09-23)
+
+- [x] Inspect merge provenance and runtime save/finalization contracts.
+- [x] Compose fresh complete HF shards from admitted Bridge updates and exact frozen base tensors/assets.
+- [x] Bind post-save/final receipts to raw Bridge and final model paths plus composition hashes.
+- [x] Verify real safetensors preservation/tamper cases, focused runtime tests, and scoped lint/typing.
+
+Design: manifest-authorized trained keys only; one base shard at a time; preserve
+raw Bridge output; seal a distinct composition manifest last. Full artifact hashes
+are export/finalization work, never per-step work.
+
+Review: focused export/runtime tests **22 passed, 1 skipped** (Miles unavailable
+locally); scoped Ruff and strict mypy pass. Repository-required quality check
+passes structure/mypy, with unrelated import-order failures in the three
+`tests/traces_journal/test_{calls,commands,transactions}.py` files. API and
+raw/final receipt fields are documented in `sft/miles_sft/runtime/README.md`.
+
 # Miles/Megatron LoRA SFT port (2026-09-22)
 
 - [x] Inspect the existing SFT bundle, Miles hooks, and exact Qwen3.8 architecture.
-- [ ] Resolve initialization: merged trained weights plus fresh Megatron LoRA,
-      fresh stock initialization, or exact independent-adapter continuation.
-- [ ] Implement a separate primitive-topology SFT data projection with native
+- [x] Resolve initialization: user selected merged r04 weights plus fresh
+      Megatron LoRA, with historical token rows preserved in the frozen base.
+- [x] Implement a separate primitive-topology SFT data projection with native
       no-thinking tokens, completion masks, provenance, and no truncation.
-- [ ] Implement the pinned single-H200 Miles/Megatron training and checkpoint path.
+- [x] Implement the pinned single-H200 Miles/Megatron training and checkpoint path.
 - [ ] Verify local contracts and prepare a bounded training/save/reload/eval smoke.
-- [ ] Review changes, run the full quality gate, and record results.
+- [x] Review changes, run the full quality gate, and record results.
 
 Plan: keep SFT primitives separate from symbolic-RL tasks while sharing model and
 evaluation infrastructure. Ray orchestrates, Megatron trains LoRA, and SGLang runs
@@ -21,7 +38,17 @@ also omits our selected embedding/output rows. A merged-weight warm-start avoids
 the factor-import problem but intentionally starts a new adapter parameterization;
 exact continuation requires custom split adapters and import/export support.
 
-Review: implementation pending. No training or remote GPU launch performed.
+Review: source implementation and local verification complete: 90 tests pass,
+one real-Miles integration test is skipped, and full quality passes. Review found
+Bridge MTP/FP32-vision/tokenizer export gaps; final export composition now restores
+all frozen tensors/assets exactly. CLI and bounded Modal CPU/GPU launcher added.
+Historical r04 assets were copied from icebear5h to tetracorp with matching saved
+hashes. Real CPU merge/preflight passed for miles-topology-smoke-20260923-r03:
+all 18 shards merged, FP32 visual bytes preserved, 1,600 native-tokenized examples
+(82,386 tokens, 7,084 supervised, max length 65). Earlier CPU attempts exposed and
+fixed resolved-volume aliases and Qwen's integral-float index byte count.
+The two-update H200 smoke is active in ap-rbt0zz8JAddcFLoVkTyqa5; training and
+subsequent 32-case SGLang reload acceptance are not yet established.
 
 # Per-sandbox ordered durable execution (2026-09-22)
 

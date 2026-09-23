@@ -11,7 +11,10 @@ from cle.harness import (
 )
 from cle.harness.response_xml import parse_response_fields
 
+from .support import allows_deprecated_suite
 
+
+@allows_deprecated_suite
 def test_default_yaml_suite_is_strict_and_separately_loadable() -> None:
     first: Any = load_context_suite()
     second = load_context_suite()
@@ -160,6 +163,7 @@ def test_default_yaml_suite_is_strict_and_separately_loadable() -> None:
         assert prescriptive_phrase not in stable_contract
 
 
+@allows_deprecated_suite
 def test_legacy_decision_suite_remains_loadable() -> None:
     suite = load_context_suite(default_suite_path().with_name("catan_v5.yaml"))
 
@@ -196,6 +200,7 @@ def test_component_suite_rejects_unknown_missing_duplicate_and_oversized_strings
         ContextSuite.model_validate(oversized)
 
 
+@allows_deprecated_suite
 @pytest.mark.parametrize("suite_name", ["catan_v9.yaml", "catan_v10.yaml", "catan_v11.yaml"])
 def test_component_order_requires_explicit_social_policy(suite_name: str) -> None:
     suite = load_context_suite(default_suite_path().with_name(suite_name))

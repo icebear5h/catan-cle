@@ -30,6 +30,7 @@ from cle.traces import SQLiteLiveTraceStore
 from .support import COLORS, SequenceTransport
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 @pytest.mark.parametrize("model_backed", [False, True])
 def test_communication_admission_outcomes_survive_all_trace_serializers(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, model_backed: bool

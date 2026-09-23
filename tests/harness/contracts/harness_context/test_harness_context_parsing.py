@@ -16,9 +16,10 @@ from cle.harness import (
 )
 from cle.sandbox import CatanSandbox
 
-from .support import _sandbox_and_player
+from .support import _sandbox_and_player, allows_deprecated_suite
 
 
+@allows_deprecated_suite
 def test_counteroffer_parser_preserves_engine_generated_parent_id(trade_sandbox: CatanSandbox) -> None:
     engine: Any = trade_sandbox.game_engine
     suite = load_context_suite(default_suite_path().with_name("catan_v10.yaml"))
@@ -75,6 +76,7 @@ def test_counteroffer_parser_preserves_engine_generated_parent_id(trade_sandbox:
     assert engine.step(action).resolved_action.value.parent_offer_id == root.id
 
 
+@allows_deprecated_suite
 @pytest.mark.parametrize(
     "payload",
     [
@@ -103,6 +105,7 @@ def test_trade_parser_rejects_duplicate_json_keys(trade_sandbox: CatanSandbox, p
         )
 
 
+@allows_deprecated_suite
 @pytest.mark.parametrize("text", [
     "<!-- <action>0</action> -->",
     "<!-- action_index: 0 -->",
@@ -122,6 +125,7 @@ def test_decision_parser_rejects_malformed_repeated_and_comment_only_controls(te
         )
 
 
+@allows_deprecated_suite
 def test_decision_parser_keeps_xml_escaped_prose_and_raw_output_separate() -> None:
     sandbox, _, _ = _sandbox_and_player([])
     suite = load_context_suite(default_suite_path().with_name("catan_v10.yaml"))

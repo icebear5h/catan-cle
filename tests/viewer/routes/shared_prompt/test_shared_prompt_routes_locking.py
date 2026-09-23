@@ -3,6 +3,7 @@ from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from copy import deepcopy
+from dataclasses import replace
 from pathlib import Path
 from threading import Event
 from types import SimpleNamespace
@@ -11,8 +12,8 @@ from typing import Any
 import pytest
 
 from cle.harness import prompt_store
-from cle.harness.prompt_store import load_active_prompt_suites, save_prompt_suite_overrides
-from playground.game_viewer.routes import prompt_suite as prompt_routes
+from cle.harness.prompt_store import overrides
+from playground.game_viewer.routes.prompt_studio import PROMPT_STUDIO_DEPS, PromptStudioDeps
 
 from .conftest import Studio
 
@@ -36,31 +37,17 @@ def test_incomplete_guidance_is_rejected_without_game_context(
 
 
 @pytest.mark.parametrize("method", ["PUT", "DELETE"])
-@pytest.mark.parametrize("mode", ["shared", "legacy"])
+# Pair-mode writes are retired; the shared-only id stays stable.
+@pytest.mark.parametrize("mode", ["shared"])
 def test_write_uses_store_lock_independently_of_inference_lock(studio: Studio, monkeypatch: pytest.MonkeyPatch, method: str, mode: str) -> None:
     client, state = studio
-    if mode == "legacy":
-        pair: Any = load_active_prompt_suites()
-        save_prompt_suite_overrides(
-            decision_source=pair.decision.source, communication_source=pair.communication.source,
-            expected_decision_sha256=pair.decision.sha256,
-            expected_communication_sha256=pair.communication.sha256,
-        )
     original: Any = client.get("/api/prompt-suite").json
-    kinds = ("shared",) if mode == "shared" else ("decision", "communication")
-    payload: Any = {"expected": {kind: original[kind]["sha256"] for kind in kinds}}
+    payload: Any = {"expected": {mode: original[mode]["sha256"]}}
     if method == "PUT":
-        if mode == "shared":
-            payload["shared"] = original["shared"]["document"]
-        else:
-            payload["decision"] = {key: original["decision"][key] for key in (
-                "system_identity", "components", "phase_guidance", "response_instruction",
-            )}
-            payload["communication"] = {key: original["communication"][key] for key in (
-                "system_identity", "components",
-            )}
-    original_store_lock = prompt_store._store_lock
-    original_check = prompt_routes._saving_locked
+        payload[mode] = original[mode]["document"]
+    original_store_lock = overrides.store_lock
+    defaults = PromptStudioDeps()
+    original_check = defaults.saving_locked
     operations = []
 
     def checked_game_state(value: SimpleNamespace) -> bool:
@@ -75,8 +62,8 @@ def test_write_uses_store_lock_independently_of_inference_lock(studio: Studio, m
             yield
             assert not state.replay_mutation_lock._is_owned()
 
-    monkeypatch.setattr(prompt_routes, "_saving_locked", checked_game_state)
-    monkeypatch.setattr(prompt_store, "_store_lock", checked_store_lock)
+    client.application.config[PROMPT_STUDIO_DEPS] = replace(defaults, saving_locked=checked_game_state)
+    monkeypatch.setattr(overrides, "store_lock", checked_store_lock)
     result = client.open("/api/prompt-suite", method=method, json=payload)
     assert result.status_code == 200
     assert operations[0] == "check" and "store" in operations

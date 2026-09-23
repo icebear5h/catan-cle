@@ -82,6 +82,7 @@ def test_trace_store_failure_requires_existing_game(tmp_path: Path) -> None:
         assert connection.execute("SELECT COUNT(*) FROM live_failures").fetchone()[0] == 0
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 def test_trace_store_failure_preserves_raw_calls_with_sanitization(tmp_path: Path) -> None:
     response: Any = ModelResponse(
         content="<game_plan>expand</game_plan><action>999</action>",

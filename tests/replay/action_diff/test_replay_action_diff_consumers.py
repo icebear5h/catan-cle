@@ -14,7 +14,7 @@ from cle.game_engine.trading import TradeOffer
 from cle.harness import ModelResponse, default_suite_path, load_context_suite
 from cle.harness.communication import default_communication_suite_path
 from cle.harness.models import ModelRequest
-from cle.harness.prompt_store import validate_prompt_suite_sources
+from cle.harness.prompt_store import resolve_prompt_suites
 from cle.players.contracts import PlayerChoice, PlayerContext
 from cle.players.validation import action_from_choice
 from cle.sandbox.replay import ReplaySandbox
@@ -26,6 +26,7 @@ from evals.replay_action_diff import (
 from playground.game_viewer.replay.decision_preview import generate_decision_preview
 
 
+@pytest.mark.filterwarnings("ignore:Prompt suite .* is deprecated:DeprecationWarning")
 @pytest.mark.parametrize("consumer", ["evaluation", "preview"])
 @pytest.mark.parametrize("selection", ["offer", "counter", "discard", "indexed", "invalid"])
 def test_replay_consumers_materialize_explicit_parameters_without_mutating_game(
@@ -97,9 +98,10 @@ def test_replay_consumers_materialize_explicit_parameters_without_mutating_game(
     monkeypatch.setattr("evals.replay_action_diff.OpenRouterTransport", lambda config: transport)
     monkeypatch.setattr("evals.replay_action_diff.load_context_suite", lambda: suite)
     monkeypatch.setattr("evals.replay_action_diff.action_from_choice", materialize)
-    sources = validate_prompt_suite_sources(
-        default_suite_path().with_name("catan_v10.yaml").read_text(encoding="utf-8"),
-        default_communication_suite_path().read_text(encoding="utf-8"),
+    sources = resolve_prompt_suites(
+        decision_path=default_suite_path().with_name("catan_v10.yaml"),
+        communication_path=default_communication_suite_path(),
+        use_environment=False,
     )
     monkeypatch.setattr("playground.game_viewer.replay.decision_preview.resolve_prompt_suites", lambda: sources)
     monkeypatch.setattr("playground.game_viewer.replay.decision_preview.action_from_choice", materialize)

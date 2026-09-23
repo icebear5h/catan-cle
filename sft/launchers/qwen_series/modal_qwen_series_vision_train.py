@@ -13,6 +13,7 @@ import json
 import shlex
 import subprocess as subprocess
 from dataclasses import asdict
+from functools import partial
 from pathlib import Path, PurePosixPath
 
 import modal
@@ -61,9 +62,19 @@ _REMOTE_VOLUMES: dict[str | PurePosixPath, modal.Volume | modal.CloudBucketMount
 
 from sft.launchers.qwen_series._vision_support import (  # noqa: E402
     _identity_dataset,
-    _run_remote,
+    _run_training,
     _upload_token_inventory,
 )
+
+
+def _commit_volumes() -> None:
+    # Resolved here at call time so the volumes stay replaceable on this module.
+    hf_cache.commit()
+    sft_runs.commit()
+
+
+# One idempotent launch; volumes are committed whenever training ran.
+_run_remote = partial(_run_training, commit=_commit_volumes)
 
 
 @app.function(

@@ -114,7 +114,11 @@ def test_loaded_live_game_surfaces_first_invalid_model_attempt_without_retries(
             "completion_tokens": 8_192,
             "completion_tokens_details": {"reasoning_tokens": 8_000},
         },
-        "validation_error": "Invalid tool call: Unknown action tool",
+        # Retry feedback names the exact legal menu after a failed decision.
+        "validation_error": (
+            "Invalid tool call: Unknown action tool "
+            "Your currently legal tools: build_road."
+        ),
     }
     assert {key: attempt[key] for key in expected_diagnostics} == expected_diagnostics
     assert attempt["accepted"] is False

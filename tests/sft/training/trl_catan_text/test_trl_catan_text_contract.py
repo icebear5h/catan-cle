@@ -82,10 +82,11 @@ def test_native_collation_masks_exact_boundary_and_supervises_eot_even_when_pad_
         messages = row["messages"]
         full = tokenizer.apply_chat_template(
             messages, tokenize=True, enable_thinking=False, preserve_thinking=False,
+            return_dict=False,
         )
         prefix = tokenizer.apply_chat_template(
             messages[:1], tokenize=True, add_generation_prompt=True,
-            enable_thinking=False, preserve_thinking=False,
+            enable_thinking=False, preserve_thinking=False, return_dict=False,
         )
         assert batch["input_ids"][i, :len(full)].tolist() == full
         assert batch["labels"][i, :len(prefix)].tolist() == [-100] * len(prefix)

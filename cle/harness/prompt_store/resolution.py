@@ -8,20 +8,23 @@ import warnings
 from pathlib import Path
 from typing import Literal
 
-from cle.harness import prompt_store
+from cle.harness.communication import default_communication_suite_path
 from cle.harness.prompt_store.documents import (
     ActivePromptSuites,
     PromptSuiteDocument,
-    _communication_document,
-    _decision_document,
+    communication_document,
+    decision_document,
     source_sha256,
     validate_shared_prompt_source,
 )
 from cle.harness.prompt_store.storage import (
     LEGACY_PAIR_FILENAMES,
     SHARED_FILENAME,
-    _directory,
+    store_directory,
+    store_lock,
 )
+from cle.harness.shared_suite import default_shared_suite_path
+from cle.harness.suite import default_suite_path
 
 FOLLOW_LATEST_ENV = "CATAN_PROMPT_SUITE_FOLLOW_LATEST"
 SHARED_SUITE_ENV = "CATAN_SHARED_SUITE"
@@ -85,8 +88,8 @@ def resolve_prompt_suites(
             decision=_load_legacy_document("decision", decision_path),
             communication=_load_legacy_document("communication", communication_path),
         )
-    target = _directory(directory)
-    with prompt_store._store_lock(target):
+    target = store_directory(directory)
+    with store_lock(target):
         return _resolve_active_unlocked(target, follow_latest=follow)
 
 
@@ -100,16 +103,17 @@ def _resolve_active_unlocked(directory: Path, *, follow_latest: bool = False) ->
             stacklevel=3,
         )
     overridden = shared_path.exists() and not follow_latest
-    return validate_shared_prompt_source(_shared_text(directory, overridden), overridden=overridden)
+    return validate_shared_prompt_source(shared_source(directory, overridden), overridden=overridden)
 
 
-def _active_shared_sha256(directory: Path) -> str:
+def active_shared_sha256(directory: Path) -> str:
     """Digest of the local editable source; conflict checks need no parse."""
-    return source_sha256(_shared_text(directory, (directory / SHARED_FILENAME).exists()))
+    return source_sha256(shared_source(directory, (directory / SHARED_FILENAME).exists()))
 
 
-def _shared_text(directory: Path, overridden: bool) -> str:
-    path = directory / SHARED_FILENAME if overridden else prompt_store.default_shared_suite_path()
+def shared_source(directory: Path, overridden: bool) -> str:
+    """The local override source, or the built-in shared suite when not overridden."""
+    path = directory / SHARED_FILENAME if overridden else default_shared_suite_path()
     return path.read_text(encoding="utf-8")
 
 
@@ -141,8 +145,8 @@ def _load_legacy_document(
     if explicit_path is not None:
         path = Path(explicit_path)
     elif kind == "decision":
-        path = prompt_store.default_suite_path()
+        path = default_suite_path()
     else:
-        path = prompt_store.default_communication_suite_path()
-    document = _decision_document if kind == "decision" else _communication_document
+        path = default_communication_suite_path()
+    document = decision_document if kind == "decision" else communication_document
     return document(path.read_text(encoding="utf-8"))

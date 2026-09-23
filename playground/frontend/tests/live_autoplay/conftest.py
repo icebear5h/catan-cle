@@ -18,7 +18,6 @@ from playwright.sync_api import (
     Route,
     WebSocketRoute,
     expect,
-    sync_playwright,
 )
 from werkzeug.serving import make_server
 
@@ -49,14 +48,6 @@ def frontend_build(tmp_path_factory: pytest.TempPathFactory) -> Path:
     subprocess.run(["npm", "run", "build", "--", "--outDir", str(output)],
                    cwd=FRONTEND, check=True, capture_output=True)
     return output
-
-
-@pytest.fixture(scope="session")
-def chromium(frontend_build: Path) -> Iterator[Browser]:
-    with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(headless=True)
-        yield browser
-        browser.close()
 
 
 @pytest.fixture

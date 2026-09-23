@@ -3,16 +3,36 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Literal, TypedDict
 
 from cle.game_engine.events import GameEngineSnapshot
 from cle.game_engine.models.player import Color
 from cle.players.action_batches import validate_batch_actions
+from cle.players.data import ActionCall
+
+
+class AutomaticBatchPayload(TypedDict):
+    kind: Literal["deterministic_batch_continuation"]
+    origin_context_id: str
+    provider_response_id: str | None
+    provider_request_id: str | None
+    origin_sequence: int
+    action_sequence: int
+    action_number: int
+    action_count: int
+
+
+def _event_type(call: ActionCall) -> str:
+    """Read a tool after validate_batch_actions has checked the complete envelope."""
+    tool = call["tool"]
+    assert isinstance(tool, str)
+    return "BUILD_CITY" if tool == "upgrade_city" else tool.upper()
 
 
 @dataclass(frozen=True, slots=True)
 class PendingActionBatch:
     actor: Color
-    actions: tuple[dict, ...]
+    actions: tuple[ActionCall, ...]
     next_index: int
     expected_revision: int
     turn_number: int
@@ -40,10 +60,9 @@ class PendingActionBatch:
             raise ValueError("Invalid saved action batch identity")
         # Every consumed entry has exactly one canonical deterministic action event.
         events = snapshot.events[self.origin_sequence:self.expected_revision]
-        names = {"upgrade_city": "BUILD_CITY"}
         if len(events) != self.next_index or any(
             event.actor != self.actor
-            or event.event_type != names.get(call["tool"], call["tool"].upper())
+            or event.event_type != _event_type(call)
             for event, call in zip(events, self.actions)
         ):
             raise ValueError("Saved action batch does not match its committed prefix")
@@ -56,7 +75,7 @@ class AutomaticBatchAction:
     batch: PendingActionBatch
     action_sequence: int
 
-    def to_payload(self) -> dict:
+    def to_payload(self) -> AutomaticBatchPayload:
         return {
             "kind": "deterministic_batch_continuation",
             "origin_context_id": self.batch.origin_context_id,

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import re
-from typing import Any
 
 MAX_GAME_PLAN_CHARS = 4_000
 MAX_MODEL_ID_CHARS = 200
@@ -14,7 +13,7 @@ class HarnessValidationError(ValueError):
     """Raised when a model request cannot form a valid player decision."""
 
 
-def validate_model_id(model: Any) -> str:
+def validate_model_id(model: object) -> str:
     """Return a normalized provider/model identifier."""
     if not isinstance(model, str) or not model.strip():
         raise HarnessValidationError("model is required")
@@ -30,7 +29,7 @@ def validate_model_id(model: Any) -> str:
     return normalized
 
 
-def validate_game_plan(game_plan: Any) -> str:
+def validate_game_plan(game_plan: object) -> str:
     """Return bounded caller-held strategic memory for one player session."""
     if game_plan is None:
         return ""

@@ -5,7 +5,6 @@ from __future__ import annotations
 import re
 from xml.parsers import expat
 
-
 _MAX_RESPONSE_CHARS = 128 * 1024
 _MAX_DEPTH = 32
 _INERT_FIELDS = frozenset({"game_plan", "rationale"})

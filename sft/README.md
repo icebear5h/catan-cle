@@ -12,6 +12,17 @@ scope ladder.
 
 ## Matched atlas / coordinate diagnostic (2026-09-21)
 
+The current selected experiment is **stock Qwen3.8-27B, no fine-tuning, exact
+2D Cartesian coordinates with `sqrt(3)`**. See [`cartesian_eval/README.md`](cartesian_eval/README.md)
+for its 200-case panel and [`miles_eval/README.md`](miles_eval/README.md) for the
+stock-model command. Its first completed run scored **143/200 (71.5%)**: ownership
+and direction are stronger than adjacency/incidence. See the
+[verified run report](../reports/sft/2026-09-21-stock-cartesian-eval.md).
+The sparse `h=sqrt(3)/4` rerun improves this to **153/200 (76.5%)** with 42.5%
+fewer input tokens; see the [paired comparison](../reports/sft/2026-09-21-sparse-h-cartesian-eval.md).
+The integer/atlas comparison described below is retained
+as the source cohort and historical implementation.
+
 Implemented and locally verified; GPU evaluation is pending code review.
 `coordinate_comparison.py` renders **200 canonical cases twice**: existing atomic
 atlas identifiers versus ordinary integer-coordinate text. The panel covers
@@ -26,7 +37,7 @@ failures. The evaluator keeps pairs adjacent with equal generation budgets and
 records prompt/answer token counts.
 
 ```bash
-.venv/bin/python -m sft.scripts.build_coordinate_comparison
+.venv/bin/python -m sft.scripts.builders.build_coordinate_comparison
 .venv/bin/python -m pytest tests/test_coordinate_comparison.py -q
 ```
 
@@ -36,7 +47,7 @@ mapping hashes. Building requires the existing local `symbolic_board_v2` corpus
 and a new output directory. After review, the bounded launch is:
 
 ```bash
-MODAL_PROFILE=icebear5h .venv/bin/python -m modal run -m sft.modal_board_fluency_eval \
+MODAL_PROFILE=icebear5h .venv/bin/python -m modal run -m sft.launchers.board_fluency.modal_board_fluency_eval \
   --run-name coordinate-comparison-20260921-r01 \
   --adapter-dir /runs/catan-vision-sft/board-fluency-extension-20260915-r04/training/checkpoints/checkpoint-512 \
   --eval-jsonl artifacts/generated/sft/coordinate_comparison_v1/paired.jsonl \
@@ -91,9 +102,9 @@ partial third) moved review200 **76→103 (38.0%→51.5%)** and held-out190
 Held-out pip totals are now 5/5. Cumulative compute is about $26.09 of the
 user-approved $31 ceiling.
 
-The scoped launcher is `sft/modal_board_fluency_sft.py` (dry-run by default);
-`sft/scripts/build_board_fluency_dataset.py` owns corpus admission and
-`sft/board_fluency_scoring.py` exact answer contracts. Frozen visual invariance
+The scoped launcher is `sft/launchers/board_fluency/modal_board_fluency_sft/` (dry-run by default);
+`sft/scripts/builders/build_board_fluency_dataset/` owns corpus admission and
+`sft/board/board_fluency_scoring.py` exact answer contracts. Frozen visual invariance
 uses canonical tensor hashes because safetensors serialization bytes can differ
 without any changed tensor values.
 
@@ -118,10 +129,50 @@ Do not create a bypass for production training.
 
 ## Layout
 
-- `sft/scripts/train_trl_catan_vision.py`: active model, data, optimizer, and save contract.
-- `sft/modal_catan_vision_sft.py`: active dry-by-default H200 launcher.
+```text
+sft/
+├── analysis/       Run diagnostics: behavior, gradient, marker, and visual-rank analysis
+├── board/          Board representations, symbolic/spatial tasks, scoring, and curricula
+├── cartesian_eval/ Exact sqrt(3) Cartesian panel and scorer for stock-model inference
+├── launchers/      Modal entrypoints; singletons at the root, families in subpackages
+│   ├── board_fluency/  modal_board_fluency_{eval,sft,extension..extension4}
+│   ├── full_board/     modal_full_board_{pilot,continue,new_layouts}
+│   ├── qwen_series/    modal_qwen_series_{eval,train,vision_train}
+│   └── spatial/        modal_spatial_{continuation,extension}
+├── miles_eval/     One-GPU Miles eval CLI, Catan scoring hooks, and JSON result export
+├── scripts/        Local CLIs grouped by concern
+│   ├── builders/   build_* dataset/review/fixture builders and convert_to_qwen_series_sft
+│   ├── eval/       eval_*, check_*, analyze_*, failure_scorecard, verify_spatial_extension
+│   ├── render/     render_* contract images and renderer_tuning_app
+│   ├── report/     report_*, inspect_*, extract_*, probe_* checkpoint reports
+│   └── train/      train_* entrypoints (TRL, Qwen-series, ms-swift)
+├── *.py            Root contracts: paths, board_state_readout, lora_expansion,
+│                   ms_swift_core/plugin, qwen_series_vision_sft
+├── README.md
+└── EXPERIMENT_DESIGN.md
+```
+
+| Subpackage | Owns |
+| --- | --- |
+| `sft/board/` | `board_atlas`, `board_packs`, `board_readouts`, `board_fluency_scoring`, `symbolic_board_tasks`, `spatial_tasks`, `coordinate_comparison`, `density_curriculum` |
+| `sft/analysis/` | `behavior_diagnostics`, `gradient_diagnostics`, `marker_diagnostics`, `visual_rank_eval` |
+| `sft/launchers/` | `modal_catan_vision_sft`, `modal_behavior_history`, `modal_gradient_conflicts`, `modal_marker_mini_eval`, `modal_olora_smoke`, `modal_visual_delta`, `modal_visual_rank_eval` plus the four family subpackages above |
+| `sft/scripts/` | only the five concern subpackages above; no scripts live at its root |
+
+`sft/board_state_readout.py` stays at the root because `data_pipeline` imports it
+directly. Every folder stays at or under the 15-file structural cap; add new
+modules to the owning subpackage rather than to a root.
+
+See [`miles_eval/README.md`](miles_eval/README.md) for the Miles eval-only recipe
+and stock/merged-checkpoint requirements. Preparation is local; execution is explicit.
+
+- `sft/scripts/train/train_trl_catan_vision/`: active model, data, optimizer, and save contract.
+- `sft/launchers/modal_catan_vision_sft.py`: active dry-by-default H200 launcher.
+- `sft/launchers/board_fluency/modal_board_fluency_eval/`: text-only review and matched coordinate evaluation.
+- `sft/launchers/qwen_series/modal_qwen_series_eval.py`: shared vision-evaluation launcher.
 - `sft/scripts/`: dataset, conversion, renderer, and evaluation utilities.
-- `sft/modal_qwen_series_*.py`, `sft/qwen_series_vision_sft.py`, and
+- `sft/launchers/qwen_series/modal_qwen_series_train.py`,
+  `sft/launchers/qwen_series/modal_qwen_series_vision_train.py`, `sft/qwen_series_vision_sft/`, and
   `sft/ms_swift_*.py`: legacy experiments; they are not part of the active run.
 - `configs/sft/renderer_style.json`: accepted renderer calibration.
 - `artifacts/generated/sft/`: ignored, regenerable SFT datasets.
@@ -130,16 +181,60 @@ Do not create a bypass for production training.
 - `artifacts/runs/sft/`: ignored checkpoints/logs plus compact accepted evidence.
 - `reports/sft/`: tracked run reports.
 
+All 21 Modal entrypoints live under `sft/launchers/`. Python module commands use
+`sft.launchers[.family].modal_...`; file-based Modal commands use
+`sft/launchers[/family]/modal_....py`. The initializers are lightweight and do not
+import launchers eagerly.
+
+Historical run receipts, dataset manifests, and dated reports retain their original
+source paths and hashes. Exact reproduction or continuation of a source-pinned
+historical run requires its original source revision; the moved code deliberately
+does not bypass those identity checks. Checkpoint and dataset locations are unchanged.
+
 The active vision launcher requires separate `--train-jsonl` and
 `--image-root` arguments. Image references must be relative and remain beneath
 that explicit root; it never searches annotation parents or repository parents.
 The exact token inventory is a third identity supplied with
 `--token-inventory`.
 
+### Package layout
+
+Many former single modules are now same-name packages: a public `__init__.py`
+facade re-exporting exactly the old names, plus private `_*.py` submodules. The
+import path is unchanged, so `from sft.board.symbolic_board_tasks import ...`
+still works. This covers everything under `board/` except the flat scorers,
+`analysis/behavior_diagnostics`, `analysis/gradient_diagnostics`,
+`lora_expansion`, `ms_swift_core`, `qwen_series_vision_sft`, every launcher
+under `launchers/`, and the builder, eval, train, report and render packages
+under `scripts/`.
+
+A name a test monkeypatches must be resolved late, through the facade, not bound
+at import time: `from sft.scripts.eval import eval_qwen_vl_adapter as evaluator`
+and then `evaluator.name(...)`. Binding `from ... import name` in a submodule
+captures the original and silently ignores the patch.
+
+Modules and launchers that record `source_sha256`/`SOURCE_FILES`/`SCORER_FILES`
+hash the listed files as they are on disk at run time. Editing a hashed source
+changes only manifests written afterwards; historical manifests under
+`artifacts/` are never rewritten, so verifying an old run against current source
+bytes is expected to differ.
+
+Typing: decoded JSON is `sft.json_types.JsonValue`/`JsonDict`. Narrow it with
+the `as_*`/`json_path` helpers, and copy typed containers into JSON with
+`json_list`/`json_dict`. In-memory state that is not JSON (Counters, tensors,
+running totals) gets a TypedDict or dataclass, and the JSON is built at report
+time. `sft.safetensor_types.open_tensors` is the typed `safe_open`. The TRL
+trainer subclass is built lazily, so `train_trl_catan_vision` describes its
+surface with Protocols (`CatanTrainer`) instead of the installed TRL, because the
+Modal image pins newer TRL/transformers than the local venv.
+`train_trl_catan_vision/` sits at the 15-file folder cap, and every file in it is
+hashed by the launchers. Move code between existing modules; do not add new
+ones.
+
 ## Build deterministic atlas data
 
 ```bash
-uv run python -m sft.scripts.build_atlas_topology_dataset \
+uv run python -m sft.scripts.builders.build_atlas_topology_dataset \
   --output artifacts/generated/sft/atlas_topology/catan_atlas_topology.jsonl
 ```
 
@@ -149,8 +244,8 @@ port topology.
 ## Build and render node-factor data
 
 ```bash
-uv run python -m sft.scripts.build_node_factor_dataset
-uv run python -m sft.scripts.render_contract_images
+uv run python -m sft.scripts.builders.build_node_factor_dataset
+uv run python -m sft.scripts.render.render_contract_images
 ```
 
 Defaults write to `artifacts/generated/sft/node_factors/` and use
@@ -161,14 +256,14 @@ references; the renderer does not duplicate the answer key.
 Tune renderer dimensions locally with:
 
 ```bash
-uv run python -m sft.scripts.renderer_tuning_app --port 8765
+uv run python -m sft.scripts.render.renderer_tuning_app --port 8765
 ```
 
 The tuner reads tracked calibration contracts from
 `artifacts/fixtures/sft/render_contracts/`. Regenerate the dense fixture with:
 
 ```bash
-uv run python -m sft.scripts.build_colonist_dummy_fixture
+uv run python -m sft.scripts.builders.build_colonist_dummy_fixture
 ```
 
 ## Build active board-recognition data
@@ -181,10 +276,10 @@ color-diagnostic 1024px images. Eight atomic rows per image yield 8,192 train
 rows per epoch.
 
 ```bash
-uv run python scripts/build_catan_board_recognition_dataset.py --overwrite
-uv run python scripts/export_catan_board_recognition_sft.py \
+uv run python -m scripts.board_recognition.build_catan_board_recognition_dataset --overwrite
+uv run python -m scripts.board_recognition.export_catan_board_recognition_sft \
   --queries-per-state 8 --overwrite
-uv run python scripts/export_catan_board_recognition_sft.py --validate-only
+uv run python -m scripts.board_recognition.export_catan_board_recognition_sft --validate-only
 ```
 
 To train atlas tokens in both directions, build the companion inverse corpus.
@@ -192,8 +287,8 @@ It contributes four localization rows per image and also emits a deterministic
 12-row-per-image mixture with the existing eight forward rows:
 
 ```bash
-uv run python scripts/export_catan_board_recognition_ms_swift.py --overwrite
-uv run python scripts/export_catan_inverse_grounding_ms_swift.py --overwrite
+uv run python -m scripts.board_recognition.export_catan_board_recognition_ms_swift --overwrite
+uv run python -m scripts.board_recognition.export_catan_inverse_grounding_ms_swift --overwrite
 
 # Training annotations:
 artifacts/generated/board_recognition/replay_v1/ms_swift_bidirectional_v1/mixed/train.jsonl
@@ -212,7 +307,7 @@ pilot and is not the active training projection.
 Only use fresh non-benchmark QA and manifest rows:
 
 ```bash
-uv run python -m sft.scripts.build_vlm_sft_dataset \
+uv run python -m sft.scripts.builders.build_vlm_sft_dataset \
   --qa-jsonl evals/catan_board_bench/datasets/my_fresh_train/questions/qa.jsonl \
   --manifest-jsonl evals/catan_board_bench/datasets/my_fresh_train/manifest.jsonl \
   --image-root evals/catan_board_bench/datasets/my_fresh_train \
@@ -231,8 +326,8 @@ Generate the curriculum-ready spatial and robber supplement without modifying
 the immutable 12,288-row replay projection:
 
 ```bash
-uv run python scripts/export_catan_spatial_robber_sft.py
-uv run python scripts/export_catan_spatial_robber_sft.py --validate-only
+uv run python -m scripts.board_recognition.export_catan_spatial_robber_sft
+uv run python -m scripts.board_recognition.export_catan_spatial_robber_sft --validate-only
 ```
 
 The train supplement contains 1,032 empty-board spatial rows covering all 54
@@ -252,9 +347,9 @@ the fixed-atlas nature of these questions.
 The corrected September 8 export is separate from historical data:
 
 ```bash
-uv run python -m scripts.export_catan_spatial_robber_sft \
+uv run python -m scripts.board_recognition.export_catan_spatial_robber_sft \
   --output-dir artifacts/generated/board_recognition/replay_v1/spatial_robber_choice_order_v1
-uv run python -m scripts.export_catan_spatial_robber_sft \
+uv run python -m scripts.board_recognition.export_catan_spatial_robber_sft \
   --output-dir artifacts/generated/board_recognition/replay_v1/spatial_robber_choice_order_v1 \
   --validate-only
 ```
@@ -267,7 +362,7 @@ retain the old bias. Production and the default eval build still select
 existing outputs require `--overwrite` rather than being silently replaced:
 
 ```bash
-uv run python -m scripts.build_catan_board_recognition_eval_suite \
+uv run python -m scripts.board_recognition.build_catan_board_recognition_eval_suite \
   --supplement-dir artifacts/generated/board_recognition/replay_v1/spatial_robber_choice_order_v1 \
   --split validation --spatial-only --answer-only \
   --output artifacts/generated/board_recognition/replay_v1/evals/spatial_choice_order_answer_only_validation_v1.jsonl
@@ -293,8 +388,8 @@ from 64/64 to 53/64 (occupied locations still 1,193/1,204 correct). The new
 checkpoint is experimental, not a promoted replacement for the parent. See
 [completed results and receipts](../reports/sft/2026-09-09-mixed-spatial-continuation.md).
 
-`sft/scripts/build_spatial_continuation_dataset.py` owns its immutable data
-projection; `sft/modal_spatial_continuation.py` is dry-run by default and needs
+`sft/scripts/builders/build_spatial_continuation_dataset/` owns its immutable data
+projection; `sft/launchers/spatial/modal_spatial_continuation/` is dry-run by default and needs
 `--execute` to upload and launch. Do not restart the existing run name or use
 the older spatial/robber production mixture in its place.
 
@@ -307,10 +402,10 @@ final six-panel evaluation did not run. The planned two additional passes and
 
 ```bash
 # Read current status without starting compute:
-.venv/bin/python -B -m sft.scripts.verify_spatial_extension --download --status-only
+.venv/bin/python -B -m sft.scripts.eval.verify_spatial_extension --download --status-only
 
 # For completed pipelines only; this cancelled run has no final response set:
-.venv/bin/python -B -m sft.scripts.verify_spatial_extension --download
+.venv/bin/python -B -m sft.scripts.eval.verify_spatial_extension --download
 ```
 
 The same export also writes `curriculum_smoke_32.jsonl`: eight ordered rows per
@@ -320,8 +415,8 @@ accumulation 8, a four-step smoke consumes exactly one stage per optimizer step.
 Compose the validated production input only after the supplement exists:
 
 ```bash
-uv run python scripts/build_catan_board_recognition_production_curriculum.py --overwrite
-uv run python scripts/build_catan_board_recognition_production_curriculum.py --validate-only
+uv run python -m scripts.board_recognition.build_catan_board_recognition_production_curriculum --overwrite
+uv run python -m scripts.board_recognition.build_catan_board_recognition_production_curriculum --validate-only
 ```
 
 This writes `production_curriculum_v1/train.jsonl`. It uses every immutable
@@ -398,7 +493,7 @@ shifted onto the previous token) under `readouts` and `sequence_skips`.
 
 Rungs trained on one family forget the others: the terrain rung dropped the
 markers, the piece rung dropped terrain (port 1 of 576 after 256 steps).
-`data_pipeline/board_recognition/mix_rung_data.py` draws one training set
+`data_pipeline/board_recognition/mix_rung_data/` draws one training set
 from the exports already on disk by a JSON recipe: groups with row quotas,
 density-bin weights, balance keys (colour, piece, empty kind) with optional
 shares, and `max_repeats` to oversample a short cell before topping up from
@@ -446,7 +541,7 @@ trainable atlas rows (`--token-init keep`). The loss adds
 `lora_A` onto its protected basis: the frozen adapter's own `lora_A` rows
 for language modules, and the `lora_A` rows of `--visual-delta-factors`
 (the SVD factors of the frozen task's visual delta, see
-`sft/scripts/extract_visual_delta.py`) for vision modules. Logged as
+`sft/scripts/report/extract_visual_delta/`) for vision modules. Logged as
 `orth_loss`, `orth_fraction` (share of the adapters' squared norm inside
 the protected subspaces) and `orth_unprotected_modules`. Norms, biases,
 patch embedding and position embedding stay frozen.
@@ -466,7 +561,7 @@ parent's `adapter_config.json` and `adapter_model.safetensors`) and
 validation merge that adapter into the base before loading the bundle.
 
 ```bash
-modal run --detach sft/modal_catan_vision_sft.py \
+modal run --detach sft/launchers/modal_catan_vision_sft.py \
   --profile olora_frozen_bundle --token-init keep --lora-rank 16 --lora-alpha 32 \
   --frozen-bundle /runs/catan-vision-sft/<parent run>/checkpoints/checkpoint-384 \
   --visual-delta-factors artifacts/diagnostics/sft/visual_delta_gauss_s2_ck384_20260905/derived/visual_delta_rank16_linear.safetensors \
@@ -479,7 +574,7 @@ modal run --detach sft/modal_catan_vision_sft.py \
 The four-stage file can be cut into standalone rungs without rebuilding:
 
 ```bash
-uv run python scripts/build_catan_board_recognition_production_curriculum.py \
+uv run python -m scripts.board_recognition.build_catan_board_recognition_production_curriculum \
   --slice-stages spatial_grounding,clean_board_grounding \
   --slice-output artifacts/generated/board_recognition/replay_v1/production_curriculum_v1_rung_a --overwrite
 ```
@@ -607,7 +702,7 @@ one or two hops away or the touching piece of the other type, and only 3
 are colour or type slips. One-piece images let the model answer "describe
 the piece I see"; two touching pieces do not.
 
-`data_pipeline/board_recognition/adjacent_pair_localization.py` renders two
+`data_pipeline/board_recognition/adjacent_pair_localization/` renders two
 pieces on touching locations per image: `node_node` (edge endpoints; the
 distance rule is ignored on purpose), `edge_edge` (edges sharing a node), and
 `node_edge` (a building and a road that touch, same colour half the time).
@@ -680,7 +775,7 @@ intentionally resets optimizer, scheduler, and RNG state. It is distinct from
 `--resume-latest`, which resumes an interrupted run within the same stage.
 
 Run exact-match and causal visual controls with
-`sft/modal_qwen_series_eval.py`. Its `--image-variant` accepts `original`,
+`sft/launchers/qwen_series/modal_qwen_series_eval.py`. Its `--image-variant` accepts `original`,
 `blank`, `shuffle`, `target_occlusion`, and `control_occlusion`.
 
 For periodic checkpoints with FP32 visual master weights, pass
@@ -707,7 +802,7 @@ regression panel (marker validation, gray-dot probes, single-piece and tile
 validation, and the replay production heads) runs against any checkpoint with:
 
 ```bash
-uv run python -m sft.scripts.eval_regression_panel \
+uv run python -m sft.scripts.eval.eval_regression_panel \
   --adapter-dir /runs/catan-vision-sft/<run>/<identity>/checkpoints/checkpoint-256 \
   --label <run>-ck256
 ```
@@ -717,7 +812,7 @@ set and visual control. `--include` takes stable set names and behavior-matrix
 backfills only need the original images:
 
 ```bash
-uv run python -m sft.scripts.eval_regression_panel \
+uv run python -m sft.scripts.eval.eval_regression_panel \
   --adapter-dir /runs/catan-vision-sft/<run>/<identity>/final \
   --label <checkpoint>-targeted-backfill \
   --include single-v7,pairs-v2,pairs-control,full-board \
@@ -731,7 +826,7 @@ best-so-far accuracy minus current accuracy) from local/downloaded result
 roots with:
 
 ```bash
-uv run python -m sft.scripts.report_behavior_history \
+uv run python -m sft.scripts.report.report_behavior_history \
   --checkpoint v3=/path/to/v3-panel \
   --checkpoint pairs-v1=/path/to/pairs-v1-panel \
   --checkpoint pairs-v2=/path/to/pairs-v2-panel \
@@ -740,14 +835,14 @@ uv run python -m sft.scripts.report_behavior_history \
 
 Repeat a checkpoint label to merge an existing panel and a targeted backfill.
 The report refuses to calculate forgetting when the underlying row
-fingerprints differ. `sft/modal_behavior_history.py` provides the same report
+fingerprints differ. `sft/launchers/modal_behavior_history.py` provides the same report
 directly on `catan-sft-runs`; its semicolon-separated `--checkpoints` argument
 uses container paths under `/runs/` and is dry-run-first.
 
 The gradient-conflict probe is also dry-run-first:
 
 ```bash
-uv run modal run sft/modal_gradient_conflicts.py \
+uv run modal run sft/launchers/modal_gradient_conflicts.py \
   --adapter-dir /runs/catan-vision-sft/<run>/<identity>/final \
   --label <checkpoint>
 ```
@@ -769,7 +864,7 @@ After downloading the three probe result directories, align their norms and
 cosines into a checkpoint trajectory with:
 
 ```bash
-uv run python -m sft.scripts.report_gradient_trajectory \
+uv run python -m sft.scripts.report.report_gradient_trajectory \
   --checkpoint v3=/path/to/v3-gradient-probe \
   --checkpoint pairs-v1=/path/to/pairs-v1-gradient-probe \
   --checkpoint pairs-v2=/path/to/pairs-v2-gradient-probe \
@@ -780,8 +875,8 @@ Compare the
 resulting summaries with the fail-closed gate checker:
 
 ```bash
-uv run python -m sft.scripts.check_spatial_grounding_gates stage1 --help
-uv run python -m sft.scripts.check_spatial_grounding_gates stage2 --help
+uv run python -m sft.scripts.eval.check_spatial_grounding_gates stage1 --help
+uv run python -m sft.scripts.eval.check_spatial_grounding_gates stage2 --help
 ```
 
 Experimental publication is disabled by default. The configured destination
@@ -791,8 +886,8 @@ until that repository and token permission are confirmed.
 There are exactly two active run files:
 
 ```text
-sft/scripts/train_trl_catan_vision.py  model/data/training/save contract
-sft/modal_catan_vision_sft.py          Modal image, Volumes, upload, H200 boundary
+sft/scripts/train/train_trl_catan_vision/    model/data/training/save contract
+sft/launchers/modal_catan_vision_sft.py      Modal image, Volumes, upload, H200 boundary
 ```
 
 `--token-init` selects how the 154 atlas rows are seeded when no
@@ -854,7 +949,7 @@ stage labels yet; production launch therefore fails closed on it.
 Inspect the current export as an explicitly unstaged one-step smoke plan:
 
 ```bash
-uv run modal run sft/modal_catan_vision_sft.py \
+uv run modal run sft/launchers/modal_catan_vision_sft.py \
   --train-jsonl artifacts/generated/board_recognition/replay_v1/ms_swift_bidirectional_v1/mixed/train.jsonl \
   --image-root artifacts/generated/board_recognition/replay_v1/images \
   --token-inventory artifacts/generated/board_recognition/replay_v1/ms_swift_bidirectional_v1/trainable_tokens.json \
@@ -878,7 +973,7 @@ the active launcher does not import or execute them.
 For standalone conversion:
 
 ```bash
-python -m sft.scripts.convert_to_qwen_series_sft \
+python -m sft.scripts.builders.convert_to_qwen_series_sft \
   --input artifacts/fixtures/sft/modal_vlm_smoke/train.jsonl \
   --output /tmp/catan_qwen_series_train.json \
   --copy-images-to /tmp/catan_qwen_series_images
@@ -888,7 +983,7 @@ The older 220-token adapter format can still be inspected through its legacy
 Modal evaluator:
 
 ```bash
-uv run modal run sft/modal_qwen_series_eval.py \
+uv run modal run sft/launchers/qwen_series/modal_qwen_series_eval.py \
   --eval-jsonl artifacts/generated/board_recognition/replay_v1/qwen_sft/validation.jsonl \
   --image-root artifacts/generated/board_recognition/replay_v1/images \
   --token-inventory artifacts/generated/board_recognition/replay_v1/qwen_sft/trainable_tokens.json \

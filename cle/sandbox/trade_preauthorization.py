@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Literal, TypedDict
 
 from cle.game_engine.events import GameEngineSnapshot
 from cle.game_engine.game import GameEngine
@@ -10,6 +11,15 @@ from cle.game_engine.models.actions import generate_playable_actions
 from cle.game_engine.models.enums import Action, ActionType
 from cle.game_engine.models.player import Color
 from cle.game_engine.trading import ResourceBundle, TradeCandidate, TradeOffer
+
+
+class AutomaticTradePayload(TypedDict):
+    kind: Literal["preauthorized_trade_confirmation"]
+    origin_context_id: str
+    provider_response_id: str | None
+    provider_request_id: str | None
+    offer_id: str
+    action_sequence: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -107,7 +117,9 @@ class TradePreauthorization:
             return None, reason
         if self.response_revision is None:
             return None, "Authorized response barrier was not completed"
-        offer = engine.state.trade_window.offers[self.offer_id]
+        window = engine.state.trade_window
+        assert window is not None  # invalid_reason verified this synchronous precondition.
+        offer = window.offers[self.offer_id]
         responses = {}
         for event in engine.events[self.offer_sequence + 1:self.response_revision]:
             if event.event_type not in {"ACCEPT_TRADE", "REJECT_TRADE"}:
@@ -141,7 +153,7 @@ class AutomaticTradeAction:
     authorization: TradePreauthorization
     action_sequence: int
 
-    def to_payload(self) -> dict:
+    def to_payload(self) -> AutomaticTradePayload:
         return {
             "kind": "preauthorized_trade_confirmation",
             "origin_context_id": self.authorization.origin_context_id,

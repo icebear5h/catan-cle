@@ -499,7 +499,7 @@ from action quality.
 |------|---------|
 | Authoritative replay decision exporter | Build versioned pre-action packets with legal menus |
 | Versioned reasoning-data builder | Generate evidence-linked reasoning without future leakage |
-| `cle/sandbox/catan.py` | Validate and apply exact indexed decisions |
+| `cle/sandbox/catan/` | Validate and apply exact indexed decisions |
 | `modal_app/__init__.py` | **NEW** - Modal app setup |
 | `modal_app/training.py` | **NEW** - LoRA training on Modal |
 | `cle/training/self_play.py` | Self-play game runner |

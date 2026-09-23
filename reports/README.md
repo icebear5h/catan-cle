@@ -12,3 +12,5 @@ limitations.
 - `evals/`: evaluation-tooling, workflow, and migration findings.
 - `model_selection/`: model-family audits and Catan-policy selection research.
 - `sft/`: supervised fine-tuning run records and conclusions.
+- `inference/`: serving latency analysis and self-play pacing findings.
+- `infrastructure/`: training/sandbox infrastructure research and translations.

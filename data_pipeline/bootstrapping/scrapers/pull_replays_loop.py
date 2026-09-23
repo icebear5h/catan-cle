@@ -20,6 +20,8 @@ import sys
 import time
 from pathlib import Path
 
+from data_pipeline.json_types import JsonDict
+
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_CANDIDATES = PROJECT_ROOT / "artifacts" / "raw" / "colonist" / "indexes" / "4p_games_training_candidates.json"
 STAGING_DIR = PROJECT_ROOT / "artifacts" / "staging" / "colonist" / "replays"
@@ -45,7 +47,7 @@ def build_index(candidates: Path, output: Path) -> int:
         games = games["games"]
     have = captured_game_ids()
     seen: set[str] = set()
-    per_player: dict[str, list] = {}
+    per_player: dict[str, list[JsonDict]] = {}
     for game in games:
         game_id = str(game["game_id"])
         if game_id in have or game_id in seen:

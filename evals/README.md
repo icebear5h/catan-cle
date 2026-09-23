@@ -34,7 +34,7 @@ The bundle lives in `artifacts/generated/sft/symbolic_board_fluency_review_v1/`.
 Build it from the repository root with:
 
 ```bash
-PYTHONPATH=. .venv/bin/python sft/scripts/build_board_fluency_review.py
+PYTHONPATH=. .venv/bin/python -m sft.scripts.builders.build_board_fluency_review
 ```
 
 The builder reads at most 400 existing symbolic-v2 training rows, selects 200
@@ -45,7 +45,7 @@ builds, so generate the bundle before building the eval UI.
 
 ### Quick text-only checkpoint evaluation
 
-`sft.modal_board_fluency_eval` evaluates the unchanged 200 examples with greedy
+`sft.launchers.board_fluency.modal_board_fluency_eval` evaluates the unchanged 200 examples with greedy
 generation, 512 completion tokens, and exact operation-aware scoring. It checks
 the checkpoint/tokenizer and pinned base on CPU before a single H200 call capped
 at 15 minutes. Run names must be new; receipts and predictions are downloaded to
@@ -55,7 +55,7 @@ For the saved September 12 spatial checkpoint in the personal Modal workspace:
 
 ```bash
 MODAL_PROFILE=icebear5h CATAN_HF_SECRET_NAME=huggingface-secret-2 \
-  .venv/bin/python -m modal run -m sft.modal_board_fluency_eval \
+  .venv/bin/python -m modal run -m sft.launchers.board_fluency.modal_board_fluency_eval \
   --adapter-dir /runs/catan-vision-sft/spatial-continuation-20260912-r01/checkpoints/checkpoint-128 \
   --run-name "spatial-fluency-$(date +%Y%m%d-%H%M%S)"
 ```

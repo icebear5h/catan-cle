@@ -68,7 +68,7 @@ class EpisodeWorkspace:
         {"confirms", "contradicts", "contextualizes", "motivates", "follows"}
     )
 
-    def __init__(self, game_id: str):
+    def __init__(self, game_id: str) -> None:
         self.game_id = game_id
         self._available_evidence: Dict[str, CommentarySpan] = {}
         self._revealed_events: Dict[int, RevealedEvent] = {}

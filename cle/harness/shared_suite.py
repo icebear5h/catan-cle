@@ -3,22 +3,22 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Literal
+from typing import Literal
 
-import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from cle.harness.communication import CommunicationSuite
 from cle.harness.components import (
-    SuiteStatus,
     MAX_COMPONENT_TEMPLATE_CHARS,
     MAX_SUITE_AUTHORED_CHARS,
     ComponentComposition,
     ComponentDefinition,
+    SuiteStatus,
     render_template,
     validate_component_composition,
 )
 from cle.harness.suite import ContextConfig, ContextSuite, ResponseConfig, warn_if_deprecated
+from cle.harness.yaml_source import BUILTIN_SUITES_DIR, load_yaml_mapping
 
 
 class SharedCompositions(BaseModel):
@@ -109,23 +109,8 @@ class SharedPromptSuite(BaseModel):
         )
 
 
-class _UniqueKeyLoader(yaml.SafeLoader):
-    def construct_mapping(self, node: yaml.MappingNode, deep: bool = False) -> dict[Any, Any]:
-        self.flatten_mapping(node)
-        result = {}
-        for key_node, value_node in node.value:
-            key = self.construct_object(key_node, deep=deep)
-            try:
-                if key in result:
-                    raise ValueError(f"Duplicate YAML key: {key}")
-                result[key] = self.construct_object(value_node, deep=deep)
-            except TypeError as exc:
-                raise ValueError("YAML mapping keys must be scalar values") from exc
-        return result
-
-
 def default_shared_suite_path() -> Path:
-    return Path(__file__).resolve().parent / "suites" / "shared_v1.yaml"
+    return BUILTIN_SUITES_DIR / "shared_v1.yaml"
 
 
 def parse_shared_prompt_suite(
@@ -134,12 +119,7 @@ def parse_shared_prompt_suite(
     source_name: str = "shared prompt suite source",
 ) -> SharedPromptSuite:
     """Parse only local authored definitions; no includes, imports, or resolution I/O."""
-    try:
-        data = yaml.load(source, Loader=_UniqueKeyLoader)
-    except (yaml.YAMLError, RecursionError) as exc:
-        raise ValueError(f"Invalid shared prompt suite {source_name}: {exc}") from exc
-    if not isinstance(data, dict):
-        raise ValueError(f"Shared prompt suite {source_name} must contain a YAML mapping")
+    data = load_yaml_mapping(source, source=f"shared prompt suite {source_name}")
     return SharedPromptSuite.model_validate(data)
 
 

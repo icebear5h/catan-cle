@@ -5,8 +5,9 @@ Defines interface for building prompts for LLM decision-making.
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Optional
 from dataclasses import dataclass
+from typing import List, Optional
+
 from cle.game_engine.models.enums import Action
 
 
@@ -73,7 +74,7 @@ class PromptSuite(ABC):
         pass
 
     @abstractmethod
-    def parse_response(self, response: str) -> dict:
+    def parse_response(self, response: str) -> dict[str, str | int | None]:
         """
         Parse LLM response into structured format.
 
@@ -87,7 +88,7 @@ class PromptSuite(ABC):
         """
         pass
 
-    def get_version_info(self) -> dict:
+    def get_version_info(self) -> dict[str, str]:
         """Get information about this prompt version."""
         return {
             "version": self.version,

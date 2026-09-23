@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass, replace
-from typing import Any
 
+from cle.game_engine.models.player import Color
 from cle.harness.board_surface import BoardPresenter
 from cle.harness.communication import (
     CommunicationSuite,
@@ -19,10 +19,7 @@ from cle.harness.context import (
     PlayerResponseParser,
 )
 from cle.harness.models import (
-    ChoiceReceipt,
     CompletionTransport,
-    receipt_choice,
-    ModelMessage,
     ModelRequest,
     PlayerSession,
     PlayerSessionSnapshot,
@@ -30,15 +27,14 @@ from cle.harness.models import (
 )
 from cle.harness.shared_suite import load_shared_prompt_suite
 from cle.harness.suite import ContextSuite
+from cle.players import agent_state
 from cle.players.contracts import (
     CommunicationChoice,
     PlayerAttempt,
     PlayerContext,
     TalkContext,
 )
-from cle.game_engine.models.player import Color
-from cle.players.notes import validate_notes
-from cle.players.validation import validate_communication_choice
+from cle.players.data import AcceptanceResult, PlayerSnapshot, PlayerStatus
 
 
 @dataclass(frozen=True, slots=True)
@@ -63,9 +59,16 @@ class AgentPlayer:
         self.color = color
         self.transport = transport
         self.prompt_sources = prompt_sources
-        if suite is None:
+        # A shared decision suite must never pair with legacy communication_v5.
+        if suite is None or (communication_suite is None and suite.context.mode == "shared"):
             shared = load_shared_prompt_suite()
-            suite = shared.decision_suite()
+            bundled = shared.decision_suite()
+            if suite is not None and suite != bundled:
+                raise ValueError(
+                    "A shared decision suite outside the built-in bundle needs its "
+                    "bundle's communication_suite"
+                )
+            suite = bundled
             if communication_suite is None:
                 communication_suite = shared.communication_suite()
         self.suite = suite
@@ -99,28 +102,10 @@ class AgentPlayer:
         return self.suite.context.reactive_speech
 
     def _validate_context_policy(self) -> None:
-        policy = self.suite.context.memory_mode
-        talk_policy = self.communication_suite.memory_mode
-        if self.suite.context.reactive_speech != self.communication_suite.reactive_speech:
-            raise ValueError("Decision and communication reactive-speech contracts must match")
-        if "fresh_notes" in (policy, talk_policy) and (
-            policy != talk_policy
-            or self.suite.context.max_notes_chars != self.communication_suite.max_notes_chars
-        ):
-            raise ValueError("Fresh action and communication suites must match memory mode and notes limit")
-        if policy != self.session.context_policy:
-            raise ValueError("Player-session context policy does not match the selected suite")
+        agent_state.validate_context_policy(self)
 
     def _input_next_sequence(self, cutoff: int | None, channel: str) -> int:
-        cursor = (
-            self.session.action_next_sequence
-            if channel == "action" else self.session.talk_next_sequence
-        )
-        if type(cutoff) is not int or cutoff < -1:
-            raise ValueError("Fresh contexts require an explicit integer visibility cutoff >= -1")
-        if cutoff + 1 < cursor:
-            raise ValueError(f"Stale {channel} context visibility cutoff")
-        return cutoff + 1
+        return agent_state.input_next_sequence(self, cutoff, channel)
 
     async def choose(
         self,
@@ -182,7 +167,7 @@ class AgentPlayer:
             model_response=model_response,
         )
 
-    async def communicate(self, context: Any) -> CommunicationChoice:
+    async def communicate(self, context: TalkContext) -> CommunicationChoice:
         if not isinstance(context, TalkContext):
             raise TypeError("AgentPlayer communication requires TalkContext")
         if context.player != self.color:
@@ -255,125 +240,19 @@ class AgentPlayer:
         context: PlayerContext | TalkContext,
     ) -> None:
         """Check request provenance before the sandbox mutates authoritative state."""
-        self._validate_context_policy()
-        if isinstance(context, PlayerContext):
-            channel, actor = "action", context.actor
-        elif isinstance(context, TalkContext):
-            channel, actor = "talk", context.player
-        else:
-            raise ValueError("Context updates require the original PlayerContext or TalkContext")
-        if actor != self.color:
-            raise ValueError("Context belongs to another player")
-        if self.session.context_policy == "legacy":
-            if isinstance(request, ModelRequest) and request.context_policy not in (None, "legacy"):
-                raise ValueError("Model request context policy does not match this player")
-            return
-        if not isinstance(request, ModelRequest):
-            raise ValueError("Fresh context updates require their original ModelRequest")
-        if request.context_policy != self.session.context_policy:
-            raise ValueError("Model request context policy does not match this player")
-        if request.session_id != self.session.session_id:
-            raise ValueError("Model request session identity does not match this player")
-        if not isinstance(request.decision_id, str) or not request.decision_id:
-            raise ValueError("Model request requires a context identity")
-        if request.decision_id != context.context_id:
-            raise ValueError("Model request context identity does not match its context")
-        if request.channel != channel:
-            raise ValueError(f"Model request channel must be {channel} for this context")
-        if type(request.memory_revision) is not int or request.memory_revision < 0:
-            raise ValueError("Model request memory_revision must be a non-negative integer")
-        if request.memory_revision != self.session.memory_revision:
-            raise ValueError("Stale model request memory revision")
-        if type(request.input_next_sequence) is not int or request.input_next_sequence < 0:
-            raise ValueError("Model request input_next_sequence must be a non-negative integer")
-        next_sequence = self._input_next_sequence(context.visible_through_sequence, channel)
-        if request.input_next_sequence != next_sequence:
-            raise ValueError("Model request visibility cutoff does not match its context")
+        agent_state.validate_context_update(self, request, context)
 
-    def accept(self, attempt: PlayerAttempt, result: Any) -> None:
-        choice = attempt.choice
-        if choice is None:
-            raise ValueError("Cannot accept a player attempt without a choice")
-        fresh = self.session.context_policy == "fresh_notes"
-        context = getattr(result, "context", None)
-        if fresh and not isinstance(context, PlayerContext):
-            raise ValueError("Fresh action acceptance requires the original result.context PlayerContext")
-        if fresh and attempt.context_id != context.context_id:
-            raise ValueError("Action attempt does not match its context")
-        if attempt.context_id in self.session.receipts:
-            return
-        notes = None
-        if fresh:
-            self.validate_context_update(attempt.model_request, context)
-            if attempt.validation_error is not None:
-                raise ValueError("Cannot accept an invalid player attempt")
-            if choice.notes_update is not None:
-                notes = validate_notes(choice.notes_update, self.suite.context.max_notes_chars)
-        if not fresh and attempt.model_request is not None and attempt.model_response is not None:
-            self.session.messages.extend(
-                (
-                    deepcopy(attempt.model_request.messages[-1]),
-                    ModelMessage(
-                        role="assistant",
-                        content=attempt.model_response.content,
-                    ),
-                )
-            )
-        if not fresh and choice.game_plan:
-            self.session.strategic_memory = choice.game_plan
-        if not fresh and context is not None and context.events:
-            self.session.event_cursor = max(
-                self.session.event_cursor,
-                context.events[-1].sequence + 1,
-            )
-        after_revision = getattr(result, "after_revision", None)
-        if after_revision is None:
-            transitions = getattr(result, "transitions", ())
-            after_revision = transitions[-1].after_revision if transitions else 0
-        receipt = ChoiceReceipt(
-            choice=receipt_choice(choice),
-            after_revision=after_revision,
-        )
-        if fresh:
-            if notes is not None:
-                self.session.strategic_memory = notes
-            self.session.action_next_sequence = attempt.model_request.input_next_sequence
-            self.session.memory_revision += 1
-            self.acknowledge_events(attempt.model_request.input_next_sequence)
-        self.session.receipts[attempt.context_id] = receipt
+    def accept(self, attempt: PlayerAttempt, result: AcceptanceResult) -> None:
+        agent_state.accept(self, attempt, result)
 
     def accept_communication(self, context: TalkContext, choice: CommunicationChoice) -> None:
         """Commit only admitted speech or explicit silence, never acquisition alone."""
-        if not isinstance(context, TalkContext):
-            raise ValueError("Communication acceptance requires its original TalkContext")
-        if context.context_id in self.session.communication_receipts:
-            return
-        self._validate_context_policy()
-        if self.session.context_policy == "legacy":
-            return
-        validate_communication_choice(
-            choice,
-            speaker=self.color,
-            participants=context.participants,
-            max_notes_chars=self.communication_suite.max_notes_chars,
-        )
-        request = choice.model_request
-        self.validate_context_update(request, context)
-        notes = (
-            validate_notes(choice.notes_update, self.communication_suite.max_notes_chars)
-            if choice.notes_update is not None else None
-        )
-        if notes is not None:
-            self.session.strategic_memory = notes
-        self.session.talk_next_sequence = request.input_next_sequence
-        self.session.memory_revision += 1
-        self.session.communication_receipts.add(context.context_id)
-        self.acknowledge_events(request.input_next_sequence)
+        agent_state.accept_communication(self, context, choice)
 
     def acknowledge_events(self, next_sequence: int) -> None:
         self.session.event_cursor = max(self.session.event_cursor, next_sequence)
 
-    def status(self) -> dict[str, Any]:
+    def status(self) -> PlayerStatus:
         return {
             "kind": "agent",
             "color": self.color.value,
@@ -392,7 +271,7 @@ class AgentPlayer:
     def snapshot(self) -> AgentPlayerSnapshot:
         return AgentPlayerSnapshot(session=self.session.snapshot())
 
-    def validate_restore(self, snapshot: AgentPlayerSnapshot) -> None:
+    def validate_restore(self, snapshot: PlayerSnapshot) -> None:
         """Preflight a full restore without touching this player's live session."""
         self._validate_context_policy()
         if not isinstance(snapshot, AgentPlayerSnapshot):
@@ -404,6 +283,7 @@ class AgentPlayer:
         )
         candidate.restore(snapshot.session, max_notes_chars=self.suite.context.max_notes_chars)
 
-    def restore(self, snapshot: AgentPlayerSnapshot) -> None:
+    def restore(self, snapshot: PlayerSnapshot) -> None:
         self.validate_restore(snapshot)
+        assert isinstance(snapshot, AgentPlayerSnapshot)
         self.session.restore(snapshot.session, max_notes_chars=self.suite.context.max_notes_chars)

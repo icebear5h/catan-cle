@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 RELATIVE_DATASETS_DIR = Path("evals/catan_board_bench/datasets")
 DATASETS_DIR = PROJECT_ROOT / RELATIVE_DATASETS_DIR

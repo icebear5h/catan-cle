@@ -1,4 +1,7 @@
 from enum import Enum
+from typing import TypeAlias
+
+Coordinate: TypeAlias = tuple[int, int, int]
 
 
 # We'll be using Cube coordinates in https://math.stackexchange.com/questions/2254655/hexagon-grid-coordinate-system
@@ -11,7 +14,7 @@ class Direction(Enum):
     NORTHEAST = "NORTHEAST"
 
 
-UNIT_VECTORS = {
+UNIT_VECTORS: dict[Direction, Coordinate] = {
     # X-axis
     Direction.NORTHEAST: (1, 0, -1),
     Direction.SOUTHWEST: (-1, 0, 1),
@@ -24,13 +27,13 @@ UNIT_VECTORS = {
 }
 
 
-def add(acoord, bcoord):
+def add(acoord: Coordinate, bcoord: Coordinate) -> Coordinate:
     (x, y, z) = acoord
     (u, v, w) = bcoord
     return (x + u, y + v, z + w)
 
 
-def num_tiles_for(layer):
+def num_tiles_for(layer: int) -> int:
     """Including inner-layer tiles"""
     if layer == 0:
         return 1
@@ -38,15 +41,15 @@ def num_tiles_for(layer):
     return 6 * layer + num_tiles_for(layer - 1)
 
 
-def generate_coordinate_system(num_layers):
+def generate_coordinate_system(num_layers: int) -> set[Coordinate]:
     """
     Generates a set of coordinates by expanding outward from a center tile on
     (0,0,0) with the given number of layers (as in an onion :)). Follows BFS.
     """
     num_tiles = num_tiles_for(num_layers)
 
-    agenda = [(0, 0, 0)]
-    visited = set()
+    agenda: list[Coordinate] = [(0, 0, 0)]
+    visited: set[Coordinate] = set()
     while len(visited) < num_tiles:
         node = agenda.pop(0)
         visited.add(node)
@@ -59,7 +62,7 @@ def generate_coordinate_system(num_layers):
     return visited
 
 
-def cube_to_axial(cube):
+def cube_to_axial(cube: Coordinate) -> tuple[int, int]:
     """Convert cube coordinates to axial (pointy-top convention).
 
     For pointy-top hexes: q = x, r = z (standard conversion)
@@ -69,14 +72,14 @@ def cube_to_axial(cube):
     return (q, r)
 
 
-def cube_to_offset(cube):
+def cube_to_offset(cube: Coordinate) -> tuple[int, int]:
     """Convert cube to offset coordinates (pointy-top, odd-r convention)."""
     col = cube[0] + (cube[2] - (cube[2] & 1)) // 2
     row = cube[2]
     return (col, row)
 
 
-def offset_to_cube(offset):
+def offset_to_cube(offset: tuple[int, int]) -> Coordinate:
     """Convert offset coordinates to cube (pointy-top, odd-r convention)."""
     x = offset[0] - (offset[1] - (offset[1] & 1)) // 2
     z = offset[1]

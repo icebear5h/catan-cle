@@ -1,0 +1,10 @@
+.replay-transcript-source {
+  color: var(--blue);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.62rem;
+  text-decoration: none;
+}
+
+.replay-transcript-source:hover {
+  text-decoration: underline;
+}

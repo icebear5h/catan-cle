@@ -1,0 +1,33 @@
+@container (max-width: 660px) {
+  .board-controls-dock.replay .playback-bar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .playback-status {
+    min-width: 0;
+  }
+
+  .board-controls-dock.live .playback-status { flex-basis: 7rem; }
+  .live-history .trace-step-navigator { flex: 1; }
+  .live-history .trace-step-picker { flex: 1; }
+
+  .replay-actions {
+    grid-template-columns: auto minmax(4rem, 1fr) auto;
+  }
+
+  .playback-seek {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 760px) {
+  .board-controls-dock {
+    right: 0.65rem;
+    bottom: 0.65rem;
+    left: 0.65rem;
+  }
+}

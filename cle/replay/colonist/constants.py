@@ -1,11 +1,15 @@
 """All Colonist <-> Engine mapping constants."""
 
-from cle.game_engine.models.map import WOOD, BRICK, SHEEP, WHEAT, ORE
+from typing import Final
+
+from cle.game_engine.models.coordinate_system import Coordinate
+from cle.game_engine.models.enums import FastResource
+from cle.game_engine.models.map import BRICK, ORE, SHEEP, WHEAT, WOOD
 
 # Colonist tile type to engine resource mapping
 # VERIFIED: Tile type 1 produces resource 1, and resource 1 = WOOD (roads use 1+2)
 # So: 1=WOOD, 2=BRICK, 3=SHEEP, 4=WHEAT, 5=ORE
-COLONIST_RESOURCE = {
+COLONIST_RESOURCE: Final[dict[int, FastResource | None]] = {
     0: None,  # desert
     1: WOOD,   # Colonist tile type 1 = Wood (verified: produces resource 1 = wood)
     2: BRICK,
@@ -16,7 +20,7 @@ COLONIST_RESOURCE = {
 
 # Colonist port type to engine resource
 # Verified from actual Colonist UI
-COLONIST_PORT_RESOURCE = {
+COLONIST_PORT_RESOURCE: Final[dict[int, FastResource | None]] = {
     1: None,   # 3:1 generic port
     2: WOOD,
     3: BRICK,
@@ -26,7 +30,7 @@ COLONIST_PORT_RESOURCE = {
 }
 
 # Engine port water hex positions
-ENGINE_PORT_COORDS = [
+ENGINE_PORT_COORDS: Final[list[Coordinate]] = [
     (3, -3, 0),   # 0
     (1, -3, 2),   # 1
     (-1, -2, 3),  # 2
@@ -37,10 +41,10 @@ ENGINE_PORT_COORDS = [
     (2, 1, -3),   # 7
     (3, -1, -2),  # 8
 ]
-ENGINE_PORT_MAP = {coord: idx for idx, coord in enumerate(ENGINE_PORT_COORDS)}
+ENGINE_PORT_MAP: Final[dict[Coordinate, int]] = {coord: idx for idx, coord in enumerate(ENGINE_PORT_COORDS)}
 
 # Hex direction offsets
-HEX_DIRECTIONS = {
+HEX_DIRECTIONS: Final[dict[str, Coordinate]] = {
     'EAST': (1, 0, -1),
     'WEST': (-1, 0, 1),
     'NORTHEAST': (1, -1, 0),
@@ -50,7 +54,7 @@ HEX_DIRECTIONS = {
 }
 
 # Resource emojis
-RESOURCE_EMOJIS = {
+RESOURCE_EMOJIS: Final[dict[str, str]] = {
     "WOOD": "\U0001FAB5",
     "BRICK": "\U0001F9F1",
     "SHEEP": "\U0001F411",
@@ -62,7 +66,7 @@ RESOURCE_EMOJIS = {
 # VERIFIED: Road builds use resources [1, 2] which must be WOOD+BRICK
 # So: 1=WOOD, 2=BRICK, 3=SHEEP, 4=WHEAT, 5=ORE (README was wrong about 1/4 swap)
 # Engine RESOURCES order: WOOD=0, BRICK=1, SHEEP=2, WHEAT=3, ORE=4
-COLONIST_RES_TO_ENGINE_IDX = {
+COLONIST_RES_TO_ENGINE_IDX: Final[dict[int, int]] = {
     1: 0,  # WOOD -> index 0 (verified: roads use resource 1+2 = wood+brick)
     2: 1,  # brick -> index 1
     3: 2,  # sheep -> index 2
@@ -73,7 +77,7 @@ COLONIST_RES_TO_ENGINE_IDX = {
 
 # Colonist dev card ID to engine type
 # Verified from Colonist UI observation
-COLONIST_DEV_CARD = {
+COLONIST_DEV_CARD: Final[dict[int, str]] = {
     11: "KNIGHT",
     12: "VICTORY_POINT",
     13: "MONOPOLY",
@@ -83,7 +87,7 @@ COLONIST_DEV_CARD = {
 
 # Colonist resource ID to engine Resource string
 # VERIFIED: 1=WOOD (used in road builds), 4=WHEAT (from tile type 4)
-COLONIST_RES_TO_ENGINE = {
+COLONIST_RES_TO_ENGINE: Final[dict[int, FastResource]] = {
     1: "WOOD",
     2: "BRICK",
     3: "SHEEP",
@@ -92,10 +96,10 @@ COLONIST_RES_TO_ENGINE = {
 }
 
 # Engine resource strings (for lookups)
-ENGINE_RESOURCES = ["WOOD", "BRICK", "SHEEP", "WHEAT", "ORE"]
+ENGINE_RESOURCES: Final[list[FastResource]] = ["WOOD", "BRICK", "SHEEP", "WHEAT", "ORE"]
 
 # Colonist player color IDs to names (matching COLONIST_COLOR_NAMES)
-COLONIST_PLAYER_COLORS = {
+COLONIST_PLAYER_COLORS: Final[dict[int, str]] = {
     1: "RED",
     2: "BLUE",
     3: "ORANGE",

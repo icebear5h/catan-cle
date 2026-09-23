@@ -9,12 +9,12 @@ datasets must be built from the authoritative verified replay executor.
 
 ## Code layout
 
-- `scrapers/colonist_api.py`: leaderboard, profile, and history API client.
+- `scrapers/colonist_api/`: leaderboard, profile, and history API client.
 - `scrapers/scrape_top_players.py`: builds lightweight candidate indexes.
-- `scrapers/replay_playwright_scraper.py`: preferred authenticated replay capture.
-- `scrapers/replay_api_scraper.py`: direct API fallback and debugging path.
-- `scrapers/build_replay_splits.py`: deterministic leakage-safe split manifests.
-- `replay_decoder.py`: standalone raw replay inspection utility.
+- `scrapers/replay_playwright_scraper/`: preferred authenticated replay capture.
+- `scrapers/replay_api_scraper/`: direct API fallback and debugging path.
+- `scrapers/build_replay_splits/`: deterministic leakage-safe split manifests.
+- `replay_decoder/`: standalone raw replay inspection utility.
 
 ## Artifact layout
 

@@ -11,24 +11,11 @@ Usage:
     # Test locally (spins up ephemeral server)
     modal run scripts/deploy_glm_api.py
 
-    # Call the deployed API (OpenAI-compatible):
-    curl https://YOUR-WORKSPACE--glm-4-1v-api-serve.modal.run/v1/chat/completions \
-      -H "Content-Type: application/json" \
-      -d '{
-        "model": "glm-4.1v",
-        "messages": [
-          {"role": "system", "content": "You are a visual analyzer."},
-          {"role": "user", "content": [
-            {"type": "image_url", "image_url": {"url": "data:image/png;base64,iVBOR..."}},
-            {"type": "text", "text": "What tiles do you see?"}
-          ]}
-        ]
-      }'
-
-    # Or use the openai Python client:
-    from openai import OpenAI
-    client = OpenAI(base_url="https://YOUR-WORKSPACE--glm-4-1v-api-serve.modal.run/v1", api_key="unused")
-    resp = client.chat.completions.create(model="glm-4.1v", messages=[...])
+    # The deployment serves GET /health, GET /v1/models and
+    # POST /v1/chat/completions at
+    # https://YOUR-WORKSPACE--glm-4-1v-api-serve.modal.run, in the
+    # OpenAI chat-completions shape (string or image_url/text content parts),
+    # so any OpenAI client works against .../v1 with any api_key.
 
 Prerequisites:
     pip install modal
@@ -36,10 +23,16 @@ Prerequisites:
     modal secret create huggingface HF_TOKEN=hf_xxx  # optional, for gated models
 """
 
-import json
-import subprocess
+import base64
+import io
+import os
+import threading
 import time
+from collections.abc import Callable, Iterable
+from contextlib import AbstractContextManager
+from typing import Protocol
 
+import aiohttp
 import modal
 
 # ---------------------------------------------------------------------------
@@ -67,6 +60,46 @@ image = (
     )
 )
 
+# Only the container has these; Modal skips the block outside the image.
+# modal is unannotated, so the context manager goes through a typed handle.
+_container_imports: Callable[[], AbstractContextManager[None]] = image.imports
+
+with _container_imports():
+    import httpx
+    import torch
+    import uvicorn
+    from fastapi import FastAPI, Request
+    from fastapi.responses import JSONResponse
+    from PIL import Image as PILImage
+    from transformers import AutoModelForImageTextToText, AutoProcessor
+
+
+class _Shaped(Protocol):
+    """A tokenized tensor, of which only the shape is read here."""
+    @property
+    def shape(self) -> tuple[int, ...]: ...
+
+
+class _ChatInputs(Protocol):
+    """The processor's tokenized batch, passed on to ``model.generate``."""
+    def to(self, device: str) -> "_ChatInputs": ...
+    def keys(self) -> Iterable[str]: ...
+    def __getitem__(self, key: str) -> _Shaped: ...
+
+
+class _Processor(Protocol):
+    """The unannotated transformers processor, narrowed to what is used here."""
+    def apply_chat_template(
+        self, conversation: list[dict[str, object]], **kwargs: object
+    ) -> _ChatInputs: ...
+    def decode(self, token_ids: object, *, skip_special_tokens: bool) -> str: ...
+
+
+class _ProcessorLoader(Protocol):
+    """``AutoProcessor.from_pretrained`` as this script calls it."""
+    def __call__(self, model_name: str, /, *, trust_remote_code: bool) -> _Processor: ...
+
+
 # ---------------------------------------------------------------------------
 # Model weights cache (persists across deploys)
 # ---------------------------------------------------------------------------
@@ -93,27 +126,15 @@ PORT = 8000
 )
 @modal.concurrent(max_inputs=4)
 @modal.web_server(port=PORT, startup_timeout=10 * MINUTES)
-def serve():
+def serve() -> None:
     """Start a FastAPI server that exposes an OpenAI-compatible chat completions endpoint."""
-
-    import uvicorn
-    from fastapi import FastAPI, Request
-    from fastapi.responses import JSONResponse
-
-    import torch
-    import base64
-    import io
-    import os
-    from PIL import Image as PILImage
-    from transformers import AutoModelForImageTextToText, AutoProcessor
 
     # ---- Load model at startup ----
     os.environ.setdefault("HF_HOME", "/root/.cache/huggingface")
 
     print(f"Loading {MODEL_NAME} in bf16...")
-    processor = AutoProcessor.from_pretrained(
-        MODEL_NAME, trust_remote_code=True,
-    )
+    load_processor: _ProcessorLoader = AutoProcessor.from_pretrained
+    processor = load_processor(MODEL_NAME, trust_remote_code=True)
     model = AutoModelForImageTextToText.from_pretrained(
         MODEL_NAME,
         device_map="auto",
@@ -121,7 +142,8 @@ def serve():
         dtype=torch.bfloat16,
         low_cpu_mem_usage=True,
     )
-    model.eval()
+    set_eval_mode: Callable[[], object] = model.eval
+    set_eval_mode()
     device = "cuda"
     vram = torch.cuda.memory_allocated() / 1e9
     print(f"Model loaded. VRAM: {vram:.1f} GB")
@@ -130,11 +152,11 @@ def serve():
     api = FastAPI(title="GLM-4.1V-9B API", version="1.0")
 
     @api.get("/health")
-    async def health():
+    async def health() -> dict[str, str | float]:
         return {"status": "ok", "model": MODEL_NAME, "vram_gb": round(vram, 1)}
 
     @api.get("/v1/models")
-    async def list_models():
+    async def list_models() -> dict[str, object]:
         return {
             "object": "list",
             "data": [{
@@ -145,7 +167,7 @@ def serve():
         }
 
     @api.post("/v1/chat/completions")
-    async def chat_completions(request: Request):
+    async def chat_completions(request: Request) -> JSONResponse:
         body = await request.json()
 
         messages = body.get("messages", [])
@@ -153,7 +175,7 @@ def serve():
         max_tokens = body.get("max_tokens", 4096)
 
         # Convert OpenAI message format -> GLM format
-        glm_messages = []
+        glm_messages: list[dict[str, object]] = []
         for msg in messages:
             role = msg["role"]
             content = msg.get("content", "")
@@ -164,7 +186,7 @@ def serve():
                     "content": [{"type": "text", "text": content}],
                 })
             elif isinstance(content, list):
-                glm_content = []
+                glm_content: list[dict[str, object]] = []
                 for part in content:
                     if part["type"] == "text":
                         glm_content.append({"type": "text", "text": part["text"]})
@@ -174,8 +196,7 @@ def serve():
                             b64_data = url.split(",", 1)[1]
                             img_bytes = base64.b64decode(b64_data)
                         else:
-                            import httpx as hx
-                            resp = hx.get(url, timeout=30)
+                            resp = httpx.get(url, timeout=30)
                             img_bytes = resp.content
                         img = PILImage.open(io.BytesIO(img_bytes)).convert("RGB")
                         glm_content.append({"type": "image", "image": img})
@@ -190,8 +211,10 @@ def serve():
         ).to(device)
 
         start = time.time()
+        # transformers 5's generate() self type rejects PreTrainedModel under mypy.
+        generate = getattr(model, "generate")
         with torch.no_grad():
-            outputs = model.generate(
+            outputs = generate(
                 **inputs,
                 max_new_tokens=max_tokens,
                 temperature=temperature,
@@ -222,10 +245,6 @@ def serve():
     # ---- Write the app to a temp file and run uvicorn as a subprocess ----
     # @modal.web_server expects the function to RETURN after starting the server,
     # not block. Use subprocess like the vLLM example.
-    import pickle
-    import tempfile
-    import subprocess
-
     # Save the FastAPI app so the subprocess can import it
     app_file = "/tmp/_glm_app.py"
     with open(app_file, "w") as f:
@@ -234,7 +253,6 @@ def serve():
 
     # We can't easily serialize the model into a subprocess, so instead
     # run uvicorn in-process but in a background thread
-    import threading
     server_thread = threading.Thread(
         target=uvicorn.run,
         args=(api,),
@@ -249,16 +267,16 @@ def serve():
 # ---------------------------------------------------------------------------
 
 @app.local_entrypoint()
-async def test():
-    import aiohttp
-
+async def test() -> None:
     url = await serve.get_web_url.aio()
     print(f"Server URL: {url}")
 
     async with aiohttp.ClientSession(base_url=url) as session:
         # Health check
         print("Health check...")
-        async with session.get("/health", timeout=5 * MINUTES) as resp:
+        async with session.get(
+            "/health", timeout=aiohttp.ClientTimeout(total=5 * MINUTES)
+        ) as resp:
             assert resp.status == 200
             print(f"  OK: {await resp.json()}")
 
@@ -276,5 +294,5 @@ async def test():
             print(f"  Response: {data['choices'][0]['message']['content']}")
             print(f"  Latency: {data.get('latency_ms')}ms")
 
-    print(f"\nDeploy with: modal deploy scripts/deploy_glm_api.py")
+    print("\nDeploy with: modal deploy scripts/deploy_glm_api.py")
     print(f"Then use: {url}/v1/chat/completions")

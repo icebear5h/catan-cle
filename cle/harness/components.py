@@ -4,15 +4,15 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Any, Literal, Mapping
+from collections.abc import Mapping
+from typing import Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from cle.env.observation_formatter import CatanObservationFormatter
-from cle.game_engine.observation import PlayerObservation
 from cle.game_engine.board_tokens import node_token
+from cle.game_engine.observation import PlayerObservation
 from cle.harness.models import PromptComponent
-
 
 # Lifecycle marker for authored suite files; only one bundle is active at a time.
 SuiteStatus = Literal["active", "legacy", "deprecated"]
@@ -132,7 +132,7 @@ def render_component_definitions(
     rendered = []
     for name in order:
         definition = components[name]
-        values = {key: getattr(inputs, key) for key in definition.inputs}
+        values: dict[str, str] = {key: getattr(inputs, key) for key in definition.inputs}
         if values and not any(values.values()) and definition.empty == "omit":
             continue
         variables = tuple(sorted(values.items()))
@@ -173,7 +173,7 @@ def observation_component_values(
         label = "first" if ordinal == 1 else "second"
         phase += f"\nSetup: {actor.value} must place the {label} {'road' if road else 'settlement'}."
         if road:
-            phase += f" The {label} settlement is already placed at {node_token(observation.setup_road_anchor)}; attach this road to it."
+            phase += f" The {label} settlement is already placed at {node_token(cast('int', observation.setup_road_anchor))}; attach this road to it."
         phase += " First settlement gives no starting cards; starting hand comes only from the second settlement (one per adjacent non-desert tile). The second settlement is independently placed, not connected to the first road."
     elif observation.free_roads_available:
         phase += f"\nRoad Building: {observation.free_roads_available} free road placements remaining; use build_road, not setup placement or a paid road."
@@ -188,13 +188,13 @@ def observation_component_values(
     }
 
 
-def parse_strict_json_object(text: str) -> dict[str, Any]:
+def parse_strict_json_object(text: str) -> dict[str, object]:
     """Bounded JSON envelopes shared by the fresh action and speech contracts."""
     if len(text) > 128 * 1024:
         raise ValueError("Response exceeds 131072 characters.")
 
-    def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
-        result = {}
+    def unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
+        result: dict[str, object] = {}
         for key, value in pairs:
             if key in result:
                 raise ValueError(f"Duplicate JSON key: {key}")

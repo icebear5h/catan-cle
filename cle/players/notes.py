@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-
 MAX_NOTES_CHARS = 4000
 
 

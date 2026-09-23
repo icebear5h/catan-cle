@@ -2,10 +2,10 @@ from collections import Counter
 
 import pytest
 
-from sft.modal_full_board_new_layouts import mix_layouts
+from sft.launchers.full_board.modal_full_board_new_layouts import mix_layouts
 
 
-def test_training_pass_covers_every_new_layout_and_rehearses_each_batch():
+def test_training_pass_covers_every_new_layout_and_rehearses_each_batch() -> None:
     new = [{"row_id": f"new-{layout}-{density}-{i}", "layout_id": f"new-{layout}",
             "density_bin": density, "image": f"image-{layout}-{density}-{i}"}
            for layout in range(4) for density in ("dense", "sparse", "setup", "empty") for i in range(2)]

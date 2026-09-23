@@ -21,5 +21,5 @@
       "@playground/*": ["../../playground/frontend/src/*"]
     }
   },
-  "include": ["src", "../../playground/frontend/src/types.ts"]
+  "include": ["src", "../../playground/frontend/src/types"]
 }

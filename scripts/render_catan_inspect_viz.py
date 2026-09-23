@@ -6,8 +6,9 @@ from __future__ import annotations
 import argparse
 import json
 import math
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any
+from typing import TypedDict, cast
 
 import pandas as pd
 from inspect_ai.log import read_eval_log
@@ -19,6 +20,30 @@ from inspect_viz.view import scores_by_model
 
 from evals.inspect_archives import DEFAULT_INSPECT_LOG_DIR
 
+
+class VerificationRecord(TypedDict, total=False):
+    """Verification block recorded for one archived Inspect log."""
+
+    status: str
+    source_scores_verified: bool
+    scores: dict[str, float]
+
+
+class ArchiveLogRecord(TypedDict, total=False):
+    """One archived Inspect log as written by the archive importer."""
+
+    archive_id: str
+    input_mode: str
+    verification: VerificationRecord
+    expected_metrics: dict[str, int]
+    model_id: str
+    inspect_model_id: str
+    log_path: str
+
+
+# inspect_viz annotates score_stderr as str, but None is how these views are
+# told the data has no stderr column; ci=False already disables the interval.
+NO_STDERR_COLUMN: str = cast("str", None)
 
 MODEL_NAMES = {
     "deepseek/deepseek-v4-flash-vision-exp": "DeepSeek V4 Vision",
@@ -67,7 +92,7 @@ def main() -> int:
         scores_by_model(
             data,
             score_value="strict_exact",
-            score_stderr=None,
+            score_stderr=NO_STDERR_COLUMN,
             ci=False,
             sort="desc",
             score_label="Strict exact accuracy",
@@ -80,7 +105,7 @@ def main() -> int:
         scores_by_model(
             data,
             score_value="strict_json_valid",
-            score_stderr=None,
+            score_stderr=NO_STDERR_COLUMN,
             ci=False,
             sort="desc",
             score_label="Valid JSON rate",
@@ -93,7 +118,7 @@ def main() -> int:
         scores_by_model(
             data,
             score_value="strict_protocol_exact",
-            score_stderr=None,
+            score_stderr=NO_STDERR_COLUMN,
             ci=False,
             sort="desc",
             score_label="Protocol-exact rate",
@@ -111,16 +136,16 @@ def main() -> int:
 
 
 def strict_vision_rows(
-    payload: dict[str, Any],
+    payload: Mapping[str, object],
     *,
     log_root: Path | None = None,
-) -> list[dict[str, Any]]:
+) -> list[dict[str, str | float]]:
     if payload.get("schema") != "catan-inspect-archive/v1":
         raise ValueError("unsupported Inspect archive index schema")
-    rows = []
+    rows: list[dict[str, str | float]] = []
     model_ids: set[str] = set()
     contract_keys: set[str] = set()
-    for record in payload.get("logs", []):
+    for record in cast("list[ArchiveLogRecord]", payload.get("logs", [])):
         if record.get("input_mode") != "raw_image":
             continue
         verification = record.get("verification") or {}
@@ -188,7 +213,7 @@ def strict_vision_rows(
     return rows
 
 
-def _verify_indexed_log(record: dict[str, Any], log_root: Path) -> str:
+def _verify_indexed_log(record: ArchiveLogRecord, log_root: Path) -> str:
     root = log_root.resolve()
     relative = Path(str(record["log_path"]))
     if relative.is_absolute() or ".." in relative.parts:
@@ -228,6 +253,8 @@ def _verify_indexed_log(record: dict[str, Any], log_root: Path) -> str:
             )
 
     metadata = log.eval.metadata
+    if metadata is None:
+        raise ValueError(f"indexed Inspect log has no metadata: {relative}")
     contract = {
         "benchmark_contract": metadata.get("benchmark_contract"),
         "input_mode": metadata.get("input_mode"),

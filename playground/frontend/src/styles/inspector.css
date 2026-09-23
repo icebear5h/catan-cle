@@ -1,0 +1,242 @@
+.session-sidebar-header,
+.inspector-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.15rem 0.15rem 0.45rem;
+}
+
+.session-sidebar-header span,
+.inspector-drawer-header span {
+  color: var(--text);
+  font-size: 0.86rem;
+  font-weight: 680;
+}
+
+.session-sidebar-header p,
+.inspector-drawer-header p {
+  margin-top: 0.08rem;
+  color: var(--muted);
+  font-size: 0.64rem;
+}
+
+.session-sidebar-header button,
+.inspector-drawer-header button {
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  border: 1px solid rgba(135, 159, 190, 0.22);
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+.session-sidebar-header button:hover,
+.inspector-drawer-header button:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.inspector-drawer-header {
+  min-height: 3.6rem;
+  padding: 0.65rem 0.8rem;
+  border-bottom: 1px solid rgba(135, 159, 190, 0.18);
+}
+
+.inspector-drawer-content {
+  min-height: 0;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 0.8rem;
+  overflow-y: auto;
+}
+
+.inspector-drawer-content.empty {
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.inspector-player-details {
+  flex: 0 0 auto;
+  border: 1px solid rgba(135, 159, 190, 0.22);
+  border-radius: 0.75rem;
+  background: rgba(4, 8, 13, 0.66);
+}
+
+.inspector-player-details > summary {
+  padding: 0.65rem 0.75rem;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.68rem;
+  font-weight: 620;
+}
+
+.inspector-player-details[open] > summary {
+  border-bottom: 1px solid rgba(135, 159, 190, 0.18);
+  color: var(--blue);
+}
+
+.inspector-player-details .player-info {
+  border: 0;
+  background: transparent;
+}
+
+.inspector-game-log {
+  flex: 0 0 auto;
+  border: 1px solid rgba(135, 159, 190, 0.22);
+  border-radius: 0.75rem;
+  background: rgba(4, 8, 13, 0.66);
+}
+
+.inspector-game-log > summary {
+  min-height: 2.65rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 640;
+  list-style: none;
+}
+
+.inspector-game-log > summary::-webkit-details-marker {
+  display: none;
+}
+
+.inspector-game-log > summary::before {
+  content: "›";
+  color: var(--blue);
+  font-family: var(--font-mono);
+  transition: transform 140ms ease;
+}
+
+.inspector-game-log[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.inspector-game-log > summary span:last-child {
+  margin-left: auto;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  font-weight: 500;
+}
+
+.inspector-game-log[open] > summary {
+  border-bottom: 1px solid rgba(135, 159, 190, 0.18);
+  color: var(--blue);
+}
+
+.inspector-game-log .game-log {
+  min-height: min(22rem, 42vh);
+  max-height: min(30rem, 55vh);
+  border: 0;
+  background: transparent;
+}
+
+.inspector-table-talk {
+  flex: 0 0 auto;
+  border: 1px solid rgba(135, 159, 190, 0.22);
+  border-radius: 0.75rem;
+  background: rgba(4, 8, 13, 0.66);
+}
+
+.inspector-table-talk > summary {
+  min-height: 2.65rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 640;
+  list-style: none;
+}
+
+.inspector-table-talk > summary::-webkit-details-marker {
+  display: none;
+}
+
+.inspector-table-talk > summary::before {
+  content: "›";
+  color: var(--blue);
+  font-family: var(--font-mono);
+  transition: transform 140ms ease;
+}
+
+.inspector-table-talk[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.inspector-table-talk > summary span:last-child {
+  margin-left: auto;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  font-weight: 500;
+}
+
+.inspector-table-talk[open] > summary {
+  border-bottom: 1px solid rgba(135, 159, 190, 0.18);
+  color: var(--blue);
+}
+
+.inspector-table-talk .table-talk-log {
+  border: 0;
+  background: transparent;
+}
+
+.inspector-empty {
+  max-width: 16rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.inspector-empty span {
+  color: var(--blue);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.inspector-empty p {
+  margin-top: 0.45rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.left-panel::-webkit-scrollbar,
+.inspector-drawer-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.left-panel::-webkit-scrollbar-track,
+.inspector-drawer-content::-webkit-scrollbar-track {
+  background: #080c11;
+}
+
+.left-panel::-webkit-scrollbar-thumb,
+.inspector-drawer-content::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+}
+
+.left-panel::-webkit-scrollbar-thumb:hover,
+.inspector-drawer-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(60, 255, 205, 0.5);
+}
+

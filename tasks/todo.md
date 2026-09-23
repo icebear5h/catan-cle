@@ -1,3 +1,467 @@
+# Miles/Megatron LoRA SFT port (2026-09-22)
+
+- [x] Inspect the existing SFT bundle, Miles hooks, and exact Qwen3.8 architecture.
+- [ ] Resolve initialization: merged trained weights plus fresh Megatron LoRA,
+      fresh stock initialization, or exact independent-adapter continuation.
+- [ ] Implement a separate primitive-topology SFT data projection with native
+      no-thinking tokens, completion masks, provenance, and no truncation.
+- [ ] Implement the pinned single-H200 Miles/Megatron training and checkpoint path.
+- [ ] Verify local contracts and prepare a bounded training/save/reload/eval smoke.
+- [ ] Review changes, run the full quality gate, and record results.
+
+Plan: keep SFT primitives separate from symbolic-RL tasks while sharing model and
+evaluation infrastructure. Ray orchestrates, Megatron trains LoRA, and SGLang runs
+generation only for evaluations/GRPO. Preserve existing work and historical receipts.
+The first run must explicitly name its initialization and trainable scope.
+
+Discovery: exact Qwen3.8-27B Bridge support exists, but Miles cannot directly import
+our HF PEFT checkpoint. Independent Q/K/V, gate/up, and GDN adapter factors cannot
+be losslessly collapsed into the same-rank fused adapters. Its stock adapter saver
+also omits our selected embedding/output rows. A merged-weight warm-start avoids
+the factor-import problem but intentionally starts a new adapter parameterization;
+exact continuation requires custom split adapters and import/export support.
+
+Review: implementation pending. No training or remote GPU launch performed.
+
+# Per-sandbox ordered durable execution (2026-09-22)
+
+- [x] Audit current step, barrier, trace transaction, and checkpoint boundaries.
+- [x] Add an append-ordered SQLite command/call journal with checkpoint fencing.
+- [x] Add an opt-in durable sandbox runner and replayable completion transport.
+- [x] Verify duplicate delivery, interrupted acquisition, cancellation, stale writers,
+      same-revision state, and atomic persistence with real sandbox integration tests.
+- [x] Document usage, recovery limits, and review; run the full quality gate.
+
+Design: keep canonical engine event order and current viewer trace projections.
+A separate journal orders command starts, model invocations/results, recovery, and
+settlement across all seats of one sandbox. Stable caller command IDs return saved
+outcomes; transactionally committed snapshots are authoritative. Recovery fences
+old writers and re-drives uncommitted local work from the command checkpoint using
+saved provider responses. Unknown remote outcomes require explicit retry consent;
+this does not claim exactly-once remote inference or arbitrary external callbacks.
+Existing viewer restore stays compatible; durable execution is an explicit runner
+for rollout callers, with no live-server restart or paid run during implementation.
+
+Options considered: after-the-fact log-only ordering cannot prevent duplicate
+execution; modifying every engine action risks recording staged validation. The
+selected command wrapper + transport receipt boundary preserves engine semantics
+and supports headless games without depending on Flask.
+
+Review: added `cle/sandbox/durable/` and `cle/traces/journal/`, with 46 focused
+journal/runtime cases including a spawned worker killed without Python cleanup.
+Independent review fixes cover admission write uncertainty, resolved provider
+identity, policy changes on settled delivery, image/exception evidence redaction,
+and idle context-policy migration. Related sandbox/trace regression run:
+**375 passed**. Scoped Ruff and strict mypy pass on all 30 authored Python files.
+Required `uv run --no-sync python -m scripts.quality` ran and remains red outside
+this feature: `playground/frontend/src/App.tsx` is 1,550 lines, plus Ruff/mypy
+failures elsewhere in the ongoing repository cleanup. No suppressions added.
+Docs/usage: `cle/sandbox/durable/README.md`. No live server restart or paid run.
+
+# Stricter linter cleanup
+
+The active checklist, completed work, pending review repairs, and verification
+commands are in [stricter-linter.md](stricter-linter.md). Update that file for
+ongoing quality cleanup. Earlier execution records remain below.
+
+# Board-recognition structure cleanup (2026-09-21)
+
+- [x] Inspect ownership, physical-source consumers, and relocated test baselines.
+- [x] Split eight eligible oversized modules into same-name packages.
+- [x] Check byte/order parity on existing fixtures, public identities, and paths.
+- [x] Run scoped tests/lint/typing; record remaining debt and structural counts.
+
+Plan: cohesive implementation modules with explicit public re-exports. Preserve
+source-hashed replay/source/robber/piece modules because their SFT callers are
+outside scope. Selected: inverse_grounding, spatial_localization,
+adjacent_pair_localization, query_schedule, replay_ms_swift,
+production_curriculum, dataset, density_curriculum. Baseline: 109 tests pass.
+No source.py or semantic_v2.py exists. Historical manifests and hashes stay pinned.
+
+Review: root 23 -> 15 Python files. Eight oversized files (4,563 lines) became
+28 source files (4,704 lines including explicit exports/imports), each <=300
+physical lines; package sizes range from 2 to 6 direct source files. Largest
+file: 856 -> 300. Original owned exports and historical pickle lookups pass;
+dataset class identity/project root and both module CLIs are preserved.
+
+Final explicit-interpreter run: 177 passed, 11 pre-existing setup errors in
+tests/data_pipeline/recognition/export/test_reweight_node_edge.py (obsolete
+full_coverage keyword; original node readout signature already uses coverage).
+All 19 new contract tests pass, including 37 complete export files compared
+byte-for-byte with revision 2a27dbc, 12 frozen output/order witnesses including
+292 marker/probe PNGs, and 16 pair images/rows under serial and spawned workers.
+Scoped Ruff and diff checks pass. Scoped strict mypy retains 12 diagnostics:
+eight pre-existing JsonDict/Any aliases and four missing jsonschema/networkx
+stub sites; no added Any or ignores. The global quality gate is reserved for
+the coordinating main's final run while concurrent work continues.
+
+Use uv run --no-sync python -m pytest: .venv/bin/pytest has a stale shebang into
+another checkout and different Pillow byte output. Details and test commands
+are in tests/recognition_contracts/README.md. Source-hashed replay_dataset,
+sources, spatial_robber, single_piece_localization, and node_edge_readout remain
+at their existing paths; their external SFT callers were not changed.
+
+# Format module structure cleanup (2026-09-21)
+
+- [x] Capture the four-test baseline and immutable scorer source fingerprints.
+- [x] Pin byte/order witnesses and split only ASCII variations/full-graph formats.
+- [x] Verify exports, focused tests, file/folder counts, and strict typing debt.
+
+Plan: same-name package facades over cohesive graph, codec, rendering, question,
+data, and scoring modules; preserve all original owned public/private symbols.
+Review: 24 baseline tests and 29 final tests pass. All 192 rendered-output/order
+witnesses, minimal-graph projections, 99 generated file bytes, and six scoring
+source fingerprints match the pre-edit capture. Scorer version remains v2 and
+SHA256 remains b80971f02ef525a56f5e84bd97801276f953620d82211cabc4a716baf9b9ed3e.
+All 92 original owned functions/classes and their constants remain exported.
+Benchmark root: 17 -> 15 direct files; both new packages: 11 files, maxima 279
+and 216 physical lines. Strict scoped mypy: 29 -> 5 errors (one existing JSON
+alias plus four frozen-scoring diagnostics); Ruff: only three guarded ANN401s.
+No suppressions added. Required full quality run: 209 repository structural
+violations and existing Ruff/mypy failures; scoped structure and diff checks pass.
+
+# Repository quality cleanup (2026-09-21)
+
+Continue from the strict local quality gate. Starting measurement: 213 files
+over 300 physical lines, 10 source folders over 15 direct files, plus Ruff/mypy
+debt. Preserve behavior, saved snapshot identities, canonical board topology,
+and existing concurrent work. No baselines or weakened rules.
+
+- [x] Inspect current worktree and prioritize cohesive clean areas.
+- [x] Extract typed trade data contracts from lifecycle behavior; preserve
+      public imports, duplicate-deal identity, ordering, and pickle restoration.
+- [x] Split map types/templates/generation from assembly while preserving
+      canonical entity IDs, RNG consumption, and supplied-list behavior.
+- [x] Clean player type contracts and extract cohesive oversized methods;
+      preserve accepted-action/history and communication behavior.
+- [x] Confirm relocation scope: user explicitly authorized moves and same-name
+      package replacements while preserving behavior and active work.
+- [x] Group 44 scripts and 124 tests into canonical ownership subfolders.
+- [x] Split two benchmark format modules and eight recognition generators
+      into same-name packages; retain scorer/output/pickle identity.
+- [x] Organize frontend components and split nine oversized components/styles
+      across both passes while preserving complete production CSS bytes.
+- [x] Verify focused behavior tests, inspect the combined changes, run the
+      complete quality gate, and record remaining debt.
+
+Plan choice: extract cohesive typed implementations behind existing public
+module boundaries first. A wholesale namespace rewrite would unnecessarily
+affect imports and persisted snapshots; new engine model files fit the folder
+limit. Source/test relocations use the user-authorized canonical ownership layout.
+
+## Review
+
+Implementation and independent reviews complete. The full quality run now
+reports 194 structural violations (190 oversized files, 4 oversized folders),
+down from 223 (213/10), plus 5,750 Ruff errors and strict mypy failures. Remaining
+overfull folders are cle/harness, sft, sft/launchers, and sft/scripts. Existing
+JSON aliases and frozen-source scorer typing remain explicit debt; no rules or
+baselines were relaxed. `git diff --check` passes.
+
+Focused verification completed by area:
+- Player suites: 318 before/after plus 4 new contracts; map: 43 before/46 after;
+  trade: 100 before/106 after with the same 2 existing payload assertions and
+  1 skip. Concrete local type checks pass for player and map/trade modules.
+- Benchmark formats: 29 pass; 192 rendered outputs and 99 generated files
+  match pre-edit witnesses; strict scorer SHA remains
+  b80971f02ef525a56f5e84bd97801276f953620d82211cabc4a716baf9b9ed3e.
+- Script migration: 96 before/after; final builders rename: 37 pass. Modal
+  probe's unsupported `required_hint` argument reproduces on HEAD.
+- Recognition: 177 pass with 11 existing obsolete-full_coverage setup errors;
+  witnesses include 37 export files, 292 PNGs, and 16 serial/spawned pair images.
+  Review found a lost public sampler override seam; repaired and verified by
+  14 focused tests, including all six helper call sequences against HEAD.
+- Frontends: 61 tests and both production builds pass. Both full CSS output
+  hashes match the original baseline exactly.
+- Relocation identities match under the original launcher, but its shebang was
+  stale. Correct explicit-interpreter collection succeeds for all 3,429 tests;
+  no missing-peft errors occur in the intended environment. Commands corrected.
+
+Final combined explicit-interpreter regression hit the 180-second budget while
+repeating full-dataset export byte checks. Those four checks passed separately.
+The remaining combined selection completed in 63 seconds: **862 passed,
+1 skipped, 1 failed, 4 deselected**. The failure is
+`tests/evals/reasoning/test_initial_settlement_reasoning.py::test_capture_trace_omits_max_tokens_and_separates_native_reasoning`:
+the request now sends `max_tokens` despite the probe's uncapped transport config.
+It reproduces alone. During this work, concurrent changes added per-request
+token overrides in `cle/harness/models.py` and provider transports, including
+OpenRouter's request-over-config precedence. Those active changes are outside
+the cleanup; the integration conflict is reported and left for their owner.
+Independent review verified two-way engine pickle interchange, live call sites,
+scorer source identity, board draw order, and exact stylesheet output.
+
+# Local code-quality gates and OpenCode (2026-09-21)
+
+Scope: deterministic local lint/typing/structure checks and project OpenCode
+integration. The user clarified that established CI is absent in this repo.
+
+- [x] Inspect existing tooling, instructions, OpenCode hooks, and structural debt.
+- [x] Confirm rollout policy for existing violations before implementation:
+      user chose strict repo-wide, with no existing-debt exemptions.
+- [x] Define source scope, 300 physical lines/file, 15 direct files/folder,
+      Python signature/type checks, and uv-managed dependency edits.
+- [x] Implement a shared local check command and OpenCode integration.
+- [x] Verify passing/failing cases and document commands, enforcement limits,
+      existing debt, and the required OpenCode restart.
+
+Initial audit: 213 of 534 source files exceeded 300 physical lines; 9 source
+folders exceeded 15 direct files. Annotation rules/type checking and project
+OpenCode integration were absent. The concurrent SFT launcher migration adds
+another oversized source folder; the current gate reports 223 structural failures.
+
+## Review
+
+Implemented `scripts.quality`, strict Ruff/mypy configuration, a project-local
+OpenCode plugin and `/quality`. Package changes used uv. The plugin reports
+structure violations after edits/shell calls, compares manifest dependency fields
+before edits, and blocks ordinary standalone commits unless the entire worktree
+is staged and the full check passes. Checks remain advisory for repair edits.
+
+Independent review identified and resolved host edit/patch semantic mismatches
+and overly broad exclusion names. Manifest previews now match pinned OpenCode
+1.18.31 behavior; exact-context configuration patches work for GPT sessions.
+Authored nested `data`/`cache` folders remain in scope.
+
+Final verification: 38 Python quality tests and 26 Node plugin tests pass. Ruff
+and strict mypy pass for all 11 quality Python source/test files. `uv lock --check`
+and `git diff --check` pass. The required full `uv run --no-sync python -m
+scripts.quality` run correctly exits 1: 213 files exceed 300 lines, 10 folders
+exceed 15 direct files, and existing Ruff/mypy failures remain. No baseline or
+exemptions were added for that debt. Restart OpenCode to activate the plugin;
+its commit gate will stay red until the repository-wide failures are resolved.
+
+# Organize SFT modules under the folder cap (2026-09-21)
+
+Scope: bring `sft/` (21 direct files), `sft/launchers/` (22), and `sft/scripts/`
+(28) under the 15-file structural cap by relocating modules into ownership
+subpackages, with no behavior change and no re-export shims at the old paths.
+
+- [x] Baseline the focused SFT selection: 644 passed, 10 failed, 33 errors
+      (the errors and failures are pre-existing engine-relocation fallout under
+      `cle/game_engine/models/board.py`, not SFT); 3463 tests collected.
+- [x] Move root board modules into `sft/board/` and diagnostics into `sft/analysis/`.
+      `sft/diagnostics` is a forbidden path in `scripts/verify_sft_layout.py`
+      (it was the migrated artifact directory), so the diagnostics package is
+      named `analysis`. `board_state_readout.py` stays at the root because
+      `data_pipeline/board_recognition/full_board_readout.py` imports it and
+      pipeline source was out of scope.
+- [x] Group launchers into `board_fluency/`, `full_board/`, `qwen_series/`, and
+      `spatial/`; the seven singletons stay at `sft/launchers/`.
+- [x] Group scripts into `builders/`, `eval/`, `render/`, `report/`, and `train/`.
+- [x] Rewrite every live import, `-m` module string, source-file list, relative
+      `__file__` depth, test, and README command; fix import order only in files
+      that were isort-clean before the move.
+
+## Review
+
+53 modules moved (38 tracked via `git mv`, 15 untracked from the in-flight
+launcher/pack drafts via plain rename). Content changes are limited to import
+lines, module-path strings, `parents[n]` depth, and docstring commands. Source-hash
+manifests keyed by repository path (`SOURCE_FILES`, `SCORER_FILES`, `code_sha256`,
+`source_sha256`) now record the new paths and new content hashes; historical
+receipts keep theirs, and the existing revision checks continue to reject them.
+Structure gate: no `max-files` findings remain. Focused selection and collection
+counts match the baseline.
+
+# Organize SFT launchers (2026-09-21)
+
+Scope: move the 21 flat `sft/modal_*.py` entrypoints into `sft/launchers/`,
+retaining descriptive basenames. This groups the largest source of root clutter
+without a broader trainer/dataset ownership migration.
+
+- [x] Inspect module groups, current imports/commands, packaging, and source-hash guards.
+- [x] Establish the focused launcher-test baseline: 281 passed, 10 existing
+      retained-summary failures (`by_family` / `by_operation` / `by_representation`).
+- [x] Move launchers into a minimal subpackage and update current code references.
+- [x] Update affected tests and current README/CLI documentation.
+- [x] Verify the moved module imports, help entrypoints, focused tests, and stale
+      live references; document historical source-revision requirements.
+
+Historical receipts/manifests/reports keep their recorded paths and hashes;
+existing checks must continue to reject mismatched source revisions. The dirty
+atlas/pack drafts retain their current files and contents. No training or remote
+evaluation is part of this source-organization task.
+
+## Review
+
+Moved 21 launchers into `sft/launchers/` with a minimal initializer. Updated live
+Python imports, worker/stop commands, source-file lists, two local scripts, seven
+test modules, and current SFT/evaluation README commands. Reviewed every move
+against HEAD: only relocation references and module descriptions changed.
+
+Verification: all 21 launchers cold-import in separate network-blocked processes;
+the board-fluency evaluator's Modal CLI help and r04 extension's Python CLI help
+work under their new names. The original 291-test selection remains 281 passed /
+10 identical pre-existing historical-summary failures; adding the seven coordinate
+comparison tests gives 288 passed / 10 failed. No new failures. Remaining old
+launcher paths are intentional historical receipt keys. No remote jobs launched.
+
+# Matched atlas-token / integer-coordinate comparison (2026-09-21)
+
+User approved a small matched representation comparison after discussing replacing
+atomic atlas tokens with coordinates. Initial experiment is inference-only on the
+same latest r04 checkpoint; it measures usability by the current atlas-trained
+model, not equal-budget retraining or tokenization alone.
+
+- [x] Inspect reusable symbolic cases, geometry, scoring, and bounded Modal evaluation.
+- [x] Build 200 paired canonical cases (400 generations): direction 64, neighbors 32,
+      incidence 16, piece owner 32, owned nodes 24, owned roads 16, owned incident
+      roads 16. Use original test rows plus two validation port-incidence rows.
+- [x] Render atomic atlas IDs versus ordinary typed integer coordinates. Double the
+      existing render lattice for integer edge/port midpoints; retain exact state,
+      query, record order, source split/provenance, and canonical oracle per pair.
+      Supply equivalent entity inventories for static queries in both arms.
+- [x] Validate coordinate identity round trips, gold scoring, strict malformed-output
+      rejection, source/mapping hashes, and complete pair membership before inference.
+- [ ] Run checkpoint board-fluency-extension-20260915-r04/checkpoint-512 in text mode,
+      greedy/no thinking/no candidate scoring, shared 4096 context and 512 output
+      budget; CPU token preflight followed by one bounded H200 evaluation.
+- [ ] Report paired wins/losses, per-operation and area accuracy, format failures,
+      token lengths, compute estimate, and limitations; retain raw outputs.
+
+Design choice: midpoint coordinates rather than endpoint-pair road names avoid
+making edge-to-node queries literal copying. Coordinates expose geometry by
+design. Static atlas tasks are fixed-topology diagnostics; original directional
+pair and dynamic source holdouts retain their documented exposure limitations.
+This work does not edit the existing atlas/pack drafts or source dataset.
+
+## Review
+
+Generated `artifacts/generated/sft/coordinate_comparison_v1/` with 200 pairs,
+154 reversible typed positions, and 61 dynamic source states. Seven comparison
+tests pass. Independent review found no critical/medium issues. Two existing
+text-loader tests reproduce on HEAD due to local Transformers lazy-module
+replacement; this does not affect the comparison scoring tests. Checkpoint-512
+exists on the Modal volume. GPU execution and remote token preflight are pending
+the user's requested code review; no inference job has been launched.
+
+# Perception-only mix, coarse-to-fine, with NONE down-weighting (2026-09-18)
+
+Constraint: board perception only. No composition, no counterfactuals, no reasoning.
+Ordered the way a person reads the board - tiles first, then spatial relations, then down
+to nodes and edges - and answers are atlas tokens wherever possible, because those are what
+train `atlas_output_rows` (788,480 params, currently fed only incidentally).
+
+## Tiers (1,318 static facts)
+
+    0  identity        tile_coordinate 19, node_status 54, port_direction 9,
+                       port_coordinate 9                                        (non-token)
+    1  tiles           tile_nodes 19, tile_edges 19, tile_neighbors 19
+    2  spatial L/R     tile_step 114 (LEFT/RIGHT/UP-LEFT/UP-RIGHT/DOWN-LEFT/DOWN-RIGHT),
+                       node_step 324
+    3  nodes           node_tiles 54, node_neighbors 54, node_port 54, node_edges 54
+    4  edges           edge_endpoints 72, edge_tiles 72
+    5  ports           port_nodes 9
+    6  local distance  node_distance where d<=3, 363 pairs                      (non-token)
+
+1,318 facts -> 5,272 examples at 4x exposure -> ~659 packed sequences at k=8.
+r04 by comparison: 4,096 rows at 1.28 exposures per unique example.
+
+Held OUT of the perception mix: node_path (1,431) and node_distance d>3 (1,068). Those are
+traversal results, not perception - nobody *sees* that N02 is 7 edges from N46. Keeping
+d<=3 gives local neighbourhood awareness; the long tail is substrate for the reasoning
+track and would otherwise be 2,499 of 3,521 facts.
+
+Dynamic layer, single-hop readouts only, rebalanced by convergence rather than uniform 205:
+down-weight local_node_tiles and resource_pip_totals hard (both 10/10 since r02), hold
+port_access / owned_incident_roads / owned_buildings_touching_resource, add raw tile,
+node-occupancy and edge-road readouts.
+
+## NONE down-weighting (implemented)
+
+`generate_examples(..., none_weight=0.2)` in `sft/board_atlas.py`. Empty-answer keys are
+drawn at `none_weight` relative to non-empty ones via Efraimidis-Spirakis weighted sampling
+without replacement (`weighted_sample`), so no key repeats inside an example.
+
+Why it is needed: most nodes have 2-3 neighbours across 6 directions, so uniform sampling
+makes node_step 56% NONE and node_port 67% NONE. r04 trained at 35% NONE against 9% in its
+eval, and 10 of its 72 review failures were "answered NONE when the answer was non-empty".
+That prior came straight from the sampler.
+
+Measured, exhaustive pass + 3,000 sampled:
+
+    none_weight   overall   node_step   node_port
+       1.00        10.7%      54.3%       67.7%
+       0.50         8.1%      39.5%       53.3%
+       0.20         5.2%      23.8%       36.2%
+       0.10         3.6%      16.5%       25.5%
+       0.05         2.6%      12.0%       18.0%
+
+0.5 matches the eval's ~9% NONE; 0.2 deliberately undershoots it to counteract the existing
+over-prediction. Coverage is unaffected at every setting (3,521/3,521) because the
+exhaustive pass still emits each empty fact once - only repetition is reduced.
+
+`answer_shape_report(tables, examples)` reports NONE share per table and overall, so the
+sampler's bias is visible before a run rather than after one.
+
+65 tests passing across board_atlas / board_readouts / board_packs.
+
+- [ ] Add tile_step (114 directional tile relations) - currently only in the live renderer
+      as QI|TILE_NEIGHBORS, not in any generator.
+- [ ] Per-tier exposure multipliers feeding generate_examples table_weights.
+- [ ] Wire the dynamic single-hop readouts into the same pack format.
+
+# Orientation was dropped, not missing; node_step added (2026-09-17)
+
+## The board-fluency corpus dropped capabilities the symbolic lineage had
+
+`sft/symbolic_board_tasks.py` STATIC_TASKS already contains:
+  symbolic_direction        "Is <N12> strictly left of <N30>? Compare that axis
+                             independently; equality means no."
+  symbolic_direction_choice "Which is farther left: A or B?"
+  symbolic_oriented_step    "From <N12>, take exactly one node-edge step NORTHEAST."
+  symbolic_neighbors        node adjacency
+  symbolic_incidence
+
+None of the 20 board-fluency operations mention left, right, above, below or any compass
+direction, and none ask for bare adjacency. So left/right grounding and node adjacency are
+not unbuilt - they existed in the earlier lineage and did not carry over into the corpus
+r04 trained on. Check whether that lineage still feeds anything before building more.
+
+Left/right is positional, not topological: `_relation` compares `_atlas()["positions"]` x/y
+in the render frame. It therefore belongs with coordinates (cube/axial exist in
+`coordinate_system.py`, and `tile_coordinate` atlas facts already emit Q R S), not with the
+graph.
+
+## node_step: oriented adjacency, added to sft/board_atlas.py
+
+Measured first: every node-to-node edge lies along one of the six `OFFSETS` directions,
+exactly 24 edges per direction, and ZERO nodes have two neighbours in the same direction.
+So `node_step(node, direction) -> neighbour | NONE` is total and unambiguous.
+
+  54 nodes x 6 directions = 324 facts; 144 filled (= 2 x 72 edges), 180 NONE (the coastline).
+  Union over the six directions reproduces `node_neighbors` exactly for all 54 nodes.
+
+It subsumes node_neighbors and is the only table that grounds orientation. Tests assert
+totality, at-most-one-neighbour-per-direction, union equivalence, filled-slot count, and
+step-back symmetry (stepping NORTH then SOUTH returns the origin).
+
+Atlas is now 3,521 facts / 11 tables. 37 tests passing.
+
+CAVEAT: node_step is 56% NONE (180/324). The r04 failure profile already includes 10 cases
+of answering NONE when the answer was non-empty, and 88.9% accuracy on genuinely-empty
+answers, i.e. a NONE bias already exists. Watch NONE-precision when this table is mixed in,
+and consider downweighting the empty slots rather than sampling them uniformly.
+
+Also fixed: multi-token keys ("<N19> NORTH", "<N00> <N01>") were space-joined in the prompt,
+leaving the query list unsegmentable. Keys are now semicolon-separated, with a test.
+
+## VP: visible VP needs knights in the serialization
+
+Decision taken: visible VP, not board-only VP. Visible VP includes Largest Army, and knight
+counts appear nowhere in the board text (only tiles/nodes/edges/ports/robber), so
+`get_visible_victory_points` (`state_functions.py:76`, reads P{i}_VICTORY_POINTS) is not
+derivable from the prompt.
+
+- [ ] Add knight counts (and army holder) to `cle/env/observation_formatter.py` so visible
+      VP becomes computable from the prompt. Without this, any VP task trained on board
+      state alone is systematically 2 points low on exactly the players who are winning.
+- [ ] Longest road is currently hard (6/10 component_roads, 1/10 reachable_nodes upstream).
+      Its VP rung depends on the component partition, so `connected_roads` lands first.
+- [ ] symbolic_longest_{lengths,leaders,award} are TRANSFER_TASKS, admitted only under
+      transfer_validation/transfer_test. Training VP trains their composition and
+      contaminates that holdout. Decide deliberately before building the longest-road rung.
+
 # Connected-roads readout + atlas reconciliation (2026-09-17)
 
 ## Already covered, do not rebuild
@@ -5465,3 +5929,167 @@ Review: frontend-only, so the live backend (pid 76710) and its in-memory game
 were not restarted. Vite hot-reloaded `App.tsx`, which remounts the app and
 ends any auto-play that was running at that moment; Auto-play must be clicked
 once more in the tab to pick up the persistent loop.
+# Miles eval-only integration (2026-09-21)
+
+User requested code for Miles evaluations and supplied the upstream CLI Eval
+reference. Use the built-in evaluation flow: one SGLang GPU, zero training
+rollouts, greedy/no-thinking generation, existing Catan scorers, saved raw answers.
+Pin the inspected upstream interface to Miles commit
+`12754e9507e64d5e537288da17793246e913c525`.
+
+- [x] Inspect eval-only driver, dataset fields, reward hook, and eval-log hook.
+- [x] Add a small `sft/miles_eval/` package: dataset projection, scoring/result
+      hooks, and a prepare/launch CLI using the documented eval flags.
+- [x] Preserve Catan IDs/metadata/golds and complete matched-pair admission;
+      reject media, training splits, unsupported scoring, and adapter-only models.
+- [x] Document a one-GPU invocation using a complete merged HF serving checkpoint.
+      The current PEFT bundle must be exported separately; this task is eval code.
+- [x] Verify with real local Catan rows and upstream API contracts; run focused
+      tests and `uv run --no-sync python -m scripts.quality`, reporting failures.
+
+No inference or training job is requested here. Keep the new implementation in
+files of at most 300 lines and do not alter existing experiment data or scorers.
+
+## Review
+
+Implemented the eval-only CLI, exact existing scorer hooks, raw JSON results,
+paired summaries, and CPU checkpoint/token-budget checks. Prepared the actual
+400-row comparison at `artifacts/generated/sft/miles_coordinate_eval_v1/`; local
+dry-run invocation works without Miles/GPU execution. All 21 focused tests pass;
+targeted Ruff and strict mypy pass across all nine new Python source/test files.
+The required full quality gate ran: 223 structural violations and existing
+Ruff/mypy failures remain elsewhere, with no diagnostics for the new Miles files.
+
+Upstream source review confirmed the eval-only flags/hook contracts and corrected
+two details: dry-run now prints a self-contained wrapper invocation, and the docs
+state that Miles still initializes a lightweight FSDP trainer actor under its
+debug path even though training weights/optimizer are never loaded. Real
+Miles/SGLang inference and checkpoint export/parity remain unverified; no GPU job
+was launched and no inference result is claimed.
+# Stock-Qwen exact Cartesian evaluation (2026-09-21)
+
+User explicitly selected stock Qwen3.8-27B, no fine-tuning, and ordinary equal-scale
+2D Cartesian coordinates using sqrt(3), rather than a representation sweep.
+Reuse the existing 200 canonical cases as a new immutable Cartesian-only panel.
+
+- [x] Confirm stock versus existing Catan checkpoint and inspect current contracts.
+- [x] Add exact rational/sqrt(3) tile/node/edge/port positions and an inspectable
+      200-case dataset, with board center (0,0), top corner (0,1), y pointing up.
+- [x] Reuse the original task oracle; parse exact coordinate answers without
+      numeric approximation, and preserve original case/split/provenance identities.
+- [x] Wire the panel into Miles scoring and permit a stock tokenizer when model
+      inputs/answers contain no atlas tokens; keep prior panel admission intact.
+- [x] Generate the new panel/Miles projection, run focused tests and quality gate,
+      and document the stock-checkpoint command and remaining GPU verification.
+
+Existing generated comparisons and r04 experiment evidence remain historical;
+the new panel is separately versioned. This is evaluation preparation, not SFT.
+
+## Review
+
+Implemented `sft/cartesian_eval/` and integrated its exact scorer/admission with
+Miles. Active artifacts are `artifacts/generated/sft/cartesian_eval_v2/` and
+`artifacts/generated/sft/miles_cartesian_eval_v2/`. All 200 original cases and
+their 198-test/2-validation provenance are retained. The v2 legend explicitly
+distinguishes entity sets from color answers; the earlier v1 draft was never
+evaluated. Fraction arithmetic verifies the 154 typed positions and 72 unit roads.
+
+Stock-only tokenizer preflight adds no vocabulary and skips the legacy atomic
+atlas requirement; legacy panels still enforce their saved 154 token IDs. The
+stock-HF command's local dry run passes. Focused verification: 29 tests passed,
+Ruff and strict scoped mypy clean on all 17 source/test files, `git diff --check`
+clean. Required full quality gate executed and remains red: 198 structural
+violations plus Ruff/mypy failures elsewhere; none reference the new eval files.
+Real stock-tokenizer token sizing and Miles/SGLang GPU inference remain pending.
+No fine-tuning, adapter loading, vocabulary expansion, or GPU job was performed.
+# Execute stock Cartesian evaluation (2026-09-21)
+
+User explicitly requested the GPU run. Use existing 200-case Cartesian v2 data,
+stock Qwen3.8-27B revision `1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0`, and Miles
+revision `12754e9507e64d5e537288da17793246e913c525`. One H200; no training.
+
+- [x] Verify Modal workspace and cached stock checkpoint (all 18 shards present).
+- [x] Pin official Miles amd64 image digest and implement bounded Modal wrapper.
+- [x] Run CPU dependency/token/checkpoint preflight in the same image.
+- [x] Launch one 30-minute-bounded H200 evaluation, monitor logs, and retain receipts.
+- [x] Download/rescore every answer, report per-task accuracy and measured compute
+      estimate, verify app termination, and document any launch fixes.
+
+Image: `radixark/miles@sha256:6628bff749ffd32e6a62b479a1128daee25a8c0e3c28eb86301a0d620f5dd598`.
+GPU execution limit 1,800 seconds, startup limit 600 seconds, retries=0;
+CPU preflight limit 1,200 seconds. No automatic replacement GPU job.
+
+## Review
+
+Completed `miles-cartesian-stock-20260921-r01`: 143/200 exact (71.5%), with
+direction 55/64, adjacency 7/32, incidence 3/16, and ownership 78/88. All raw
+outputs/metadata/golds were downloaded and rescored; all stored scores agree.
+No truncation; 12 predictions referenced unknown Cartesian points and one failed
+atom syntax. Actual generation/scoring loop ~41 seconds; H200 function 379.92s,
+CPU preflight 104.46s. Recorded function-window cost estimate ~$0.65, excluding
+image building/startup/termination/storage and not an actual bill.
+
+Official image import initially exceeded the local CLI timeout before any
+function ran; reused the cached image and installed extra packages into the
+image's `/opt/sglang` interpreter. Only one GPU evaluation was launched.
+App `ap-c299dzp6nqmgY5ce4W4hsN` in `icebear5h` is stopped with zero tasks;
+the empty image-import app is also stopped. User requested the default profile
+switch to `tetracorp`, which is activated and verified. Historical artifacts
+were retrieved using an explicit `icebear5h` environment override.
+
+Report: `reports/sft/2026-09-21-stock-cartesian-eval.md`.
+New Modal wrapper passes targeted Ruff/strict mypy and `git diff --check`.
+Required repo-wide quality gate ran and remains red on 194 structural violations
+plus existing Ruff/mypy failures elsewhere; no diagnostics name the new wrapper.
+# Sparse h Cartesian rerun (2026-09-21)
+
+User requested the next eval and confirmed continuing after the tile-coordinate
+clarification. Stock Qwen3.8-27B, same 200 cases and inference conditions; new
+input uses h=sqrt(3)/4, exact decimal y, and omits only empty dynamic node/edge
+records. Static inventories retain 154 entities. All 19 tile records remain.
+
+- [x] Verify active `tetracorp` profile and its complete cached stock checkpoint.
+- [x] Generate immutable shorthand panel with exact geometry/source/gold checks.
+- [x] Integrate scorer/tokenizer admission, prepare Miles projection, and verify
+      real tokenizer savings plus scoped tests before launch.
+- [x] Run bounded CPU preflight and one H200 job in `tetracorp`.
+- [x] Download/rescore all answers, compare paired improved/regressed cases and
+      pure-readout accuracy, record cost and app shutdown.
+
+This measures the combined sparsity + h-spelling change, not h spelling alone.
+
+## Review
+
+Completed `miles-cartesian-h-stock-20260921-r01` in `tetracorp`: 153/200 strict
+(76.5%) versus 143/200 (71.5%). Paired outcomes: 19 improved, 9 regressed,
+134 both correct, 38 both wrong. Incidence rose 3/16→10/16; neighbors stayed 7/32.
+All 200 raw responses were downloaded and rescored, and model/tokenizer hashes
+and runtime revisions match the baseline. Mean prompt tokens 2,287.145→1,315.51;
+dynamic mean 2,514.59→920.90. No truncations. CPU preflight 121.73s; GPU function
+523.71s; recorded compute-window estimate ~$0.89 excluding startup/build/storage.
+
+Pure readouts are 69/72 strictly, but two misses are only `green`/`GREEN` and
+`blue`/`BLUE`; a labeled case-insensitive-color diagnostic gives 71/72 readouts
+and 155/200 overall. Official scores remain unchanged. The remaining real readout
+miss omits the second BLACK building. App `ap-motz8vXjClLdX0T17KmCa7` stopped
+at 19:14:46 UTC with zero tasks. Profile remains `tetracorp`.
+
+Code verification: 35 focused tests passed; scoped Ruff/strict mypy clean on all
+22 source/test files. Required full quality gate ran and remains red on 194
+structural violations and existing Ruff/mypy errors elsewhere. Report:
+`reports/sft/2026-09-21-sparse-h-cartesian-eval.md`.
+# Scaled coordinate accuracy comparison (2026-09-21)
+
+User requested actual evaluations of both measured integer-scaling variants.
+Same stock Qwen3.8-27B revision, 200 cases per variant, sparse state, no thinking
+or fine-tuning. Run both panels together on one bounded H200 in `tetracorp`.
+
+- [ ] Finish and verify immutable scaled-h and bare-integer panels against the
+      completed sparse-h parent, retaining exact geometry, cases, and oracle.
+- [ ] Integrate both schemas/variants and generalize the Modal total-row check
+      to the admitted panel manifest; prepare and launch 400 total generations.
+- [ ] Download/rescore all outputs, compare paired accuracy and token budgets
+      with the 153/200 strict sparse-h baseline, and verify app shutdown.
+
+Scaled-h uses side4, h=sqrt(3), integer y. Bare-integer coordinates use the same
+physical scale with physical position (sqrt(3)*x,y). No new questions are added.

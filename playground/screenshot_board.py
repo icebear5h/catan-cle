@@ -21,20 +21,17 @@ Or as an async context manager:
         png_bytes = await s.screenshot(game)
 """
 
-import json
+import io
 import subprocess
 import time
 from pathlib import Path
-from typing import Optional
-
-import io
+from types import TracebackType
 
 import httpx
 from PIL import Image
-from playwright.async_api import async_playwright
+from playwright.async_api import Browser, Page, Playwright, async_playwright
 
 from cle.game_engine.game import GameEngine
-from cle.game_engine.json import GameEncoder
 from playground.game_viewer.serialize import serialize_game_for_inject
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -70,7 +67,7 @@ class FrontendScreenshotter:
         crop_pct: float = 0.15,
         vertical_offset_pct: float = 0.03,
         horizontal_offset_pct: float = 0.0,
-    ):
+    ) -> None:
         self.flask_port = flask_port
         self.vite_port = vite_port
         self.headless = headless
@@ -80,19 +77,19 @@ class FrontendScreenshotter:
         self.vertical_offset_pct = vertical_offset_pct
         self.horizontal_offset_pct = horizontal_offset_pct
 
-        self._flask_proc: Optional[subprocess.Popen] = None
-        self._vite_proc: Optional[subprocess.Popen] = None
-        self._playwright = None
-        self._browser = None
-        self._page = None
+        self._flask_proc: subprocess.Popen[bytes] | None = None
+        self._vite_proc: subprocess.Popen[bytes] | None = None
+        self._playwright: Playwright | None = None
+        self._browser: Browser | None = None
+        self._page: Page | None = None
 
-    async def start(self):
+    async def start(self) -> None:
         """Start servers and browser. Skips servers already running."""
         self._start_flask()
         self._start_vite()
         await self._start_browser()
 
-    async def stop(self):
+    async def stop(self) -> None:
         """Shut down browser and any servers we started."""
         if self._page:
             await self._page.close()
@@ -112,11 +109,16 @@ class FrontendScreenshotter:
             self._flask_proc.wait(timeout=5)
             self._flask_proc = None
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "FrontendScreenshotter":
         await self.start()
         return self
 
-    async def __aexit__(self, *args):
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
         await self.stop()
 
     async def screenshot(
@@ -153,7 +155,7 @@ class FrontendScreenshotter:
         await board.wait_for(state="visible", timeout=5000)
 
         raw_png = await board.screenshot(type="png")
-        img = Image.open(io.BytesIO(raw_png))
+        img: Image.Image = Image.open(io.BytesIO(raw_png))
 
         # Crop to center on the hex grid, trimming ocean border
         if self.crop_pct > 0:
@@ -169,15 +171,17 @@ class FrontendScreenshotter:
         img.save(buf, format="PNG")
         return buf.getvalue()
 
-    async def screenshot_to_file(self, game: GameEngine, path: str, **kwargs) -> str:
+    async def screenshot_to_file(
+        self, game: GameEngine, path: str, settle_ms: int = 600
+    ) -> str:
         """Screenshot and save to file. Returns path."""
-        png = await self.screenshot(game, **kwargs)
+        png = await self.screenshot(game, settle_ms=settle_ms)
         Path(path).write_bytes(png)
         return path
 
     # --- Private helpers ---
 
-    def _start_flask(self):
+    def _start_flask(self) -> None:
         if _port_in_use(self.flask_port):
             print(f"[screenshot] Flask already running on :{self.flask_port}")
             return
@@ -191,7 +195,7 @@ class FrontendScreenshotter:
         )
         self._wait_for_port(self.flask_port, "Flask", timeout=15)
 
-    def _start_vite(self):
+    def _start_vite(self) -> None:
         if _port_in_use(self.vite_port):
             print(f"[screenshot] Vite already running on :{self.vite_port}")
             return
@@ -205,27 +209,30 @@ class FrontendScreenshotter:
         )
         self._wait_for_port(self.vite_port, "Vite", timeout=30)
 
-    async def _start_browser(self):
+    async def _start_browser(self) -> None:
         print(f"[screenshot] Launching Playwright ({'headless' if self.headless else 'headed'})...")
-        self._playwright = await async_playwright().start()
-        self._browser = await self._playwright.chromium.launch(headless=self.headless)
+        playwright = await async_playwright().start()
+        self._playwright = playwright
+        browser = await playwright.chromium.launch(headless=self.headless)
+        self._browser = browser
 
-        self._page = await self._browser.new_page(
+        page = await browser.new_page(
             viewport={"width": self.board_width + 400, "height": self.board_height + 100}
         )
-        await self._page.goto(VITE_URL)
+        self._page = page
+        await page.goto(VITE_URL)
 
         # Wait for the app to mount and socket to connect
-        await self._page.wait_for_selector(".app", timeout=10000)
-        game_viewer_button = self._page.get_by_role("button", name="GameEngine Viewer")
+        await page.wait_for_selector(".app", timeout=10000)
+        game_viewer_button = page.get_by_role("button", name="GameEngine Viewer")
         if await game_viewer_button.count():
             await game_viewer_button.first.click()
-            await self._page.wait_for_selector(".board-container", timeout=10000)
+            await page.wait_for_selector(".board-container", timeout=10000)
         # Give SocketIO a moment to establish connection
-        await self._page.wait_for_timeout(1000)
+        await page.wait_for_timeout(1000)
         print("[screenshot] Browser ready.")
 
-    def _wait_for_port(self, port: int, name: str, timeout: int = 15):
+    def _wait_for_port(self, port: int, name: str, timeout: int = 15) -> None:
         """Poll until a port starts responding."""
         deadline = time.time() + timeout
         while time.time() < deadline:

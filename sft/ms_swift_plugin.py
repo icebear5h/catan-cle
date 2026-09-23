@@ -6,7 +6,7 @@ import os
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 import peft
 import safetensors.torch
@@ -20,13 +20,16 @@ from swift.trainers import Seq2SeqTrainer, TrainerFactory
 from swift.tuner_plugin import Tuner, tuners_map
 from swift.utils import get_multimodal_target_regex
 from torch.utils.data import BatchSampler
+from transformers import PreTrainedModel
 from transformers.trainer_utils import seed_worker
 
-from sft.density_curriculum import SequentialCurriculumSampler, load_curriculum_manifest
+from sft.board.density_curriculum import SequentialCurriculumSampler, load_curriculum_manifest
+from sft.json_types import as_int
 from sft.ms_swift_core import (
     CATAN_TUNER_TYPE,
     MS_SWIFT_VERSION,
     PEFT_VERSION,
+    SemanticTokenSetup,
     attach_model_components,
     audit_optimizer_coverage,
     audit_trainable_scope,
@@ -38,7 +41,6 @@ from sft.ms_swift_core import (
     prepare_semantic_tokens,
     resolve_model_module,
 )
-
 
 TRAINABLE_SCOPE_FILE = "trainable_parameters.json"
 OPTIMIZER_COVERAGE_FILE = "optimizer_coverage.json"
@@ -62,11 +64,11 @@ def _set_visual_trainable(model: torch.nn.Module, trainable: bool) -> None:
         resolve_model_module(model, module_path).requires_grad_(trainable)
 
 
-def _semantic_setup(model: torch.nn.Module) -> Any:
+def _semantic_setup(model: torch.nn.Module) -> SemanticTokenSetup:
     setup = getattr(model, "_catan_semantic_token_setup", None)
     if setup is None:
         setup = getattr(getattr(model, "model", None), "_catan_semantic_token_setup", None)
-    if setup is None or len(setup.token_ids) != 154:
+    if not isinstance(setup, SemanticTokenSetup) or len(setup.token_ids) != 154:
         raise RuntimeError("model was not prepared with 154 semantic token IDs")
     return setup
 
@@ -75,7 +77,7 @@ class CatanVisionTokenTuner(Tuner):
     """Two selective token-row adapters plus visual modules and optional LoRA."""
 
     @staticmethod
-    def prepare_model(args: "CatanSftArguments", model: torch.nn.Module) -> torch.nn.Module:
+    def prepare_model(args: "CatanSftArguments", model: PreTrainedModel) -> torch.nn.Module:
         assert_ms_swift_version()
         setup = _semantic_setup(model)
         components = get_model_components(model)
@@ -86,6 +88,7 @@ class CatanVisionTokenTuner(Tuner):
             setup.token_ids,
             peft_version=peft.__version__,
         )
+        config: LoraConfig | TrainableTokensConfig
         if args.catan_language_lora:
             target_regex = get_multimodal_target_regex(
                 model,
@@ -108,24 +111,24 @@ class CatanVisionTokenTuner(Tuner):
                 target_modules=list(token_targets),
                 init_weights=True,
             )
-        model = get_peft_model(model, config)
-        model._catan_semantic_token_setup = setup
-        attach_model_components(model, components)
-        _set_visual_trainable(model, True)
+        peft_model = get_peft_model(model, config)
+        setattr(peft_model, "_catan_semantic_token_setup", setup)
+        attach_model_components(peft_model, components)
+        _set_visual_trainable(peft_model, True)
         audit_trainable_scope(
-            model,
+            peft_model,
             language_lora=args.catan_language_lora,
             output_path=Path(args.output_dir) / TRAINABLE_SCOPE_FILE,
         )
-        return model
+        return peft_model
 
     @staticmethod
     def save_pretrained(
-        model: torch.nn.Module,
+        model: PeftModel,
         save_directory: str,
-        state_dict: Optional[dict] = None,
+        state_dict: Optional[dict[str, torch.Tensor]] = None,
         safe_serialization: bool = True,
-        **kwargs: Any,
+        **kwargs: object,
     ) -> None:
         if state_dict is None:
             state_dict = {
@@ -134,7 +137,9 @@ class CatanVisionTokenTuner(Tuner):
                 if parameter.requires_grad
             }
         kwargs.setdefault("save_embedding_layers", False)
-        model.save_pretrained(
+        # ms-swift forwards its own saver kwargs opaquely; PEFT validates them.
+        save_adapter = getattr(model, "save_pretrained")
+        save_adapter(
             save_directory,
             state_dict=state_dict,
             safe_serialization=safe_serialization,
@@ -156,28 +161,32 @@ class CatanVisionTokenTuner(Tuner):
 
     @staticmethod
     def from_pretrained(
-        model: torch.nn.Module,
+        model: PreTrainedModel,
         model_id: str,
-        **kwargs: Any,
+        **kwargs: object,
     ) -> torch.nn.Module:
         assert_ms_swift_version()
         setup = _semantic_setup(model)
         visual_path = os.path.join(model_id, VISUAL_STATE_FILE)
         if not os.path.isfile(visual_path):
             raise FileNotFoundError(visual_path)
-        model = PeftModel.from_pretrained(model, model_id, **kwargs)
-        model._catan_semantic_token_setup = setup
+        # ms-swift forwards its own loader kwargs opaquely; PEFT validates them.
+        load_adapter = getattr(PeftModel, "from_pretrained")
+        peft_model = load_adapter(model, model_id, **kwargs)
+        if not isinstance(peft_model, PeftModel):
+            raise RuntimeError("PeftModel.from_pretrained did not return a PeftModel")
+        setattr(peft_model, "_catan_semantic_token_setup", setup)
         visual_state = safetensors.torch.load_file(visual_path)
-        incompatible = model.load_state_dict(visual_state, strict=False)
+        incompatible = peft_model.load_state_dict(visual_state, strict=False)
         unexpected = [name for name in incompatible.unexpected_keys if name in visual_state]
         if unexpected:
             raise RuntimeError(f"unexpected visual checkpoint keys: {unexpected[:8]}")
         if kwargs.get("is_trainable", False):
-            _set_visual_trainable(model, True)
+            _set_visual_trainable(peft_model, True)
         # Keep the base LM head frozen without recursively freezing the
         # selective atlas output-row adapter when resuming training.
-        model.get_output_embeddings().weight.requires_grad_(False)
-        return model
+        peft_model.get_output_embeddings().weight.requires_grad_(False)
+        return peft_model
 
 
 @dataclass
@@ -215,11 +224,12 @@ class CatanSftArguments(SftArguments):
 
 
 class CatanSeq2SeqTrainer(Seq2SeqTrainer):
-    def __init__(self, *args: Any, catan_curriculum_manifest: str | None = None, **kwargs: Any):
+    def __init__(self, *args: object, catan_curriculum_manifest: str | None = None,
+                 **kwargs: object) -> None:
         self.catan_curriculum_manifest = catan_curriculum_manifest
         super().__init__(*args, **kwargs)
 
-    def get_train_dataloader(self, skip_batches: int = 0) -> Any:
+    def get_train_dataloader(self, skip_batches: int = 0) -> DataLoaderShard:
         if not self.catan_curriculum_manifest:
             return super().get_train_dataloader(skip_batches=skip_batches)
         if self.train_dataset is None:
@@ -227,9 +237,9 @@ class CatanSeq2SeqTrainer(Seq2SeqTrainer):
         manifest = load_curriculum_manifest(self.catan_curriculum_manifest)
         sampler = SequentialCurriculumSampler(
             self.train_dataset,
-            expected_rows=manifest["total_rows"],
+            expected_rows=as_int(manifest["total_rows"]),
         )
-        batch_sampler: Any = BatchSampler(
+        batch_sampler: BatchSampler | SkipBatchSampler = BatchSampler(
             sampler,
             batch_size=self._train_batch_size,
             drop_last=self.args.dataloader_drop_last,
@@ -255,8 +265,9 @@ class CatanSeq2SeqTrainer(Seq2SeqTrainer):
             **dataloader_params,
         )
 
-    def create_optimizer(self, model: Any = None) -> Any:
-        optimizer = super().create_optimizer(model=model)
+    def create_optimizer(self,
+                         model: torch.nn.Module | None = None) -> torch.optim.Optimizer:
+        optimizer: torch.optim.Optimizer | None = super().create_optimizer(model=model)
         if optimizer is None:
             raise RuntimeError("ms-swift did not create an optimizer")
         audit_optimizer_coverage(
@@ -270,17 +281,17 @@ class CatanSeq2SeqTrainer(Seq2SeqTrainer):
 class CatanSwiftSft(SwiftSft):
     args_class = CatanSftArguments
 
-    def _prepare_model_tokenizer(self, **kwargs: Any) -> None:
+    def _prepare_model_tokenizer(self, **kwargs: object) -> None:
         super()._prepare_model_tokenizer(**kwargs)
         if self.model is None:
             raise RuntimeError("Catan semantic SFT requires a loaded model")
         discover_model_components(self.model)
         inventory = load_semantic_token_inventory(self.args.catan_token_inventory)
         setup = prepare_semantic_tokens(self.tokenizer, self.model, inventory)
-        self.model._catan_semantic_token_setup = setup
+        setattr(self.model, "_catan_semantic_token_setup", setup)
 
-    def _get_trainer_kwargs(self) -> dict[str, Any]:
-        kwargs = super()._get_trainer_kwargs()
+    def _get_trainer_kwargs(self) -> dict[str, object]:
+        kwargs: dict[str, object] = super()._get_trainer_kwargs()
         kwargs["catan_curriculum_manifest"] = self.args.catan_curriculum_manifest
         return kwargs
 

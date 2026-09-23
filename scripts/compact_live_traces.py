@@ -24,6 +24,7 @@ import os
 import sqlite3
 import sys
 import time
+from collections.abc import Callable
 from pathlib import Path
 
 from cle.traces.sqlite import DEFAULT_TRACE_PATH, is_packed, pack_blob
@@ -45,10 +46,14 @@ PACKED_COLUMNS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
 def _as_bytes(value: object) -> bytes:
     if isinstance(value, str):
         return value.encode("utf-8")
-    return bytes(value)  # type: ignore[arg-type]
+    if isinstance(value, bytes | bytearray | memoryview):
+        return bytes(value)
+    raise TypeError(f"unsupported packed-column value: {type(value).__name__}")
 
 
-def compact(path: Path, *, apply: bool, batch_size: int, log=print) -> dict[str, int]:
+def compact(
+    path: Path, *, apply: bool, batch_size: int, log: Callable[[str], None] = print
+) -> dict[str, int]:
     """Pack every legacy row in PACKED_COLUMNS; return before/after byte totals."""
     before_total = after_total = rows_packed = rows_skipped = 0
     connection = sqlite3.connect(path, timeout=60)
@@ -60,7 +65,7 @@ def compact(path: Path, *, apply: bool, batch_size: int, log=print) -> dict[str,
                 f"SELECT {keys}, {column} AS value FROM {table} WHERE {column} IS NOT NULL"
             ).fetchall()
             before = after = packed = skipped = 0
-            pending: list[tuple[bytes, tuple]] = []
+            pending: list[tuple[bytes, tuple[object, ...]]] = []
 
             def flush() -> None:
                 if not pending or not apply:
@@ -109,7 +114,7 @@ def compact(path: Path, *, apply: bool, batch_size: int, log=print) -> dict[str,
     }
 
 
-def vacuum(path: Path, log=print) -> None:
+def vacuum(path: Path, log: Callable[[str], None] = print) -> None:
     connection = sqlite3.connect(path, timeout=60)
     try:
         connection.execute("PRAGMA wal_checkpoint(TRUNCATE)")

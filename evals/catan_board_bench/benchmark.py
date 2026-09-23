@@ -3,33 +3,46 @@
 from __future__ import annotations
 
 import importlib
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Optional, Sequence
+from typing import TYPE_CHECKING, Literal, Optional, Sequence, TypeVar
 
+from evals.catan_board_bench.inspect_scorers import (
+    catan_board_bench_component_scorer as catan_board_bench_component_scorer,
+)
+from evals.catan_board_bench.inspect_scorers import (
+    catan_board_bench_exact_scorer as catan_board_bench_exact_scorer,
+)
 from evals.catan_board_bench.paths import DATASETS_DIR, PROJECT_ROOT
 from evals.catan_board_bench.scoring import (
     DEFAULT_CATEGORIES,
     LOGIC_SYSTEM_PROMPT,
     PROBE_SYSTEM_PROMPT,
-    SYSTEM_PROMPT,
     SUITE_CATEGORIES,
+    SYSTEM_PROMPT,
     JsonDict,
     build_prompt,
-    score_answer,
     select_questions,
     split_csv,
 )
+from evals.json_types import as_str
 
-try:
-    inspect_ai = importlib.import_module("inspect_ai")
-    Task = inspect_ai.Task
-    task = inspect_ai.task
-except ImportError:  # Allows static checks without installing eval extras.
-    Task = Any
+if TYPE_CHECKING:
+    from inspect_ai import Task, task
+    from inspect_ai.dataset import Sample
+    from inspect_ai.model import ContentImage
+else:
+    _TaskFn = TypeVar("_TaskFn", bound=Callable[..., object])
 
-    def task(func: Any) -> Any:
-        return func
+    try:
+        inspect_ai = importlib.import_module("inspect_ai")
+        Task = inspect_ai.Task
+        task = inspect_ai.task
+    except ImportError:  # Allows static checks without installing eval extras.
+        Task = object
 
+        def task(func: _TaskFn) -> _TaskFn:
+            return func
 
 DEFAULT_BENCH_DIR = DATASETS_DIR / "catan_board_bench_100"
 DEFAULT_QUESTION_DIR = DEFAULT_BENCH_DIR / "questions"
@@ -115,11 +128,22 @@ def _sample_metadata(qa: JsonDict) -> JsonDict:
     return {key: value for key, value in qa.items() if key != "contract"}
 
 
-def _image_content(image_path: Path, image_detail: str | None) -> Any:
-    content_image = importlib.import_module("inspect_ai.model").ContentImage
+def _detail_level(image_detail: str) -> Literal["auto", "low", "high"]:
+    match image_detail:
+        case "auto":
+            return "auto"
+        case "low":
+            return "low"
+        case "high":
+            return "high"
+    raise ValueError(f"image_detail must be auto, low, or high; got {image_detail!r}")
+
+
+def _image_content(image_path: Path, image_detail: str | None) -> ContentImage:
+    content_image: type[ContentImage] = importlib.import_module("inspect_ai.model").ContentImage
 
     if image_detail:
-        return content_image(image=str(image_path), detail=image_detail)
+        return content_image(image=str(image_path), detail=_detail_level(image_detail))
     return content_image(image=str(image_path))
 
 
@@ -135,7 +159,7 @@ def build_samples(
     include_system: bool | str = True,
     input_mode: str = "auto",
     image_detail: str | None = "auto",
-) -> list[Any]:
+) -> list[Sample]:
     inspect_dataset = importlib.import_module("inspect_ai.dataset")
     inspect_model = importlib.import_module("inspect_ai.model")
 
@@ -158,7 +182,7 @@ def build_samples(
             prompt = f"{_system_prompt(suite, resolved_input_mode)}\n\n---\n\n{prompt}"
         content = [inspect_model.ContentText(text=prompt)]
         if resolved_input_mode == "image":
-            image_path = (bench_path / qa["image_path"]).resolve()
+            image_path = (bench_path / as_str(qa["image_path"], "image_path")).resolve()
             content.insert(0, _image_content(image_path, image_detail))
         samples.append(
             inspect_dataset.Sample(
@@ -179,50 +203,6 @@ def _system_prompt(suite: str, input_mode: str) -> str:
     return SYSTEM_PROMPT
 
 
-def _score_from_state(state: Any) -> tuple[str, JsonDict]:
-    qa = state.metadata["qa"]
-    response = state.output.completion
-    return response, score_answer(qa, response)
-
-
-def catan_board_bench_exact_scorer() -> Any:
-    inspect_scorer = importlib.import_module("inspect_ai.scorer")
-
-    @inspect_scorer.scorer(metrics=[inspect_scorer.accuracy(), inspect_scorer.stderr()])
-    def _scorer() -> Any:
-        async def score(state: Any, target: Any) -> Any:
-            response, result = _score_from_state(state)
-            return inspect_scorer.Score(
-                value=(inspect_scorer.CORRECT if result["correct"] else inspect_scorer.INCORRECT),
-                answer=response,
-                explanation=f"expected={target.text}",
-                metadata=result,
-            )
-
-        return score
-
-    return _scorer()
-
-
-def catan_board_bench_component_scorer() -> Any:
-    inspect_scorer = importlib.import_module("inspect_ai.scorer")
-
-    @inspect_scorer.scorer(metrics=[inspect_scorer.mean(), inspect_scorer.stderr()])
-    def _scorer() -> Any:
-        async def score(state: Any, target: Any) -> Any:
-            response, result = _score_from_state(state)
-            return inspect_scorer.Score(
-                value=float(result["component_accuracy"]),
-                answer=response,
-                explanation=f"expected={target.text}",
-                metadata=result,
-            )
-
-        return score
-
-    return _scorer()
-
-
 @task
 def catan_board_bench(
     bench_dir: str = str(DEFAULT_BENCH_DIR),
@@ -236,7 +216,7 @@ def catan_board_bench(
     include_system: bool = True,
     input_mode: str = "auto",
     image_detail: str = "auto",
-) -> Any:
+) -> Task:
     """Catan public-board VLM benchmark.
 
     Task parameters are exposed through OpenBench/Inspect `-T` flags.

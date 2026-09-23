@@ -1,0 +1,115 @@
+.prompt-studio {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem 1rem;
+  overflow: hidden;
+  background: rgba(5, 7, 10, 0.72);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+.prompt-studio.loading {
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+}
+
+.prompt-studio-toolbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.4rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.prompt-studio-toolbar > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 0.24rem;
+}
+
+.prompt-studio-toolbar strong {
+  color: var(--cyan);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+.prompt-studio-toolbar span {
+  color: var(--muted);
+  font-size: 0.64rem;
+}
+
+.prompt-studio-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.prompt-studio-actions button {
+  height: 2rem;
+  padding: 0 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.63rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.prompt-studio-actions button.primary {
+  border-color: rgba(60, 255, 205, 0.4);
+  background: rgba(60, 255, 205, 0.1);
+  color: var(--cyan);
+}
+
+.prompt-studio-actions button.danger {
+  color: var(--pink);
+}
+
+.prompt-studio-actions button:hover:not(:disabled) {
+  border-color: currentColor;
+}
+
+.prompt-studio-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.prompt-studio-lock,
+.prompt-studio-dirty,
+.prompt-studio-error,
+.prompt-studio-notice {
+  flex-shrink: 0;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--line);
+  font-size: 0.66rem;
+  line-height: 1.35;
+}
+
+.prompt-studio-lock {
+  border-color: rgba(255, 209, 102, 0.45);
+  color: var(--amber);
+}
+
+.prompt-studio-dirty {
+  color: var(--blue);
+}
+
+.prompt-studio-error {
+  border-color: rgba(255, 95, 122, 0.5);
+  color: var(--pink);
+}
+
+.prompt-studio-notice {
+  border-color: rgba(60, 255, 205, 0.4);
+  color: var(--cyan);
+}
+

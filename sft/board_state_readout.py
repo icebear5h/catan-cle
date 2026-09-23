@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
-import re
 import random
+import re
 from collections import Counter
+from typing import TypedDict
 
 from evals.catan_board_bench.tokens import atlas_tokens
+from sft.json_types import JsonDict, as_bool, as_dict, as_int, as_str, json_dict, json_list
 
 TASK = "full_board_readout"
 PROMPT = (
@@ -19,29 +21,41 @@ PROMPT = (
 )
 
 
+class ParsedState(TypedDict):
+    items: list[tuple[str, str]]
+    values: dict[str, str]
+    duplicates: list[str]
+    missing: list[str]
+    extra: list[str]
+    malformed: list[str]
+    complete: bool
+    ordered: bool
+
+
 def board_keys() -> list[str]:
     tokens = atlas_tokens()
     return [token for family in "TNEP" for token in sorted(tokens) if token.startswith("<" + family)] + ["robber"]
 
 
-def select_validation(rows: list[dict], count: int = 16, seed: int = 43) -> list[dict]:
+def select_validation(rows: list[JsonDict], count: int = 16, seed: int = 43) -> list[JsonDict]:
     """Round-robin layouts and densities; shuffle intact examples within buckets."""
     if not 0 <= count <= len(rows):
         raise ValueError("sample count must be within available rows")
     if len({r["row_id"] for r in rows}) != len(rows):
         raise ValueError("duplicate row IDs")
     rng = random.Random(seed)
-    layouts = sorted({r["layout_id"] for r in rows})
+    layouts = sorted({as_str(r["layout_id"]) for r in rows})
     rng.shuffle(layouts)
     densities = ("dense", "sparse", "setup", "empty")
-    buckets = {}
-    for row in sorted(rows, key=lambda r: r["row_id"]):
+    buckets: dict[tuple[str, str], list[JsonDict]] = {}
+    for row in sorted(rows, key=lambda r: as_str(r["row_id"])):
         if row["density_bin"] not in densities:
             raise ValueError("unknown density")
-        buckets.setdefault((row["layout_id"], row["density_bin"]), []).append(row)
+        key = (as_str(row["layout_id"]), as_str(row["density_bin"]))
+        buckets.setdefault(key, []).append(row)
     for bucket in buckets.values():
         rng.shuffle(bucket)
-    selected = []
+    selected: list[JsonDict] = []
     round_index = 0
     while len(selected) < count:
         for layout in layouts:
@@ -56,9 +70,9 @@ def select_validation(rows: list[dict], count: int = 16, seed: int = 43) -> list
     return selected
 
 
-def parse_state(text: str) -> dict:
-    items = []
-    malformed = []
+def parse_state(text: str) -> ParsedState:
+    items: list[tuple[str, str]] = []
+    malformed: list[str] = []
     for entry in text.strip().split(";"):
         match = re.fullmatch(r"\s*(<[TNEP][0-9_]+>|robber)\s+(.+?)\s*", entry, flags=re.S)
         if match is None:
@@ -78,14 +92,14 @@ def parse_state(text: str) -> dict:
             "ordered": [key for key, _ in items] == expected_keys}
 
 
-def score_board_state(expected: str, response: str) -> dict:
+def score_board_state(expected: str, response: str) -> JsonDict:
     target = parse_state(expected)
     if not target["complete"] or not target["ordered"]:
         raise ValueError("invalid canonical full-board target")
     predicted = parse_state(response)
     groups: dict[str, dict[str, int]] = {}
 
-    def add(group: str, correct: bool):
+    def add(group: str, correct: bool) -> None:
         cell = groups.setdefault(group, {"correct": 0, "total": 0})
         cell["total"] += 1
         cell["correct"] += int(correct)
@@ -122,35 +136,42 @@ def score_board_state(expected: str, response: str) -> dict:
         "semantic_exact": semantic_exact, "ordered": predicted["ordered"],
         "coverage_complete": predicted["complete"], "items_correct": int(matched),
         "items_total": 155, "items_extra": len(predicted["extra"]),
-        "missing": predicted["missing"], "duplicates": predicted["duplicates"],
-        "malformed": predicted["malformed"], "groups": groups,
+        "missing": json_list(predicted["missing"]),
+        "duplicates": json_list(predicted["duplicates"]),
+        "malformed": json_list(predicted["malformed"]),
+        "groups": {key: json_dict(cell) for key, cell in groups.items()},
         "occupied_items_correct": int(occupied_correct), "occupied_items_total": occupied_total,
         "empty_items_correct": int(empty_correct), "empty_items_total": empty_total,
     }
 
 
-def summarize_board_states(records: list[dict]) -> dict:
-    totals: dict[str, Counter] = {}
-    density: dict[str, Counter] = {}
-    layouts: dict[str, Counter] = {}
-    for record in records:
-        score = record["score"]
-        for key, cell in score["groups"].items():
-            totals.setdefault(key, Counter()).update(cell)
-        bucket = str(record.get("metadata", {}).get("density_bin", "unknown"))
-        density.setdefault(bucket, Counter()).update({"boards": 1, "exact": int(score["correct"]),
-            "occupied_correct": score["occupied_items_correct"], "occupied_total": score["occupied_items_total"]})
-        layout = str(record.get("metadata", {}).get("layout_id", "unknown"))
-        layouts.setdefault(layout, Counter()).update({"boards": 1, "exact": int(score["correct"]),
-            "occupied_correct": score["occupied_items_correct"], "occupied_total": score["occupied_items_total"]})
+def summarize_board_states(records: list[JsonDict]) -> JsonDict:
+    totals: dict[str, Counter[str]] = {}
+    density: dict[str, Counter[str]] = {}
+    layouts: dict[str, Counter[str]] = {}
+    scores = [as_dict(record["score"]) for record in records]
+    for record, score in zip(records, scores, strict=True):
+        for key, cell in as_dict(score["groups"]).items():
+            totals.setdefault(key, Counter()).update(
+                {name: as_int(count) for name, count in as_dict(cell).items()}
+            )
+        counts = {"boards": 1, "exact": int(as_bool(score["correct"])),
+            "occupied_correct": as_int(score["occupied_items_correct"]),
+            "occupied_total": as_int(score["occupied_items_total"])}
+        metadata = as_dict(record.get("metadata", {}))
+        bucket = str(metadata.get("density_bin", "unknown"))
+        density.setdefault(bucket, Counter()).update(counts)
+        layout = str(metadata.get("layout_id", "unknown"))
+        layouts.setdefault(layout, Counter()).update(counts)
     return {
-        "boards": len(records), "board_exact": sum(r["score"]["correct"] for r in records),
-        "semantic_exact": sum(r["score"]["semantic_exact"] for r in records),
-        "complete_coverage": sum(r["score"]["coverage_complete"] for r in records),
-        "duplicate_boards": sum(bool(r["score"]["duplicates"]) for r in records),
-        "groups": {key: {**dict(cell), "accuracy": cell["correct"] / cell["total"]} for key, cell in totals.items()},
-        "by_density": {key: dict(cell) for key, cell in density.items()},
-        "by_layout": {key: dict(cell) for key, cell in layouts.items()},
+        "boards": len(records), "board_exact": sum(as_bool(s["correct"]) for s in scores),
+        "semantic_exact": sum(as_bool(s["semantic_exact"]) for s in scores),
+        "complete_coverage": sum(as_bool(s["coverage_complete"]) for s in scores),
+        "duplicate_boards": sum(bool(s["duplicates"]) for s in scores),
+        "groups": {key: {**json_dict(cell), "accuracy": cell["correct"] / cell["total"]}
+                   for key, cell in totals.items()},
+        "by_density": {key: json_dict(cell) for key, cell in density.items()},
+        "by_layout": {key: json_dict(cell) for key, cell in layouts.items()},
         "occupied_layout_macro_accuracy": (
             sum(cell["occupied_correct"] / cell["occupied_total"] for cell in layouts.values() if cell["occupied_total"])
             / sum(bool(cell["occupied_total"]) for cell in layouts.values())

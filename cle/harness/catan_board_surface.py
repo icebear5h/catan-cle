@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import io
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, cast
 
 from cle.game_engine.public_board import snapshot_public_board
 from cle.harness.board_surface import (
@@ -15,9 +15,9 @@ from cle.harness.board_surface import (
     TextBoardPresentation,
 )
 from cle.players.contracts import PlayerContext
+from evals.catan_board_bench.ascii_variations.facts import full_facts_from_json
 from evals.catan_board_bench.render import render_contract_image
 from evals.catan_board_bench.text_format_optimization import render_text_format
-
 
 BoardSurfaceKind = Literal[
     "legacy_semantic",
@@ -48,13 +48,13 @@ class IndexedTileRowsBoardPresenter:
         facts = snapshot.facts()
         content = render_text_format(
             "indexed_tile_rows",
-            facts,
+            full_facts_from_json(facts),
             sample_id=context.context_id,
         ).replace(_OPAQUE_HEADER, _CANONICAL_HEADER, 1)
         provenance = BoardPresentationProvenance(
             source_id=context.context_id,
             perspective=context.actor,
-            board_schema=facts["schema"],
+            board_schema=cast("str", facts["schema"]),
             board_sha256=snapshot.facts_sha256,
             identity_space="canonical_engine_ids",
             renderer_id="catan_board_bench.indexed_tile_rows",
@@ -89,7 +89,7 @@ class ImageBoardPresenter:
         provenance = BoardPresentationProvenance(
             source_id=context.context_id,
             perspective=context.actor,
-            board_schema=facts["schema"],
+            board_schema=cast("str", facts["schema"]),
             board_sha256=snapshot.facts_sha256,
             identity_space="canonical_engine_ids",
             renderer_id="catan_board_bench.raw_full_board_png",

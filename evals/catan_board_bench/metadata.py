@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import importlib
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from openbench.utils import BenchmarkMetadata
 
 
-def get_benchmark_metadata():
-    benchmark_metadata = importlib.import_module("openbench.utils").BenchmarkMetadata
+def get_benchmark_metadata() -> BenchmarkMetadata:
+    benchmark_metadata: type[BenchmarkMetadata] = importlib.import_module("openbench.utils").BenchmarkMetadata
 
     return benchmark_metadata(
         name="CatanBoardBench",

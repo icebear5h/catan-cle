@@ -1,0 +1,112 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #05070a;
+  --panel: rgba(10, 14, 19, 0.92);
+  --panel-strong: rgba(14, 19, 25, 0.96);
+  --line: rgba(230, 237, 243, 0.16);
+  --line-strong: rgba(230, 237, 243, 0.28);
+  --text: #e6edf3;
+  --muted: #8ba0b6;
+  --cyan: #3cffcd;
+  --blue: #69a7ff;
+  --pink: #ff5f7a;
+  --amber: #ffd166;
+}
+
+body {
+  font-family: var(--font-ui);
+  background:
+    radial-gradient(circle at 20% 0%, rgba(60, 255, 205, 0.08), transparent 28rem),
+    radial-gradient(circle at 86% 12%, rgba(255, 95, 122, 0.08), transparent 26rem),
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    var(--bg);
+  background-size: auto, auto, 22px 22px, 22px 22px;
+  color: var(--text);
+}
+
+.app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.app > header {
+  min-height: 4.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: rgba(5, 7, 10, 0.86);
+  border-bottom: 1px solid var(--line);
+  padding: 0.7rem 1rem;
+  backdrop-filter: blur(14px);
+}
+
+.app > header h1 {
+  color: #f7fbff;
+  font-family: var(--font-ui);
+  font-size: 1.08rem;
+  font-weight: 720;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+}
+
+.app > header p {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  margin-top: 0.2rem;
+  text-transform: uppercase;
+}
+
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.brand-mark {
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 1px solid var(--line-strong);
+  background:
+    radial-gradient(circle, var(--cyan) 0 2px, transparent 2.5px) 0 0 / 9px 9px,
+    #080c11;
+  box-shadow: inset 0 0 18px rgba(60, 255, 205, 0.16);
+}
+
+.mode-switch {
+  display: flex;
+  border: 1px solid var(--line);
+  background: rgba(8, 12, 17, 0.88);
+}
+
+.mode-switch button {
+  min-height: 2.35rem;
+  border: 0;
+  border-right: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 0.74rem;
+  padding: 0 0.8rem;
+  text-transform: uppercase;
+}
+
+.mode-switch button:last-child {
+  border-right: 0;
+}
+
+.mode-switch button.active {
+  background: rgba(60, 255, 205, 0.12);
+  color: var(--cyan);
+}
+

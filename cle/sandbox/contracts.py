@@ -3,16 +3,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
-from cle.players.contracts import PlayerAttempt, PlayerContext, _restore_contract_slots
-from cle.sandbox.communication import CommunicationOpportunity
-from cle.sandbox.trade_preauthorization import AutomaticTradeAction, TradePreauthorization
-from cle.sandbox.action_batches import AutomaticBatchAction, PendingActionBatch
 from cle.game_engine.events import EngineTransition, GameEngineSnapshot, GameEvent, PlayerEvent
 from cle.game_engine.models.enums import Action
 from cle.game_engine.models.player import Color
 from cle.game_engine.observation import PlayerObservation
+from cle.players.contracts import PlayerAttempt, PlayerContext, _restore_contract_slots
+from cle.players.data import PlayerSnapshot
+from cle.sandbox.action_batches import AutomaticBatchAction, PendingActionBatch
+from cle.sandbox.communication import CommunicationOpportunity
+from cle.sandbox.trade_preauthorization import AutomaticTradeAction, TradePreauthorization
 
 
 @dataclass(frozen=True, slots=True)
@@ -69,7 +69,7 @@ class SandboxView:
 @dataclass(frozen=True, slots=True)
 class SandboxSnapshot:
     engine: GameEngineSnapshot
-    player_states: tuple[tuple[Color, Any], ...]
+    player_states: tuple[tuple[Color, PlayerSnapshot], ...]
     pending_decision_revision: int | None = None
     speech_used: bool = False
     speech_calls_remaining: int | None = None

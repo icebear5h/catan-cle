@@ -74,6 +74,12 @@ Normal play is:
 result = await sandbox.step()
 ```
 
+For recoverable rollout execution, use the opt-in
+[`DurableSandbox`](durable/README.md): stable command IDs, one ordered SQLite
+invocation/result journal per game, fenced checkpoint commits, and replay of
+durably recorded model responses. Duplicate delivery returns the saved result;
+unknown remote outcomes require explicit retry consent.
+
 The live viewer is only an adapter around this operation: it owns one sandbox,
 renders projected state, and its live `Step` button awaits one complete call.
 It does not maintain a second observation/action protocol. Each completed live

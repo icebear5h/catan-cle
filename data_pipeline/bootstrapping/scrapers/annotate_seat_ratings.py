@@ -16,11 +16,12 @@ import logging
 import time
 from datetime import date
 from pathlib import Path
-from typing import Any
 
 import httpx
 
 from data_pipeline.bootstrapping.scrapers.colonist_api import ColonistAPI
+from data_pipeline.json_coerce import as_dict, as_int, as_list, as_str
+from data_pipeline.json_types import JsonDict, JsonValue
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 INDEX_DIR = PROJECT_ROOT / "artifacts" / "raw" / "colonist" / "indexes"
@@ -39,7 +40,7 @@ def snapshot_path(day: date) -> Path:
     return INDEX_DIR / f"classic4p_leaderboard_{day.isoformat()}.json"
 
 
-async def fetch_page(api: ColonistAPI, start: int, attempts: int = 4) -> Any:
+async def fetch_page(api: ColonistAPI, start: int, attempts: int = 4) -> JsonValue:
     """One leaderboard page; transient transport errors are retried with backoff, 429 is not."""
     for attempt in range(1, attempts + 1):
         try:
@@ -51,35 +52,39 @@ async def fetch_page(api: ColonistAPI, start: int, attempts: int = 4) -> Any:
             if response.status_code == 429:
                 raise RuntimeError(f"Leaderboard rate-limited at start={start}")
             response.raise_for_status()
-            return response.json()
+            payload: JsonValue = response.json()
+            return payload
         except (httpx.TransportError, httpx.HTTPStatusError) as exc:
             if attempt == attempts:
                 raise
             wait = 2.0 * attempt
             logger.warning("Page start=%d failed (%s); retry %d/%d in %.0fs", start, exc, attempt, attempts - 1, wait)
             await asyncio.sleep(wait)
+    raise RuntimeError(f"Leaderboard fetch made no attempt at start={start}")
 
 
-async def fetch_leaderboard(pause_seconds: float) -> list[dict[str, Any]]:
-    entries: list[dict[str, Any]] = []
+async def fetch_leaderboard(pause_seconds: float) -> list[JsonDict]:
+    entries: list[JsonDict] = []
     async with ColonistAPI() as api:
         start = 1
         while True:
             page = await fetch_page(api, start)
             if not isinstance(page, list) or not page:
                 break
-            entries.extend(page)
+            entries.extend(as_dict(item) for item in page)
             if len(entries) % 5000 == 0:
-                logger.info("Leaderboard: %d entries so far (rating %s)", len(entries), page[-1].get("skillRating"))
+                logger.info("Leaderboard: %d entries so far (rating %s)", len(entries),
+                            as_dict(page[-1]).get("skillRating"))
             start += PAGE_SIZE
             await asyncio.sleep(pause_seconds)
     return entries
 
 
-def load_or_fetch_snapshot(pause_seconds: float, refresh: bool) -> tuple[Path, list[dict[str, Any]]]:
+def load_or_fetch_snapshot(pause_seconds: float, refresh: bool) -> tuple[Path, list[JsonDict]]:
     path = snapshot_path(date.today())
     if path.exists() and not refresh:
-        return path, json.loads(path.read_text(encoding="utf-8"))
+        loaded = as_list(json.loads(path.read_text(encoding="utf-8")))
+        return path, [as_dict(entry) for entry in loaded]
     started = time.time()
     entries = asyncio.run(fetch_leaderboard(pause_seconds))
     path.write_text(json.dumps(entries), encoding="utf-8")
@@ -87,9 +92,11 @@ def load_or_fetch_snapshot(pause_seconds: float, refresh: bool) -> tuple[Path, l
     return path, entries
 
 
-def annotate(entries: list[dict[str, Any]], snapshot: Path) -> dict[str, Any]:
-    by_name = {entry["username"].lower(): entry for entry in entries if entry.get("username")}
-    games: dict[str, Any] = {}
+def annotate(entries: list[JsonDict], snapshot: Path) -> JsonDict:
+    by_name = {
+        as_str(entry["username"]).lower(): entry for entry in entries if entry.get("username")
+    }
+    games: JsonDict = {}
     human_seats = matched = 0
     for directory in REPLAY_DIRS:
         for path in sorted(directory.glob("*.json")):
@@ -98,8 +105,9 @@ def annotate(entries: list[dict[str, Any]], snapshot: Path) -> dict[str, Any]:
             if not isinstance(top, dict) or "playerUserStates" not in top:
                 continue
             settings = top.get("gameSettings") or {}
-            seats = []
-            for user in top["playerUserStates"]:
+            seats: list[JsonValue] = []
+            for raw_user in as_list(top["playerUserStates"]):
+                user = as_dict(raw_user)
                 is_bot = bool(user.get("isBot"))
                 entry = None if is_bot else by_name.get(str(user.get("username", "")).lower())
                 if not is_bot:
@@ -138,13 +146,19 @@ def main() -> int:
     manifest = annotate(entries, snapshot)
     MANIFEST_PATH.parent.mkdir(parents=True, exist_ok=True)
     MANIFEST_PATH.write_text(json.dumps(manifest, indent=1), encoding="utf-8")
-    cov = manifest["coverage"]
-    ratings = sorted(s["skillRating"] for g in manifest["games"].values() for s in g["seats"] if s["skillRating"])
+    cov = as_dict(manifest["coverage"])
+    manifest_games = as_dict(manifest["games"])
+    ratings = sorted(
+        as_int(seat["skillRating"])
+        for game in map(as_dict, manifest_games.values())
+        for seat in map(as_dict, as_list(game["seats"]))
+        if seat["skillRating"]
+    )
     mid = ratings[len(ratings) // 2] if ratings else None
     logger.info(
         "Annotated %d games: %d/%d human seats rated (%.0f%%); rating min/median/max = %s/%s/%s -> %s",
-        len(manifest["games"]), cov["rated_seats"], cov["human_seats"],
-        100 * cov["rated_seats"] / max(cov["human_seats"], 1),
+        len(manifest_games), cov["rated_seats"], cov["human_seats"],
+        100 * as_int(cov["rated_seats"]) / max(as_int(cov["human_seats"]), 1),
         ratings[0] if ratings else None, mid, ratings[-1] if ratings else None, MANIFEST_PATH,
     )
     return 0

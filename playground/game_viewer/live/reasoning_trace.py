@@ -5,8 +5,9 @@ from __future__ import annotations
 import json
 from collections.abc import Sequence
 from dataclasses import asdict, replace
-from typing import Any
+from typing import cast
 
+from cle.game_engine.json import GameEncoder
 from cle.harness.board_surface import board_presentation_payload
 from cle.harness.models import ModelRequest, ModelResponse
 from cle.harness.reasoning import (
@@ -16,19 +17,19 @@ from cle.harness.reasoning import (
 )
 from cle.players.contracts import CommunicationChoice, PlayerChoice
 from cle.players.validation import choice_followup_action
+from cle.sandbox.catan import CatanSandbox
 from cle.sandbox.communication import CommunicationAdmission
 from cle.sandbox.contracts import SandboxStepResult
-from cle.game_engine.json import GameEncoder
 
 
 def build_live_reasoning_traces(
-    sandbox,
+    sandbox: CatanSandbox,
     result: SandboxStepResult,
     *,
     communication_attempts: Sequence[CommunicationAdmission] = (),
-) -> list[dict[str, Any]]:
+) -> list[dict[str, object]]:
     """Project accepted calls; the caller supplies only this step's admissions."""
-    traces = []
+    traces: list[dict[str, object]] = []
     transitions = iter(result.transitions)
     for context, attempt in zip(result.contexts, result.attempts, strict=True):
         transition = next(transitions)
@@ -47,6 +48,7 @@ def build_live_reasoning_traces(
         if choice is None or attempt.validation_error is not None:
             continue
 
+        decision = cast(PlayerChoice, choice)
         traces.append({
             **_reasoning_artifacts(choice, attempt.model_request, attempt.model_response),
             "call_kind": "decision",
@@ -55,12 +57,12 @@ def build_live_reasoning_traces(
             "turn_number": context.turn_number,
             "phase": context.phase,
             "prompt_key": context.prompt_key,
-            "action_index": choice.action_index,
+            "action_index": decision.action_index,
             "action_type": transition.requested_action.action_type.value,
             "action_sequence": [str(item.resolved_action) for item in sequence],
-            "batch_actions": choice.batch_actions,
-            "knight_destination": choice.knight_destination,
-            "game_plan": choice.game_plan,
+            "batch_actions": decision.batch_actions,
+            "knight_destination": decision.knight_destination,
+            "game_plan": decision.game_plan,
         })
 
     for admission in communication_attempts:
@@ -94,14 +96,15 @@ def build_live_reasoning_traces(
             "text": choice.text,
         })
 
-    return json.loads(json.dumps(traces, cls=GameEncoder))
+    encoded: list[dict[str, object]] = json.loads(json.dumps(traces, cls=GameEncoder))
+    return encoded
 
 
 def _reasoning_artifacts(
     choice: PlayerChoice | CommunicationChoice,
     request: ModelRequest | None,
     response: ModelResponse | None,
-) -> dict[str, Any]:
+) -> dict[str, object]:
     # Historical decision receipts may have provider diagnostics only on the choice.
     source = response if response is not None else (
         choice if isinstance(choice, PlayerChoice) else None

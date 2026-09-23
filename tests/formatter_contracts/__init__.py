@@ -1,0 +1,1 @@
+"""Observation formatter extraction contracts."""

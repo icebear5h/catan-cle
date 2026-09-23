@@ -1,9 +1,16 @@
 """Transactional checkpoints for authoritative replay steps."""
 
+from __future__ import annotations
+
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any
 
+from cle.game_engine.communication import SocialCommitment
+from cle.game_engine.events import GameEvent
+from cle.game_engine.game import GameEngine
+from cle.game_engine.state import GameState
+from cle.replay.colonist.types import TradeLedgerRecord
+from cle.replay.contracts import ReplayRuntimeState
 from cle.replay.runtime.access import get_game_engine, set_game_engine
 
 
@@ -11,24 +18,27 @@ from cle.replay.runtime.access import get_game_engine, set_game_engine
 class ReplayStepCheckpoint:
     """State required to atomically undo one parsed replay action."""
 
-    game: Any
-    game_state: Any
-    game_events: tuple
-    game_commitments: tuple
+    game: GameEngine
+    game_state: GameState
+    game_events: tuple[GameEvent, ...]
+    game_commitments: tuple[SocialCommitment, ...]
     game_history_length: int
     replay_index: int
     replay_actions_length: int
     game_log_length: int
     semantic_issues_length: int
-    first_divergence_step: dict
+    first_divergence_step: dict[str, int]
     game_running: bool
     replay_final_state_synced: bool
-    replay_pending_dev_card: Any
-    replay_trade_ledger: dict
+    replay_pending_dev_card: dict[str, object] | None
+    replay_trade_ledger: dict[object, TradeLedgerRecord]
 
     @classmethod
-    def capture(cls, state) -> "ReplayStepCheckpoint":
+    def capture(cls, state: ReplayRuntimeState) -> ReplayStepCheckpoint:
         game = get_game_engine(state)
+        if game is None:
+            # Callers gate on a live engine; keep the attribute error they saw.
+            raise AttributeError("'NoneType' object has no attribute 'state'")
         return cls(
             game=game,
             game_state=game.state.copy(),
@@ -48,7 +58,7 @@ class ReplayStepCheckpoint:
             ),
         )
 
-    def restore(self, state) -> None:
+    def restore(self, state: ReplayRuntimeState) -> None:
         """Restore both engine state and replay-owned metadata."""
         set_game_engine(state, self.game)
         self.game.state = self.game_state.copy()
@@ -69,7 +79,7 @@ class ReplayStepCheckpoint:
         state.replay_trade_ledger = deepcopy(self.replay_trade_ledger)
 
 
-def ensure_replay_checkpoint_state(state) -> None:
+def ensure_replay_checkpoint_state(state: ReplayRuntimeState) -> None:
     """Initialize checkpoint storage on older ServerState instances."""
     if not hasattr(state, "replay_step_checkpoints"):
         state.replay_step_checkpoints = []

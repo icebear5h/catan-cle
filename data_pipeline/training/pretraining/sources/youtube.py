@@ -8,10 +8,12 @@ processing to build a pretraining corpus from top Catan creators.
 import json
 import re
 import time
+from collections.abc import Sequence
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
 from data_pipeline.ingestion.youtube_scraper import YouTubeScraper
+from data_pipeline.json_types import JsonDict
 
 # Curated Catan strategy channels (channel_id, display_name)
 # These are the best sources of Catan strategic reasoning on YouTube.
@@ -68,7 +70,7 @@ def _is_catan_relevant(text: str) -> bool:
 class YouTubeCorpusBuilder:
     """Builds a text corpus from YouTube Catan strategy content."""
 
-    def __init__(self, api_key: Optional[str] = None, cache: bool = True):
+    def __init__(self, api_key: Optional[str] = None, cache: bool = True) -> None:
         self.scraper = YouTubeScraper(api_key=api_key)
         self.cache = cache
         if cache:
@@ -77,14 +79,15 @@ class YouTubeCorpusBuilder:
     def _cache_path(self, video_id: str) -> Path:
         return CACHE_DIR / f"{video_id}.json"
 
-    def _load_cached(self, video_id: str) -> Optional[Dict]:
+    def _load_cached(self, video_id: str) -> JsonDict | None:
         path = self._cache_path(video_id)
         if path.exists():
             with open(path) as f:
-                return json.load(f)
+                cached: JsonDict = json.load(f)
+                return cached
         return None
 
-    def _save_cache(self, video_id: str, data: Dict):
+    def _save_cache(self, video_id: str, data: JsonDict) -> None:
         if not self.cache:
             return
         with open(self._cache_path(video_id), "w") as f:
@@ -110,7 +113,7 @@ class YouTubeCorpusBuilder:
             uploads_id = channel_resp["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
 
             # Paginate through uploads
-            video_ids = []
+            video_ids: list[str] = []
             next_page = None
             while len(video_ids) < max_results:
                 pl_resp = self.scraper.youtube.playlistItems().list(
@@ -138,7 +141,8 @@ class YouTubeCorpusBuilder:
         # Check cache first
         cached = self._load_cached(video_id)
         if cached:
-            return cached.get("text")
+            text = cached.get("text")
+            return text if isinstance(text, str) else None
 
         transcript_segments = self.scraper.get_transcript(video_id)
         if not transcript_segments:
@@ -161,7 +165,7 @@ class YouTubeCorpusBuilder:
 
     def fetch_from_channels(
         self,
-        channels: Optional[List[tuple]] = None,
+        channels: Sequence[tuple[str, str]] | None = None,
         max_per_channel: int = 50,
         rate_limit: float = 0.5,
     ) -> List[Dict[str, str]]:

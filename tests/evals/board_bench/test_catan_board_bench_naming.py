@@ -1,0 +1,112 @@
+import importlib.util
+import json
+import subprocess
+import sys
+from pathlib import Path
+from types import ModuleType, SimpleNamespace
+from typing import Any
+
+import pytest
+from flask import Flask
+
+from evals.catan_board_bench.benchmark import (
+    DEFAULT_BENCH_DIR,
+    DEFAULT_PROBE_DIR,
+)
+from evals.catan_board_bench.metadata import get_benchmark_metadata
+from evals.catan_board_bench.paths import (
+    canonical_benchmark_reference,
+    resolve_benchmark_reference,
+)
+from playground.game_viewer.routes.bench import bench_bp
+
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+
+
+def test_canonical_benchmark_paths_use_new_namespace() -> None:
+    assert DEFAULT_BENCH_DIR == (
+        PROJECT_ROOT / "evals" / "catan_board_bench" / "datasets" / "catan_board_bench_100"
+    )
+    assert DEFAULT_PROBE_DIR == (
+        PROJECT_ROOT / "artifacts" / "generated" / "catan_board_bench" / "piece_recognition"
+    )
+    assert not (PROJECT_ROOT / "catan_board_bench").exists()
+    assert not (PROJECT_ROOT / "data_pipeline" / "catan_board_bench").exists()
+    assert not (PROJECT_ROOT / "catan-board-bench-ui").exists()
+    assert (PROJECT_ROOT / "evals" / "catan_board_bench_ui" / "package.json").is_file()
+    assert importlib.util.find_spec("catan_board_bench") is None
+    assert importlib.util.find_spec("data_pipeline.catan_board_bench") is None
+
+
+def test_frozen_paths_resolve_without_a_compatibility_package() -> None:
+    historical = Path(
+        "data_pipeline/catan_board_bench/datasets/"
+        "catan_board_bench_100/contracts/sample_000.json"
+    )
+    canonical = Path(
+        "evals/catan_board_bench/datasets/"
+        "catan_board_bench_100/contracts/sample_000.json"
+    )
+
+    assert canonical_benchmark_reference(historical) == canonical
+    assert resolve_benchmark_reference(historical) == PROJECT_ROOT / canonical
+
+
+def test_openbench_metadata_uses_public_name(monkeypatch: pytest.MonkeyPatch) -> None:
+    class BenchmarkMetadata(SimpleNamespace):
+        pass
+
+    openbench = ModuleType("openbench")
+    openbench.__path__ = []
+    utils: Any = ModuleType("openbench.utils")
+    utils.BenchmarkMetadata = BenchmarkMetadata
+    monkeypatch.setitem(sys.modules, "openbench", openbench)
+    monkeypatch.setitem(sys.modules, "openbench.utils", utils)
+
+    metadata = get_benchmark_metadata()
+
+    assert metadata.name == "CatanBoardBench"
+    assert metadata.module_path == "evals.catan_board_bench.benchmark"
+    assert metadata.function_name == "catan_board_bench"
+    assert "visual-grounding" in metadata.tags
+
+
+def test_verifier_api_uses_kebab_case_namespace() -> None:
+    app = Flask(__name__)
+    app.register_blueprint(bench_bp)
+    routes = {rule.rule for rule in app.url_map.iter_rules()}
+
+    benchmark_routes = {route for route in routes if route.startswith("/api/catan-board-bench")}
+    assert benchmark_routes
+    assert not any("catan_board_bench" in route for route in routes)
+
+
+def test_frozen_dataset_identity_was_renamed() -> None:
+    metadata = json.loads((DEFAULT_BENCH_DIR / "metadata.json").read_text())
+
+    assert metadata["name"] == "CatanBoardBench-100"
+    assert metadata["schema"] == "catan_board_bench/v1"
+
+
+def test_leakage_builder_help_has_no_artifact_side_effects() -> None:
+    guarded_paths = (
+        DEFAULT_BENCH_DIR / "leakage/benchmark_game_ids.json",
+        DEFAULT_BENCH_DIR / "leakage/benchmark_game_ids.md",
+        PROJECT_ROOT / "reports/catan_board_bench/catan_board_bench_100_openrouter_baseline.md",
+    )
+    before = {path: path.read_bytes() for path in guarded_paths}
+
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "scripts.board_bench.builders.build_catan_board_bench_leakage_and_presft",
+            "--help",
+        ],
+        cwd=PROJECT_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert {path: path.read_bytes() for path in guarded_paths} == before

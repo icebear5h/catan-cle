@@ -3,6 +3,28 @@
 ## Code Style
 - Never use inline imports (imports inside functions). All imports go at the top of the file.
 
+## Deterministic Quality Gate
+- Run `uv run --no-sync python -m scripts.quality` before declaring code work
+  complete and before a requested commit. Every in-scope source file is checked;
+  there is no baseline for existing violations. Report unresolved failures.
+- Source files must have at most 300 physical lines (including comments/blanks).
+  Source folders must have at most 15 direct authored files. See
+  `scripts/quality/__init__.py` for generated/data/vendor exclusions.
+- Python functions need concrete parameter and return annotations (implicit
+  `self`/`cls` are exempt). Ruff and strict mypy enforce the configured rules;
+  do not silence them with `Any`, blanket ignores, or an expanded baseline.
+  Exception: test code (`tests/`, `playground/frontend/tests/`) is Ruff-only;
+  mypy ignores it by design. Do not spend effort typing tests.
+- Manage Python dependencies through `uv add` / `uv remove`, including
+  `--optional dev` for development tools; regenerate the lock through uv.
+  Do not hand-edit package lists or `uv.lock`. Nondependency TOML configuration
+  can be edited normally subject to the OpenCode manifest guard.
+- The project OpenCode plugin gives fast structure feedback after tool edits
+  and blocks ordinary agent-issued commits unless the full local check passes.
+  Commits require a fully staged worktree and a standalone `git commit` call.
+  Keep repair edits possible while the repo is red; no remote CI is configured
+  by this quality setup. Use `/quality` for a focused cleanup session.
+
 ## Workflow Orchestration
 
 ### 1. Plan Mode Default

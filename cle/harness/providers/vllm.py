@@ -6,7 +6,6 @@ import asyncio
 import json
 import time
 from dataclasses import dataclass
-from typing import Any
 
 import httpx
 
@@ -32,14 +31,23 @@ class VLLMConfig:
 class VLLMTransport:
     """Let vLLM continuously batch requests from many sandbox coroutines."""
 
-    def __init__(self, config: VLLMConfig, *, client: Any | None = None) -> None:
+    def __init__(
+        self, config: VLLMConfig, *, client: httpx.AsyncClient | None = None
+    ) -> None:
         self.config = config
         self._owns_client = client is None
         self.client = client or httpx.AsyncClient(timeout=config.timeout_seconds)
 
     async def complete(self, request: ModelRequest) -> ModelResponse:
         started_at = time.monotonic()
-        payload = {
+        # vLLM has no native-reasoning channel; thinking follows the server
+        # chat template. A policy-owned request still carries its own cap
+        # (None means uncapped); otherwise the transport default applies.
+        if request.reasoning_request is not None:
+            max_tokens = request.max_tokens
+        else:
+            max_tokens = self.config.max_tokens
+        payload: dict[str, object] = {
             "model": self.config.model,
             "messages": openai_messages_with_board(
                 request.messages,
@@ -48,8 +56,8 @@ class VLLMTransport:
             ),
             "temperature": self.config.temperature,
         }
-        if self.config.max_tokens is not None:
-            payload["max_tokens"] = self.config.max_tokens
+        if max_tokens is not None:
+            payload["max_tokens"] = max_tokens
         response = None
         for attempt in range(self.config.max_retries + 1):
             try:

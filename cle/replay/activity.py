@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from collections.abc import Sequence
 
 from cle.game_engine.models.enums import RESOURCES as ENGINE_RESOURCES
+from cle.game_engine.models.player import Color
+from cle.replay.colonist.types import ActionHint
+from cle.replay.contracts import ReplayArchive, mapping_field
 
 MAX_UNBOUNDED_ACTIVITY_ROWS = 40
 
 
-def _color_name(color: Any) -> str:
+def _color_name(color: object) -> str:
     if hasattr(color, "value"):
         return str(color.value)
     if hasattr(color, "name"):
@@ -18,13 +21,13 @@ def _color_name(color: Any) -> str:
 
 
 def _engine_color_for_colonist_player(
-    player_id: Any,
-    replay_data: Dict[str, Any],
-    game_colors: Sequence[Any],
-) -> Optional[Any]:
+    player_id: object,
+    replay_data: ReplayArchive,
+    game_colors: Sequence[Color],
+) -> Color | None:
     if player_id is None:
         return None
-    mapping = replay_data.get("colonist_color_to_engine_idx", {})
+    mapping = mapping_field(replay_data, "colonist_color_to_engine_idx")
     engine_index = mapping.get(str(player_id))
     if not isinstance(engine_index, int) or not 0 <= engine_index < len(game_colors):
         return None
@@ -32,9 +35,9 @@ def _engine_color_for_colonist_player(
 
 
 def _actor_label(
-    player_id: Any,
-    replay_data: Dict[str, Any],
-    game_colors: Sequence[Any],
+    player_id: object,
+    replay_data: ReplayArchive,
+    game_colors: Sequence[Color],
 ) -> str:
     color = _engine_color_for_colonist_player(player_id, replay_data, game_colors)
     if color is not None:
@@ -44,27 +47,27 @@ def _actor_label(
     return "UNKNOWN_PLAYER"
 
 
-def _format_resource_counts(values: Any) -> str:
+def _format_resource_counts(values: object) -> str:
     if not isinstance(values, (list, tuple)):
         return "unspecified resources"
-    parts = []
+    parts: list[str] = []
     for resource, count in zip(ENGINE_RESOURCES, values):
         if isinstance(count, (int, float)) and count > 0:
             parts.append(f"{int(count)} {resource}")
     return ", ".join(parts) if parts else "no resources"
 
 
-def _format_resource_gains(values: Any) -> str:
+def _format_resource_gains(values: object) -> str:
     if not isinstance(values, (list, tuple)):
         return "unspecified resources"
-    parts = []
+    parts: list[str] = []
     for resource, count in zip(ENGINE_RESOURCES, values):
         if isinstance(count, (int, float)) and count > 0:
             parts.append(f"+{int(count)} {resource}")
     return ", ".join(parts) if parts else "no resources"
 
 
-def _same_color(left: Any, right: Any) -> bool:
+def _same_color(left: object, right: object) -> bool:
     return (
         left is not None
         and right is not None
@@ -73,10 +76,10 @@ def _same_color(left: Any, right: Any) -> bool:
 
 
 def format_visible_replay_activity(
-    action: Dict[str, Any],
-    replay_data: Dict[str, Any],
-    game_colors: Sequence[Any],
-    observer_color: Any,
+    action: ActionHint,
+    replay_data: ReplayArchive,
+    game_colors: Sequence[Color],
+    observer_color: Color | None,
 ) -> str:
     """Format one recorded row while redacting private information."""
     action_type = str(action.get("type", "UNKNOWN"))
@@ -93,12 +96,12 @@ def format_visible_replay_activity(
         else:
             roll_text = f"{prefix}rolled dice"
         payouts = action.get("resource_payouts")
-        payout_lines = []
+        payout_lines: list[str] = []
         if isinstance(payouts, dict):
-            for player_id, resources in payouts.items():
+            for player_id, payout_values in payouts.items():
                 recipient = _actor_label(player_id, replay_data, game_colors)
                 payout_lines.append(
-                    f"  - {recipient}: {_format_resource_gains(resources)}"
+                    f"  - {recipient}: {_format_resource_gains(payout_values)}"
                 )
         if payout_lines:
             if action.get("resource_payouts_complete") is not True:
@@ -184,9 +187,9 @@ def format_visible_replay_activity(
 
 
 def select_recent_activity_rows(
-    parsed_actions: Sequence[Dict[str, Any]],
+    parsed_actions: Sequence[ActionHint],
     replay_index: int,
-) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+) -> tuple[list[ActionHint], dict[str, object]]:
     """Select the previous completed turn plus the current partial turn."""
     end = max(0, min(int(replay_index), len(parsed_actions)))
     prior_rows = list(parsed_actions[:end])

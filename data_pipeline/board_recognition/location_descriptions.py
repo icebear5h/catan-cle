@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 from collections import Counter, defaultdict
-from typing import Any
 
+from data_pipeline.json_coerce import as_dict, as_int, as_list, as_str
+from data_pipeline.json_types import JsonDict, JsonValue
 from evals.catan_board_bench.tokens import atlas_metadata, atlas_tokens
 
-
-JsonDict = dict[str, Any]
 _ATLAS = atlas_metadata()
 _ATLAS_TOKENS = frozenset(atlas_tokens())
 _EXPECTED_COUNTS = {"tile": 19, "node": 54, "edge": 72, "port": 9}
@@ -32,9 +31,15 @@ for tile in _ATLAS["tiles"]:
         a, b = sorted(edge)
         edge_token = f"<E{a:02d}_{b:02d}>"
         _EDGE_ANCHORS[edge_token].append((tile_token, direction.lower()))
-for edge in _ATLAS["edges"]:
-    a, b = edge["id"]
-    _EDGE_TOKEN_BY_NODES[(a, b)] = edge["token"]
+for atlas_edge in _ATLAS["edges"]:
+    a, b = atlas_edge["id"]
+    _EDGE_TOKEN_BY_NODES[(a, b)] = atlas_edge["token"]
+
+
+def _rows(entities: dict[str, JsonValue], key: str) -> list[JsonDict]:
+    """One atlas entity collection of a public board contract."""
+
+    return [as_dict(row) for row in as_list(entities[key])]
 
 
 def _tile_fact(tile: JsonDict) -> str:
@@ -46,19 +51,19 @@ def _tile_fact(tile: JsonDict) -> str:
         return "desert"
     if not isinstance(number, int):
         raise ValueError("resource tile is missing its number")
-    return f"{number} {resource.lower()}"
+    return f"{number} {as_str(resource).lower()}"
 
 
 def _node_base_description(node: JsonDict, tiles: dict[str, JsonDict]) -> str:
     adjacent = sorted(
-        (tiles[token] for token in node["adjacent_tile_tokens"]),
-        key=lambda tile: tile["id"],
+        (tiles[as_str(token)] for token in as_list(node["adjacent_tile_tokens"])),
+        key=lambda tile: as_int(tile["id"]),
     )
     numbers = [
         "desert" if tile["resource"] is None else str(tile["number"])
         for tile in adjacent
     ]
-    resources = [(tile["resource"] or "desert").lower() for tile in adjacent]
+    resources = [as_str(tile["resource"] or "desert").lower() for tile in adjacent]
     if len(adjacent) == 1:
         return f"the {numbers[0]} {resources[0]} coastal corner"
     if len(adjacent) == 2:
@@ -101,7 +106,7 @@ def inverse_location_descriptions(contract: JsonDict) -> dict[str, str]:
         if not isinstance(rows, list) or len(rows) != _EXPECTED_COUNTS[entity_type]:
             raise ValueError(f"contract has invalid {entity_type} atlas")
 
-    tiles = {tile["token"]: tile for tile in entities["tile"]}
+    tiles = {as_str(tile["token"]): tile for tile in _rows(entities, "tile")}
     if len(tiles) != 19:
         raise ValueError("contract tile tokens are not unique")
     tile_facts = {token: _tile_fact(tile) for token, tile in tiles.items()}
@@ -114,8 +119,8 @@ def inverse_location_descriptions(contract: JsonDict) -> dict[str, str]:
     }
 
     node_bases = {
-        node["token"]: _node_base_description(node, tiles)
-        for node in entities["node"]
+        as_str(node["token"]): _node_base_description(node, tiles)
+        for node in _rows(entities, "node")
     }
     node_base_counts = Counter(node_bases.values())
     for token, base in node_bases.items():
@@ -129,8 +134,8 @@ def inverse_location_descriptions(contract: JsonDict) -> dict[str, str]:
                 f"the {direction} corner of the {tile_facts[tile_token]} tile"
             )
 
-    for edge in entities["edge"]:
-        token = edge["token"]
+    for edge in _rows(entities, "edge"):
+        token = as_str(edge["token"])
         anchor = _unique_anchor(_EDGE_ANCHORS[token], unique_tiles)
         if anchor is not None:
             tile_token, direction = anchor
@@ -138,8 +143,9 @@ def inverse_location_descriptions(contract: JsonDict) -> dict[str, str]:
                 f"the {direction} edge of the {tile_facts[tile_token]} tile"
             )
 
-    for port in entities["port"]:
-        nodes = tuple(sorted(port["attached_nodes"]))
+    for port in _rows(entities, "port"):
+        node_ids = sorted(as_int(node) for node in as_list(port["attached_nodes"]))
+        nodes = (node_ids[0], node_ids[1])
         edge_token = _EDGE_TOKEN_BY_NODES.get(nodes)
         if edge_token is None:
             raise ValueError(f"port {port['token']} has invalid attached nodes")
@@ -147,8 +153,12 @@ def inverse_location_descriptions(contract: JsonDict) -> dict[str, str]:
         if anchor is None:
             continue
         tile_token, direction = anchor
-        port_type = "3:1 port" if port["resource"] is None else f"{port['resource'].lower()} port"
-        descriptions[port["token"]] = (
+        port_type = (
+            "3:1 port"
+            if port["resource"] is None
+            else f"{as_str(port['resource']).lower()} port"
+        )
+        descriptions[as_str(port["token"])] = (
             f"the {port_type} beyond the {direction} edge of "
             f"the {tile_facts[tile_token]} tile"
         )
@@ -183,18 +193,21 @@ def compact_node_signatures(contract: JsonDict) -> dict[str, JsonDict]:
         raise ValueError("contract has invalid tile atlas")
     if not isinstance(nodes, list) or len(nodes) != _EXPECTED_COUNTS["node"]:
         raise ValueError("contract has invalid node atlas")
-    tiles_by_id = {tile["id"]: tile for tile in tiles}
+    tile_rows = [as_dict(tile) for tile in tiles]
+    tiles_by_id = {as_int(tile["id"]): tile for tile in tile_rows}
     if len(tiles_by_id) != _EXPECTED_COUNTS["tile"]:
         raise ValueError("contract tile IDs are not unique")
 
     signatures: dict[str, JsonDict] = {}
-    for node in nodes:
-        token = node["token"]
+    for raw_node in nodes:
+        node = as_dict(raw_node)
+        token = as_str(node["token"])
         if token in signatures:
             raise ValueError(f"contract node token is duplicated: {token}")
-        adjacent_ids = node.get("adjacent_tiles")
-        if not isinstance(adjacent_ids, list) or not 1 <= len(adjacent_ids) <= 3:
+        raw_adjacent = node.get("adjacent_tiles")
+        if not isinstance(raw_adjacent, list) or not 1 <= len(raw_adjacent) <= 3:
             raise ValueError(f"node {token} has invalid adjacent tiles")
+        adjacent_ids = [as_int(tile_id) for tile_id in raw_adjacent]
         if adjacent_ids != sorted(adjacent_ids) or len(adjacent_ids) != len(
             set(adjacent_ids)
         ):

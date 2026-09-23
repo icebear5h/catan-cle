@@ -1,0 +1,107 @@
+@media (max-width: 1180px) {
+  .reasoning-conditions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .reasoning-conditions > div:nth-child(3) {
+    border-right: 0;
+  }
+
+  .reasoning-conditions > div:nth-child(-n + 3) {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .reasoning-copy-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reasoning-text-panel.final pre {
+    min-height: 12rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .reasoning-hero,
+  .reasoning-workspace,
+  .reasoning-context-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reasoning-board-panel {
+    width: min(100%, 32rem);
+  }
+
+  .reasoning-dq {
+    grid-template-columns: 1fr;
+  }
+
+  .reasoning-dq > div,
+  .reasoning-dq article {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .reasoning-dq article:last-child {
+    border-bottom: 0;
+  }
+
+  .reasoning-run-card {
+    border-top: 1px solid var(--line);
+    border-left: 0;
+    padding: 1rem 0 0;
+  }
+
+  .reasoning-rail {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .reasoning-metrics {
+    grid-template-columns: repeat(3, minmax(80px, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .reasoning-shell {
+    padding: 0.7rem;
+  }
+
+  .reasoning-run-selector {
+    grid-template-columns: 1fr;
+  }
+
+  .reasoning-run-selector > div {
+    border-top: 1px solid var(--line);
+    border-left: 0;
+    padding: 0.65rem 0 0;
+  }
+
+  .reasoning-conditions,
+  .reasoning-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .reasoning-conditions > div,
+  .reasoning-conditions > div:nth-child(3) {
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .reasoning-conditions > div:nth-child(even) {
+    border-right: 0;
+  }
+
+  .reasoning-selection {
+    grid-template-columns: 1fr;
+  }
+
+  .reasoning-detail-header,
+  .reasoning-prompt summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .reasoning-detail-status {
+    justify-items: start;
+  }
+}

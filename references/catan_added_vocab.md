@@ -9,7 +9,7 @@ Manifest:
 
 Source code:
 
-- `evals/catan_board_bench/tokens.py`
+- `evals/catan_board_bench/tokens/`
 - `scripts/export_catan_tokens.py`
 
 ## Counts

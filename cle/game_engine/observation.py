@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any
 
-from cle.game_engine.models.enums import Action, CITY, RESOURCES, ROAD, SETTLEMENT
+from cle.game_engine.models.enums import CITY, RESOURCES, ROAD, SETTLEMENT, Action, FastBuildingType
+from cle.game_engine.models.map import CatanMap, Coordinate
 from cle.game_engine.models.player import Color
+from cle.game_engine.state import GameState
 from cle.game_engine.state_functions import (
     get_actual_victory_points,
     get_dev_cards_in_hand,
@@ -18,6 +20,7 @@ from cle.game_engine.state_functions import (
     player_has_rolled,
     player_key,
 )
+from cle.game_engine.trading import TradeWindow
 
 
 @dataclass(slots=True)
@@ -25,10 +28,10 @@ class PlayerObservation:
     my_color: Color
     my_settlements: list[int]
     my_cities: list[int]
-    my_roads: list[tuple]
+    my_roads: list[tuple[int, int]]
     opponent_settlements: dict[Color, list[int]]
     opponent_cities: dict[Color, list[int]]
-    opponent_roads: dict[Color, list[tuple]]
+    opponent_roads: dict[Color, list[tuple[int, int]]]
     my_resources: dict[str, int]
     my_dev_cards: dict[str, int]
     opponent_resource_counts: dict[Color, int]
@@ -36,17 +39,17 @@ class PlayerObservation:
     current_turn: int
     current_phase: str
     turn_order: tuple[Color, ...]
-    last_dice_roll: Any
-    robber_position: Any
+    last_dice_roll: tuple[int, int] | None
+    robber_position: Coordinate
     my_vp: int
     opponent_vps: dict[Color, int]
     longest_road_holder: Color | None
     largest_army_holder: Color | None
     my_longest_road_length: int
     valid_actions: list[Action]
-    board_map: Any
-    buildings_dict: dict[int, tuple]
-    trade_window: Any
+    board_map: CatanMap
+    buildings_dict: dict[int, tuple[Color, FastBuildingType]]
+    trade_window: TradeWindow | None
     is_my_turn: bool
     turn_player_color: Color
     recent_events: list[Action] = field(default_factory=list)
@@ -56,10 +59,10 @@ class PlayerObservation:
     free_roads_available: int = 0
     turn_player_has_rolled: bool | None = None
 
-    def __setstate__(self, state) -> None:
+    def __setstate__(self, state: tuple[object, Mapping[str, object]]) -> None:
         """Keep older slotted observation pickles readable after additive facts."""
         _, stored = state
-        values = {
+        values: dict[str, object] = {
             "my_actual_vp": None,
             "current_prompt": "",
             "setup_road_anchor": None,
@@ -72,7 +75,7 @@ class PlayerObservation:
 
 
 def observe_state(
-    game_state,
+    game_state: GameState,
     player_color: Color,
     recent_events: list[Action] | None = None,
 ) -> PlayerObservation:

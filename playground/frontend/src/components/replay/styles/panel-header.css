@@ -1,0 +1,86 @@
+.replay-transcript-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.replay-transcript-heading {
+  align-items: flex-start;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.replay-transcript-heading h3 {
+  color: var(--cyan);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+.replay-transcript-step {
+  color: var(--muted);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+}
+
+.replay-transcript-status {
+  border: 1px solid;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.62rem;
+  padding: 0.2rem 0.35rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.replay-transcript-status.provisional {
+  border-color: rgba(255, 209, 102, 0.5);
+  color: var(--amber);
+}
+
+.replay-transcript-status.verified {
+  border-color: rgba(60, 255, 205, 0.5);
+  color: var(--cyan);
+}
+
+.replay-transcript-note {
+  color: var(--muted);
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+.replay-transcript-meta {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: 1fr 1fr;
+}
+
+.replay-transcript-meta > div {
+  background: rgba(5, 7, 10, 0.68);
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  padding: 0.45rem 0.5rem;
+}
+
+.replay-transcript-meta strong {
+  color: var(--text);
+  font-size: 0.72rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.replay-transcript-label {
+  color: var(--muted);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+}
+

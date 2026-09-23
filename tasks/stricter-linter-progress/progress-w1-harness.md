@@ -1,0 +1,13 @@
+- context.py (814) -> package cle/harness/context/: __init__ 16, assembler 280, environment 81, errors 14, formatting 120, parser 182, response_values 137, tool_response 121. Ruff+mypy clean; area tests 2F/1883P (== baseline).
+- communication.py (455) -> package: __init__ 31, suite 147, rendering 172, parsing 148. CommitmentProposal late-bound via package for the monkeypatch site. Ruff+mypy clean; tests 2F/1883P (== baseline). Team lead added pydantic mypy plugin to pyproject, clearing all pydantic explicit-any.
+- prompt_store.py (491) -> package: __init__ 67, documents 117, overrides 132, resolution 184, storage 120. os / default_shared_suite_path / _store_lock late-bound through the package for the three monkeypatch sites. Ruff+mypy clean; tests 2F/1883P.
+- providers/openrouter.py (363) -> package: __init__ 25, failures 154, transport 226. httpx/asyncio re-exported for the two module-path patch sites. reasoning.py retyped (Any -> JsonValue/object). Ruff+mypy clean; tests 2F/1883P.
+- prompt_suite_v1.py (393) -> package: __init__ 47, system 48, guidance 213, decision 128. Verified byte-identical rendering vs HEAD across 150 contexts. base.py retyped. All 5 oversized files now split.
+- Remaining lint/type cleanup done file by file: models, validation, public_speech, catan_board_surface, components, suite, shared_suite, providers/{vllm,cerebras,groq}, prompts/base.
+- AREA GATE GREEN: ruff 20 -> 0, mypy 95 -> 0, structure 5 oversized -> 0. No leakage into other areas (checked cle/players, cle/traces, playground, scripts, evals for errors citing my retyped APIs).
+- Equivalence proofs: context formatters byte-identical over a 400-step played game; prompt_suite_v1 byte-identical over 150 contexts.
+- cle/harness/README.md gained a Package layout section.
+- BLOCKED on final full test run: cle.replay.runtime.step_executor.action_matcher missing (w1-replay mid-edit).
+- FINAL: ruff/mypy/structure/whitespace all clean for cle/harness + cle/prompts. Tests 3F/1882P vs baseline 2F/1883P; the one new failure is tests/viewer/commentary/test_commentary_contextualizer.py::test_strict_replay_step_never_reads_a_future_parsed_row, caused by the cle/replay step_executor split (reported to w1-replay). The reasoning max_tokens test the brief said would fail actually passes.
+- CLOSED: w1-replay fixed the step_executor split and the commentary narrowing bug. My suites are back to the exact baseline: 2 failed / 1883 passed, both failures in tests/viewer/routes/test_live_sandbox_routes.py, reproduced with and without PYTHONHASHSEED=0.
+- init_typed impact verified properly: paired same-moment run over the 10 files that construct a pydantic model gave 48 errors without the plugin vs 25 with, 23 cleared, 0 new.

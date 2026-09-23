@@ -1,23 +1,28 @@
 """Exact Colonist trade lifecycle state for replay mode."""
 
+from __future__ import annotations
+
 from copy import deepcopy
+from typing import Final
 
+from cle.replay.colonist.types import ActionHint, TradeLedgerRecord
+from cle.replay.contracts import ReplayRuntimeState
 
-TRADE_OFFER_TYPES = {"OFFER_TRADE", "COUNTER_OFFER"}
-TRADE_RESPONSE_TYPES = {
+TRADE_OFFER_TYPES: Final[set[str]] = {"OFFER_TRADE", "COUNTER_OFFER"}
+TRADE_RESPONSE_TYPES: Final[set[str]] = {
     "ACCEPT_TRADE",
     "REJECT_TRADE",
     "CLEAR_TRADE_RESPONSE",
 }
 
 
-def ensure_replay_trade_ledger(state) -> None:
+def ensure_replay_trade_ledger(state: ReplayRuntimeState) -> None:
     """Initialize exact trade storage on older ServerState instances."""
     if not hasattr(state, "replay_trade_ledger"):
         state.replay_trade_ledger = {}
 
 
-def _record_from_hint(action_hint):
+def _record_from_hint(action_hint: ActionHint) -> TradeLedgerRecord:
     offered = tuple(action_hint.get("offered") or (0, 0, 0, 0, 0))
     wanted = tuple(action_hint.get("wanted") or (0, 0, 0, 0, 0))
     trade_tuple = action_hint.get("trade_tuple") or ()
@@ -43,7 +48,7 @@ def _record_from_hint(action_hint):
     }
 
 
-def _closures_from_hint(action_hint):
+def _closures_from_hint(action_hint: ActionHint) -> list[ActionHint]:
     closures = action_hint.get("closed_trades")
     if closures is not None:
         return closures
@@ -52,12 +57,15 @@ def _closures_from_hint(action_hint):
     return []
 
 
-def apply_replay_trade_event(state, action_hint):
+def apply_replay_trade_event(
+    state: ReplayRuntimeState,
+    action_hint: ActionHint,
+) -> dict[str, list[object]]:
     """Apply one parsed action to the exact trade-ID ledger."""
     ensure_replay_trade_ledger(state)
     ledger = state.replay_trade_ledger
     action_type = action_hint.get("type")
-    changes = {"opened": [], "responded": [], "closed": []}
+    changes: dict[str, list[object]] = {"opened": [], "responded": [], "closed": []}
 
     if action_type in TRADE_OFFER_TYPES:
         trade_id = action_hint.get("trade_id")
@@ -96,17 +104,17 @@ def apply_replay_trade_event(state, action_hint):
         trade_id = closure.get("trade_id")
         if trade_id is None:
             continue
-        record = ledger.pop(trade_id, None)
+        closed_record: TradeLedgerRecord | None = ledger.pop(trade_id, None)
         changes["closed"].append({
             "trade_id": trade_id,
             "reason": closure.get("reason"),
-            "existed": record is not None,
+            "existed": closed_record is not None,
         })
 
     return changes
 
 
-def replay_trade_ledger_payload(state):
+def replay_trade_ledger_payload(state: ReplayRuntimeState) -> list[TradeLedgerRecord]:
     """Return JSON-safe active replay trades in source insertion order."""
     ensure_replay_trade_ledger(state)
     return [deepcopy(record) for record in state.replay_trade_ledger.values()]

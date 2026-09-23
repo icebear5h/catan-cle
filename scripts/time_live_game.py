@@ -17,12 +17,15 @@ import os
 import sqlite3
 import statistics
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
+from typing import cast
 
 from dotenv import load_dotenv
 from flask import Flask
 
 from cle.harness.reasoning import native_reasoning_request, reasoning_token_count
+from cle.replay.contracts import GameEngineHolder
 from cle.traces import SQLiteLiveTraceStore
 from playground.game_viewer.routes.live_game import live_game_bp
 from playground.game_viewer.state import ServerState
@@ -36,8 +39,23 @@ class _NoBrowserSocket:
 
     emissions: int = field(default=0)
 
-    def emit(self, event, payload):
+    def emit(self, event: str, payload: object) -> None:
         self.emissions += 1
+
+
+# playground.game_viewer is unannotated; these typed handles keep the calls and
+# attribute reads here checkable without changing what runs.
+_new_server_state: Callable[[], ServerState] = ServerState
+
+
+def _turns_played(state: ServerState) -> int:
+    sandbox = state.current_sandbox
+    if sandbox is None:
+        raise RuntimeError("no active sandbox on the viewer server state")
+    # The viewer stores the sandbox as ``object``; the repo's typed contract for
+    # reading its engine back out is GameEngineHolder.
+    holder = cast(GameEngineHolder, sandbox)
+    return int(holder.game_engine.state.num_turns)
 
 
 def _percentile(values: list[int], fraction: float) -> int:
@@ -112,7 +130,7 @@ def run(args: argparse.Namespace) -> int:
     store = SQLiteLiveTraceStore(
         os.getenv("CATAN_LIVE_TRACE_DB", ".cle/live_traces.sqlite3")
     )
-    state = ServerState()
+    state = _new_server_state()
     state.live_trace_store = store
     app = Flask(__name__)
     app.config["SERVER_STATE"] = state
@@ -162,7 +180,7 @@ def run(args: argparse.Namespace) -> int:
             break
         if steps % 25 == 0:
             print(
-                f"  step {steps}  turn {state.current_sandbox.game_engine.state.num_turns}  "
+                f"  step {steps}  turn {_turns_played(state)}  "
                 f"{time.monotonic() - started_at:.0f}s",
                 flush=True,
             )
@@ -177,7 +195,7 @@ def run(args: argparse.Namespace) -> int:
         wall_seconds=wall_seconds,
         steps=steps,
         failed_steps=failed_steps,
-        turns=state.current_sandbox.game_engine.state.num_turns,
+        turns=_turns_played(state),
         outcome=outcome,
     )
     return exit_code

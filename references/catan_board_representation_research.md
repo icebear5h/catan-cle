@@ -95,7 +95,7 @@ rule that is absent from generation.
 Relevant files:
 
 - `cle/game_engine/models/map.py`
-- `cle/game_engine/models/board.py`
+- `cle/game_engine/models/board/`
 - `cle/game_engine/models/coordinate_system.py`
 
 The engine already has the right semantic decomposition: land faces, graph
@@ -122,7 +122,7 @@ Hazards:
 
 Relevant files:
 
-- `cle/game_engine/features.py`
+- `cle/game_engine/features/`
 - upstream Catanatron `features.py` and `gym/board_tensor_features.py`
 
 The current feature vector creates fixed slots such as `TILE3_IS_WOOD`,
@@ -163,9 +163,9 @@ Weaknesses:
 
 Relevant files:
 
-- `evals/catan_board_bench/tokens.py`
-- `evals/catan_board_bench/builder.py`
-- `evals/catan_board_bench/annotations.py`
+- `evals/catan_board_bench/tokens/`
+- `evals/catan_board_bench/builder/`
+- `evals/catan_board_bench/annotations/`
 
 CatanBoardBench already provides the best starting boundary:
 
@@ -195,7 +195,7 @@ Weaknesses:
 
 Relevant files:
 
-- `cle/env/observation_formatter.py`
+- `cle/env/observation_formatter/`
 - `cle/harness/replay.py`
 
 The formatter gives readable descriptions of owned and opposing placements and

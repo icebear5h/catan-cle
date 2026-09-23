@@ -1,0 +1,14 @@
+Mon Sep 21 23:39:32 EDT 2026 start
+- render.py (549) -> render/{__init__ 112, style 77, raster 103, terrain 159, pieces 123}; exports parity OK; ruff clean; 9 explicit-any carried over
+- scoring.py (789) -> scoring/{__init__ 71, categories 92, selection 128, prompting 140, normalization 218, answers 222, summaries 51}; exports parity OK
+- hex_direction_probe.py (406) -> hex_direction_probe/{__init__ 50, __main__ 7, layout 61, drawing 144, build 220}; exports parity OK; ruff clean
+- text_representations.py (444) -> package {__init__ 89, schema 111, json_formats 91, dsl_format 100, ascii_format 140}; exports parity OK; ruff clean; mypy 3->2
+- text_format_optimization.py (451) -> package {__init__ 68, schema 39, support 80, indexes 180, codec 73, builder 148}; exports parity OK; byte witnesses pass
+- annotations.py (494) -> package {__init__ 106, __main__ 7, constants 18, geometry 168, render_state 96, payload 202}; exports parity OK; CLI OK
+- tokens.py (349) -> package {__init__ 72, vocabulary 102, atlas 109, manifest 172}; manifest/atlas JSON byte-identical vs pre-split
+- decision_buckets.py (505) -> package {__init__ 66, taxonomy 42, models 147, loading 22, features 165, classify 197}; exports parity OK; mypy 14->12 (Literal aliases fixed)
+- decision_spot_checks.py (495) -> package {__init__ 44, config 56, artifacts 66, aggregates 70, decisions 191, runs 168}; exports parity OK; ruff clean
+- transcript_reasoning.py (949) -> package of 11 modules, max 162 lines; namespace parity OK; ruff 11->10; mypy 41->40
+- transcript_observation_assembly.py (1147) -> package of 11 modules, max 208; namespace parity OK; PROJECT_ROOT depth fixed; ruff 7->6; mypy 44->43
+- inspect_archives.py (1142) -> package of 10 modules, max 245; namespace parity OK; ruff 19->10 (8 ANN201 annotated); mypy 21->13
+- replay_action_diff.py (1894) -> package of 14 modules, max 245; ruff 27->26

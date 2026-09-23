@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Any
-
+from data_pipeline.json_types import JsonDict, JsonValue
 from evals.catan_board_bench.tokens import RECOGNITION_CLASS_VOCABULARIES, atlas_tokens
 
-
-JsonDict = dict[str, Any]
 SEMANTIC_CONTRACT_SCHEMA = "catan_board_recognition_semantic_contract/v1"
 QUERY_TEXT_BY_HEAD = {
     "tile.resource": "resource?",
@@ -91,7 +88,7 @@ def semantic_candidates(head: str) -> tuple[str, ...]:
 def semantic_contract() -> JsonDict:
     """Return the complete versioned phrase and engine-class mapping."""
 
-    heads = {}
+    heads: dict[str, JsonValue] = {}
     for head, query_text in QUERY_TEXT_BY_HEAD.items():
         classes = RECOGNITION_CLASS_VOCABULARIES[head]
         heads[head] = {

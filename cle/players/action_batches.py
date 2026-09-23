@@ -6,7 +6,7 @@ import re
 from copy import deepcopy
 
 from cle.game_engine.trading import RESOURCE_NAMES
-
+from cle.players.data import ActionCall, JsonValue
 
 MAX_BATCH_ACTIONS = 4
 BATCH_TOOLS = frozenset({
@@ -14,19 +14,25 @@ BATCH_TOOLS = frozenset({
 })
 
 
-def validate_batch_actions(actions: object, *, stored: bool = False) -> tuple[dict, ...]:
+def validate_batch_actions(
+    actions: JsonValue | tuple[ActionCall, ...], *, stored: bool = False,
+) -> tuple[ActionCall, ...]:
     """Check the entire syntax, never future legality against an initial menu.
 
     The detached tuple is private plan data; arguments retain their semantic names
     so later roads, settlements and port rates bind to the updated engine state.
     """
     expected = tuple if stored else list
-    if not isinstance(actions, expected) or not 1 <= len(actions) <= MAX_BATCH_ACTIONS:
+    if not isinstance(actions, (list, tuple)) or not isinstance(actions, expected) or not 1 <= len(actions) <= MAX_BATCH_ACTIONS:
         raise ValueError(f"actions must contain 1–{MAX_BATCH_ACTIONS} deterministic calls")
+    admitted: list[ActionCall] = []
     for index, call in enumerate(actions):
-        if isinstance(call, dict) and set(call) == {"tool"}:
+        if not isinstance(call, dict):
+            raise ValueError("Each batch action requires only tool and arguments")
+        admitted.append(call)
+        if set(call) == {"tool"}:
             call = {**call, "arguments": {}}
-        if not isinstance(call, dict) or set(call) != {"tool", "arguments"}:
+        if set(call) != {"tool", "arguments"}:
             raise ValueError("Each batch action requires only tool and arguments")
         tool, args = call["tool"], call["arguments"]
         if not isinstance(tool, str) or tool not in BATCH_TOOLS:
@@ -55,6 +61,7 @@ def validate_batch_actions(actions: object, *, stored: bool = False) -> tuple[di
         else:
             field = "edge" if tool == "build_road" else "node"
             pattern = r"<E\d{2}_\d{2}>" if field == "edge" else r"<N\d{2}>"
-            if set(args) != {field} or not isinstance(args[field], str) or not re.fullmatch(pattern, args[field], flags=re.ASCII):
+            token = args.get(field)
+            if set(args) != {field} or not isinstance(token, str) or not re.fullmatch(pattern, token, flags=re.ASCII):
                 raise ValueError(f"{tool} requires one literal {field} token")
-    return deepcopy(tuple(actions))
+    return deepcopy(tuple(admitted))

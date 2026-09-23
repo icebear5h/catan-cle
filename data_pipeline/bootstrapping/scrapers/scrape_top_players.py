@@ -17,8 +17,10 @@ import os
 from pathlib import Path
 from typing import Optional
 
-from .colonist_api import ColonistAPI
+from data_pipeline.json_coerce import as_str
+from data_pipeline.json_types import JsonDict
 
+from .colonist_api import ColonistAPI
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_INDEX_OUTPUT = (
@@ -40,7 +42,7 @@ async def build_game_index(
     usernames: Optional[list[str]] = None,
     use_authenticated_user: bool = False,
     jwt_token: Optional[str] = None,
-) -> list[dict]:
+) -> list[JsonDict]:
     """
     Build a replay candidate index from leaderboard players' public histories.
 
@@ -50,13 +52,13 @@ async def build_game_index(
     output_path = Path(output_file)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    records = []
+    records: list[JsonDict] = []
     seen_game_ids = set()
 
     async with ColonistAPI(jwt_token=jwt_token if use_authenticated_user else None) as api:
         if use_authenticated_user:
             username = await api.get_current_username()
-            targets = [
+            targets: list[JsonDict] = [
                 {
                     "username": username,
                     "rank": None,
@@ -105,7 +107,7 @@ async def build_game_index(
             ]
 
         for player_index, player in enumerate(targets, start=1):
-            username = player["username"]
+            username = as_str(player["username"])
             logger.info(
                 "[%s/%s] Fetching %s history (rank %s, rating %s)...",
                 player_index,
@@ -185,7 +187,7 @@ def parse_usernames(raw_usernames: Optional[str]) -> Optional[list[str]]:
     return usernames or None
 
 
-async def test_api_connection():
+async def test_api_connection() -> None:
     """Test the API connection and endpoint discovery."""
     logger.info("Testing Colonist API connection...")
 

@@ -3,31 +3,40 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
 from dataclasses import asdict, replace
-from typing import Any
+from typing import Protocol, cast
 
 from cle.env.observation_formatter import CatanObservationFormatter
 from cle.game_engine.json import GameEncoder
 from cle.game_engine.models.player import Color
+from cle.game_engine.public_board import JsonValue
 from cle.harness import CompletionTransport
 from cle.harness.board_surface import board_presentation_payload
-from cle.harness.communication import parse_communication_suite
 from cle.harness.decision import request_player_attempt
-from cle.harness.prompt_store import resolve_prompt_suites
+from cle.harness.prompt_store import compile_active_suites, resolve_prompt_suites
 from cle.harness.providers import OpenRouterConfig, OpenRouterTransport
 from cle.harness.reasoning import (
     native_reasoning_enabled,
     native_reasoning_returned,
     reasoning_token_count,
 )
-from cle.harness.shared_suite import parse_shared_prompt_suite
-from cle.harness.suite import parse_context_suite
-from cle.players.contracts import PlayerAttempt, PlayerContext
+from cle.players.contracts import PlayerAttempt, PlayerChoice, PlayerContext
 from cle.players.validation import action_from_choice, choice_followup_action
 from cle.sandbox.replay import ReplaySandbox
 
-TransportFactory = Callable[..., CompletionTransport]
+
+class TransportFactory(Protocol):
+    """Builds the completion transport one replay preview call should use."""
+
+    def __call__(
+        self,
+        *,
+        model: str,
+        temperature: float,
+        max_tokens: int,
+        reasoning: Mapping[str, JsonValue],
+    ) -> CompletionTransport: ...
 
 
 async def generate_decision_preview(
@@ -35,25 +44,19 @@ async def generate_decision_preview(
     *,
     model: str,
     game_plan: str,
-    reasoning_request: Mapping[str, Any],
+    reasoning_request: Mapping[str, JsonValue],
     temperature: float = 0.2,
     max_tokens: int = 8_192,
     transport_factory: TransportFactory | None = None,
     notes_seed: str | None = None,
     notes_player: Color | None = None,
-) -> dict[str, Any]:
+) -> dict[str, object]:
     """Preview a cold, cursor-zero agent without accepting notes or changing replay."""
     context, identity = sandbox.decision_context()
     if notes_seed is not None and notes_player != context.actor:
         raise ValueError("Replay notes seed must belong to the current decision player")
     sources = resolve_prompt_suites()
-    if sources.shared is not None:
-        shared = parse_shared_prompt_suite(sources.shared.source)
-        suite = shared.decision_suite()
-        communication_suite = shared.communication_suite()
-    else:
-        suite = parse_context_suite(sources.decision.source)
-        communication_suite = parse_communication_suite(sources.communication.source)
+    suite, communication_suite = compile_active_suites(sources)
     if transport_factory is None:
         transport: CompletionTransport = OpenRouterTransport(
             OpenRouterConfig(
@@ -88,13 +91,13 @@ async def generate_decision_preview(
         )
     finally:
         if owns_transport:
-            await transport.aclose()
+            await cast(OpenRouterTransport, transport).aclose()
 
     result = serialize_decision_preview(
         attempt,
         context,
         model=model,
-        game_id=identity["game_id"],
+        game_id=cast(str | None, identity["game_id"]),
         replay_index=identity["replay_index"],
         reasoning_request=reasoning_request,
         max_tokens=max_tokens,
@@ -122,11 +125,11 @@ def serialize_decision_preview(
     model: str,
     game_id: str | None,
     replay_index: int,
-    reasoning_request: Mapping[str, Any],
+    reasoning_request: Mapping[str, JsonValue],
     max_tokens: int,
     suite_id: str,
     suite_version: str,
-) -> dict[str, Any]:
+) -> dict[str, object]:
     """Return a JSON-safe viewer record without inventing replay prompt semantics."""
     response = attempt.model_response
     request = attempt.model_request
@@ -143,15 +146,16 @@ def serialize_decision_preview(
     )
     enabled = native_reasoning_enabled(reasoning_request)
 
-    action_index = choice.action_index if choice is not None else None
+    decision = cast(PlayerChoice | None, choice)
+    action_index = decision.action_index if decision is not None else None
     selected_action = (
-        action_from_choice(context, choice)
+        action_from_choice(context, cast(PlayerChoice, decision))
         if choice is not None and attempt.validation_error is None
         else None
     )
     requested_actions = [] if selected_action is None else [selected_action]
     if selected_action is not None:
-        followup = choice_followup_action(context, choice)
+        followup = choice_followup_action(context, cast(PlayerChoice, decision))
         if followup is not None:
             requested_actions.append(followup)
     formatter = CatanObservationFormatter()
@@ -191,7 +195,7 @@ def serialize_decision_preview(
         "requested_model": model,
         "model": response.model or model if response is not None else model,
         "generation_max_tokens": max_tokens,
-        "game_plan": choice.game_plan if choice is not None else "",
+        "game_plan": decision.game_plan if decision is not None else "",
         "notes_update": choice.notes_update if choice is not None else None,
         "accepted": False,
         "request": (
@@ -206,8 +210,9 @@ def serialize_decision_preview(
         "action": str(selected_action) if selected_action is not None else None,
         "requested_action_sequence": [str(action) for action in requested_actions],
         "knight_destination": (
-            list(choice.knight_destination)
-            if selected_action is not None and choice.knight_destination is not None
+            list(cast(PlayerChoice, decision).knight_destination or ())
+            if selected_action is not None
+            and cast(PlayerChoice, decision).knight_destination is not None
             else None
         ),
         "action_description": (

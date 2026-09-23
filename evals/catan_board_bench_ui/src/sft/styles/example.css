@@ -1,0 +1,215 @@
+.sft-detail {
+  min-width: 0;
+  padding: clamp(0.8rem, 2vw, 1.5rem);
+}
+
+.sft-detail-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 2.8rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.8rem;
+}
+
+.sft-detail-topline > div:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.sft-detail-topline > div:first-child > span:not(.sft-kind) {
+  color: #8295a5;
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  text-transform: uppercase;
+}
+
+.sft-detail-topline > div:first-child > span:not(.sft-kind)::before {
+  content: "/";
+  color: #43515e;
+  margin-right: 0.45rem;
+}
+
+.sft-stepper {
+  display: grid;
+  grid-template-columns: 2.1rem auto 2.1rem;
+  align-items: center;
+}
+
+.sft-stepper code {
+  min-width: 7.5rem;
+  color: #8ea0af;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-align: center;
+}
+
+.sft-example-grid {
+  display: grid;
+  grid-template-columns: minmax(360px, 1.02fr) minmax(330px, 0.98fr);
+  gap: clamp(1rem, 2vw, 1.6rem);
+  margin-top: 1.25rem;
+}
+
+.sft-board-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    #06090d;
+  background-size: 18px 18px;
+}
+
+.sft-board-card::after {
+  content: "training image · 1024 × 1024";
+  position: absolute;
+  top: 0.65rem;
+  left: 0.65rem;
+  border: 1px solid rgba(60, 255, 205, 0.25);
+  background: rgba(3, 7, 10, 0.84);
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  padding: 0.35rem 0.45rem;
+  text-transform: uppercase;
+}
+
+.sft-board-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+}
+
+.sft-board-card figcaption {
+  display: grid;
+  gap: 0.3rem;
+  border-top: 1px solid var(--line);
+  background: rgba(5, 8, 11, 0.9);
+  padding: 0.75rem;
+}
+
+.sft-board-card figcaption span {
+  overflow: hidden;
+  color: #d6e0e8;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sft-board-card figcaption small { color: #748696; font-size: 0.6rem; }
+
+.sft-conversation {
+  min-width: 0;
+  border: 1px solid var(--line);
+  background: rgba(7, 11, 15, 0.88);
+  padding: clamp(1rem, 2vw, 1.4rem);
+}
+
+.sft-conversation > header {
+  display: grid;
+  gap: 0.35rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.9rem;
+}
+
+.sft-conversation > header span {
+  color: #e6edf3;
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.sft-conversation > header code {
+  overflow: hidden;
+  color: #65798a;
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sft-message {
+  border: 1px solid var(--line);
+  margin-top: 1rem;
+  padding: 0.85rem;
+}
+
+.sft-message > span {
+  color: #708394;
+  font-family: var(--font-mono);
+  font-size: 0.54rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.sft-message p {
+  color: #edf3f7;
+  font-family: var(--font-mono);
+  font-size: clamp(0.86rem, 1.2vw, 1rem);
+  line-height: 1.55;
+  margin-top: 0.55rem;
+  overflow-wrap: anywhere;
+}
+
+.sft-message p i {
+  display: block;
+  width: fit-content;
+  color: var(--cyan);
+  font-style: normal;
+  font-size: 0.63rem;
+  margin-bottom: 0.4rem;
+}
+
+.sft-message.assistant {
+  border-color: rgba(60, 255, 205, 0.38);
+  background: rgba(60, 255, 205, 0.055);
+}
+
+.sft-message.assistant p { color: var(--cyan); font-size: 1.15rem; }
+
+.sft-flow-arrow {
+  height: 1rem;
+  color: #506272;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  text-align: center;
+}
+
+.sft-row-contract {
+  border-top: 1px solid var(--line);
+  margin-top: 1.2rem;
+  padding-top: 0.45rem;
+}
+
+.sft-row-contract > div {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: 0.8rem;
+  border-bottom: 1px solid rgba(230, 237, 243, 0.08);
+  padding: 0.55rem 0;
+}
+
+.sft-row-contract dt {
+  color: #607586;
+  font-family: var(--font-mono);
+  font-size: 0.54rem;
+  text-transform: uppercase;
+}
+
+.sft-row-contract dd {
+  min-width: 0;
+  color: #aab8c3;
+  font-size: 0.68rem;
+  overflow-wrap: anywhere;
+}
+
+.sft-row-contract code { color: var(--cyan); font-family: var(--font-mono); }

@@ -1,0 +1,38 @@
+@media (max-width: 1180px) {
+  .decision-shell {
+    grid-template-columns: minmax(250px, 300px) minmax(0, 1fr);
+  }
+
+  .decision-stat-grid {
+    grid-template-columns: repeat(3, minmax(90px, 1fr));
+  }
+
+  .decision-review-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .decision-list-panel {
+    position: static;
+    max-height: 28rem;
+  }
+}
+
+@media (max-width: 780px) {
+  .decision-shell {
+    grid-template-columns: 1fr;
+    overflow: auto;
+  }
+
+  .decision-rail {
+    max-height: 36rem;
+  }
+
+  .selection-compare,
+  .bucket-definition-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quality-verdicts {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

@@ -1,0 +1,165 @@
+.reasoning-workspace {
+  display: grid;
+  grid-template-columns: minmax(265px, 320px) minmax(0, 1fr);
+  min-height: 44rem;
+  border: 1px solid var(--line);
+  background: rgba(4, 7, 10, 0.68);
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+}
+
+.reasoning-rail {
+  min-width: 0;
+  border-right: 1px solid var(--line);
+  padding: 0.85rem;
+}
+
+.reasoning-rail-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  color: #8597a5;
+  font-size: 0.58rem;
+  padding: 0.15rem 0.25rem 0.55rem;
+}
+
+.reasoning-rail-heading.models {
+  border-top: 1px solid var(--line);
+  margin-top: 0.8rem;
+  padding-top: 0.85rem;
+}
+
+.reasoning-rail-heading small {
+  color: #526572;
+  font-size: 0.56rem;
+}
+
+.reasoning-seed-switch {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--line);
+}
+
+.reasoning-seed-switch button {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: #7d909f;
+  padding: 0.55rem 0.42rem;
+  text-align: left;
+}
+
+.reasoning-seed-switch button:last-child {
+  border-right: 0;
+}
+
+.reasoning-seed-switch strong {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+}
+
+.reasoning-seed-switch small {
+  overflow: hidden;
+  color: #536673;
+  font-size: 0.48rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reasoning-seed-switch button.active {
+  background: rgba(67, 245, 198, 0.1);
+  color: var(--trace-green);
+}
+
+.reasoning-model-list {
+  display: grid;
+  gap: 0.38rem;
+}
+
+.reasoning-model-list button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.28rem 0.45rem;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: rgba(5, 8, 11, 0.7);
+  color: inherit;
+  padding: 0.62rem;
+  text-align: left;
+}
+
+.reasoning-model-list button:hover:not(:disabled),
+.reasoning-model-list button.active {
+  border-color: rgba(67, 245, 198, 0.58);
+}
+
+.reasoning-model-list button.active {
+  background: rgba(67, 245, 198, 0.08);
+  box-shadow: inset 2px 0 0 var(--trace-green);
+}
+
+.reasoning-model-list button > span:first-child {
+  display: grid;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
+.reasoning-model-list button strong {
+  overflow: hidden;
+  color: #dfe7ed;
+  font-size: 0.72rem;
+  font-weight: 580;
+  text-overflow: ellipsis;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.reasoning-model-list button small {
+  overflow: hidden;
+  color: #5f7381;
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reasoning-model-list button > code {
+  grid-column: 1 / -1;
+  color: #718491;
+  font-size: 0.54rem;
+}
+
+.reasoning-model-list button.missing {
+  cursor: not-allowed;
+  opacity: 0.46;
+}
+
+.reasoning-finish {
+  align-self: start;
+  border: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  padding: 0.16rem 0.3rem;
+  text-transform: uppercase;
+}
+
+.reasoning-finish.stop {
+  border-color: rgba(67, 245, 198, 0.45);
+  color: var(--trace-green);
+}
+
+.reasoning-finish.length {
+  border-color: rgba(255, 209, 102, 0.5);
+  color: var(--amber);
+}
+
+.reasoning-finish.missing {
+  color: #71818c;
+}

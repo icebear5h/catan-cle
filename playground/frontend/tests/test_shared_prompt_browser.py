@@ -10,22 +10,24 @@ import os
 import select
 import subprocess
 import sys
+from collections.abc import Iterator
 from copy import deepcopy
 from hashlib import sha256
 from pathlib import Path
 from tempfile import TemporaryDirectory, gettempdir
 from urllib.parse import urlsplit
 
+import playwright.sync_api as pw
 import pytest
 from playwright.sync_api import expect, sync_playwright
 
-
 FRONTEND = Path(__file__).resolve().parents[1]
 ROOT = FRONTEND.parents[1]
+Studio = tuple[pw.Page, dict[str, object]]
 
 
 @pytest.fixture(scope="module")
-def browser_build():
+def browser_build() -> Iterator[tuple[pw.Browser, Path]]:
     parent = Path(os.environ.get("CATAN_BROWSER_TMPDIR", gettempdir()))
     subprocess.run(["ls", "-d", str(parent)], check=True, capture_output=True)
     with TemporaryDirectory(prefix="shared-prompt-browser-", dir=parent) as directory:
@@ -45,13 +47,14 @@ def browser_build():
 
 
 @pytest.fixture(params=[(1600, 1000), (390, 844)], ids=["desktop", "mobile"])
-def viewport(request):
+def viewport(request: pytest.FixtureRequest) -> pw.ViewportSize:
     width, height = request.param
     return {"width": width, "height": height}
 
 
 @pytest.fixture
-def mounted_studio(request, browser_build, viewport, tmp_path):
+def mounted_studio(request: pytest.FixtureRequest, browser_build: tuple[pw.Browser, Path],
+                   viewport: pw.ViewportSize, tmp_path: Path) -> Iterator[Studio]:
     browser, build = browser_build
     env = {
         **os.environ,
@@ -80,7 +83,7 @@ def mounted_studio(request, browser_build, viewport, tmp_path):
             log.seek(0)
             assert origin.startswith("http://127.0.0.1:"), log.read()
 
-            def intercept(route):
+            def intercept(route: pw.Route) -> None:
                 url = urlsplit(route.request.url)
                 if url.netloc == "127.0.0.1:5001" and (
                     url.path in ("/api/prompt-suite", "/api/prompt-suite/validate", "/api/reset", "/api/start-game", "/api/state")
@@ -97,7 +100,7 @@ def mounted_studio(request, browser_build, viewport, tmp_path):
                     blocked.append(route.request.url)
                     route.abort()
 
-            def intercept_socket(route):
+            def intercept_socket(route: pw.WebSocketRoute) -> None:
                 if route.url.startswith(origin.replace("http://", "ws://") + "/socket.io/"):
                     route.connect_to_server()
                 else:
@@ -146,14 +149,14 @@ def mounted_studio(request, browser_build, viewport, tmp_path):
             assert not errors, f"Browser errors: {errors}"
 
 
-def select_component(page, name):
+def select_component(page: pw.Page, name: str) -> pw.Locator:
     page.get_by_role("navigation", name="Prompt components").get_by_role(
         "button", name=name, exact=True,
     ).click()
     return page.get_by_role("textbox", name="Selected prompt component string")
 
 
-def validate(page):
+def validate(page: pw.Page) -> dict[str, object]:
     with page.expect_response(lambda response: response.url.endswith("/api/prompt-suite/validate")) as result:
         page.get_by_role("button", name="Validate", exact=True).click()
     assert result.value.status == 200, result.value.text()
@@ -164,7 +167,7 @@ def validate(page):
 
 
 @pytest.mark.parametrize("mounted_studio", ["loaded"], indirect=True)
-def test_shared_notes_candidate_and_live_game_save(mounted_studio, tmp_path):
+def test_shared_notes_candidate_and_live_game_save(mounted_studio: Studio, tmp_path: Path) -> None:
     page, original = mounted_studio
     expect(page.get_by_role("navigation", name="Prompt components").get_by_role("heading")).to_have_text([
         "Shared Definitions", "Compositions", "Phase Guidance",
@@ -209,7 +212,7 @@ def test_shared_notes_candidate_and_live_game_save(mounted_studio, tmp_path):
 
 
 @pytest.mark.parametrize("mounted_studio", ["loaded"], indirect=True)
-def test_composition_reorders_are_independent(mounted_studio):
+def test_composition_reorders_are_independent(mounted_studio: Studio) -> None:
     page, original = mounted_studio
     document = deepcopy(original["shared"]["document"])
     for consumer, direction, offset in (("decision", "up", -1), ("speech", "down", 1)):
@@ -231,7 +234,9 @@ def test_composition_reorders_are_independent(mounted_studio):
         expect(editor).to_have_value("\n".join(document["compositions"][consumer]["order"]))
 
 
-def test_save_uses_current_source_hash_and_refresh_persists(mounted_studio, tmp_path):
+def test_save_uses_current_source_hash_and_refresh_persists(
+    mounted_studio: Studio, tmp_path: Path,
+) -> None:
     page, original = mounted_studio
     assert original["saving_locked"] is False
     expected_hash = original["shared"]["sha256"]
@@ -269,7 +274,7 @@ def test_save_uses_current_source_hash_and_refresh_persists(mounted_studio, tmp_
 
 
 @pytest.mark.parametrize("mounted_studio", ["session"], indirect=True)
-def test_new_game_returns_to_empty_setup_and_keeps_saved_session(mounted_studio):
+def test_new_game_returns_to_empty_setup_and_keeps_saved_session(mounted_studio: Studio) -> None:
     page, _ = mounted_studio
     origin = page.url
     assert urlsplit(origin).port != 5001

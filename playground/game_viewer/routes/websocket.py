@@ -2,18 +2,23 @@
 
 import json
 
+from flask_socketio import SocketIO
+
 from cle.game_engine.json import GameEncoder
+from cle.game_engine.public_board import JsonValue
+from cle.replay.runtime.trade_ledger import replay_trade_ledger_payload
+
 from ..live.game_logging import get_player_hands
 from ..replay.model_traces import build_paired_model_trace_window
 from ..replay.narrator_reasoning import build_paired_narrator_reasoning_window
-from cle.replay.runtime.trade_ledger import replay_trade_ledger_payload
 from ..replay.transcript import build_paired_transcript_window
+from ..state import ServerState
 
 
-def build_game_state_snapshot(state):
+def build_game_state_snapshot(state: ServerState) -> dict[str, JsonValue] | None:
     sandbox = getattr(state, "current_sandbox", None)
     if sandbox is None:
-        return
+        return None
     game = sandbox.game_engine
 
     # Two layers: the public projection every viewer gets, and the spectator
@@ -81,7 +86,7 @@ def build_game_state_snapshot(state):
         and not key.endswith("_OWNED_AT_START")
     }
 
-    state_data = {
+    state_data: dict[str, object] = {
         "game": game_payload,
         "events": public_events,
         "running": state.game_running,
@@ -110,7 +115,7 @@ def build_game_state_snapshot(state):
     }
 
     if state.replay_mode and state.replay_data:
-        state_data["replay"] = {
+        replay_payload: dict[str, object] = {
             "game_id": state.replay_data.get("game_id"),
             "event_index": state.replay_index,
             "total_events": state.replay_data.get("total_events", 0),
@@ -119,34 +124,40 @@ def build_game_state_snapshot(state):
             "play_order": state.replay_data.get("play_order", []),
             "trade_ledger": replay_trade_ledger_payload(state),
         }
+        state_data["replay"] = replay_payload
         transcript_window = build_paired_transcript_window(
             state.replay_data, state.replay_index
         )
         if transcript_window is not None:
-            state_data["replay"]["paired_transcript"] = transcript_window
+            replay_payload["paired_transcript"] = transcript_window
         model_trace_window = build_paired_model_trace_window(
             state.replay_data, state.replay_index
         )
         if model_trace_window is not None:
-            state_data["replay"]["paired_model_trace"] = model_trace_window
+            replay_payload["paired_model_trace"] = model_trace_window
         narrator_reasoning_window = build_paired_narrator_reasoning_window(
             state.replay_data, state.replay_index
         )
         if narrator_reasoning_window is not None:
-            state_data["replay"]["paired_narrator_reasoning"] = (
+            replay_payload["paired_narrator_reasoning"] = (
                 narrator_reasoning_window
             )
 
-    return json.loads(json.dumps(state_data, cls=GameEncoder))
+    snapshot: dict[str, JsonValue] = json.loads(json.dumps(state_data, cls=GameEncoder))
+    return snapshot
 
 
-def _broadcast_game_state_snapshot(socketio, state):
+def _broadcast_game_state_snapshot(
+    socketio: SocketIO, state: ServerState
+) -> dict[str, JsonValue] | None:
     state_data = build_game_state_snapshot(state)
     socketio.emit('game_state', state_data)
     return state_data
 
 
-def broadcast_game_state(socketio, state):
+def broadcast_game_state(
+    socketio: SocketIO, state: ServerState
+) -> dict[str, JsonValue] | None:
     """Broadcast one cursor-consistent game/replay snapshot."""
     mutation_lock = getattr(state, "replay_mutation_lock", None)
     if mutation_lock is None:
@@ -155,17 +166,17 @@ def broadcast_game_state(socketio, state):
         return _broadcast_game_state_snapshot(socketio, state)
 
 
-def register_websocket_handlers(socketio, state):
+def register_websocket_handlers(socketio: SocketIO, state: ServerState) -> None:
     """Register SocketIO connect/disconnect handlers."""
 
     @socketio.on('connect')
-    def handle_connect():
+    def handle_connect() -> None:
         """Handle client connection."""
         print("Client connected")
         if state.current_sandbox:
             broadcast_game_state(socketio, state)
 
     @socketio.on('disconnect')
-    def handle_disconnect():
+    def handle_disconnect() -> None:
         """Handle client disconnect."""
         print("Client disconnected")

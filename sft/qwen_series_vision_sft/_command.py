@@ -1,0 +1,128 @@
+"""Build the ms-swift command line for one vision-SFT run."""
+
+from __future__ import annotations
+
+from ._base import VISION_ONLY
+from ._config import VisionSftConfig
+
+
+def build_vision_sft_command(
+    config: VisionSftConfig,
+    *,
+    train_json: str,
+    image_folder: str,
+    output_dir: str,
+    token_inventory: str | None = None,
+) -> list[str]:
+    """Build the exact pinned-upstream command for one vision SFT profile."""
+
+    command = [
+        "python",
+        "-m",
+        "sft.scripts.train.train_qwen_series_with_catan_tokens",
+        "--catan_patch_no_deepspeed_savers",
+        "--catan_trainable_profile",
+        config.profile,
+        "--model_id",
+        config.model_id,
+        "--data_path",
+        train_json,
+        "--image_folder",
+        image_folder,
+        "--output_dir",
+        output_dir,
+        "--remove_unused_columns",
+        "False",
+        # The pinned trainer uses the PEFT lifecycle to save selective token
+        # rows and full non-LoRA visual weights for both profiles.
+        "--lora_enable",
+        "True",
+        "--vision_lora",
+        "False",
+        "--lora_namespan_exclude",
+        '["lm_head", "embed_tokens", "embed_token"]',
+        "--lora_rank",
+        str(config.lora_rank),
+        "--lora_alpha",
+        str(config.lora_alpha),
+        "--lora_dropout",
+        str(config.lora_dropout),
+        "--num_lora_modules",
+        "-1",
+        # Full vision-tower updates are intentionally BF16, never QLoRA.
+        "--bits",
+        "16",
+        "--freeze_llm",
+        "True",
+        "--freeze_vision_tower",
+        "False",
+        "--freeze_merger",
+        "False",
+        "--enable_reasoning",
+        "False",
+        "--bf16",
+        "True",
+        "--fp16",
+        "False",
+        "--disable_flash_attn2",
+        "True",
+        "--use_liger_kernel",
+        "False",
+        "--num_train_epochs",
+        str(config.num_train_epochs),
+        "--per_device_train_batch_size",
+        str(config.per_device_train_batch_size),
+        "--gradient_accumulation_steps",
+        str(config.gradient_accumulation_steps),
+        "--image_min_pixels",
+        str(config.image_min_pixels),
+        "--image_max_pixels",
+        str(config.image_max_pixels),
+        "--max_seq_length",
+        str(config.max_seq_length),
+        "--learning_rate",
+        str(config.learning_rate),
+        "--vision_lr",
+        str(config.vision_lr),
+        "--merger_lr",
+        str(config.merger_lr),
+        "--weight_decay",
+        str(config.weight_decay),
+        "--warmup_ratio",
+        str(config.warmup_ratio),
+        "--lr_scheduler_type",
+        "cosine",
+        "--max_grad_norm",
+        "1.0",
+        "--optim",
+        "adamw_torch",
+        "--logging_steps",
+        "1",
+        "--save_strategy",
+        "steps",
+        "--save_steps",
+        str(config.save_steps),
+        "--save_total_limit",
+        str(config.save_total_limit),
+        "--report_to",
+        "none",
+        "--lazy_preprocess",
+        "True",
+        "--gradient_checkpointing",
+        "True",
+        "--tf32",
+        "True",
+        "--dataloader_num_workers",
+        str(config.dataloader_num_workers),
+        "--seed",
+        str(config.seed),
+        "--data_seed",
+        str(config.seed),
+    ]
+    if token_inventory is not None:
+        command.extend(["--catan_token_inventory", token_inventory])
+    if config.profile == VISION_ONLY:
+        command.append("--catan_token_adapter_only")
+    if config.max_steps is not None:
+        command.extend(["--max_steps", str(config.max_steps)])
+    return command

@@ -1,12 +1,15 @@
 """Inject arbitrary game state for VLM benchmark screenshots."""
 
-from flask import Blueprint, jsonify, request, current_app
+from flask import Blueprint, Response, current_app, jsonify, request
+from flask_socketio import SocketIO
+
+from cle.game_engine.public_board import JsonValue
 
 inject_bp = Blueprint('inject', __name__)
 
 
 @inject_bp.route('/api/inject-state', methods=['POST'])
-def inject_state():
+def inject_state() -> Response | tuple[Response, int]:
     """Accept a Game object's JSON serialization and broadcast it to the frontend.
 
     Expects POST body:
@@ -14,8 +17,8 @@ def inject_state():
 
     Or if "raw" is True, expects the full game_state event payload directly.
     """
-    socketio = current_app.config['SOCKETIO']
-    data = request.json
+    socketio: SocketIO = current_app.config['SOCKETIO']
+    data: dict[str, JsonValue] | None = request.json
 
     if not data or 'game' not in data:
         return jsonify({"error": "Missing 'game' key in request body"}), 400

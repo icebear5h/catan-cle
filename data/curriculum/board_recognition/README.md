@@ -227,37 +227,37 @@ boundary.
 Audit or rebuild the replay source lock:
 
 ```bash
-uv run python scripts/audit_catan_board_recognition_sources.py --write
+uv run python -m scripts.board_recognition.audit_catan_board_recognition_sources --write
 ```
 
 Build the 1,216-state corpus and rerender every image:
 
 ```bash
-uv run python scripts/build_catan_board_recognition_dataset.py --overwrite
+uv run python -m scripts.board_recognition.build_catan_board_recognition_dataset --overwrite
 ```
 
 Validate without mutation:
 
 ```bash
-uv run python scripts/build_catan_board_recognition_dataset.py --validate-only
+uv run python -m scripts.board_recognition.build_catan_board_recognition_dataset --validate-only
 ```
 
 Export and validate the eight-query projection:
 
 ```bash
-uv run python scripts/export_catan_board_recognition_sft.py \
+uv run python -m scripts.board_recognition.export_catan_board_recognition_sft \
   --queries-per-state 8 \
   --overwrite
 
-uv run python scripts/export_catan_board_recognition_sft.py \
+uv run python -m scripts.board_recognition.export_catan_board_recognition_sft \
   --validate-only
 
-uv run python scripts/export_catan_board_recognition_ms_swift.py --overwrite
-uv run python scripts/export_catan_board_recognition_ms_swift.py --validate-only
-uv run python scripts/export_catan_inverse_grounding_ms_swift.py --overwrite
-uv run python scripts/export_catan_inverse_grounding_ms_swift.py --validate-only
-uv run python scripts/build_catan_board_recognition_density_curriculum.py --overwrite
-uv run python scripts/build_catan_board_recognition_density_curriculum.py --validate-only
+uv run python -m scripts.board_recognition.export_catan_board_recognition_ms_swift --overwrite
+uv run python -m scripts.board_recognition.export_catan_board_recognition_ms_swift --validate-only
+uv run python -m scripts.board_recognition.export_catan_inverse_grounding_ms_swift --overwrite
+uv run python -m scripts.board_recognition.export_catan_inverse_grounding_ms_swift --validate-only
+uv run python -m scripts.board_recognition.build_catan_board_recognition_density_curriculum --overwrite
+uv run python -m scripts.board_recognition.build_catan_board_recognition_density_curriculum --validate-only
 ```
 
 The semantic exporter reads the historical epoch-zero query plans as immutable

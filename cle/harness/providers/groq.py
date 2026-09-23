@@ -6,9 +6,11 @@ import json
 import os
 import time
 from dataclasses import dataclass
-from typing import Any
+from typing import cast
 
 from groq import AsyncGroq
+from groq.types.chat import ChatCompletionMessageParam
+from groq.types.completion_usage import CompletionUsage
 
 from cle.harness.board_surface import (
     openai_messages_with_board,
@@ -33,7 +35,7 @@ class GroqTransport:
         config: GroqConfig | None = None,
         *,
         api_key: str | None = None,
-        client: Any | None = None,
+        client: AsyncGroq | None = None,
     ) -> None:
         self.config = config or GroqConfig()
         key = api_key or os.getenv("GROQ_API_KEY")
@@ -47,18 +49,29 @@ class GroqTransport:
 
     async def complete(self, request: ModelRequest) -> ModelResponse:
         started_at = time.monotonic()
-        payload = {
+        max_tokens = (
+            request.max_tokens
+            if request.max_tokens is not None
+            else self.config.max_tokens
+        )
+        messages = openai_messages_with_board(
+            request.messages,
+            request.board_presentation,
+            allow_image_input=self.config.allow_image_input,
+        )
+        payload: dict[str, object] = {
             "model": self.config.model,
-            "max_tokens": self.config.max_tokens,
+            "max_tokens": max_tokens,
             "temperature": self.config.temperature,
-            "messages": openai_messages_with_board(
-                request.messages,
-                request.board_presentation,
-                allow_image_input=self.config.allow_image_input,
-            ),
+            "messages": messages,
         }
-        response = await self.client.chat.completions.create(**payload)
-        usage = response.usage
+        response = await self.client.chat.completions.create(
+            model=self.config.model,
+            max_tokens=max_tokens,
+            temperature=self.config.temperature,
+            messages=cast("list[ChatCompletionMessageParam]", messages),
+        )
+        usage = cast("CompletionUsage", response.usage)
         usage_items = (
             ("prompt_tokens", usage.prompt_tokens),
             ("completion_tokens", usage.completion_tokens),

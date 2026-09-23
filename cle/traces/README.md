@@ -1,5 +1,11 @@
 # Local live trace store
 
+Headless rollout callers can opt into the separate
+[ordered sandbox journal](../sandbox/durable/README.md). It adds durable command
+identity, model-response replay, and writer fencing; the viewer trace store below
+remains the existing projection/checkpoint API. Journal IDs do not reinterpret
+historical viewer step indexes or engine-event sequences.
+
 Live games use a local SQLite database at `.cle/live_traces.sqlite3` by default.
 Override it with `CATAN_LIVE_TRACE_DB`.
 

@@ -1,0 +1,179 @@
+.reasoning-detail {
+  min-width: 0;
+  padding: clamp(1rem, 2vw, 1.5rem);
+}
+
+.reasoning-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.9rem;
+}
+
+.reasoning-detail-header > div:first-child {
+  display: grid;
+  gap: 0.22rem;
+  min-width: 0;
+}
+
+.reasoning-detail-header > div:first-child > span {
+  color: var(--trace-green);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  text-transform: uppercase;
+}
+
+.reasoning-detail-header h3 {
+  color: #f0f5f9;
+  font-size: clamp(1.1rem, 2vw, 1.55rem);
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.reasoning-detail-header code {
+  overflow: hidden;
+  color: #617583;
+  font-size: 0.58rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reasoning-detail-status {
+  display: grid;
+  gap: 0.4rem;
+  justify-items: end;
+  min-width: 0;
+}
+
+.reasoning-detail-status small {
+  overflow: hidden;
+  max-width: 20rem;
+  color: #667a88;
+  font-size: 0.56rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reasoning-context-grid {
+  display: grid;
+  grid-template-columns: minmax(290px, 380px) minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+  margin-top: 0.8rem;
+}
+
+.reasoning-board-panel {
+  min-width: 0;
+  border: 1px solid rgba(67, 245, 198, 0.3);
+  background: #04070a;
+}
+
+.reasoning-board-panel > header,
+.reasoning-board-panel > footer {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.58rem 0.7rem;
+}
+
+.reasoning-board-panel > header {
+  border-bottom: 1px solid var(--line);
+}
+
+.reasoning-board-panel > footer {
+  border-top: 1px solid var(--line);
+}
+
+.reasoning-board-panel > header span {
+  color: var(--trace-green);
+  font-size: 0.62rem;
+  font-weight: 620;
+  text-transform: uppercase;
+}
+
+.reasoning-board-panel > header small,
+.reasoning-board-panel > footer span,
+.reasoning-board-panel > footer code {
+  color: #617582;
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  text-transform: uppercase;
+}
+
+.reasoning-board-panel > footer code {
+  color: #88a096;
+  text-transform: none;
+}
+
+.reasoning-board-wrap {
+  width: 100%;
+  aspect-ratio: 1;
+  background: #0967a5;
+}
+
+.reasoning-board-wrap .hex-board-shell {
+  border-radius: 0;
+}
+
+.reasoning-response-overview {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.reasoning-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(80px, 1fr));
+  gap: 0.5rem;
+}
+
+.reasoning-metrics > div {
+  display: grid;
+  gap: 0.2rem;
+  border: 1px solid var(--line);
+  background: rgba(3, 6, 9, 0.64);
+  padding: 0.55rem;
+}
+
+.reasoning-metrics span {
+  color: #637683;
+  font-size: 0.52rem;
+}
+
+.reasoning-metrics strong {
+  overflow: hidden;
+  color: #d7e0e7;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reasoning-metrics .warning strong {
+  color: var(--amber);
+}
+
+.reasoning-warning {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.7rem;
+  align-items: baseline;
+  border-left: 2px solid var(--amber);
+  background: rgba(255, 209, 102, 0.06);
+  margin-top: 0.75rem;
+  padding: 0.65rem 0.75rem;
+}
+
+.reasoning-warning strong {
+  color: var(--amber);
+  font-size: 0.66rem;
+  text-transform: uppercase;
+}
+
+.reasoning-warning span {
+  color: #aa9d78;
+  font-size: 0.68rem;
+}

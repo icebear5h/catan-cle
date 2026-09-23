@@ -6,8 +6,9 @@ import asyncio
 import json
 import os
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import cast
 
 import httpx
 
@@ -20,6 +21,7 @@ from cle.harness.reasoning import (
     native_reasoning_enabled,
     validate_native_reasoning_request,
 )
+from cle.players.data import JsonValue
 
 # Cerebras only knows none/low/medium/high; harness efforts outside that range
 # clamp to the nearest supported level.
@@ -34,7 +36,7 @@ _REASONING_EFFORTS = {
 _MAX_RETRY_AFTER_SECONDS = 30.0
 
 
-def cerebras_reasoning_effort(reasoning: Mapping[str, Any]) -> str:
+def cerebras_reasoning_effort(reasoning: Mapping[str, JsonValue]) -> str:
     """Map one normalized native-reasoning request onto `reasoning_effort`."""
     if not native_reasoning_enabled(reasoning):
         return "none"
@@ -43,7 +45,7 @@ def cerebras_reasoning_effort(reasoning: Mapping[str, Any]) -> str:
             "Cerebras has no reasoning token budget; use reasoning.effort "
             "or reasoning.enabled=false"
         )
-    return _REASONING_EFFORTS[reasoning["effort"]]
+    return _REASONING_EFFORTS[cast("str", reasoning["effort"])]
 
 
 @dataclass(frozen=True, slots=True)
@@ -54,7 +56,7 @@ class CerebrasConfig:
     max_tokens: int | None = 2048
     timeout_seconds: float = 120.0
     max_retries: int = 2
-    reasoning: Mapping[str, Any] | None = None
+    reasoning: Mapping[str, JsonValue] | None = None
 
 
 class CerebrasTransport:
@@ -65,7 +67,7 @@ class CerebrasTransport:
         config: CerebrasConfig,
         *,
         api_key: str | None = None,
-        client: Any | None = None,
+        client: httpx.AsyncClient | None = None,
     ) -> None:
         self.config = config
         self.reasoning_request = validate_native_reasoning_request(config.reasoning)
@@ -78,7 +80,17 @@ class CerebrasTransport:
 
     async def complete(self, request: ModelRequest) -> ModelResponse:
         started_at = time.monotonic()
-        payload = {
+        reasoning = validate_native_reasoning_request(
+            dict(request.reasoning_request)
+            if request.reasoning_request is not None
+            else self.reasoning_request
+        )
+        if request.reasoning_request is not None:
+            # Policy-owned request: its cap wins, and None means uncapped.
+            max_tokens = request.max_tokens
+        else:
+            max_tokens = self.config.max_tokens
+        payload: dict[str, object] = {
             "model": self.config.model,
             "messages": openai_messages_with_board(
                 request.messages,
@@ -86,11 +98,11 @@ class CerebrasTransport:
                 allow_image_input=False,
             ),
             "temperature": self.config.temperature,
-            "reasoning_effort": self.reasoning_effort,
+            "reasoning_effort": cerebras_reasoning_effort(reasoning),
         }
-        if self.config.max_tokens is not None:
+        if max_tokens is not None:
             # Reasoning tokens count against this cap on Cerebras.
-            payload["max_completion_tokens"] = self.config.max_tokens
+            payload["max_completion_tokens"] = max_tokens
         response = None
         for attempt in range(self.config.max_retries + 1):
             try:
@@ -137,7 +149,7 @@ class CerebrasTransport:
             latency_ms=int((time.monotonic() - started_at) * 1000),
             finish_reason=choice.get("finish_reason"),
             native_reasoning=native_reasoning,
-            reasoning_request=tuple(self.reasoning_request.items()),
+            reasoning_request=tuple(reasoning.items()),
             provider_response_id=provider_response_id,
             provider_request_id=response.headers.get("x-request-id"),
             provider_request_payload=sanitize_provider_payload(
@@ -164,4 +176,4 @@ def _retry_delay(exc: Exception, attempt: int) -> float:
             retry_after = 0.0
         if retry_after > 0:
             return min(retry_after, _MAX_RETRY_AFTER_SECONDS)
-    return 0.05 * (2**attempt)
+    return 0.05 * float(2**attempt)

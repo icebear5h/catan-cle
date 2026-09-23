@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Any
 
-from cle.players.contracts import PlayerContext
 from cle.game_engine.game import GameEngine
 from cle.game_engine.models.enums import Action, ActionType
 from cle.game_engine.models.player import Color
+from cle.game_engine.observation import PlayerObservation
+from cle.players.contracts import PlayerContext
 
 
 def build_decision_context(
@@ -73,7 +73,9 @@ def build_decision_context(
     ))
 
 
-def decision_prompt_key(observation: Any, legal_actions: tuple[Action, ...]) -> str:
+def decision_prompt_key(
+    observation: PlayerObservation, legal_actions: tuple[Action, ...]
+) -> str:
     """Select authored phase guidance from only visible state and exact actions."""
     action_types = {action.action_type for action in legal_actions}
     if observation.current_phase == "initial_placement":

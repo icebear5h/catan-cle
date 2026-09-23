@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Callable, Mapping
 from pathlib import Path
-from typing import Any
 
 from PIL import Image
 
@@ -25,11 +25,11 @@ def _canonical_edge_token(value: str) -> str:
     return f"E{first:02d}_{second:02d}"
 
 
-def canonical_id_map(aliases: dict[str, Any]) -> tuple[tuple[str, str], ...]:
+def canonical_id_map(aliases: Mapping[str, object]) -> tuple[tuple[str, str], ...]:
     """Invert one frozen opaque alias map into alias-to-engine-token pairs."""
 
     pairs: list[tuple[str, str]] = []
-    tokenizers = {
+    tokenizers: dict[str, Callable[[str], str]] = {
         "tiles": lambda value: f"T{int(value):02d}",
         "nodes": lambda value: f"N{int(value):02d}",
         "edges": _canonical_edge_token,

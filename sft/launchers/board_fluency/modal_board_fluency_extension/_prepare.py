@@ -1,0 +1,158 @@
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
+from transformers import PreTrainedTokenizerBase
+
+from sft.json_types import JsonDict, JsonLikeDict, as_dict, as_list, as_str, loads_json
+from sft.launchers.board_fluency import modal_board_fluency_sft as original
+from sft.launchers.board_fluency.modal_board_fluency_sft import (
+    BASE,
+    check_deadline,
+    check_manifest,
+    rows_at,
+    shared,
+    trainer,
+    visual_file_digest,
+)
+from sft.scripts.train.train_trl_catan_vision import (
+    TrainConfig,
+    _message_pair,
+    encode_text_pair,
+    load_token_inventory,
+    sha256_file,
+)
+
+from ._baselines import inspect_original
+from ._config import DATA_DIR, PARENT, PARENT_ROOT, PARENT_SHA256
+from ._planning import read_parent
+from ._types import at
+
+
+def full_checkpoint_manifest(path: Path) -> JsonDict:
+    shared.volume_bundle(str(path))
+    for name in ("trainer_state.json", "optimizer.pt", "scheduler.pt", "rng_state.pth"):
+        if not (path / name).is_file():
+            raise FileNotFoundError(path / name)
+    return shared.file_manifest(path, sorted(str(file.relative_to(path)) for file in path.rglob("*") if file.is_file()))
+
+
+def text_boundaries(
+    tokenizer: PreTrainedTokenizerBase,
+    rows: list[JsonDict],
+    *,
+    generation: bool,
+    deadline: float,
+) -> dict[str, int]:
+    maximum, max_prompt, max_answer = 0, 0, 0
+    for row in rows:
+        check_deadline(deadline)
+        prompt, answer = _message_pair(row, line_number=0, input_mode="text")
+        pair = encode_text_pair(tokenizer, prompt, answer, max_sequence_length=4096)
+        input_ids = as_list(pair["input_ids"])
+        prefix = as_list(pair["labels"]).count(-100)
+        completion = len(input_ids) - prefix
+        if generation and (prefix + 512 > 4096 or completion > 512):
+            raise ValueError("native text boundary exceeds greedy512 allowance")
+        maximum = max(maximum, len(input_ids))
+        max_prompt, max_answer = max(max_prompt, prefix), max(max_answer, completion)
+    return {"rows": len(rows), "max_sequence": maximum, "max_prompt": max_prompt, "max_completion": max_answer}
+
+
+def prepare_work(plan: JsonDict, deadline: float) -> JsonLikeDict:
+    parent = read_parent(Path(PARENT_ROOT))
+    prior = as_dict(parent["prepare"]["result"])
+    plan_config = as_dict(plan["config"])
+    inventory = load_token_inventory(as_str(plan_config["token_inventory"]))
+    bundle, _ = shared.volume_bundle(PARENT)
+    parent_files = full_checkpoint_manifest(bundle)
+    tokenizer, checkpoint = shared.adapter_preflight(bundle, inventory, shared.MODEL_ID, shared.MODEL_REVISION)
+    saved_config = shared.read_json(bundle / trainer.RUN_CONFIG_FILE)
+    semantic = as_dict(as_dict(as_dict(as_dict(
+        parent["train"]["result"])["training"])["reload_validation"])["semantic_tokens"])
+    if (saved_config != as_dict(parent["launch"])["config"]
+            or saved_config["input_mode"] != "text"
+            or checkpoint["saved_model_id"] != BASE or checkpoint["lora_rank"] != 16
+            or checkpoint["lora_alpha"] != 32
+            or as_dict(checkpoint["adapter_config"])["lora_dropout"] != 0.05
+            or as_dict(checkpoint["semantic_tokens"])["token_ids"] != semantic["token_ids"]
+            or as_dict(checkpoint["semantic_tokens"])["tokens"] != semantic["tokens"]):
+        raise ValueError("trained parent rank/alpha/dropout/input/base/atlas identity differs")
+    base_files = original.cached_base_files()
+    if set(base_files) != set(as_dict(prior["base_files"])):
+        raise ValueError("cached native base file set changed")
+    check_manifest(Path(BASE), as_dict(prior["base_files"]))
+    base_audit = shared.base_preflight(Path(BASE), base_files, bundle, inventory, checkpoint)
+    if base_audit != prior["base_audit"]:
+        raise ValueError("cached base metadata/shards/header/architecture audit changed")
+    if shared.read_json(bundle / "trainer_state.json")["global_step"] != 128:
+        raise ValueError("trained parent global step differs")
+    frozen = visual_file_digest(bundle / trainer.VISUAL_STATE_FILE)
+    if frozen != at(parent["train"], "result", "frozen_visual_file_tensor_sha256"):
+        raise ValueError("parent frozen visual tensors differ from r06 training")
+    suffix, identity, baselines = inspect_original(parent, Path(PARENT_ROOT), Path(DATA_DIR), Path(DATA_DIR) / "review.jsonl")
+    if identity != plan["suffix"] or baselines != plan["saved_baselines"]:
+        raise ValueError("CPU suffix/baseline admission differs")
+    lengths = {"train_suffix": text_boundaries(tokenizer, [as_dict(loads_json(line)) for line in suffix.splitlines()],
+                                              generation=False, deadline=deadline)}
+    for panel, path in {"teacher120": as_str(plan_config["eval_jsonl"]),
+                        "review": DATA_DIR + "/review.jsonl", "validation_eval": DATA_DIR + "/validation_eval.jsonl"}.items():
+        lengths[panel] = text_boundaries(tokenizer, rows_at(Path(path)), generation=panel != "teacher120", deadline=deadline)
+    del tokenizer
+    check_deadline(deadline)
+    destination = Path(as_str(plan_config["train_jsonl"]))
+    with destination.open("xb") as handle:
+        handle.write(suffix)
+        handle.flush()
+        os.fsync(handle.fileno())
+    suffix_files = shared.file_manifest(destination.parent, [destination.name])
+    if suffix_files[destination.name] != {key: identity[key] for key in ("bytes", "sha256")}:
+        raise ValueError("exclusive raw-line suffix write differs")
+    check_manifest(bundle, parent_files)
+    return {"checkpoint": checkpoint, "parent_files": parent_files,
+            "parent_manifest_provenance": "full current checkpoint manifest established by this CPU prepare; no historical r06 adapter hash claimed",
+            "frozen_visual_file_tensor_sha256": frozen, "base_files": prior["base_files"],
+            "base_audit": base_audit, "base_manifest_provenance": "r06 metadata hashes and shard sizes, rechecked tensor headers/index",
+            "suffix_files": suffix_files, "suffix": identity, "baselines": baselines,
+            "teacher_sha256": PARENT_SHA256["prepare/teacher120.jsonl"],
+            "token_lengths": lengths,
+            "prior_token_lengths": prior["token_lengths"],
+            "token_boundary_provenance": "actual native trained-parent tokenizer, exact original raw rows"}
+
+
+def completed_stage(plan: JsonDict, stage: str) -> JsonDict:
+    root = Path(as_str(plan["root"]))
+    receipt = shared.read_json(root / stage / "result.json")
+    entry = as_dict(at(shared.read_json(root / "coordinator.json"), "stages", stage))
+    if (receipt["status"] != "completed" or receipt["stage"] != stage
+            or receipt["launch_sha256"] != shared.digest(plan) or entry["status"] != "completed"
+            or entry["result"] != receipt or entry["result_sha256"] != sha256_file(root / stage / "result.json")):
+        raise ValueError(f"{stage} completion/receipt hash differs")
+    return as_dict(receipt["result"])
+
+
+def prepared_for(plan: JsonDict) -> JsonDict:
+    prepared = completed_stage(plan, "prepare")
+    check_manifest(Path(PARENT), as_dict(prepared["parent_files"]))
+    check_manifest(Path(BASE), as_dict(prepared["base_files"]))
+    check_manifest(Path(as_str(at(plan, "config", "train_jsonl"))).parent, as_dict(prepared["suffix_files"]))
+    if (prepared["suffix"] != plan["suffix"] or prepared["baselines"] != plan["saved_baselines"]
+            or sha256_file(Path(as_str(at(plan, "config", "eval_jsonl")))) != prepared["teacher_sha256"]):
+        raise ValueError("prepared suffix/teacher/baseline identity changed")
+    return prepared
+
+
+def verify_initialization(config: TrainConfig, prepared: JsonDict,
+                          report: JsonDict) -> None:
+    # Resolve both sides on the mounted volume; Modal may record /__modal/volumes/vo-... .
+    if Path(as_str(report["path"])).resolve(strict=True) != Path(PARENT).resolve(strict=True):
+        raise ValueError("trainer did not load the trained r06 checkpoint-128")
+    for key, name in {"adapter_sha256": "adapter_model.safetensors", "visual_sha256": trainer.VISUAL_STATE_FILE,
+                      "parent_training_config_sha256": trainer.RUN_CONFIG_FILE}.items():
+        if report[key] != as_dict(as_dict(prepared["parent_files"])[name])["sha256"]:
+            raise ValueError(f"actual initial-bundle content differs: {key}")
+    expected = {"input_mode": "text", "source_input_mode": "text", "lora_rank": 16, "lora_alpha": 32,
+                "optimizer_state_restored": False, "scheduler_state_restored": False, "rng_state_restored": False}
+    if any(report[key] != value for key, value in expected.items()) or config.resume_from_checkpoint is not None:
+        raise ValueError("extension requires the trained text bundle and fresh optimizer/schedule/RNG")

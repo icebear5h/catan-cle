@@ -13,10 +13,10 @@ import hashlib
 import json
 import re
 from pathlib import Path
-from typing import List, Dict
+from typing import Dict, List
 
-from data_pipeline.training.pretraining.sources.youtube import YouTubeCorpusBuilder
 from data_pipeline.training.pretraining.sources.forums import ForumCorpusBuilder
+from data_pipeline.training.pretraining.sources.youtube import YouTubeCorpusBuilder
 
 # Paths
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -213,7 +213,7 @@ def build_corpus(
     return output_path
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Build Catan knowledge corpus for continued pretraining")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT, help="Output JSONL path")
     parser.add_argument("--skip-youtube", action="store_true", help="Skip YouTube transcripts")

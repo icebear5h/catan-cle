@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Any
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, Response, jsonify, request
 
 from evals.decision_spot_checks import (
     CURATED_DECISION_RUNS,
@@ -17,25 +16,25 @@ from evals.decision_spot_checks import (
     list_decision_eval_runs,
     load_decision_eval_run,
 )
-
+from evals.json_types import JsonDict
 
 decision_evals_bp = Blueprint("decision_evals", __name__)
 
 
 @decision_evals_bp.route("/api/decision-evals/catalog", methods=["GET"])
-def get_decision_eval_catalog():
+def get_decision_eval_catalog() -> Response | tuple[Response, int]:
     """Return the authored bucket, rubric, label, and sampling specification."""
     return jsonify(decision_bucket_catalog())
 
 
 @decision_evals_bp.route("/api/decision-evals/runs", methods=["GET"])
-def get_decision_eval_runs():
+def get_decision_eval_runs() -> Response | tuple[Response, int]:
     """List curated decision-eval artifacts available to the frontend."""
     return jsonify({"runs": list_decision_eval_runs()})
 
 
 @decision_evals_bp.route("/api/decision-evals/decisions", methods=["GET"])
-def get_decision_eval_decisions():
+def get_decision_eval_decisions() -> Response | tuple[Response, int]:
     """Return a filtered compact decision list plus unfiltered bucket counts."""
     try:
         run = _requested_run()
@@ -72,7 +71,7 @@ def get_decision_eval_decisions():
 
 
 @decision_evals_bp.route("/api/decision-evals/decision", methods=["GET"])
-def get_decision_eval_decision():
+def get_decision_eval_decision() -> Response | tuple[Response, int]:
     """Return one review-ready decision with model output and prompt context."""
     decision_id = (request.args.get("decision_id") or "").strip()
     if not decision_id:
@@ -90,7 +89,7 @@ def get_decision_eval_decision():
     return jsonify({"run": _compact_run(run), "decision": detail})
 
 
-def _requested_run() -> dict[str, Any]:
+def _requested_run() -> JsonDict:
     run_id = (request.args.get("run_id") or "").strip()
     if not run_id:
         run_id = next(iter(CURATED_DECISION_RUNS), "")
@@ -100,11 +99,12 @@ def _requested_run() -> dict[str, Any]:
 
 
 @lru_cache(maxsize=8)
-def _load_run(run_id: str) -> dict[str, Any]:
-    return load_decision_eval_run(CURATED_DECISION_RUNS[run_id])
+def _load_run(run_id: str) -> JsonDict:
+    run: JsonDict = load_decision_eval_run(CURATED_DECISION_RUNS[run_id])
+    return run
 
 
-def _compact_run(run: dict[str, Any]) -> dict[str, Any]:
+def _compact_run(run: JsonDict) -> JsonDict:
     return {
         key: run[key]
         for key in (

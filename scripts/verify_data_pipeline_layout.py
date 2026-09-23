@@ -7,8 +7,19 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
-from typing import Any
+from typing import Literal, TypedDict
 
+
+class FileRecord(TypedDict):
+    """One migrated file as recorded in the layout manifest."""
+
+    path: str
+    bytes: int
+    original_sha256: str
+    current_sha256: str
+
+
+HashKey = Literal["original_sha256", "current_sha256"]
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = (
@@ -31,7 +42,7 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def receipt_digest(destination: str, files: list[dict[str, Any]], hash_key: str) -> str:
+def receipt_digest(destination: str, files: list[FileRecord], hash_key: HashKey) -> str:
     digest = hashlib.sha256()
     base = Path(destination)
     for record in sorted(files, key=lambda item: item["path"]):
@@ -58,7 +69,7 @@ def verify_layout(manifest_path: Path = DEFAULT_MANIFEST) -> dict[str, int]:
         if len(files) != group["file_count"]:
             errors.append(f"{group['name']}: file-count receipt mismatch")
 
-        current_records = []
+        current_records: list[FileRecord] = []
         for record in files:
             relative_path = Path(record["path"])
             if relative_path.is_absolute() or ".." in relative_path.parts:
@@ -77,7 +88,9 @@ def verify_layout(manifest_path: Path = DEFAULT_MANIFEST) -> dict[str, int]:
             if digest != record["current_sha256"]:
                 errors.append(f"{group['name']}: hash mismatch for {path}")
 
-            current_records.append({**record, "current_sha256": digest})
+            current_record: FileRecord = record.copy()
+            current_record["current_sha256"] = digest
+            current_records.append(current_record)
             checked_files += 1
             checked_bytes += size
 

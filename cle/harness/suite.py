@@ -5,21 +5,20 @@ from __future__ import annotations
 import re
 import warnings
 from pathlib import Path
-from typing import Literal
+from typing import Literal, cast
 
-import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from cle.harness.components import (
     MAX_COMPONENT_TEMPLATE_CHARS,
     MAX_SUITE_AUTHORED_CHARS,
     ComponentComposition,
-    SuiteStatus,
     ComponentDefinition,
+    SuiteStatus,
     render_template,
     validate_component_composition,
 )
-
+from cle.harness.yaml_source import BUILTIN_SUITES_DIR, load_yaml_mapping
 
 _TEMPLATE_VARIABLE = re.compile(r"{{\s*([A-Za-z_][A-Za-z0-9_]*)\s*}}")
 _COMPONENT_ORDER = (
@@ -106,15 +105,18 @@ class ContextSuite(_StrictModel):
                 raise ValueError("shared context requires fresh_notes and JSON responses")
             if self.sections or self.system is not None:
                 raise ValueError("shared context cannot contain historical system or sections")
+            # Shared mode always names its response component; the model
+            # validator rejects a shared suite that omits it.
+            response_component = cast("str", self.response_component)
             validate_component_composition(
                 self.components,
-                ComponentComposition(order=self.context.order, response=self.response_component),
+                ComponentComposition(order=self.context.order, response=response_component),
                 consumer="decision",
             )
             if set(self.response.tags) != {"tool", "arguments", "notes"}:
                 raise ValueError("fresh response.tags must contain tool, arguments, notes")
             instruction = render_template(
-                self.components[self.response_component].template,
+                self.components[response_component].template,
                 {"max_notes_chars": str(self.context.max_notes_chars)},
             )
             if self.response.instruction != instruction:
@@ -146,7 +148,7 @@ class ContextSuite(_StrictModel):
         if self.context.social_context and self.context.mode != "components":
             raise ValueError("social_context requires component mode")
         if self.context.mode == "components":
-            component_order = _COMPONENT_ORDER
+            component_order: tuple[str, ...] = _COMPONENT_ORDER
             if self.context.social_context:
                 component_order = (
                     *_COMPONENT_ORDER[:3],
@@ -218,7 +220,7 @@ class ContextSuite(_StrictModel):
 
 def default_suite_path() -> Path:
     """Return the built-in text-only Catan suite path."""
-    return Path(__file__).resolve().parent / "suites" / "catan_v11.yaml"
+    return BUILTIN_SUITES_DIR / "catan_v11.yaml"
 
 
 def parse_context_suite(
@@ -227,9 +229,7 @@ def parse_context_suite(
     source_name: str = "context suite source",
 ) -> ContextSuite:
     """Parse and strictly validate one context suite from trusted text."""
-    data = yaml.safe_load(source)
-    if not isinstance(data, dict):
-        raise ValueError(f"Context suite {source_name} must contain a YAML mapping")
+    data = load_yaml_mapping(source, source=f"context suite {source_name}")
     return ContextSuite.model_validate(data)
 
 

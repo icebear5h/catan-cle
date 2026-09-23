@@ -7,7 +7,6 @@ import json
 import shutil
 from collections import Counter
 from pathlib import Path
-from typing import Any, Dict
 
 from evals.catan_board_bench.ascii_variations import (
     FACT_SCHEMA,
@@ -17,6 +16,7 @@ from evals.catan_board_bench.ascii_variations import (
     write_json,
     write_jsonl,
 )
+from evals.catan_board_bench.ascii_variations.facts import full_facts_from_json
 from evals.catan_board_bench.full_graph_formats import (
     FORMAT_EXTENSIONS,
     FORMAT_NAMES,
@@ -24,12 +24,10 @@ from evals.catan_board_bench.full_graph_formats import (
     parse_full_graph_format,
     render_full_graph_format,
 )
-
-
 from evals.catan_board_bench.paths import RELATIVE_DATASETS_DIR
+from evals.json_types import JsonDict as JsonDict
+from evals.json_types import as_str
 
-
-JsonDict = Dict[str, Any]
 DATASET_SCHEMA = "catan_full_graph_format_probe/v1"
 DEFAULT_SOURCE_DIR = RELATIVE_DATASETS_DIR / "ascii_variation_probe"
 DEFAULT_OUTPUT_DIR = RELATIVE_DATASETS_DIR / "full_graph_format_probe"
@@ -85,15 +83,17 @@ def build_full_graph_format_probe(
     aliases_dir.mkdir()
     representations_dir.mkdir()
 
-    manifest_by_sample = {row["sample_id"]: row for row in source_manifest}
+    manifest_by_sample = {
+        as_str(row["sample_id"], "manifest sample_id"): row for row in source_manifest
+    }
     if len(manifest_by_sample) != len(source_manifest):
         raise ValueError("source manifest contains duplicate sample IDs")
 
-    output_manifest = []
-    representation_hashes: dict[str, dict[str, str]] = {}
+    output_manifest: list[JsonDict] = []
+    representation_hashes: JsonDict = {}
     for sample_id in sorted(manifest_by_sample):
         source_fact_path = source_dir / "facts" / f"{sample_id}.json"
-        facts = json.loads(source_fact_path.read_text())
+        facts = full_facts_from_json(json.loads(source_fact_path.read_text()))
         digest = full_fact_digest(facts)
         if digest != manifest_by_sample[sample_id]["fact_digest"]:
             raise ValueError(f"source fact digest mismatch for {sample_id}")
@@ -104,8 +104,9 @@ def build_full_graph_format_probe(
         sample_output_dir = representations_dir / sample_id
         sample_output_dir.mkdir()
 
-        metrics = {}
-        representation_hashes[sample_id] = {}
+        metrics: JsonDict = {}
+        sample_hashes: JsonDict = {}
+        representation_hashes[sample_id] = sample_hashes
         for format_name in FORMAT_NAMES:
             extension = FORMAT_EXTENSIONS[format_name]
             output_path = sample_output_dir / f"{format_name}{extension}"
@@ -133,7 +134,7 @@ def build_full_graph_format_probe(
             if full_fact_digest(parsed) != digest:
                 raise ValueError(f"round-trip mismatch for {sample_id}/{format_name}")
             representation_sha256 = _sha256(output_path.read_bytes())
-            representation_hashes[sample_id][format_name] = representation_sha256
+            sample_hashes[format_name] = representation_sha256
             metrics[format_name] = {
                 "characters": len(text),
                 "lines": len(text.splitlines()),
@@ -156,7 +157,7 @@ def build_full_graph_format_probe(
     (output_dir / "README.md").write_text(_README)
 
     source_lock = _source_lock(source_dir, source_manifest)
-    metadata = {
+    metadata: JsonDict = {
         "schema": DATASET_SCHEMA,
         "fact_schema": FACT_SCHEMA,
         "minimal_representation_schema": MINIMAL_SCHEMA,
@@ -170,8 +171,10 @@ def build_full_graph_format_probe(
         "questions_per_format": len(questions),
         "request_count": len(questions) * len(FORMAT_NAMES),
         "formats": list(FORMAT_NAMES),
-        "format_extensions": FORMAT_EXTENSIONS,
-        "categories": dict(Counter(row["category"] for row in questions)),
+        "format_extensions": dict(FORMAT_EXTENSIONS),
+        "categories": dict(
+            Counter(as_str(row["category"], "question category") for row in questions)
+        ),
         "representation_hashes": representation_hashes,
         "entity_ids": "deterministically permuted and board-local",
         "strict_json_answers": True,
@@ -211,7 +214,7 @@ def _source_lock(source_dir: Path, manifest: list[JsonDict]) -> JsonDict:
         source_dir / "manifest.jsonl",
     ]
     for row in manifest:
-        sample_id = row["sample_id"]
+        sample_id = as_str(row["sample_id"], "manifest sample_id")
         paths.extend(
             (
                 source_dir / "facts" / f"{sample_id}.json",
@@ -242,5 +245,5 @@ def _sha256(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
-def _json_digest(value: Any) -> str:
+def _json_digest(value: object) -> str:
     return _sha256(json.dumps(value, separators=(",", ":"), sort_keys=True).encode())

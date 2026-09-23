@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { TraceRequest } from '../src/types.ts';
-import type { TraceModelCall, TraceStepDetail } from '../src/components/TraceStepNavigator.tsx';
-import { matchingReasoningActors, savedReasoningCalls } from '../src/components/traceModelCalls.ts';
+import type { TraceModelCall, TraceStepDetail } from '../src/components/traces/TraceStepNavigator.tsx';
+import { matchingReasoningActors, savedReasoningCalls } from '../src/components/traces/traceModelCalls.ts';
 
 import {
   traceGamePlanArtifact,

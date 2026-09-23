@@ -6,11 +6,30 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any
+from typing import Literal, TypedDict
 
 from evals.catan_board_bench.paths import DATASETS_DIR
 
+
+class MigrationRecord(TypedDict):
+    """One migrated file as recorded in the SFT layout manifest."""
+
+    destination: str
+    group: str
+    current_bytes: int
+    original_sha256: str
+    current_sha256: str
+
+
+class DatasetRow(TypedDict, total=False):
+    """The portable-dataset fields this verifier inspects."""
+
+    image: str
+
+
+HashKey = Literal["original_sha256", "current_sha256"]
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = (
@@ -45,7 +64,7 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def records_digest(records: list[dict[str, Any]], hash_key: str) -> str:
+def records_digest(records: list[MigrationRecord], hash_key: HashKey) -> str:
     digest = hashlib.sha256()
     for record in sorted(records, key=lambda item: item["destination"]):
         digest.update(record["destination"].encode())
@@ -55,7 +74,7 @@ def records_digest(records: list[dict[str, Any]], hash_key: str) -> str:
     return digest.hexdigest()
 
 
-def iter_jsonl(path: Path):
+def iter_jsonl(path: Path) -> Iterator[tuple[int, DatasetRow]]:
     with path.open() as handle:
         for line_number, line in enumerate(handle, start=1):
             if line.strip():
@@ -79,8 +98,8 @@ def verify_layout(manifest_path: Path = DEFAULT_MANIFEST) -> dict[str, int]:
         raise ValueError(f"unsupported SFT migration schema in {manifest_path}")
 
     errors: list[str] = []
-    current_records = []
-    groups: dict[str, list[dict[str, Any]]] = {}
+    current_records: list[MigrationRecord] = []
+    groups: dict[str, list[MigrationRecord]] = {}
     checked_bytes = 0
 
     for record in manifest["records"]:
@@ -97,7 +116,8 @@ def verify_layout(manifest_path: Path = DEFAULT_MANIFEST) -> dict[str, int]:
             errors.append(f"hash mismatch: {path}")
 
         checked_bytes += size
-        current = {**record, "current_sha256": digest}
+        current: MigrationRecord = record.copy()
+        current["current_sha256"] = digest
         current_records.append(current)
         groups.setdefault(record["group"], []).append(current)
 

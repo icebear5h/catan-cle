@@ -6,15 +6,18 @@ Unlike the divergence test which stops at first failure, this runs through
 ALL actions and reports every failure.
 """
 
-import requests
 import json
 import sys
-from pathlib import Path
 from collections import defaultdict
+from collections.abc import Mapping, Sequence
+from pathlib import Path
+from typing import cast
+
+import requests
 
 SERVER_URL = "http://localhost:5001"
 
-def colonist_cards_to_freqdeck(card_list):
+def colonist_cards_to_freqdeck(card_list: Sequence[int]) -> list[int]:
     """Convert Colonist card IDs to freqdeck format."""
     freqdeck = [0, 0, 0, 0, 0]
     for card in card_list:
@@ -30,21 +33,23 @@ def colonist_cards_to_freqdeck(card_list):
             freqdeck[4] += 1  # ORE
     return freqdeck
 
-def get_engine_state():
+def get_engine_state() -> dict[str, object] | None:
     """Get current engine state from server."""
     resp = requests.get(f"{SERVER_URL}/api/state")
     if resp.status_code == 200:
-        return resp.json()
+        payload: dict[str, object] = resp.json()
+        return payload
     return None
 
-def step_replay():
+def step_replay() -> dict[str, object] | None:
     """Execute one replay step."""
     resp = requests.post(f"{SERVER_URL}/api/replay-step")
     if resp.status_code == 200:
-        return resp.json()
+        payload: dict[str, object] = resp.json()
+        return payload
     return None
 
-def load_replay(game_id="194335024"):
+def load_replay(game_id: str = "194335024") -> dict[str, object] | None:
     """Load the replay."""
     resp = requests.post(
         f"{SERVER_URL}/api/load-replay",
@@ -52,10 +57,11 @@ def load_replay(game_id="194335024"):
         json={"game_id": game_id}
     )
     if resp.status_code == 200:
-        return resp.json()
+        payload: dict[str, object] = resp.json()
+        return payload
     return None
 
-def main():
+def main() -> int:
     # Load test cases
     test_file = Path(__file__).parent / "replay_test_cases.json"
     with open(test_file) as f:
@@ -76,7 +82,7 @@ def main():
 
     # Track results
     results = []
-    failures_by_type = defaultdict(list)
+    failures_by_type: defaultdict[str, list[Mapping[str, object]]] = defaultdict(list)
     res_names = ["WOOD", "BRICK", "SHEEP", "WHEAT", "ORE"]
 
     # Step through each action
@@ -100,7 +106,7 @@ def main():
         passed = True
         mismatches = []
 
-        colonist_to_engine = state.get('colonist_color_to_engine_idx', {})
+        colonist_to_engine = cast(Mapping[str, int], state.get('colonist_color_to_engine_idx', {}))
 
         for colonist_id_str, expected_cards in expected_after.items():
             engine_idx = colonist_to_engine.get(colonist_id_str)
@@ -110,9 +116,14 @@ def main():
             expected_freq = colonist_cards_to_freqdeck(expected_cards)
 
             # Get actual resources from engine
-            players = state.get('state', {}).get('players', [])
+            players = cast(
+                Sequence[Mapping[str, object]],
+                cast(Mapping[str, object], state.get('state', {})).get('players', []),
+            )
             if engine_idx < len(players):
-                actual_freq = players[engine_idx].get('resources', [0,0,0,0,0])
+                actual_freq = cast(
+                    Sequence[int], players[engine_idx].get('resources', [0, 0, 0, 0, 0])
+                )
 
                 if actual_freq != expected_freq:
                     passed = False
@@ -174,8 +185,10 @@ def main():
         for action_type in sorted(failures_by_type.keys()):
             first_fail = failures_by_type[action_type][0]
             print(f"\n  {action_type} (step {first_fail['index']}):")
-            for m in first_fail['mismatches']:
-                print(f"    Player {m['player']}: {m['diff']}")
+            for mismatch in cast(
+                Sequence[Mapping[str, object]], first_fail['mismatches']
+            ):
+                print(f"    Player {mismatch['player']}: {mismatch['diff']}")
 
     return 0 if total_failed == 0 else 1
 

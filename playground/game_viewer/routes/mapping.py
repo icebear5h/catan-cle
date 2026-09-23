@@ -1,16 +1,20 @@
 """Corner-to-node mapping and engine-nodes CRUD endpoints."""
 
-from flask import Blueprint, jsonify, request, current_app
+
+from flask import Blueprint, Response, current_app, jsonify, request
+
+from ..state import ServerState
 
 mapping_bp = Blueprint('mapping', __name__)
 
 
-def _get_state():
-    return current_app.config['SERVER_STATE']
+def _get_state() -> ServerState:
+    state: ServerState = current_app.config['SERVER_STATE']
+    return state
 
 
 @mapping_bp.route('/api/corner-map', methods=['GET'])
-def get_corner_map():
+def get_corner_map() -> Response | tuple[Response, int]:
     """Get the current Colonist corner -> Engine node mapping."""
     state = _get_state()
     return jsonify({
@@ -20,7 +24,7 @@ def get_corner_map():
 
 
 @mapping_bp.route('/api/corner-map', methods=['POST'])
-def set_corner_mapping():
+def set_corner_mapping() -> Response | tuple[Response, int]:
     """Add a Colonist corner -> Engine node mapping."""
     state = _get_state()
     data = request.json
@@ -41,7 +45,7 @@ def set_corner_mapping():
 
 
 @mapping_bp.route('/api/corner-map/<colonist_corner>', methods=['DELETE'])
-def delete_corner_mapping(colonist_corner):
+def delete_corner_mapping(colonist_corner: str) -> Response | tuple[Response, int]:
     """Delete a corner mapping."""
     state = _get_state()
     if colonist_corner in state.corner_to_node_map:
@@ -52,7 +56,7 @@ def delete_corner_mapping(colonist_corner):
 
 
 @mapping_bp.route('/api/engine-nodes', methods=['GET'])
-def get_engine_nodes():
+def get_engine_nodes() -> Response | tuple[Response, int]:
     """Get all engine node IDs from the current game."""
     state = _get_state()
     with state.replay_mutation_lock:

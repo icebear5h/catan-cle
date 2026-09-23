@@ -4,11 +4,20 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING
 
+from cle.game_engine.communication import CommunicationLimits, SocialCommitment
 from cle.game_engine.models.enums import Action, ActionType
 from cle.game_engine.models.player import Color
 from cle.game_engine.trading import TradeCandidate, TradeOffer
+
+if TYPE_CHECKING:
+    from cle.game_engine.state import GameState
+
+# Payloads are polymorphic per event type (dice tuples, node ids, trade payload
+# dicts, message dicts, ...); consumers narrow them with isinstance.
+PrivateOverlays = tuple[tuple[Color, object], ...]
+HistoryEntry = tuple["GameState", Action, int, tuple[SocialCommitment, ...]]
 
 
 @dataclass(frozen=True, slots=True)
@@ -19,8 +28,8 @@ class GameEvent:
     causation_id: str
     actor: Color
     event_type: str
-    public_payload: Any = None
-    private_overlays: tuple[tuple[Color, Any], ...] = ()
+    public_payload: object = None
+    private_overlays: PrivateOverlays = ()
     visible_to: tuple[Color, ...] | None = None
 
 
@@ -32,7 +41,7 @@ class PlayerEvent:
     causation_id: str
     actor: Color
     event_type: str
-    payload: Any = None
+    payload: object = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -54,59 +63,64 @@ class GameEngineSnapshot:
     engine_id: str
     seed: int
     vps_to_win: int
-    state: Any
+    state: GameState
     events: tuple[GameEvent, ...]
     capture_history: bool
-    communication_limits: Any = None
-    commitments: tuple[Any, ...] = field(default_factory=tuple)
-    history: tuple[tuple[Any, Action, int, tuple[Any, ...]], ...] = field(
-        default_factory=tuple
-    )
+    communication_limits: CommunicationLimits = field(default_factory=CommunicationLimits)
+    commitments: tuple[SocialCommitment, ...] = field(default_factory=tuple)
+    history: tuple[HistoryEntry, ...] = field(default_factory=tuple)
 
 
-def event_from_action(action: Action, sequence: int, *, trade_offers: dict[str, TradeOffer] | None = None) -> GameEvent:
+def event_from_action(
+    action: Action, sequence: int, *, trade_offers: dict[str, TradeOffer] | None = None,
+) -> GameEvent:
     """Build the canonical public payload plus private participant overlays."""
-    public_payload = action.value
-    private_overlays: tuple[tuple[Color, Any], ...] = ()
+    value: object = action.value
+    public_payload: object = value
+    private_overlays: PrivateOverlays = ()
 
     if action.action_type == ActionType.BUY_DEVELOPMENT_CARD:
         public_payload = None
-        private_overlays = ((action.color, action.value),)
-    elif action.action_type == ActionType.STEAL:
-        victim, resource = action.value
+        private_overlays = ((action.color, value),)
+    elif action.action_type == ActionType.STEAL and isinstance(value, tuple):
+        victim, resource = value
         public_payload = (victim, None)
         private_overlays = (
             (action.color, (victim, resource)),
             (victim, (victim, resource)),
         )
     elif action.action_type == ActionType.DISCARD:
-        cards = tuple(action.value) if isinstance(action.value, (list, tuple)) else ()
+        cards = tuple(value) if isinstance(value, (list, tuple)) else ()
         public_payload = len(cards)
         private_overlays = ((action.color, cards),)
     elif (
         action.action_type
         in {ActionType.OFFER_TRADE, ActionType.COUNTER_OFFER}
-        and isinstance(action.value, TradeOffer)
+        and isinstance(value, TradeOffer)
     ):
-        public_payload = action.value.to_payload()
+        public_payload = value.to_payload()
 
-    if action.action_type == ActionType.CONFIRM_TRADE and isinstance(action.value, TradeCandidate):
-        public_payload = action.value.to_payload()
+    if action.action_type == ActionType.CONFIRM_TRADE and isinstance(value, TradeCandidate):
+        public_payload = value.to_payload()
 
     # Lifecycle events must remain understandable after the offer window closes
     # and after a recipient has acknowledged the original proposal.
     offers = trade_offers or {}
-    if action.action_type in {ActionType.OFFER_TRADE, ActionType.COUNTER_OFFER} and isinstance(action.value, TradeOffer):
-        parent = offers.get(action.value.parent_offer_id)
+    if action.action_type in {ActionType.OFFER_TRADE, ActionType.COUNTER_OFFER} and isinstance(value, TradeOffer):
+        parent_id = value.parent_offer_id
+        parent = offers.get(parent_id) if parent_id is not None else None
         if parent is not None:
-            public_payload["original"] = parent.to_payload()
+            offer_payload: dict[str, object] = dict(value.to_payload())
+            offer_payload["original"] = parent.to_payload()
+            public_payload = offer_payload
     elif action.action_type in {ActionType.ACCEPT_TRADE, ActionType.REJECT_TRADE, ActionType.CANCEL_TRADE, ActionType.CONFIRM_TRADE}:
-        offer_id = action.value.offer_id if isinstance(action.value, TradeCandidate) else action.value
+        offer_id = value.offer_id if isinstance(value, TradeCandidate) else value
         offer = offers.get(offer_id) if isinstance(offer_id, str) else None
         if offer is not None:
-            public_payload = {"offer": offer.to_payload()}
-            if isinstance(action.value, TradeCandidate):
-                public_payload.update(action.value.to_payload())
+            lifecycle_payload: dict[str, object] = {"offer": offer.to_payload()}
+            if isinstance(value, TradeCandidate):
+                lifecycle_payload.update(value.to_payload())
+            public_payload = lifecycle_payload
 
     return GameEvent(
         sequence=sequence,

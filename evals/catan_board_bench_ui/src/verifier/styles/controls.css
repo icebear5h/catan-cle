@@ -1,0 +1,131 @@
+.bench-nav {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.bench-position {
+  min-width: 4.5rem;
+  color: #d3dae6;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.76rem;
+  text-align: center;
+}
+
+.bench-select {
+  width: 100%;
+  appearance: none;
+  background: #090d12;
+  border: 1px solid rgba(230, 237, 243, 0.18);
+  border-radius: 0;
+  color: #e6edf3;
+  font: inherit;
+  padding: 0.55rem 0.65rem;
+}
+
+.matrix-button,
+.verdict-button,
+.example-row {
+  border: 1px solid rgba(230, 237, 243, 0.18);
+  border-radius: 0;
+  background: rgba(8, 13, 18, 0.94);
+  color: #e6edf3;
+  cursor: pointer;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+.matrix-button {
+  min-height: 2.2rem;
+  padding: 0 0.7rem;
+  text-transform: uppercase;
+}
+
+.matrix-button:hover:not(:disabled),
+.example-row:hover {
+  border-color: rgba(60, 255, 205, 0.58);
+  color: #3cffcd;
+}
+
+.matrix-button:disabled {
+  color: #55606d;
+  cursor: not-allowed;
+}
+
+.example-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 0.2rem;
+}
+
+.example-row {
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr);
+  gap: 0.55rem;
+  align-items: center;
+  padding: 0.55rem;
+  text-align: left;
+}
+
+.example-row span {
+  color: #8ba0b6;
+  font-size: 0.7rem;
+}
+
+.example-row strong {
+  min-width: 0;
+  color: #e6edf3;
+  font-size: 0.74rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.example-row.active {
+  border-color: #3cffcd;
+  background: rgba(60, 255, 205, 0.1);
+}
+
+.verdict-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.verdict-strip.compact {
+  gap: 0.35rem;
+  margin-top: 0.7rem;
+}
+
+.verdict-button {
+  min-height: 2.5rem;
+  font-size: 0.78rem;
+}
+
+.verdict-strip.compact .verdict-button {
+  min-height: 2rem;
+  font-size: 0.68rem;
+}
+
+.verdict-button.good.active {
+  border-color: #3cffcd;
+  background: rgba(60, 255, 205, 0.16);
+  color: #3cffcd;
+}
+
+.verdict-button.bad.active {
+  border-color: #ff5f7a;
+  background: rgba(255, 95, 122, 0.16);
+  color: #ff8a9d;
+}
+
+.verdict-button.mute.active {
+  border-color: #ffd166;
+  background: rgba(255, 209, 102, 0.14);
+  color: #ffd166;
+}
+

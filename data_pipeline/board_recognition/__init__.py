@@ -8,7 +8,6 @@ from data_pipeline.board_recognition.dataset import (
 )
 from data_pipeline.board_recognition.sft import export_qwen_sft, validate_qwen_sft_export
 
-
 __all__ = [
     "BoardRecognitionStateDataset",
     "collate_board_recognition_states",

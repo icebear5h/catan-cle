@@ -12,14 +12,17 @@ This allows testing each action in isolation.
 
 import json
 import sys
+from collections.abc import Mapping, Sequence
 from pathlib import Path
+from typing import cast
 
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from cle.replay.colonist.event_parser import parse_colonist_events_to_actions
 
-def extract_test_cases(replay_file):
+
+def extract_test_cases(replay_file: Path) -> list[dict[str, object]]:
     """Extract all actions with before/after states."""
     with open(replay_file) as f:
         raw_data = json.load(f)
@@ -35,9 +38,9 @@ def extract_test_cases(replay_file):
 
     # Track resources through the replay to get "before" state
     # Start with empty resources (setup happens first)
-    current_resources = {}
+    current_resources: Mapping[str, object] = {}
 
-    test_cases = []
+    test_cases: list[dict[str, object]] = []
 
     for i, action in enumerate(parsed_actions):
         action_type = action.get('type')
@@ -46,7 +49,7 @@ def extract_test_cases(replay_file):
         after_resources = action.get('expected_resources', {})
 
         # Create test case
-        test_case = {
+        test_case: dict[str, object] = {
             'index': i,
             'action_type': action_type,
             'action_data': action,
@@ -57,21 +60,23 @@ def extract_test_cases(replay_file):
         test_cases.append(test_case)
 
         # Update current_resources to after_resources for next iteration
-        current_resources = after_resources
+        current_resources = cast(Mapping[str, object], after_resources)
 
     return test_cases
 
-def group_by_action_type(test_cases):
+def group_by_action_type(
+    test_cases: Sequence[Mapping[str, object]],
+) -> dict[str, list[Mapping[str, object]]]:
     """Group test cases by action type."""
-    grouped = {}
+    grouped: dict[str, list[Mapping[str, object]]] = {}
     for tc in test_cases:
-        action_type = tc['action_type']
+        action_type = str(tc['action_type'])
         if action_type not in grouped:
             grouped[action_type] = []
         grouped[action_type].append(tc)
     return grouped
 
-def main():
+def main() -> None:
     replay_file = Path(__file__).parents[2] / "data_pipeline/bootstrapping/data/raw_replays/194335024.json"
 
     print(f"Extracting test cases from {replay_file}")
@@ -90,8 +95,6 @@ def main():
         json.dump(test_cases, f, indent=2)
 
     print(f"\n✅ Saved {len(test_cases)} test cases to {output_file}")
-
-    return test_cases
 
 if __name__ == "__main__":
     main()

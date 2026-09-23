@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import MISSING, dataclass, fields
 from enum import Enum
-from typing import Any, Mapping, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Mapping, Protocol, runtime_checkable
 
 from cle.game_engine.communication import SocialCommitment
 from cle.game_engine.events import PlayerEvent
@@ -12,9 +12,20 @@ from cle.game_engine.models.enums import Action
 from cle.game_engine.models.player import Color
 from cle.game_engine.observation import PlayerObservation
 from cle.game_engine.trading import TradeOffer
+from cle.players.data import (
+    AcceptanceResult,
+    ActionCall,
+    ContractSlot,
+    JsonValue,
+    PlayerSnapshot,
+    RestoredContract,
+)
+
+if TYPE_CHECKING:
+    from cle.harness.models import ModelRequest, ModelResponse
 
 
-def _restore_contract_slots(self: Any, state: list[Any]) -> None:
+def _restore_contract_slots(self: RestoredContract, state: list[ContractSlot]) -> None:
     """Fill appended defaults when loading historical frozen/slotted pickles."""
     items = fields(self)
     if len(state) > len(items) or any(
@@ -66,12 +77,12 @@ class PlayerChoice:
     rationale: str = ""
     raw_response: str = ""
     model: str | None = None
-    usage: tuple[tuple[str, Any], ...] = ()
+    usage: tuple[tuple[str, JsonValue], ...] = ()
     latency_ms: int | None = None
     parse_warning: str | None = None
     native_reasoning: str = ""
-    native_reasoning_details: tuple[Any, ...] = ()
-    reasoning_request: tuple[tuple[str, Any], ...] = ()
+    native_reasoning_details: tuple[JsonValue, ...] = ()
+    reasoning_request: tuple[tuple[str, JsonValue], ...] = ()
     provider_response_id: str | None = None
     provider_request_id: str | None = None
     provider_native_finish_reason: str | None = None
@@ -83,7 +94,7 @@ class PlayerChoice:
     confirm_if_accepted_by: tuple[Color, ...] | str | None = None
 
     # Complete admitted semantic envelope; only its first action uses action_index.
-    batch_actions: tuple[dict[str, Any], ...] = ()
+    batch_actions: tuple[ActionCall, ...] = ()
 
     __setstate__ = _restore_contract_slots
 
@@ -95,8 +106,8 @@ class PlayerAttempt:
     context_id: str
     choice: PlayerChoice | CommunicationChoice | None
     validation_error: str | None = None
-    model_request: Any = None
-    model_response: Any = None
+    model_request: ModelRequest | None = None
+    model_response: ModelResponse | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -115,7 +126,7 @@ class TalkContext:
     visible_through_sequence: int
     game_events: tuple[PlayerEvent, ...]
     recent_messages: tuple[PlayerEvent, ...]
-    active_commitments: tuple[Any, ...] = ()
+    active_commitments: tuple[SocialCommitment, ...] = ()
     observation: PlayerObservation | None = None
     visible_messages: tuple[PlayerEvent, ...] = ()
     trigger_reason: str | None = None
@@ -134,8 +145,8 @@ class CommunicationChoice:
     text: str = ""
     audience: tuple[Color, ...] = ()
     commitment: CommitmentProposal | None = None
-    model_request: Any = None
-    model_response: Any = None
+    model_request: ModelRequest | None = None
+    model_response: ModelResponse | None = None
     notes_update: str | None = None
     validation_error: str | None = None
     # None retains historical audience semantics; reactive speech is always public.
@@ -147,7 +158,10 @@ class CommunicationChoice:
 @runtime_checkable
 class SandboxPlayer(Protocol):
     color: Color
-    event_cursor: int
+
+    @property
+    def event_cursor(self) -> int:
+        """Next unread event; advanced through acknowledge_events, not assignment."""
 
     async def choose(
         self,
@@ -156,20 +170,20 @@ class SandboxPlayer(Protocol):
     ) -> PlayerAttempt:
         """Return one typed choice attempt."""
 
-    async def communicate(self, context: Any) -> CommunicationChoice:
+    async def communicate(self, context: TalkContext) -> CommunicationChoice:
         """Return speech or silence for a bounded communication opportunity."""
 
-    def accept(self, attempt: PlayerAttempt, result: Any) -> None:
+    def accept(self, attempt: PlayerAttempt, result: AcceptanceResult) -> None:
         """Record an attempt only after the engine accepted its action."""
 
     def acknowledge_events(self, next_sequence: int) -> None:
         """Advance this player's reaction cursor after processing a cutoff."""
 
-    def status(self) -> Mapping[str, Any]:
+    def status(self) -> Mapping[str, str | int]:
         """Return non-secret diagnostics."""
 
-    def snapshot(self) -> Any:
+    def snapshot(self) -> PlayerSnapshot:
         """Return restorable private player state."""
 
-    def restore(self, snapshot: Any) -> None:
+    def restore(self, snapshot: PlayerSnapshot) -> None:
         """Restore private player state."""

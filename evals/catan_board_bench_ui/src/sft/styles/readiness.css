@@ -1,0 +1,185 @@
+.sft-readiness {
+  border: 1px solid rgba(255, 189, 105, 0.3);
+  background:
+    linear-gradient(135deg, rgba(255, 189, 105, 0.055), transparent 48%),
+    rgba(6, 10, 14, 0.84);
+  margin-top: 1rem;
+}
+
+.sft-readiness-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: clamp(1.5rem, 4vw, 4rem);
+  align-items: end;
+  border-bottom: 1px solid var(--line);
+  padding: clamp(1rem, 2.2vw, 1.7rem);
+}
+
+.sft-status-chip {
+  display: inline-block;
+  border: 1px solid currentColor;
+  color: var(--sft-warning);
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  padding: 0.32rem 0.42rem;
+  text-transform: uppercase;
+}
+
+.sft-readiness-header h2 {
+  color: #f1f5f8;
+  font-size: clamp(1.5rem, 2.7vw, 2.5rem);
+  font-weight: 620;
+  letter-spacing: -0.045em;
+  margin-top: 0.65rem;
+}
+
+.sft-readiness-header h2 em { color: var(--sft-warning); font-style: normal; }
+.sft-readiness-header p {
+  max-width: 720px;
+  color: #899cab;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  margin-top: 0.5rem;
+}
+
+.sft-readiness-header dl {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(90px, auto));
+  border-left: 1px solid var(--line);
+}
+
+.sft-readiness-header dl > div {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+  border-right: 1px solid var(--line);
+  padding: 0.35rem 1rem;
+}
+
+.sft-readiness-header dl > div:last-child { border-right: 0; }
+.sft-readiness-header dt,
+.sft-smoke-metric span,
+.sft-smoke-title > span {
+  color: #697f91;
+  font-family: var(--font-mono);
+  font-size: 0.53rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.sft-readiness-header dd {
+  color: #e7edf2;
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+}
+
+.sft-stage-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.sft-stage {
+  min-width: 0;
+  min-height: 12rem;
+  border-right: 1px solid var(--line);
+  padding: 1rem;
+}
+
+.sft-stage:last-child { border-right: 0; }
+.sft-stage > header { display: flex; justify-content: space-between; gap: 0.7rem; }
+.sft-stage > header span {
+  color: #435564;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+}
+.sft-stage > header i {
+  color: var(--sft-warning);
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  font-style: normal;
+  text-transform: uppercase;
+}
+.sft-stage.blocked > header i { color: var(--sft-danger); }
+.sft-stage h3 {
+  color: #dfe7ed;
+  font-size: 0.88rem;
+  font-weight: 650;
+  margin-top: 1.35rem;
+}
+.sft-stage > strong {
+  display: block;
+  color: #f0f5f8;
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin-top: 0.65rem;
+}
+.sft-stage > strong small { color: #64798a; font-size: 0.52rem; font-weight: 400; }
+.sft-stage > p { color: #758999; font-size: 0.66rem; line-height: 1.5; margin-top: 0.7rem; }
+
+.sft-smoke-strip {
+  display: grid;
+  grid-template-columns: minmax(190px, 1.35fr) repeat(5, minmax(105px, 0.8fr));
+  border-top: 1px solid var(--line);
+}
+
+.sft-smoke-title,
+.sft-smoke-metric {
+  display: grid;
+  align-content: center;
+  gap: 0.28rem;
+  min-height: 5.4rem;
+  border-right: 1px solid var(--line);
+  padding: 0.8rem 1rem;
+}
+.sft-smoke-metric:last-child { border-right: 0; }
+.sft-smoke-title strong { color: #dfe7ed; font-size: 0.76rem; font-weight: 600; }
+.sft-smoke-title a { width: fit-content; color: var(--cyan); font-family: var(--font-mono); font-size: 0.56rem; text-decoration: none; }
+.sft-smoke-metric strong { color: #eef3f7; font-family: var(--font-mono); font-size: 1.02rem; font-weight: 500; }
+.sft-smoke-metric small { color: #637787; font-size: 0.54rem; }
+.sft-smoke-note {
+  border-top: 1px solid var(--line);
+  color: #738797;
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  line-height: 1.45;
+  padding: 0.55rem 1rem;
+}
+
+.sft-smoke-stages {
+  border: 1px solid var(--line);
+  border-top: 0;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+}
+
+.sft-smoke-stages > header,
+.sft-smoke-stages > div {
+  display: grid;
+  grid-template-columns: minmax(12rem, 2fr) repeat(4, minmax(5rem, 1fr));
+  gap: 0.8rem;
+  padding: 0.55rem 0.8rem;
+}
+
+.sft-smoke-stages > header {
+  color: #637787;
+  text-transform: uppercase;
+}
+
+.sft-smoke-stages > div {
+  border-top: 1px solid var(--line);
+  color: #b8c7d1;
+}
+
+.sft-smoke-stages strong {
+  color: #dfe7ed;
+  font-weight: 500;
+}
+
+.sft-smoke-stages p {
+  border-top: 1px solid var(--line);
+  color: #637787;
+  margin: 0;
+  padding: 0.55rem 0.8rem;
+}

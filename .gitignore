@@ -10,6 +10,7 @@ venv/
 !cle/env/
 !cle/env/**
 cle/env/__pycache__/
+cle/env/**/__pycache__/
 *.egg-info/
 dist/
 build/

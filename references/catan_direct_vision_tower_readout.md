@@ -56,7 +56,7 @@ The repository's results separate recognition from dense binding:
   training objective.
 
 The current post-atlas node dataset already gives a useful smoke-test seed:
-`sft/scripts/build_node_factor_dataset.py` creates 594 board contracts and 3,564
+`sft/scripts/builders/build_node_factor_dataset/` creates 594 board contracts and 3,564
 QA rows at one variant, covers every node under contradictory occupancy states,
 adds distractors, and stores atlas bounding boxes. Its existing long JSON and
 neighborhood answers should not be used for this experiment. Read the contracts

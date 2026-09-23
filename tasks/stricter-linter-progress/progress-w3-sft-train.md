@@ -1,0 +1,2 @@
+sft/scripts/train/train_qwen_series_with_catan_tokens/{_modules,_peft,_savers,_main,_audit}.py: TokenEmbeddingModel/GetPeftModel/TrainerInit protocols, TypedDict audit summary, setattr for upstream patches, type()-built audited trainer, JSON token narrowing; mypy 34->0 ruff 0->0
+sft/scripts/train/train_trl_catan_vision/{_common,_visual,_text_data,_vision_data,_datasets,_config}.py: JsonDict now sft.json_types (no Any), TokenRow/ChatMessage/TensorBatch aliases, validate_text_budget returns the int, explicit JSON narrowing; mypy (incl. cascade) ~120->0 ruff 0->0

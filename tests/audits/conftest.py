@@ -1,8 +1,8 @@
 """Keep correctness probes away from live services and persisted game data."""
-
-from pathlib import Path
 import socket
 import sqlite3
+from collections.abc import Iterator
+from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
 import pytest
@@ -12,16 +12,20 @@ from cle.harness.suite import default_suite_path
 
 
 @pytest.fixture(autouse=True)
-def isolated_audit_io(monkeypatch, tmp_path_factory):
-    violations = []
+def isolated_audit_io(
+    monkeypatch: pytest.MonkeyPatch, tmp_path_factory: pytest.TempPathFactory
+) -> Iterator[None]:
+    violations: list[str] = []
     temporary_root = tmp_path_factory.getbasetemp().resolve()
     connect_sqlite = sqlite3.connect
 
-    def no_network(*args, **kwargs):
+    def no_network(*args: object, **kwargs: object) -> None:
         violations.append("network access")
         raise RuntimeError("Correctness audits must not contact live services")
 
-    def temporary_sqlite(database, *args, **kwargs):
+    def temporary_sqlite(
+        database: str | Path, *args: object, **kwargs: object
+    ) -> sqlite3.Connection:
         name = str(database)
         if name != ":memory:":
             path = unquote(urlsplit(name).path) if name.startswith("file:") else name

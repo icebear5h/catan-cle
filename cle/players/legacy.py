@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import builtins
-from typing import Callable, Iterable
+from typing import TYPE_CHECKING, Callable, Iterable
 
 from cle.game_engine.models.enums import Action
 from cle.game_engine.models.player import Color
+
+if TYPE_CHECKING:
+    from cle.game_engine.game import GameEngine
 
 
 class Player:
@@ -16,7 +19,7 @@ class Player:
         self.color = color
         self.is_bot = is_bot
 
-    def decide(self, game, playable_actions: Iterable[Action]) -> Action:
+    def decide(self, game: GameEngine, playable_actions: Iterable[Action]) -> Action:
         raise NotImplementedError
 
     def reset_state(self) -> None:
@@ -29,7 +32,7 @@ class Player:
 class SimplePlayer(Player):
     """Legacy policy that always chooses the first legal action."""
 
-    def decide(self, game, playable_actions: Iterable[Action]) -> Action:
+    def decide(self, game: GameEngine, playable_actions: Iterable[Action]) -> Action:
         return next(iter(playable_actions))
 
 
@@ -45,7 +48,7 @@ class HumanPlayer(Player):
         super().__init__(color, is_bot)
         self.input_fn = input_fn
 
-    def decide(self, game, playable_actions: Iterable[Action]) -> Action:
+    def decide(self, game: GameEngine, playable_actions: Iterable[Action]) -> Action:
         actions = tuple(playable_actions)
         for index, action in enumerate(actions):
             print(f"{index}: {action.action_type} {action.value}")

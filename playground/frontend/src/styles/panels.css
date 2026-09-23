@@ -1,0 +1,113 @@
+.no-game {
+  color: var(--muted);
+  font-size: 1.1rem;
+}
+
+.panel-surface,
+.llm-thinking {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 0;
+  padding: 1rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.panel-heading,
+.llm-thinking h3 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.panel-heading {
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  margin: 0 0 0.85rem;
+  padding-bottom: 0.55rem;
+}
+
+.panel-heading span:first-child {
+  color: var(--cyan);
+}
+
+.field-label {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+}
+
+.decisions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.decision {
+  background: rgba(5, 7, 10, 0.9);
+  border: 1px solid var(--line);
+  border-radius: 0;
+  padding: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.decision-header {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.color-badge {
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.color-badge.RED {
+  background: #dc2626;
+  color: white;
+}
+
+.color-badge.BLUE {
+  background: #2563eb;
+  color: white;
+}
+
+.color-badge.WHITE {
+  background: #f3f4f6;
+  color: #1f2937;
+}
+
+.color-badge.ORANGE {
+  background: #ea580c;
+  color: white;
+}
+
+.llm-badge {
+  background: #8b5cf6;
+  color: white;
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.decision-action {
+  color: var(--muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+

@@ -16,7 +16,7 @@ trap cleanup SIGINT SIGTERM
 # Backend (Flask + SocketIO)
 echo "Starting backend on http://localhost:5001 ..."
 cd "$ROOT_DIR"
-python -m playground.game_viewer.app &
+uv run --no-sync python -m playground.game_viewer.app &
 
 # Frontend (Vite)
 echo "Starting frontend ..."

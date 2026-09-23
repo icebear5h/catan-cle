@@ -1,0 +1,132 @@
+.decision-shell {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  gap: 1rem;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.decision-rail,
+.decision-main {
+  min-height: 0;
+}
+
+.decision-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  overflow: hidden;
+}
+
+.decision-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: auto;
+  padding-right: 0.2rem;
+}
+
+.decision-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.decision-filter-grid label:last-child {
+  grid-column: 1 / -1;
+}
+
+.decision-filter-grid label {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.decision-filter-grid label > span {
+  color: var(--muted);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.64rem;
+  text-transform: uppercase;
+}
+
+.decision-filter-grid select {
+  min-width: 0;
+  appearance: none;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: #090d12;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.72rem;
+  padding: 0.48rem;
+}
+
+.bucket-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.32rem;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 0.2rem;
+}
+
+.bucket-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: center;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: rgba(5, 8, 12, 0.76);
+  color: var(--text);
+  padding: 0.56rem;
+  text-align: left;
+}
+
+.bucket-row > span {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.bucket-row strong {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.74rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bucket-row small {
+  color: var(--muted);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.58rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.bucket-row code {
+  color: var(--cyan);
+  font-size: 0.68rem;
+}
+
+.bucket-row:hover,
+.bucket-row.active {
+  border-color: rgba(60, 255, 205, 0.62);
+}
+
+.bucket-row.active {
+  background: rgba(60, 255, 205, 0.1);
+  box-shadow: inset 2px 0 0 var(--cyan);
+}
+
+.bucket-row.empty:not(.active) {
+  opacity: 0.46;
+}
+

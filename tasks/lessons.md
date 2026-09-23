@@ -1,5 +1,148 @@
 # Lessons
 
+- [durability] A saved sandbox snapshot is not an idempotent command protocol.
+  Use stable caller command IDs, a sandbox-local append sequence distinct from
+  engine revision, atomic outcome/checkpoint settlement, and fenced recovery.
+  Same-revision silence/notes are state. Cache completed model responses before
+  admission; mark sent-but-unrecorded remote outcomes as uncertain rather than
+  promising exactly-once inference. Test real process death and lost commit replies.
+- [durability] Bind pending recovery to resolved provider/model configuration and
+  exact prompts, not environment-sensitive defaults. Retrying a settled command
+  retains its original policy identity even after a later policy change. Sanitize
+  provider error text copied into sibling diagnostics, not just top-level errors.
+
+- [arch] The user is open to Megatron LoRA for a unified Miles SFT/RL stack.
+  Ray orchestrates workers; Megatron or FSDP2 performs training. No SGLang
+  engine is expected for pure offline SFT; its absence is not a reason to
+  reject Miles SFT. Evaluate the exact model, adapter/token-row scope, and
+  checkpoint compatibility rather than treating HF SFT as the settled choice.
+
+- [scope] Scaling coordinates to remove fractional values is different from
+  spelling decimals as fractions. On the actual sparse-h panel, uniform scaling
+  x4 (h becomes sqrt(3), y becomes integer) saves14.0% of input; bare integer grid
+  addresses save21.4% with an explicitly weighted geometry convention. Neither
+  token-count audit establishes model accuracy.
+
+- [eval] Audit literal scalar answers before labeling a readout regression.
+  Sparse-h stock eval scored 153/200 strictly, but `green` and `blue` were correct
+  owner names rejected only for casing. Preserve the original score and report
+  case-insensitive-color results separately (155/200; 71/72 pure readouts).
+
+- [tokens] Measure coordinate spellings with the actual tokenizer. On 88 sparse
+  Cartesian boards, stock Qwen3.8 averages 746 tokens with sqrt(3), 708 with √3,
+  611 with h=sqrt(3)/4 and integer h multiples, 740 with three-decimal x values,
+  and 877 with six-decimal x values. These are board-token counts, not inference
+  results; shorter notation does not establish better model comprehension.
+
+- [eval] Do not substitute dense vision-readout serialization for the intended
+  minimal coordinate input. The stock Cartesian run expanded all 155 records,
+  including 109 empty slots in one audited case: 2,508 tokens. Its sparse form
+  is 174 state/punctuation + 500 coordinate + 9 empty-default tokens; even with
+  the same legend, the whole prompt drops to 988. Measure actual tokenizer
+  section costs before launch and distinguish count-only projections from evals.
+
+- [eval] Separate direct supplied-state readouts from geometry-dependent ownership
+  joins. The stock Cartesian run's ownership family was 78/88, but pure readouts
+  were 68/72; owned-incident-road queries accounted for the other 10/16. Audit
+  actual visible clauses before attributing misses to geometry, formatting, or
+  coordinate copying: the settlement miss selected a supplied city, not a proven
+  sign-flip error.
+
+- [testing] Use `uv run --no-sync python -m pytest` for this checkout: the
+  `.venv/bin/pytest` console-script shebang can point to another checkout.
+  A matching before/after failure under that launcher is not proof of missing
+  dependencies in the intended interpreter; verify executable provenance before
+  reporting collection blockers or installing packages.
+
+- [scope] Use `tetracorp` as the default Modal profile after the user's explicit
+  switch. Preserve original workspace ownership for completed runs; retrieve
+  their artifacts with an explicit historical profile rather than relabeling them.
+- [gotcha] The official Miles image runs Python from `/opt/sglang`; `uv pip
+  --system` selected `/usr` in the Modal image build. Install extra runtime
+  dependencies with `--python /opt/sglang/bin/python` and verify on CPU first.
+
+- [scope] The selected coordinate experiment is inference-only on stock
+  Qwen3.8-27B: ordinary equal-scale 2D Cartesian positions written with exact
+  sqrt(3) expressions/fractions, central tile (0,0), positive y upward. Do not
+  introduce coordinate SFT, use the r04 adapter, or expand the candidate sweep.
+
+- [tooling] Before choosing a source-package name, check both Git ignores and
+  quality inventory exclusions. Use a cohesive name such as `builders`, not
+  reserved output names such as `build`; fix the package name rather than adding
+  ignore exceptions or excluding authored source from quality checks.
+
+- [tooling] `scripts/verify_sft_layout.py` forbids `sft/diagnostics` (and other
+  migrated artifact directories) as source paths. Check its `FORBIDDEN_SOURCE_PATHS`
+  before naming a new `sft/` subpackage; use a different cohesive name such as
+  `analysis` rather than editing the migration verifier.
+
+- [testing] A relocated virtualenv can retain console-script shebangs pointing
+  at another checkout. Use `uv run --no-sync python -m pytest` for byte-parity
+  checks; `uv run pytest` can silently load a different Pillow/runtime even
+  when `which pytest` points inside the local environment.
+
+- [eval] The coordinate-system decision is whichever Qwen3.8 actually handles
+  best under the intended accuracy/token/compute budget. Mathematical symmetry
+  supplies candidates, not a winner. Keep ordinary Cartesian coordinates eligible;
+  distinguish immediate usability on the atlas-trained checkpoint from learning
+  quality after matched coordinate SFT.
+
+- [geometry] Distinguish Catan's degree-6 tile-center lattice from its degree-3
+  intersection graph. Symmetric zero-sum integer triples can preserve physical
+  Euclidean geometry for tile/node/edge positions (checked all 10,440 pairs on
+  the engine board). A different honeycomb embedding, integer triples summing
+  to 0 or 1, gives exact unrestricted node distance by L1 (checked all 1,431
+  node pairs); see Eppstein, Isometric Diamond Subgraphs, arXiv:0807.2218, §2.
+  Do not mix these triple systems or apply geometric distance to owned-road
+  connectivity. Coordinate symmetry alone does not establish learned-model
+  distance invariance; evaluate equal-distance directional ties explicitly.
+
+- [geometry] Do not assume equal-scale Cartesian axes are a user requirement;
+  the goal is useful, learnable coordinate addressing. Distinguish regular board
+  rendering from model-facing labels. Square-grid plots clarify physical geometry,
+  while exact integer addresses can use scaled axes and a stated metric. Compare
+  representation usefulness rather than optimizing for Cartesian purity.
+
+- [workflow] When asked for the startup script, check `scripts/*.sh` before
+  recommending the extensionless helper or manual commands. This project's
+  existing combined frontend/backend startup script is `scripts/dev.sh`.
+
+- [communication] Do not arrange axial coordinate pairs in a two-row block that
+  looks like a malformed hexagon. Label lists explicitly and show the coordinate
+  projection or a correctly positioned diagram when explaining hex geometry.
+
+- [gotcha] Miles `--debug-rollout-only` skips training model/optimizer loading,
+  but its pinned FSDP path still creates a trainer actor and initializes CUDA and
+  distributed state. Do not describe it as parser-only or a trainer-free runtime.
+  Eval-only is `--num-rollout 0 --eval-interval 1`; shared-engine eval uses
+  `--eval-num-gpus 0`, not an additional GPU fleet.
+
+- [scope] The user is staying on a single GPU for now. Evaluate SFT/serving choices
+  against the proven single-H200 LoRA workflow, not multi-GPU Miles recipes.
+  FSDP is unnecessary for that setup; Miles can be considered on one GPU, but a
+  migration needs a concrete benefit and verified checkpoint/trainable-scope support.
+
+- [research] Miles adoption is not limited to RL: current upstream includes
+  `scripts/run_qwen3_sft.py`, supervised token-loss/masking, and an SFT snapshot-eval
+  E2E test. Check those paths before recommending deferral until RL. Distinguish
+  existing Qwen3 SFT recipes from an unverified Qwen3.8-27B + PEFT atlas-row port;
+  generic SFT support does not prove exact adapter or trainable-scope compatibility.
+
+- [tooling] For this repository's deterministic code-quality integration, start
+  with local checks and OpenCode hooks. The user clarified there is no established
+  CI here; do not assume a remote CI-wait workflow exists or is required.
+- [tooling] Pre-edit guards must preview the host tool's exact newline, BOM,
+  replacement, and patch semantics. GPT sessions expose apply_patch rather than
+  edit/write, so guarded nondependency manifest patches need a supported path.
+  Scope generated-data exclusions by repository-relative prefixes: blanket
+  `data`/`cache` names can silently hide first-party modules.
+
+- [scope] In the SFT catch-up, the user deprioritized node pip sum and suggested
+  reachable-node enumeration may belong in RL. Judge the current perception-only
+  SFT direction by its intended board-grounding tasks, not these broader operations.
+  Use RL as the general category; do not assume GRPO is the selected algorithm or
+  that the SFT results prove a capability ceiling.
+
 - [scope] A request to catch up on denser self-play RL reward signal is research, not authorization to implement decision filtering. Read the reward proposals and later RL lessons first; distinguish unimplemented credit-assignment ideas from board-recognition training and existing runtime inference shortcuts.
 
 - [gotcha] Modal resolves `/runs/...` to `/__modal/volumes/vo-.../...` in trainer
@@ -640,3 +783,47 @@
   remaining discarders together, and `_is_action_valid` checks a later discarder
   from their own seat because `validate_discard` requires `current_color()`.
   Commit order stays the engine's seat order via the staged replay.
+- [perf] Crackedness is measured bottlenecks, not frameworks (Periodic Labs
+  infra post, 2026-09-15: 4.1x train, 2.5x inference on OSS Megatron/SGLang/
+  Miles/RL at 1,300 H200s). Their wins translate down directly: async
+  PipelineRL loop (rollout never blocks on training; our vLLM LoRA hot-swap
+  is the small-scale version), THD packing plus cost-aware longest-first
+  scheduling for variable-length traces (our games run 200-675 calls; do this
+  in the SFT dataloader), colocated engine workers on spare rollout CPUs with
+  local-only comms (our pbox analogue; never a hosted sandbox), sub-minute
+  automated merge-quantize-deploy in the promote path, and filling trainer
+  idle with evals/probes. Skip explicitly: WideEP/router replay (MoE-only;
+  no DP-sync stall exists for dense), PD disaggregation (single-island
+  overhead), trillion-param sharding. Profile our trace DB first; every entry
+  above answers a bottleneck we have already measured (30% rejects, batch-16
+  scheduler, hand promotion).
+
+- [workflow] A subagent "failed: session limit" notice is transient: the agent
+  resumes automatically when the limit resets. Before spawning a replacement,
+  run ListAgents; an agent still listed as running or idle is alive. Spawning a
+  "resume" for a live agent produced two editors in `data_pipeline/` and
+  `tests/` on 2026-09-22 and cost a reconciliation pass. Assign ownership by
+  directory, never by file list, and keep a per-agent progress log in the
+  scratchpad so a genuine restart can resume without redoing work.
+
+- [pattern] Under mypy `disallow_any_explicit`, `Callable[..., X]` is an explicit
+  Any: use a Protocol with `__call__` (positional-only first param via `/`, or
+  matching parameter names). For untyped third-party callables, bind to a typed
+  handle first (`_new: Callable[[], T] = Thing`) or a Protocol instead of
+  `type: ignore`. Pydantic models need `plugins = ["pydantic.mypy"]` with
+  `init_typed = true`, or every model class trips explicit-any. The stub for
+  `nx.Graph` needs all three type parameters spelled out.
+
+- [pattern] When a CLI script becomes a same-name package, pass
+  `prog="<oldname>.py"` to ArgumentParser so `--help` output is unchanged, and
+  keep `python -m scripts.x.y` working via `__main__.py`. Modal container-only
+  imports belong in `with image.imports():` at module level, which satisfies the
+  no-inline-import rule and keeps local deploys importable.
+
+- [gotcha] Splitting a module into a package silently breaks monkeypatch seams:
+  a submodule that imports a name by value no longer sees `monkeypatch.setattr`
+  on the package. Internal callers must resolve patched names through the
+  package at call time (`from pkg import mod as m; m.name(...)`), the pattern in
+  `cle/game_engine/state_functions/`. Four regressions on 2026-09-22 (sft
+  evaluator, playwright scraper, replay parsed-actions narrowing, viewer
+  live-sandbox imports) were all this.

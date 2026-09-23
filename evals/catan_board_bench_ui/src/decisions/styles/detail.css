@@ -1,0 +1,208 @@
+.decision-detail-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.decision-detail .panel-heading span:last-child {
+  max-width: 50%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detail-buckets {
+  margin-top: 0.55rem;
+}
+
+.selection-compare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin-top: 0.8rem;
+}
+
+.selection-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.35rem 0.6rem;
+  border: 1px solid var(--line);
+  background: rgba(4, 7, 10, 0.66);
+  padding: 0.65rem;
+}
+
+.selection-card > span {
+  color: var(--muted);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.6rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.selection-card > strong {
+  color: var(--cyan);
+  font-size: 0.75rem;
+}
+
+.selection-card > p {
+  grid-column: 1 / -1;
+  color: #e0e8f1;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.selection-human {
+  border-color: rgba(105, 167, 255, 0.42);
+}
+
+.selection-agree {
+  border-color: rgba(60, 255, 205, 0.48);
+}
+
+.selection-model {
+  border-color: rgba(255, 209, 102, 0.42);
+}
+
+.detail-warning {
+  border: 1px solid rgba(255, 209, 102, 0.45);
+  background: rgba(255, 209, 102, 0.07);
+  color: var(--amber);
+  font-size: 0.72rem;
+  margin-top: 0.65rem;
+  padding: 0.55rem;
+}
+
+.quality-verdicts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.quality-button,
+.failure-labels button {
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: rgba(4, 7, 10, 0.7);
+  color: #aebdcc;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.64rem;
+  min-height: 2rem;
+  padding: 0.35rem 0.5rem;
+}
+
+.quality-strong.active,
+.quality-reasonable.active {
+  border-color: var(--cyan);
+  background: rgba(60, 255, 205, 0.12);
+  color: var(--cyan);
+}
+
+.quality-questionable.active {
+  border-color: var(--amber);
+  background: rgba(255, 209, 102, 0.12);
+  color: var(--amber);
+}
+
+.quality-blunder.active {
+  border-color: var(--pink);
+  background: rgba(255, 95, 122, 0.12);
+  color: #ff8da0;
+}
+
+.failure-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.65rem;
+}
+
+.failure-labels button.active {
+  border-color: rgba(255, 95, 122, 0.68);
+  background: rgba(255, 95, 122, 0.1);
+  color: #ff8da0;
+}
+
+.eval-text-block pre,
+.evidence-details pre {
+  max-height: 30rem;
+  overflow: auto;
+  color: #d7e2ee;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.eval-text-block pre.empty {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.legal-action-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  max-height: 30rem;
+  overflow: auto;
+}
+
+.legal-action {
+  display: grid;
+  grid-template-columns: 2.2rem minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: start;
+  border: 1px solid var(--line);
+  background: rgba(4, 7, 10, 0.58);
+  padding: 0.45rem;
+}
+
+.legal-action code {
+  color: var(--muted);
+  font-size: 0.66rem;
+  text-align: right;
+}
+
+.legal-action span {
+  color: #cbd7e3;
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.legal-action small {
+  color: var(--muted);
+  font-size: 0.58rem;
+  text-transform: uppercase;
+}
+
+.legal-action.human-selected {
+  border-color: rgba(105, 167, 255, 0.62);
+  background: rgba(105, 167, 255, 0.08);
+}
+
+.legal-action.model-selected {
+  border-color: rgba(255, 209, 102, 0.62);
+  background: rgba(255, 209, 102, 0.08);
+}
+
+.legal-action.human-selected.model-selected {
+  border-color: rgba(60, 255, 205, 0.7);
+  background: rgba(60, 255, 205, 0.09);
+}
+
+.evidence-details summary {
+  color: var(--cyan);
+  cursor: pointer;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.evidence-details[open] summary {
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.55rem;
+}
+

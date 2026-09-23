@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
-import BenchmarkVerifier from './BenchmarkVerifier'
-import DecisionSpotChecks from './DecisionSpotChecks'
-import TextFormatV3 from './TextFormatV3'
-import ReasoningTraces from './ReasoningTraces'
-import SftDataExplorer from './SftDataExplorer'
-import SftEvalResults from './SftEvalResults'
-import BoardFluencyReview from './BoardFluencyReview'
+import BenchmarkVerifier from './verifier/BenchmarkVerifier'
+import DecisionSpotChecks from './decisions/DecisionSpotChecks'
+import TextFormatV3 from './textformat/TextFormatV3'
+import ReasoningTraces from './reasoning/ReasoningTraces'
+import SftDataExplorer from './sft/SftDataExplorer'
+import SftEvalResults from './sft/SftEvalResults'
+import BoardFluencyReview from './fluency/BoardFluencyReview'
 
 type EvalSuite = 'decisions' | 'board' | 'board-fluency' | 'sft-data' | 'sft-eval' | 'text-v3' | 'reasoning'
 

@@ -1,6 +1,6 @@
 """Strict public-speech choice parsing, independent of action and prompt rendering."""
 
-from typing import Any
+from typing import cast
 
 from cle.game_engine.models.player import Color
 from cle.players.contracts import CommitmentProposal, CommunicationChoice, CommunicationMode
@@ -8,10 +8,13 @@ from cle.players.notes import validate_notes
 
 
 def parse_public_speech(
-    payload: dict[str, Any], *, speaker: Color, participants: tuple[Color, ...],
+    payload: dict[str, object], *, speaker: Color, participants: tuple[Color, ...],
     max_notes_chars: int,
 ) -> CommunicationChoice:
-    notes = validate_notes(payload["notes"], max_notes_chars) if "notes" in payload else None
+    notes = (
+        validate_notes(cast("str", payload["notes"]), max_notes_chars)
+        if "notes" in payload else None
+    )
     if payload.get("mode") in {"pass", "silence"}:
         if set(payload) - {"mode", "notes"}:
             raise ValueError("Pass permits only mode and optional notes")

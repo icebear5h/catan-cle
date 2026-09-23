@@ -6,11 +6,16 @@ import sys
 from dataclasses import asdict
 from pathlib import Path
 
-from flask import Flask, send_from_directory
+from flask import Flask, Response, send_from_directory
 from flask_socketio import SocketIO, emit
 from werkzeug.serving import make_server
 
-from cle.sandbox.factory import LiveSandboxConfig, create_live_sandbox, materialize_live_prompt_suites
+from cle.harness.models import ModelRequest, ModelResponse
+from cle.sandbox.factory import (
+    LiveSandboxConfig,
+    create_live_sandbox,
+    materialize_live_prompt_suites,
+)
 from cle.traces.sqlite import SQLiteLiveTraceStore
 from playground.game_viewer.routes.health import health_bp
 from playground.game_viewer.routes.live_game import live_game_bp
@@ -20,16 +25,16 @@ from playground.game_viewer.state import ServerState
 
 
 class NeverTransport:
-    async def complete(self, request):
+    async def complete(self, request: ModelRequest) -> ModelResponse:
         raise AssertionError("Model calls are forbidden in browser fixtures")
 
 
-def deny_outbound_network(event, args):
+def deny_outbound_network(event: str, args: tuple[object, ...]) -> None:
     if event == "socket.connect":
         raise AssertionError("Outbound connections are forbidden in browser fixtures")
 
 
-def main():
+def main() -> None:
     # The parent supplies these before Python imports any viewer/state modules.
     assert os.environ["PYTHON_DOTENV_DISABLED"] == "1"
     assert Path(os.environ["CATAN_LIVE_TRACE_DB"]).parent == Path.cwd()
@@ -79,11 +84,11 @@ def main():
 
     @app.route("/", defaults={"path": "index.html"})
     @app.route("/<path:path>")
-    def assets(path):
+    def assets(path: str) -> Response:
         return send_from_directory(build, path)
 
     @socketio.on("connect")
-    def connect():
+    def connect() -> None:
         if state.current_sandbox is not None:
             emit("game_state", build_game_state_snapshot(state))
 

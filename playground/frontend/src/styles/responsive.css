@@ -1,0 +1,14 @@
+@media (max-width: 860px) {
+  header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .mode-switch {
+    width: 100%;
+  }
+
+  .mode-switch button {
+    flex: 1;
+  }
+}

@@ -5,6 +5,79 @@ RL training framework for teaching LLMs to play Settlers of Catan through self-p
 See [the sandbox guide](cle/sandbox/README.md) for the active runtime and
 [the engine guide](docs/engine/ENGINE_DOCS.md) for deterministic rules.
 
+## Local code quality and OpenCode
+
+```bash
+uv sync --extra dev
+uv run --no-sync python -m scripts.quality
+# Faster structural audit; still checks the whole source tree:
+uv run --no-sync python -m scripts.quality --structure-only --limit 30
+```
+
+The gate is **strict repo-wide**, including existing code and tests. It checks:
+
+- **300 physical lines per source file**, including blank lines and comments.
+- **15 direct authored files per source folder**, including adjacent README/config
+  files. Subfolders do not count as files.
+- **Ruff**: basic errors, sorted/module-level imports, explicit Python parameter
+  and return annotations, and no `Any` annotations.
+- **Strict mypy**: Python type correctness, typed generic containers, and no
+  explicit `Any` (including nested annotations). `self`/`cls` need no annotation.
+
+Inventory includes tracked and nonignored untracked source, and excludes deleted
+paths, dependencies, build/cache outputs, generated data, research artifacts,
+vendored references, benchmark datasets, and board image assets. Source extensions
+and exact scope live in [`scripts/quality`](scripts/quality/__init__.py).
+Markdown, datasets, and lockfiles are not subject to the source-line limit.
+Type checks here apply to Python; frontend sources share the structural limits
+and retain their existing TypeScript/ESLint commands.
+
+The initial repo has substantial existing debt: a failing audit is expected.
+There is **no baseline**, and `--limit` truncates only displayed diagnostics.
+Use `--json` for structured counts, rule failures, and Ruff/mypy exit statuses.
+A structure-only pass is not a full quality pass. This is a local quality gate,
+separate from functional tests and remote CI.
+
+### Quality cleanup progress (2026-09-21)
+
+The first refactor groups 44 scripts and 124 tests by ownership; canonical
+commands and move maps are in [scripts/README.md](scripts/README.md) and
+[tests/README.md](tests/README.md). Map/trade/player code, two benchmark format
+modules, and eight recognition generators are split into smaller units. Frontend
+components use feature folders and ordered stylesheets. Saved pickle identities,
+the strict scorer fingerprint, representative generated data, and production
+CSS output are regression-checked across these extractions.
+
+The full gate still fails: this is an incremental cleanup, not a passing audit.
+Some extracted JSON boundaries retain existing typing debt; frozen scorer source
+also has annotation debt tied to historical manifests. Those failures remain
+visible rather than receiving suppressions. Current counts and verification
+results and the active checklist are recorded in
+[tasks/stricter-linter.md](tasks/stricter-linter.md).
+
+### OpenCode behavior
+
+**Quit and restart OpenCode** to load `.opencode/plugins/local-quality.js` and
+the `/quality` command. No global configuration changes are needed.
+
+- Edits and shell calls receive bounded structure-check feedback. Repairs remain
+  possible when checks fail.
+- Ordinary agent-issued `git commit` calls run the full gate and are rejected
+  on failure. Stage the complete intended worktree first and use a standalone
+  commit command; partial staging and chained commits are rejected so the gate
+  checks the same contents as the commit.
+- Dependency fields in `pyproject.toml` and direct `uv.lock` edits are protected.
+  Use `uv add PACKAGE`, `uv remove PACKAGE`, or `uv add --optional dev PACKAGE`.
+  Use uv to regenerate the lock. Nondependency configuration can use exact
+  `edit`/`write` or exact-context `Update File` patches. Ambiguous/fuzzy manifest
+  patches, manifest moves/deletions, and direct lockfile patches are rejected.
+- Obvious pip mutations and shell writes to protected manifests are rejected.
+
+These hooks guard OpenCode tool calls, not arbitrary programs or external Git
+clients. There is no installed Git hook or blocking session-stop hook: an edit
+is not rolled back, and aliases/scripts/external processes can bypass tool-level
+guards. The guard validates requested edits, not the provenance of external ones.
+
 ## Architecture
 
 ```text
@@ -386,6 +459,14 @@ atomic exchange.
 
 See [`cle/game_engine/trading.py`](cle/game_engine/trading.py) and the
 [sandbox guide](cle/sandbox/README.md).
+
+### Durable rollout commands
+
+[`cle.sandbox.durable`](cle/sandbox/durable/README.md) provides opt-in ordered
+per-game command execution: stable retry IDs, durable model receipts, atomic
+outcome/checkpoint commits, and writer fencing on recovery. Recovered commands
+reuse saved responses; unknown provider outcomes stop for explicit retry consent.
+The current viewer remains on its existing trace path.
 
 ## Data pipelines
 

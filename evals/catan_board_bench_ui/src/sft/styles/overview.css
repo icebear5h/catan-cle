@@ -1,0 +1,118 @@
+.sft-shell {
+  --sft-forward: #58a6ff;
+  --sft-inverse: #ffbd69;
+  --sft-warning: #ffbd69;
+  --sft-danger: #ff6f86;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: clamp(1rem, 2vw, 2rem);
+}
+
+.sft-shell > * {
+  width: min(100%, 1540px);
+  margin-inline: auto;
+}
+
+.sft-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(230px, 0.32fr);
+  gap: clamp(2rem, 6vw, 7rem);
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding: clamp(1.5rem, 4vw, 3.8rem) clamp(0rem, 1vw, 1rem);
+}
+
+.sft-overline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem 1.2rem;
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sft-live-dot::before {
+  content: "";
+  display: inline-block;
+  width: 0.42rem;
+  height: 0.42rem;
+  margin-right: 0.48rem;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 12px rgba(60, 255, 205, 0.72);
+}
+
+.sft-live-dot.blocked { color: var(--sft-warning); }
+.sft-live-dot.blocked::before {
+  background: var(--sft-warning);
+  box-shadow: 0 0 12px rgba(255, 189, 105, 0.65);
+}
+
+.sft-hero h1 {
+  max-width: 900px;
+  color: #f6f9fc;
+  font-size: clamp(2.5rem, 5vw, 5.4rem);
+  font-weight: 620;
+  letter-spacing: -0.06em;
+  line-height: 0.94;
+  margin-top: 1.1rem;
+}
+
+.sft-hero h1 em {
+  color: var(--cyan);
+  font-style: normal;
+}
+
+.sft-hero > div:first-child > p {
+  max-width: 760px;
+  color: #9fb0bf;
+  font-size: 1rem;
+  line-height: 1.65;
+  margin-top: 1.4rem;
+}
+
+.sft-ratio-card {
+  border-left: 1px solid var(--line);
+  padding: 0.8rem 0 0.8rem clamp(1.5rem, 4vw, 3.8rem);
+}
+
+.sft-ratio-card > span,
+.sft-stat > span,
+.sft-select-wrap > span,
+.sft-search > span {
+  color: #71869a;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.sft-ratio-card strong {
+  display: block;
+  color: #f1f6fb;
+  font-family: var(--font-mono);
+  font-size: clamp(3.2rem, 6vw, 6rem);
+  font-weight: 450;
+  letter-spacing: -0.08em;
+  line-height: 0.9;
+  margin-top: 0.75rem;
+}
+
+.sft-ratio-card p {
+  color: #7f91a1;
+  font-size: 0.7rem;
+  margin-top: 0.5rem;
+}
+
+.sft-ratio-card > div {
+  display: flex;
+  height: 0.45rem;
+  gap: 0.18rem;
+  margin-top: 1.1rem;
+}
+
+.sft-ratio-card i:first-child { background: var(--sft-forward); }
+.sft-ratio-card i:last-child { background: var(--sft-inverse); }

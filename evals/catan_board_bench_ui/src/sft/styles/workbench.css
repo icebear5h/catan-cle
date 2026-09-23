@@ -1,0 +1,213 @@
+.sft-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--line);
+  background: rgba(6, 10, 14, 0.72);
+  margin-top: 1rem;
+}
+
+.sft-stat {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+  border-right: 1px solid var(--line);
+  padding: 1rem 1.2rem;
+}
+
+.sft-stat:last-child { border-right: 0; }
+
+.sft-stat strong {
+  color: #edf3f8;
+  font-size: 1.55rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.sft-stat strong.mono {
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  letter-spacing: 0;
+  margin-top: 0.35rem;
+}
+
+.sft-stat small {
+  color: #7e91a1;
+  font-size: 0.64rem;
+}
+
+.sft-controls {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(115px, 0.8fr)) minmax(185px, 1.3fr) auto;
+  gap: 0.7rem;
+  align-items: end;
+  border: 1px solid var(--line);
+  border-top: 0;
+  background: rgba(8, 12, 17, 0.9);
+  padding: 0.8rem;
+}
+
+.sft-select-wrap,
+.sft-search {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.sft-select-wrap select,
+.sft-search input {
+  width: 100%;
+  height: 2.35rem;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: #080c11;
+  color: #dce5ed;
+  font-size: 0.72rem;
+  padding: 0 0.65rem;
+}
+
+.sft-select-wrap select { text-transform: capitalize; }
+.sft-search input::placeholder { color: #556879; }
+
+.sft-reset {
+  height: 2.35rem;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: #8da0b0;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  padding: 0 0.8rem;
+  text-transform: uppercase;
+}
+
+.sft-reset:hover { border-color: var(--cyan); color: var(--cyan); }
+
+.sft-workbench {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+  min-height: 42rem;
+  border: 1px solid var(--line);
+  border-top: 0;
+  background: rgba(4, 7, 10, 0.76);
+}
+
+.sft-row-rail {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-right: 1px solid var(--line);
+}
+
+.sft-row-rail > header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 4.35rem;
+  border-bottom: 1px solid var(--line);
+  padding: 0.85rem;
+}
+
+.sft-row-rail > header div { display: grid; gap: 0.24rem; }
+
+.sft-row-rail > header span,
+.sft-row-rail > header small {
+  color: #74899a;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  text-transform: uppercase;
+}
+
+.sft-row-rail > header strong {
+  color: #f0f5f9;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.sft-row-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.sft-row-list > button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.32rem 0.6rem;
+  width: 100%;
+  min-height: 4.15rem;
+  border: 0;
+  border-bottom: 1px solid rgba(230, 237, 243, 0.09);
+  border-radius: 0;
+  background: transparent;
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+}
+
+.sft-row-list > button:hover { background: rgba(255, 255, 255, 0.025); }
+.sft-row-list > button.active {
+  background: rgba(60, 255, 205, 0.08);
+  box-shadow: inset 3px 0 var(--cyan);
+}
+
+.sft-kind {
+  width: fit-content;
+  border: 1px solid currentColor;
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  padding: 0.24rem 0.32rem;
+  text-transform: uppercase;
+}
+
+.sft-kind.forward { color: var(--sft-forward); }
+.sft-kind.inverse { color: var(--sft-inverse); }
+.sft-kind.marked { color: var(--cyan); }
+.sft-kind.relation { color: var(--sft-inverse); }
+.sft-kind.probe { color: #d5a7ff; }
+
+.sft-row-token {
+  min-width: 0;
+  overflow: hidden;
+  color: #e3eaf0;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sft-row-list button small {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  color: #8496a5;
+  font-size: 0.68rem;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sft-row-rail > footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem;
+  border-top: 1px solid var(--line);
+  padding: 0.65rem;
+}
+
+.sft-row-rail > footer button,
+.sft-stepper button {
+  min-height: 2.15rem;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: #080c11;
+  color: #acbac5;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  text-transform: uppercase;
+}
+
+.sft-row-rail > footer button:disabled,
+.sft-stepper button:disabled { color: #3f4d59; }

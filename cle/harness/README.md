@@ -402,3 +402,25 @@ response channel (`reasoning`, `reasoning_content`, or `reasoning_details`) or
 explicit provider token evidence. The current live factory sends configurable
 native-reasoning requests through OpenRouter or Cerebras and rejects enabled requests on
 transports that do not implement that channel instead of silently faking it.
+
+## Package layout
+
+Four oversized modules became same-name packages; every importable name stayed
+at its original path, so `from cle.harness.context import ContextAssembler` and
+its peers are unchanged.
+
+- `context/` — `assembler` (request assembly), `parser` (response contract),
+  `tool_response` and `response_values` (strict JSON admission), `formatting`
+  (the shared event/template renderers still reachable as `ContextAssembler`
+  static methods), `environment`, `errors`.
+- `communication/` — `suite` (validated YAML), `rendering`, `parsing`.
+- `prompt_store/` — `documents`, `storage` (locked atomic writes), `resolution`,
+  `overrides`.
+- `providers/openrouter/` — `failures` (redacted TLS/HTTP summaries),
+  `transport`.
+
+Names that tests replace through the legacy module path are resolved at call
+time, following `action_tools/parser.py`. Each package `__init__` re-exports the
+patchable name (`json`, `os`, `httpx`, `asyncio`, `CommitmentProposal`,
+`default_shared_suite_path`, `_store_lock`) and the submodules reach it through
+the package rather than binding it at import time.

@@ -7,13 +7,15 @@ Tests each action in isolation to identify which action types are broken.
 
 import json
 import sys
-from pathlib import Path
 from collections import defaultdict
+from collections.abc import Mapping, Sequence
+from pathlib import Path
+from typing import cast
 
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-def colonist_cards_to_freqdeck(card_list):
+def colonist_cards_to_freqdeck(card_list: Sequence[int]) -> list[int]:
     """Convert Colonist card IDs to freqdeck format."""
     # Colonist card enums: 1=WOOD, 2=BRICK, 3=SHEEP, 4=WHEAT, 5=ORE
     freqdeck = [0, 0, 0, 0, 0]
@@ -30,7 +32,9 @@ def colonist_cards_to_freqdeck(card_list):
             freqdeck[4] += 1  # ORE
     return freqdeck
 
-def run_single_test(test_case, verbose=False):
+def run_single_test(
+    test_case: Mapping[str, object], verbose: bool = False
+) -> tuple[str, dict[str, dict[str, list[int]]]]:
     """
     Run a single test case.
 
@@ -38,14 +42,14 @@ def run_single_test(test_case, verbose=False):
     """
     index = test_case['index']
     action_type = test_case['action_type']
-    before = test_case['before_resources']
-    after = test_case['after_resources']
+    before = cast(Mapping[str, Sequence[int]], test_case['before_resources'])
+    after = cast(Mapping[str, Sequence[int]], test_case['after_resources'])
 
     # For now, just check if resources changed correctly
     # We'll implement actual action execution later
 
     # Calculate expected deltas
-    deltas = {}
+    deltas: dict[str, dict[str, list[int]]] = {}
     for player_id in after.keys():
         before_cards = before.get(str(player_id), [])
         after_cards = after.get(str(player_id), [])
@@ -56,7 +60,7 @@ def run_single_test(test_case, verbose=False):
         delta = [after_freq[i] - before_freq[i] for i in range(5)]
 
         if any(d != 0 for d in delta):
-            deltas[player_id] = {
+            deltas[str(player_id)] = {
                 'before': before_freq,
                 'after': after_freq,
                 'delta': delta
@@ -73,7 +77,7 @@ def run_single_test(test_case, verbose=False):
     # For now, just mark all as "pending" since we haven't implemented execution yet
     return ('pending', deltas)
 
-def main():
+def main() -> None:
     test_file = Path(__file__).parent / "replay_test_cases.json"
 
     if not test_file.exists():
@@ -87,11 +91,13 @@ def main():
     print()
 
     # Group results by action type
-    results_by_type = defaultdict(lambda: {'pending': 0, 'pass': 0, 'fail': 0})
+    results_by_type: defaultdict[str, dict[str, int]] = defaultdict(
+        lambda: {'pending': 0, 'pass': 0, 'fail': 0}
+    )
     failed_tests = []
 
     for test_case in test_cases:
-        action_type = test_case['action_type']
+        action_type = str(test_case['action_type'])
         status, deltas = run_single_test(test_case, verbose=False)
 
         results_by_type[action_type][status] += 1

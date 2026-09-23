@@ -2,6 +2,8 @@
 
 import os
 import sys
+from io import TextIOWrapper
+from typing import cast
 
 from dotenv import load_dotenv
 from flask import Flask
@@ -10,16 +12,15 @@ from flask_socketio import SocketIO
 
 from cle.traces import SQLiteLiveTraceStore
 
-from .state import server_state
 from .routes import register_routes
-
+from .state import server_state
 
 load_dotenv()
-sys.stdout.reconfigure(line_buffering=True)
-sys.stderr.reconfigure(line_buffering=True)
+cast(TextIOWrapper, sys.stdout).reconfigure(line_buffering=True)
+cast(TextIOWrapper, sys.stderr).reconfigure(line_buffering=True)
 
 
-def create_app():
+def create_app() -> tuple[Flask, SocketIO]:
     """Flask application factory."""
     app = Flask(__name__)
     CORS(app)
@@ -53,11 +54,13 @@ def server_run_options() -> dict[str, bool]:
 
 
 def run_server() -> None:
+    options = server_run_options()
     socketio.run(
         app,
         port=5001,
         allow_unsafe_werkzeug=True,
-        **server_run_options(),
+        debug=options["debug"],
+        use_reloader=options["use_reloader"],
     )
 
 

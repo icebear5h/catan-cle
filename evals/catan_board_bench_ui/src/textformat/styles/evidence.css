@@ -1,0 +1,119 @@
+.format-question-stage {
+  min-width: 0;
+  padding: clamp(1.2rem, 3vw, 2.4rem);
+}
+
+.format-question-heading > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.format-question-heading > div:first-child span {
+  color: var(--format-green);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+}
+
+.format-question-heading > div:first-child code { color: #627483; font-size: 0.58rem; }
+
+.format-question-heading h3 {
+  max-width: 900px;
+  color: #f3f7fa;
+  font-size: clamp(1.3rem, 2.3vw, 2rem);
+  font-weight: 520;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  margin-top: 0.75rem;
+}
+
+.format-target {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: baseline;
+  border-left: 2px solid var(--format-green);
+  background: rgba(67, 245, 198, 0.055);
+  margin-top: 1.1rem;
+  padding: 0.75rem 0.85rem;
+}
+
+.format-target span {
+  color: #6f9088;
+  font-size: 0.57rem;
+  text-transform: uppercase;
+}
+
+.format-target code {
+  color: var(--format-green);
+  font-size: 0.7rem;
+  overflow-wrap: anywhere;
+}
+
+.format-evidence-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 2.5rem minmax(0, 1fr);
+  gap: 0.7rem;
+  margin-top: 1.6rem;
+}
+
+.format-evidence {
+  min-width: 0;
+  border: 1px solid var(--line);
+  background: #05080b;
+}
+
+.format-evidence.indexed { border-color: rgba(67, 245, 198, 0.34); }
+
+.format-evidence header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--line);
+  padding: 0.7rem 0.8rem;
+}
+
+.format-evidence header span {
+  color: #c6d1da;
+  font-size: 0.68rem;
+  font-weight: 650;
+  text-transform: uppercase;
+}
+
+.format-evidence.indexed header span { color: var(--format-green); }
+.format-evidence header small { color: #657887; font-size: 0.58rem; }
+.format-evidence > div { overflow: auto; padding: 0.55rem 0; }
+
+.format-evidence p {
+  display: grid;
+  grid-template-columns: 2.4rem max-content;
+  min-width: max-content;
+  margin: 0;
+  padding: 0.28rem 0.8rem;
+}
+
+.format-evidence p > span {
+  color: #415360;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.58rem;
+}
+
+.format-evidence code {
+  color: #a8b7c3;
+  font-size: 0.61rem;
+  white-space: pre;
+}
+
+.format-evidence.indexed code { color: #b6ebdc; }
+
+.format-evidence-arrow {
+  display: grid;
+  place-items: center;
+  color: var(--format-green);
+  font-size: 1.4rem;
+}
+
+.format-no-index { min-width: 0 !important; grid-template-columns: 1fr !important; }
+.format-no-index code { color: #758795; white-space: normal; }
+

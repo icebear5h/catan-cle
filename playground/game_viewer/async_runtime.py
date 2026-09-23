@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Coroutine
 from concurrent.futures import Future
 from threading import Thread
-from typing import Any, Coroutine
+from typing import TypeVar
+
+_ResultT = TypeVar("_ResultT")
 
 
 class SandboxAsyncRuntime:
@@ -20,10 +23,10 @@ class SandboxAsyncRuntime:
         asyncio.set_event_loop(self.loop)
         self.loop.run_forever()
 
-    def submit(self, coroutine: Coroutine[Any, Any, Any]) -> Future:
+    def submit(self, coroutine: Coroutine[object, object, _ResultT]) -> Future[_ResultT]:
         return asyncio.run_coroutine_threadsafe(coroutine, self.loop)
 
-    def run(self, coroutine: Coroutine[Any, Any, Any]):
+    def run(self, coroutine: Coroutine[object, object, _ResultT]) -> _ResultT:
         return self.submit(coroutine).result()
 
 

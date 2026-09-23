@@ -7,8 +7,11 @@ import json
 from collections import deque
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable, Iterable
+from typing import TYPE_CHECKING, Callable, Iterable
 
+from cle.game_engine.models.enums import ActionType
+from cle.game_engine.models.player import Color
+from cle.game_engine.trading import RESOURCE_NAMES
 from cle.players.contracts import (
     CommunicationChoice,
     PlayerAttempt,
@@ -16,9 +19,14 @@ from cle.players.contracts import (
     PlayerContext,
     TalkContext,
 )
-from cle.game_engine.models.player import Color
-from cle.game_engine.models.enums import ActionType
-from cle.game_engine.trading import RESOURCE_NAMES
+from cle.players.data import (
+    AcceptanceResult,
+    BaselineSnapshot,
+    JsonValue,
+    PlayerSnapshot,
+    PlayerStatus,
+    ScriptedSnapshot,
+)
 from cle.players.validation import action_from_choice
 
 if TYPE_CHECKING:
@@ -60,7 +68,7 @@ class FirstLegalPlayer:
             ),
         )
 
-    async def communicate(self, context: Any) -> CommunicationChoice:
+    async def communicate(self, context: TalkContext) -> CommunicationChoice:
         return CommunicationChoice()
 
     def validate_context_update(
@@ -73,9 +81,9 @@ class FirstLegalPlayer:
     def accept_communication(self, context: TalkContext, choice: CommunicationChoice) -> None:
         self.acknowledge_events(context.visible_through_sequence + 1)
 
-    def accept(self, attempt: PlayerAttempt, result: Any) -> None:
+    def accept(self, attempt: PlayerAttempt, result: AcceptanceResult) -> None:
         self.accepted_choices += 1
-        context = getattr(result, "context", None)
+        context: PlayerContext | None = getattr(result, "context", None)
         if context is not None and context.events:
             self.event_cursor = max(
                 self.event_cursor,
@@ -85,7 +93,7 @@ class FirstLegalPlayer:
     def acknowledge_events(self, next_sequence: int) -> None:
         self.event_cursor = max(self.event_cursor, next_sequence)
 
-    def status(self) -> dict[str, Any]:
+    def status(self) -> PlayerStatus:
         return {
             "kind": "first_legal",
             "color": self.color.value,
@@ -93,17 +101,18 @@ class FirstLegalPlayer:
             "event_cursor": self.event_cursor,
         }
 
-    def snapshot(self) -> tuple[int, int]:
+    def snapshot(self) -> BaselineSnapshot:
         return self.event_cursor, self.accepted_choices
 
-    def validate_restore(self, snapshot: tuple[int, int]) -> None:
+    def validate_restore(self, snapshot: PlayerSnapshot) -> None:
         if not isinstance(snapshot, tuple) or len(snapshot) != 2:
             raise ValueError("First-legal snapshot must contain cursor and accepted count")
         if any(type(value) is not int or value < 0 for value in snapshot):
             raise ValueError("Player snapshot counters must be non-negative integers")
 
-    def restore(self, snapshot: tuple[int, int]) -> None:
+    def restore(self, snapshot: PlayerSnapshot) -> None:
         self.validate_restore(snapshot)
+        assert isinstance(snapshot, tuple) and len(snapshot) == 2
         self.event_cursor, self.accepted_choices = snapshot
 
 
@@ -128,16 +137,16 @@ class ScriptedPlayer(FirstLegalPlayer):
             choice=choice if isinstance(choice, PlayerChoice) else PlayerChoice(action_index=choice),
         )
 
-    def status(self) -> dict[str, Any]:
+    def status(self) -> PlayerStatus:
         status = super().status()
         status["kind"] = "scripted"
         status["queued_choices"] = len(self.choices)
         return status
 
-    def snapshot(self) -> tuple[int, int, tuple[PlayerChoice | int, ...]]:
+    def snapshot(self) -> ScriptedSnapshot:
         return self.event_cursor, self.accepted_choices, deepcopy(tuple(self.choices))
 
-    def validate_restore(self, snapshot: tuple[int, int, tuple[PlayerChoice | int, ...]]) -> None:
+    def validate_restore(self, snapshot: PlayerSnapshot) -> None:
         if not isinstance(snapshot, tuple) or len(snapshot) != 3:
             raise ValueError("Scripted snapshot must contain cursor, accepted count, and choices")
         super().validate_restore(snapshot[:2])
@@ -147,8 +156,9 @@ class ScriptedPlayer(FirstLegalPlayer):
         ):
             raise ValueError("Scripted snapshot choices must be a tuple of choices or indices")
 
-    def restore(self, snapshot: tuple[int, int, tuple[PlayerChoice | int, ...]]) -> None:
+    def restore(self, snapshot: PlayerSnapshot) -> None:
         self.validate_restore(snapshot)
+        assert isinstance(snapshot, tuple) and len(snapshot) == 3
         choices = deque(deepcopy(snapshot[2]))
         self.event_cursor, self.accepted_choices = snapshot[:2]
         self.choices = choices
@@ -173,8 +183,8 @@ class HumanPlayer(FirstLegalPlayer):
         for index, action in enumerate(context.legal_actions):
             print(f"{index}: {action}")
 
-        def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
-            result = {}
+        def unique_object(pairs: list[tuple[str, JsonValue]]) -> dict[str, JsonValue]:
+            result: dict[str, JsonValue] = {}
             for resource, count in pairs:
                 resource = resource.upper()
                 if resource in result:
@@ -195,7 +205,7 @@ class HumanPlayer(FirstLegalPlayer):
             print(f"Your resources: {json.dumps(dict(context.observation.my_resources))}")
             while True:
                 try:
-                    payload = json.loads(
+                    payload: JsonValue = json.loads(
                         self.input_fn(
                             f"Discard exactly {context.discard_count} cards as named JSON "
                             '(e.g. {"WOOD":4}): '
@@ -204,6 +214,7 @@ class HumanPlayer(FirstLegalPlayer):
                     )
                     if not isinstance(payload, dict):
                         raise ValueError("Discard must be a named resource-count JSON object.")
+                    counts: dict[str, int] = {}
                     for resource, count in payload.items():
                         if resource not in RESOURCE_NAMES:
                             raise ValueError(f"Unknown discard resource: {resource}")
@@ -211,12 +222,13 @@ class HumanPlayer(FirstLegalPlayer):
                             raise ValueError("Discard counts must be positive integers.")
                         if count > context.observation.my_resources.get(resource, 0):
                             raise ValueError(f"Discard exceeds your {resource} holdings.")
+                        counts[resource] = count
                     choice = PlayerChoice(
                         action_index=selected,
                         discard_cards=tuple(
                             resource
                             for resource in RESOURCE_NAMES
-                            for _ in range(payload.get(resource, 0))
+                            for _ in range(counts.get(resource, 0))
                         ),
                     )
                     action_from_choice(context, choice)

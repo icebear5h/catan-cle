@@ -1,0 +1,115 @@
+.decision-run-summary {
+  flex: none;
+}
+
+.decision-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(90px, 1fr));
+  gap: 0.55rem;
+}
+
+.decision-stat {
+  display: grid;
+  gap: 0.18rem;
+  border: 1px solid var(--line);
+  background: rgba(4, 7, 10, 0.62);
+  padding: 0.58rem;
+  min-width: 0;
+}
+
+.decision-stat span {
+  color: var(--muted);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+}
+
+.decision-stat strong {
+  color: var(--cyan);
+  font-size: 0.9rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bucket-definition {
+  flex: none;
+}
+
+.bucket-definition-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.bucket-definition h2 {
+  color: #f4f8fd;
+  font-size: 1.08rem;
+  margin-top: 0.18rem;
+}
+
+.bucket-group {
+  color: var(--cyan);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+}
+
+.bucket-target {
+  display: grid;
+  justify-items: end;
+}
+
+.bucket-target strong {
+  color: var(--cyan);
+  font-size: 1.25rem;
+}
+
+.bucket-target span {
+  color: var(--muted);
+  font-size: 0.66rem;
+}
+
+.bucket-definition > p {
+  color: #c8d3df;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  margin-top: 0.62rem;
+}
+
+.bucket-definition-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(140px, 1fr);
+  gap: 0.7rem;
+  margin-top: 0.75rem;
+}
+
+.bucket-definition-grid > div {
+  border: 1px solid var(--line);
+  padding: 0.6rem;
+}
+
+.bucket-definition-grid span {
+  color: var(--muted);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+}
+
+.bucket-definition-grid p {
+  color: #dbe5ef;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  margin-top: 0.28rem;
+}
+
+.bucket-rubric {
+  display: grid;
+  gap: 0.28rem;
+  margin: 0.7rem 0 0 1.2rem;
+  color: #b9c8d7;
+  font-size: 0.74rem;
+}
+

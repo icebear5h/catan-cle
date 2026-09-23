@@ -2,33 +2,36 @@
 
 import json
 
-from flask import Blueprint, jsonify, current_app
+from flask import Blueprint, Response, current_app, jsonify
 
 from cle.game_engine.json import GameEncoder
+
 from ..live.game_logging import (
-    get_player_resources,
     get_player_dev_cards,
     get_player_hands,
+    get_player_resources,
 )
 from ..replay.model_traces import build_paired_model_trace_window
 from ..replay.narrator_reasoning import build_paired_narrator_reasoning_window
 from ..replay.transcript import build_paired_transcript_window
+from ..state import ServerState
 
 health_bp = Blueprint('health', __name__)
 
 
-def _get_state():
-    return current_app.config['SERVER_STATE']
+def _get_state() -> ServerState:
+    state: ServerState = current_app.config['SERVER_STATE']
+    return state
 
 
 @health_bp.route('/api/health')
-def health():
+def health() -> Response | tuple[Response, int]:
     """Health check."""
     return jsonify({"status": "ok", "message": "Game viewer server running"})
 
 
 @health_bp.route('/api/reset', methods=['POST'])
-def reset_game():
+def reset_game() -> Response | tuple[Response, int]:
     """Reset/clear the current game."""
     state = _get_state()
     socketio = current_app.config['SOCKETIO']
@@ -56,7 +59,7 @@ def reset_game():
     return jsonify({"status": "reset", "message": "Game cleared"})
 
 
-def _get_state_snapshot(state):
+def _get_state_snapshot(state: ServerState) -> Response | tuple[Response, int]:
     sandbox = state.current_sandbox
     if sandbox is None:
         return jsonify({"error": "No game"}), 404
@@ -119,7 +122,7 @@ def _get_state_snapshot(state):
 
 
 @health_bp.route('/api/state')
-def get_state():
+def get_state() -> Response | tuple[Response, int]:
     """Get one cursor-consistent game/replay snapshot."""
     state = _get_state()
     with state.replay_mutation_lock:

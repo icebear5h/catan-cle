@@ -8,7 +8,6 @@ from typing import Literal, cast
 
 from cle.game_engine.models.player import Color
 
-
 PaletteMode = Literal["random_all", "canonical_four"]
 CANONICAL_FOUR = (Color.RED, Color.BLUE, Color.WHITE, Color.ORANGE)
 ALL_COLORS = tuple(Color)

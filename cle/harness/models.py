@@ -4,12 +4,13 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass, field, replace
-from typing import Any, Literal, Protocol
+from typing import Literal, Protocol
 
+from cle.game_engine.models.player import Color
 from cle.harness.board_surface import BoardPresentation
 from cle.players.contracts import CommunicationChoice, PlayerChoice
+from cle.players.data import JsonValue
 from cle.players.notes import MAX_NOTES_CHARS, validate_notes
-from cle.game_engine.models.player import Color
 
 
 @dataclass(frozen=True)
@@ -52,23 +53,28 @@ class ModelRequest:
     channel: str | None = None
     prompt_sources: tuple[PromptSource, ...] = ()
     trigger_reason: str | None = None
+    # Per-decision override selected from the frozen context; None keeps the
+    # transport-level default. reasoning_request stores a normalized
+    # native-reasoning mapping as items; max_tokens caps total completion.
+    reasoning_request: tuple[tuple[str, bool | int | str], ...] | None = None
+    max_tokens: int | None = None
 
 
 @dataclass(frozen=True)
 class ModelResponse:
     content: str
     model: str | None = None
-    usage: tuple[tuple[str, Any], ...] = ()
+    usage: tuple[tuple[str, JsonValue], ...] = ()
     latency_ms: int | None = None
     finish_reason: str | None = None
     native_reasoning: str = ""
-    native_reasoning_details: tuple[Any, ...] = ()
-    reasoning_request: tuple[tuple[str, Any], ...] = ()
+    native_reasoning_details: tuple[JsonValue, ...] = ()
+    reasoning_request: tuple[tuple[str, JsonValue], ...] = ()
     provider_response_id: str | None = None
     provider_request_id: str | None = None
     provider_native_finish_reason: str | None = None
-    provider_request_payload: Any = None
-    provider_response_payload: Any = None
+    provider_request_payload: object = None
+    provider_response_payload: object = None
 
 
 class CompletionTransport(Protocol):
@@ -84,17 +90,6 @@ class ChoiceReceipt:
     after_revision: int
 
 
-# Provider diagnostics on a PlayerChoice. They are recorded once per call in
-# the trace store's model_calls table; a receipt never reads them back.
-_RECEIPT_TRACE_FIELDS: dict[str, Any] = {
-    "raw_response": "",
-    "native_reasoning": "",
-    "native_reasoning_details": (),
-    "reasoning_request": (),
-    "usage": (),
-}
-
-
 def receipt_choice(
     choice: PlayerChoice | CommunicationChoice,
 ) -> PlayerChoice | CommunicationChoice:
@@ -106,7 +101,16 @@ def receipt_choice(
     reasoning trace here made snapshots grow quadratically with game length.
     """
     if isinstance(choice, PlayerChoice):
-        choice = replace(choice, **_RECEIPT_TRACE_FIELDS)
+        # Provider diagnostics are recorded once per call in the trace store's
+        # model_calls table; a receipt never reads them back.
+        choice = replace(
+            choice,
+            raw_response="",
+            native_reasoning="",
+            native_reasoning_details=(),
+            reasoning_request=(),
+            usage=(),
+        )
     return deepcopy(choice)
 
 
@@ -141,7 +145,7 @@ class PlayerSession:
     context_policy: str = "legacy"
     communication_receipts: set[str] = field(default_factory=set)
 
-    def __setstate__(self, state: dict[str, Any]) -> None:
+    def __setstate__(self, state: dict[str, object]) -> None:
         # Old sessions have only the mixed reaction cursor, not channel coverage.
         self.__dict__.update(
             action_next_sequence=0,

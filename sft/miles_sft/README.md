@@ -99,6 +99,12 @@ or a full continuation of the historical cosine schedule.
 Runtime pins live in `config.py`: immutable base image plus exact Miles,
 Megatron-Bridge and Megatron-LM revisions. The image creates separate pinned
 checkouts; it does not silently use whichever sources happened to ship in the base.
+Bridge `40b93089` and Core `73b54618` are the compatible pair documented in Miles
+PR #3336. The newer Bridge `2e09c234` does not work with that Core. Native backend
+imports require `libcuda`, so the GPU worker checks the actual provider before
+scanning/loading weights. A failed attempt is preserved; use a new
+`--training-name training-r03` with `--use-prepared` to reuse the completed merge.
+Pass the same `--training-name` to `modal_eval`.
 
 ## Outputs and acceptance
 
@@ -157,3 +163,10 @@ bundle. Its merged manifest is
 `1b76b77ef0bea13523bd0133ce5f7e2d9c3e74aa8cf6e2d71d91b135e8255267`.
 The receipt is `artifacts/runs/sft/miles-topology-smoke-20260923-r03/prepare.json`.
 The H200 training smoke and post-training reload are separate acceptance steps.
+
+Current remote status: the corrected GPU attempt
+`ap-vla1cKW0SyrnwkN6x2aJnu` passed provider construction and reached fresh LoRA
+creation, but was terminated with SIGTERM/"function is stopped" before any
+optimizer-step receipts. `training-r02/receipts/initialize-rank-0.json` exists;
+successful training/export/reload is **not yet verified**. No Catan Miles app
+remains active; termination intent must be clarified before relaunching.

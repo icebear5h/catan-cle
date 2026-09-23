@@ -1,3 +1,16 @@
+# Resume Miles SFT smoke (2026-09-23)
+
+- [x] Confirm the user authorized resuming the stopped corrected build.
+- [x] Reuse the completed r03 merge/data and select fresh `training-r03` output.
+- [ ] Complete two audited optimizer updates and validate the full serving export.
+- [ ] Run the 32-case SGLang reload panel, collect evidence, and stop smoke resources.
+- [ ] Record results and run the required quality gate for any repair edits.
+
+Plan: use the compatible pinned Bridge/Core image and the existing immutable
+`miles-topology-smoke-20260923-r03` inputs in tetracorp. Keep one H200, the existing
+two-update limit and 30-minute function cap; preserve all earlier attempts.
+Review: resumed smoke pending.
+
 # Focused complete Miles export repair (2026-09-23)
 
 - [x] Inspect merge provenance and runtime save/finalization contracts.
@@ -47,8 +60,14 @@ hashes. Real CPU merge/preflight passed for miles-topology-smoke-20260923-r03:
 all 18 shards merged, FP32 visual bytes preserved, 1,600 native-tokenized examples
 (82,386 tokens, 7,084 supervised, max length 65). Earlier CPU attempts exposed and
 fixed resolved-volume aliases and Qwen's integral-float index byte count.
-The two-update H200 smoke is active in ap-rbt0zz8JAddcFLoVkTyqa5; training and
-subsequent 32-case SGLang reload acceptance are not yet established.
+The first GPU attempt (ap-rbt0zz8JAddcFLoVkTyqa5) found an upstream Bridge/Core
+mismatch before training. Pins now use the documented compatible pair
+40b93089/73b54618; native TE imports require libcuda and are checked before weight
+scans on the GPU worker. The corrected attempt ap-vla1cKW0SyrnwkN6x2aJnu reached
+Qwen35VL provider/fresh LoRA creation, then received SIGTERM and Modal reported
+"function is stopped". Only initialize-rank-0.json exists under training-r02;
+no optimizer updates or successful reload are verified. No Catan Miles app remains
+active. Confirm whether termination was intentional before another paid attempt.
 
 # Per-sandbox ordered durable execution (2026-09-22)
 

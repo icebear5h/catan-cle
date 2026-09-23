@@ -1,7 +1,10 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { PanelSize } from 'react-resizable-panels';
 import type { AppState } from './useAppState';
 import type { CheckpointView } from './useCheckpointView';
+
+// Phone widths stack the drawers vertically; side by side they cannot fit.
+const NARROW_QUERY = '(max-width: 650px)';
 
 // Drawer open/close tracking, inspector content presence, and workspace tabs.
 export function useWorkspaceLayout(state: AppState, view: CheckpointView) {
@@ -11,6 +14,14 @@ export function useWorkspaceLayout(state: AppState, view: CheckpointView) {
     setIsSessionDrawerOpen, setIsInspectorDrawerOpen, setPromptSuiteDirty, setWorkspace,
   } = state;
   const { gameState, gameLog, tableTalkLog } = view;
+  const [narrow, setNarrow] = useState(() => window.matchMedia(NARROW_QUERY).matches);
+
+  useEffect(() => {
+    const query = window.matchMedia(NARROW_QUERY);
+    const update = () => setNarrow(query.matches);
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
 
   const hasInspectorContent = gameState !== null && (
     gameLog.length > 0
@@ -69,7 +80,7 @@ export function useWorkspaceLayout(state: AppState, view: CheckpointView) {
   };
 
   return {
-    hasInspectorContent, handleSessionPanelResize, handleInspectorPanelResize,
+    narrow, hasInspectorContent, handleSessionPanelResize, handleInspectorPanelResize,
     toggleSessionDrawer, toggleInspectorDrawer, switchWorkspace,
   };
 }

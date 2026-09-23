@@ -20,8 +20,9 @@ export type Action =
   | [Color, "PLAY_ROAD_BUILDING", null]
   | [Color, "PLAY_MONOPOLY", Resource]
   | [Color, "PLAY_YEAR_OF_PLENTY", [Resource] | [Resource, Resource]]
-  | [Color, "MOVE_ROBBER", [Coordinate, Color | null, any]]
-  | [Color, "MARITIME_TRADE", any]
+  | [Color, "MOVE_ROBBER", Coordinate] // victim and card are a separate STEAL action
+  // Four given (trailing nulls pad 3:1 and 2:1 port rates), then the one asked for.
+  | [Color, "MARITIME_TRADE", [Resource, Resource, Resource | null, Resource | null, Resource]]
   | [Color, "DISCARD", null]
   | [Color, "END_TURN", null];
 
@@ -106,7 +107,7 @@ export interface PlayerState {
   P3_NUM_RESOURCES_IN_HAND?: number;
   P3_NUM_DEVS_IN_HAND?: number;
 
-  [key: string]: any; // Allow dynamic access
+  [key: string]: number | boolean | undefined; // engine dict[str, int | bool]; undefined when absent
 }
 
 // Main game state

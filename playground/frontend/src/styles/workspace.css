@@ -35,6 +35,17 @@
   box-shadow: 0 0 0 3px rgba(60, 255, 205, 0.12);
 }
 
+.workspace-separator[aria-orientation='horizontal'] {
+  width: auto;
+  min-width: 0;
+  height: 0.8rem;
+  min-height: 0.8rem;
+}
+
+.workspace-separator[aria-orientation='horizontal'] span {
+  inset: 0.31rem 0.65rem;
+}
+
 .left-panel,
 .right-panel {
   width: 100%;

@@ -68,7 +68,8 @@ export default function PlayerInfo({
   const getPlayerValue = (prefix: string, key: string): number => {
     if (!prefix) return 0;
     const fullKey = `${prefix}_${key}`;
-    return gameState.player_state[fullKey] || 0;
+    const value = gameState.player_state[fullKey];
+    return typeof value === 'number' ? value : 0;
   };
 
   // Get Colonist player info for an engine player index

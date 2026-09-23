@@ -224,13 +224,50 @@ def test_fresh_output_completion_and_tamper_detection(bundle: tuple[Path, Path, 
         validate_merged_export(output)
 
 
-def test_nonfinite_arithmetic_never_completes(bundle: tuple[Path, Path, Path]) -> None:
+@pytest.mark.parametrize("value", [float("nan"), 3.4e38])
+def test_nonfinite_arithmetic_never_completes(bundle: tuple[Path, Path, Path], value: float) -> None:
     base, adapter, output = bundle
     state = load_file(adapter / ADAPTER)
-    state[PREFIX + K + ".lora_A.weight"][0, 0] = float("nan")
+    # NaNs and finite FP32 values that overflow the final BF16 row cast both fail.
+    state[PREFIX + ROW_MODULES[1] + ROW_SUFFIX][0, 0] = value
     save_file(state, adapter / ADAPTER)
     with pytest.raises(ValueError, match="nonfinite"):
         merge_checkpoint(base, adapter, output)
     assert not (output / COMPLETE).exists()
     with pytest.raises(FileExistsError):
         merge_checkpoint(base, adapter, output)
+
+
+@pytest.mark.parametrize("damage", ["tied", "vocab", "index", "asset", "tokenizer"])
+def test_reject_incompatible_metadata(bundle: tuple[Path, Path, Path], damage: str) -> None:
+    base, adapter, output = bundle
+    if damage in ("tied", "vocab"):
+        config = read_json(base / "config.json")
+        config["tie_word_embeddings" if damage == "tied" else "vocab_size"] = True if damage == "tied" else 254
+        write(base / "config.json", config)
+    elif damage == "index":
+        config = read_json(base / INDEX)
+        config["metadata"] = {"total_size": 1}
+        write(base / INDEX, config)
+    elif damage == "asset":
+        (adapter / "tokenizer.json").rename(adapter / "tokenizer.missing")
+    else:
+        config = read_json(adapter / "tokenizer.json")
+        config["added_tokens"][0]["special"] = True
+        write(adapter / "tokenizer.json", config)
+    with pytest.raises(ValueError):
+        merge_checkpoint(base, adapter, output)
+    assert not output.exists()
+
+
+def test_resealed_manifest_must_still_have_valid_provenance(bundle: tuple[Path, Path, Path]) -> None:
+    base, adapter, output = bundle
+    merge_checkpoint(base, adapter, output)
+    manifest = read_json(output / MANIFEST)
+    manifest["adapter_tensor_headers"].pop(PREFIX + Q + ".lora_A.weight")
+    write(output / MANIFEST, manifest)
+    marker = read_json(output / COMPLETE)
+    marker["manifest_sha256"] = sha256(output / MANIFEST)
+    write(output / COMPLETE, marker)
+    with pytest.raises(ValueError, match="adapter keys"):
+        validate_merged_export(output)

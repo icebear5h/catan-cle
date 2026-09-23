@@ -4,9 +4,9 @@
 
 - [x] Inspect Miles commit `24ec7d8666c2c4ca9986addd197523b89d67621d`,
   its real Sample/rollout interfaces, hooks, LoRA saver, and HF export.
-- [ ] Implement preencoded real-Sample ingestion and strict training configuration admission.
-- [ ] Audit actual trainable parameters and collect finite-gradient/update witnesses.
-- [ ] Validate native adapter shards and merged HF exports; finalize only after cursor save.
+- [x] Implement preencoded real-Sample ingestion and strict training configuration admission.
+- [x] Audit actual trainable parameters and collect finite-gradient/update witnesses.
+- [x] Validate native adapter shards and merged HF exports; finalize only after cursor save.
 - [ ] Exercise CPU contracts and run the repository quality gate.
 
 The full-checkpoint merge (including historical token rows), launcher, CLI,
@@ -37,3 +37,87 @@ All Miles paths below refer to commit `24ec7d8666c2c4ca9986addd197523b89d67621d`
   swallow PEFT export errors, so runtime must verify actual artifacts.
 - `train.py`: trainer save precedes rollout data-source save. Post-save evidence
   alone cannot certify a complete checkpoint/run.
+
+## Launcher integration
+
+Use these exact CLI/callable pairs:
+
+| Miles flag | Callable |
+| --- | --- |
+| `--rollout-function-path` | `sft.miles_sft.runtime.rollout.generate_rollout` |
+| `--custom-megatron-init-path` | `sft.miles_sft.runtime.hooks.initialize` |
+| `--custom-megatron-before-train-step-hook-path` | `sft.miles_sft.runtime.hooks.before_train_step` |
+| `--custom-megatron-post-save-hook-path` | `sft.miles_sft.runtime.hooks.post_save` |
+
+Signatures:
+
+```python
+generate_rollout(args, rollout_id, data_source, evaluation=False)  # real RolloutFnTrainOutput
+initialize(args) -> None
+before_train_step(args, rollout_id, step_id, model, optimizer, opt_param_scheduler) -> None
+post_save(args, rollout_id, checkpoint_dir, hf_checkpoint_dir) -> None
+```
+
+After **successful Miles driver exit**, main calls
+`sft.miles_sft.runtime.receipts.finalize_run(Path(receipt_dir))` to validate the
+complete run and write/return `run.json`. It raises if cursor state, any rank's
+step evidence, or final native/HF artifacts are missing or inconsistent.
+
+Set **`MILES_SFT_RECEIPT_DIR`** to a fresh, shared absolute directory in both
+trainer workers and the launcher. This is the only custom required environment
+variable. No `MILES_USE_LEGACY_ROLLOUT_V1` setting is required: the default loader
+adapts the callable. The imported Miles checkout must retain Git metadata and
+have HEAD exactly at the pinned commit; runtime resolves HEAD from the module
+actually imported. Bridge installation/pin adaptation belongs to preflight.
+
+Required launch constraints are checked by `admission.validate_args`:
+
+- `--train-backend megatron --megatron-to-hf-mode bridge --debug-train-only
+  --lora-train-only --lora-type lora --lora-rank 16 --lora-alpha 32`.
+- **`--start-rollout-id 0` explicitly**: Miles' HF loader reports iteration 0;
+  without this override the controller would choose start rollout 1.
+- `--load` and `--hf-checkpoint` must name the same local merged full base.
+  No `lora_adapter_path`/old adapter import; LoRA B must be zero-initialized.
+- `--target-modules` must equal `runtime.REQUIRED_TARGETS`: exact
+  `language_model.decoder.layers.*.` paths for `self_attention.linear_qkv`,
+  `self_attention.linear_proj`, `self_attention.in_proj`, `self_attention.out_proj`,
+  `mlp.linear_fc1`, and `mlp.linear_fc2`. No exclusions or canonical/split LoRA.
+- Global dataset, `messages` input, `metadata` metadata, one sample per prompt;
+  no upstream chat-template application or prompt-length filtering. `seq_length`
+  is the complete encoded-sequence cap. Batch size is divisible by global batch size.
+- `sft_loss`, per-token loss, disabled advantages/returns; no MTP, critic, KL,
+  teacher, old-actor, or eval loop; no rollout/eval GPUs.
+- One actor node and one tensor-parallel replica (TP divides 16); PP/CP/EP=1,
+  no virtual pipeline/independent-DP/fully-async/overlapped parameter gathering.
+- Native `--save`, per-rollout `--save-hf`, and optimizer state saving are required.
+  Final save must cover `num_rollout - 1`.
+
+## Evidence and limits
+
+Offline admission/audits/artifact validation do not import Miles or Megatron.
+Only `rollout.py` and `hooks.py` bind real remote modules at module import time;
+there are no fake Sample classes, fake adapter classes, or fallback loaders.
+
+Every before-step audit visits actual parameters, checks A/B pairs on every
+admitted target, and rejects any trainable vision/MTP/full-token/base parameter.
+The first step also checks finite nonzero A / zero B; real Bridge adapter objects
+must report dimension 16 and alpha 32. Scope is checked on subsequent steps.
+
+The wrapper clones **only adapter tensors**, reads `main_grad` before `.grad`,
+requires finite gradients and nonzero gradients in every target family (including
+GDN), calls the real optimizer once, and checks finite updated adapter tensors.
+It returns optimizer/train-step results unchanged. Loss receipts contain the
+real forward loss reported by Miles (before that update), not an invented
+post-update loss. A zero-update warmup step is recorded honestly; each rank must
+show an actual update somewhere before run finalization succeeds.
+
+Files are exclusive, flushed writes; a reused directory or interrupted partial
+JSON fails closed. Before/after step receipts distinguish failed/skipped steps.
+Checkpoint receipts stay `complete: false`, `model_saved_cursor_pending` even
+when model artifacts pass. Finalization rechecks native adapter tensor
+names/shapes/finiteness, optimizer/scheduler state and hashes, merged HF marker,
+exact base tensor-name/shape coverage through safetensors headers, shard sizes,
+and byte-identical tokenizer assets. It verifies cursor sample counters against
+all completed rollouts. It does not hash the 27B base on each step or claim a
+full frozen-weight byte comparison. Base merge/token-row provenance belongs to
+the merge/preflight receipt.

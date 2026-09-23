@@ -10,7 +10,7 @@ import torch
 from sft.json_types import JsonDict, as_dict, as_str, load_json_dict
 
 from .artifacts import audit_hf_export, audit_native
-from .contracts import MILES_COMMIT, require
+from .contracts import MILES_COMMIT, TARGET_SUFFIXES, require
 from .storage import file_hash, write_receipt
 
 
@@ -51,6 +51,8 @@ def _steps(directory: Path, initial: JsonDict) -> list[JsonDict]:
                         "step did not successfully finish")
                 _count(after.get("gradient_tensors"), "gradient tensor count")
                 _count(after.get("nonzero_gradient_tensors"), "nonzero gradient tensor count")
+                require(after.get("nonzero_gradient_families") == sorted(TARGET_SUFFIXES),
+                        "missing target-family gradient witnesses")
                 require(_finite(after.get("gradient_l2"), "gradient norm") > 0, "empty gradient witness")
                 _finite(after.get("grad_norm"), "step grad norm")
                 _finite(after.get("optimizer_grad_norm"), "optimizer grad norm")

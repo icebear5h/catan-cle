@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import re
 from collections.abc import Mapping, Sequence
 
@@ -75,6 +76,7 @@ def gradient_witness(params: Mapping[str, torch.nn.Parameter]) -> JsonLikeDict:
     """Read Megatron main_grad before .grad; never treat missing gradients as zero."""
     require(bool(params), "cannot witness an empty adapter")
     nonzero = main_grad_count = 0
+    nonzero_families: set[str] = set()
     norm_squared = 0.0
     for name, param in params.items():
         main_grad: object = getattr(param, "main_grad", None)
@@ -88,9 +90,18 @@ def gradient_witness(params: Mapping[str, torch.nn.Parameter]) -> JsonLikeDict:
         square = float(grad.detach().double().square().sum().item())
         norm_squared += square
         nonzero += square > 0
+        if square > 0:
+            match = _ADAPTER.fullmatch(name)
+            require(match is not None, f"gradient outside admitted adapter scope: {name}")
+            if match is not None:
+                nonzero_families.add(match[1])
     require(nonzero > 0, "no nonzero adapter gradients")
+    require(math.isfinite(norm_squared), "nonfinite aggregate gradient norm")
+    require(nonzero_families == set(TARGET_SUFFIXES),
+            "no nonzero gradients for one or more language target families, including GDN")
     return {"gradient_tensors": len(params), "main_grad_tensors": main_grad_count,
-            "nonzero_gradient_tensors": nonzero, "gradient_l2": norm_squared ** 0.5}
+            "nonzero_gradient_tensors": nonzero, "gradient_l2": norm_squared ** 0.5,
+            "nonzero_gradient_families": sorted(nonzero_families)}
 
 
 def update_witness(

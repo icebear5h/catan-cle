@@ -109,6 +109,7 @@ def stream_shards(base_dir: Path, adapter_dir: Path, output: Path, plan: MergePl
                         actual = saved.get_tensor(key).reshape(-1).view(torch.uint8)
                         expected = visual.get_tensor(plan.visual[key]).reshape(-1).view(torch.uint8)
                         require(torch.equal(actual, expected), f"visual bytes changed during export: {key}")
+                        del actual, expected
             # No base shard tensors are retained across iterations.
     require(set(weights) == set(plan.base.weight_map), "not all base tensors were exported")
     require(set(rounding) == set(plan.lora) | set(plan.rows), "not all adapter tensors were consumed")

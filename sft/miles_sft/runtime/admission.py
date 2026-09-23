@@ -37,6 +37,10 @@ def validate_args(args: RuntimeArgs) -> None:
     require(args.loss_type == "sft_loss" and args.calculate_per_token_loss
             and not args.compute_advantages_and_returns, "requires supervised token loss only")
     require(not args.enable_mtp_training and not args.use_critic, "MTP/critic training forbidden")
+    require(not getattr(args, "use_kl_loss", False) and getattr(args, "kl_coef", 0) == 0
+            and not getattr(args, "use_opd", False) and not getattr(args, "keep_old_actor", False),
+            "reference/teacher/old-actor training is forbidden")
+    require(getattr(args, "eval_interval", None) is None, "this SFT run has no evaluation loop")
     require(args.rollout_num_gpus == args.eval_num_gpus == 0, "no rollout/eval GPU fleet allowed")
     require(args.actor_num_nodes == 1 and args.actor_num_gpus_per_node == args.world_size
             == args.tensor_model_parallel_size, "only one tensor-parallel trainer group is supported")
@@ -54,6 +58,8 @@ def validate_args(args: RuntimeArgs) -> None:
             "--load and --hf-checkpoint must point to the same merged full HF checkpoint")
     require(not (Path(args.hf_checkpoint) / "adapter_config.json").exists(),
             "HF initialization must be a merged full checkpoint")
+    require(not (Path(args.hf_checkpoint) / "latest_checkpointed_iteration.txt").exists(),
+            "native checkpoint resume is not fresh HF initialization")
     require(bool(args.save) and bool(args.save_hf) and not args.no_save_optim,
             "native optimizer state and merged --save-hf export are mandatory")
     require(args.num_rollout > 0 and args.start_rollout_id == 0, "fresh training must start at rollout zero")

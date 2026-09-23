@@ -6,13 +6,22 @@ from pathlib import Path
 
 from sft.safetensor_types import TensorHeader
 
-from ._checkpoint import inspect_checkpoint, tensor_bytes, validate_tokenizer
+from ._checkpoint import (
+    BASE_ASSETS,
+    inspect_checkpoint,
+    tensor_bytes,
+    tensor_headers,
+    validate_tokenizer,
+)
 from ._contracts import (
+    ADAPTER,
     COMPLETE,
+    DTYPE_BYTES,
     INDEX,
     MANIFEST,
     ROW_MODULES,
     SCHEMA,
+    VISUAL,
     VISUAL_COUNT,
     FileIdentity,
     MergePlan,
@@ -23,10 +32,12 @@ from ._contracts import (
     read_json,
     relative_name,
     require,
+    sequence,
     sha256,
     text,
     valid_token_ids,
 )
+from ._preflight import adapter_mappings, validate_lora_config, visual_mapping
 
 
 def build_manifest(base: Path, adapter: Path, plan: MergePlan, base_revision: str | None,
@@ -49,6 +60,9 @@ def build_manifest(base: Path, adapter: Path, plan: MergePlan, base_revision: st
         "schema": SCHEMA, "status": "completed", "base": str(base), "adapter": str(adapter),
         "declared_base_revision": base_revision, "base_files": plan.base_files,
         "adapter_files": plan.adapter_files, "output_files": files, "tensors": tensors,
+        "adapter_config": read_json(adapter / "adapter_config.json"),
+        "adapter_tensor_headers": tensor_headers(adapter / ADAPTER),
+        "visual_tensor_headers": tensor_headers(adapter / VISUAL),
         "token_ids": list(plan.token_ids), "vocab_size": 248320, "tie_word_embeddings": False,
         "lora": {"r": 16, "alpha": 32, "dropout": 0.05, "scaling": 2.0,
                  "modules": len(plan.lora), "independent_factors": True},
@@ -70,6 +84,61 @@ def build_manifest(base: Path, adapter: Path, plan: MergePlan, base_revision: st
             "rounding_metrics": "elementwise final FP32-to-BF16 cast only; not matmul/logit error",
         },
     }
+
+
+def _headers(value: object) -> dict[str, TensorHeader]:
+    result: dict[str, TensorHeader] = {}
+    for key, raw in object_map(value).items():
+        header = object_map(raw)
+        result[key] = {"shape": [integer(v) for v in sequence(header.get("shape"))],
+                       "dtype": text(header.get("dtype"))}
+        tensor_bytes(result[key])
+    return result
+
+
+def _validate_provenance(manifest: dict[str, object], tensors: dict[str, object],
+                         files: dict[str, object], base_headers: dict[str, TensorHeader]) -> None:
+    base_files, adapter_files = (object_map(manifest.get(key)) for key in ("base_files", "adapter_files"))
+    require({INDEX, "config.json", "generation_config.json"} <= base_files.keys(), "missing base identities")
+    require({ADAPTER, VISUAL, "adapter_config.json", "tokenizer.json", "tokenizer_config.json"}
+            <= adapter_files.keys(), "missing adapter identities")
+    for source in (base_files, adapter_files):
+        for name, raw in source.items():
+            relative_name(name)
+            entry = object_map(raw)
+            digest = text(entry.get("sha256"))
+            require(integer(entry.get("bytes")) > 0 and len(digest) == 64
+                    and all(c in "0123456789abcdef" for c in digest), "invalid source identity")
+    config = object_map(manifest.get("adapter_config"))
+    validate_lora_config(config)
+    lora, rows = adapter_mappings(config, _headers(manifest.get("adapter_tensor_headers")), base_headers)
+    visual = visual_mapping(_headers(manifest.get("visual_tensor_headers")), base_headers)
+    for key, raw in tensors.items():
+        entry = object_map(raw)
+        require(relative_name(entry.get("base_shard")) in base_files, f"missing source shard identity: {key}")
+        require(entry.get("base_dtype") in DTYPE_BYTES, f"unsupported base dtype: {key}")
+        expected_keys: list[str] = []
+        operation = "preserved"
+        if key in lora:
+            expected_keys, operation = list(lora[key]), "lora_fp32_then_bf16"
+        elif key in rows:
+            expected_keys, operation = [rows[key]], "replacement_rows_bf16"
+        elif key in visual:
+            expected_keys, operation = [visual[key]], "visual_fp32_exact"
+        require(entry.get("adapter_keys") == expected_keys and entry.get("operation") == operation,
+                f"tensor source/operation mismatch: {key}")
+    lora_report = object_map(manifest.get("lora"))
+    require(lora_report == {"r": 16, "alpha": 32, "dropout": 0.05, "scaling": 2.0,
+                            "modules": len(lora), "independent_factors": True}, "invalid LoRA report")
+    assets = object_map(manifest.get("assets"))
+    shards = {text(object_map(raw).get("shard")) for raw in tensors.values()}
+    require(set(assets) == set(files) - shards - {INDEX}, "incomplete asset provenance")
+    for name, path in assets.items():
+        owner = "base" if name in BASE_ASSETS else "adapter"
+        source_files = base_files if owner == "base" else adapter_files
+        require(path == str(Path(text(manifest.get(owner))) / name)
+                and name in source_files and files[name] == source_files[name],
+                f"asset source identity mismatch: {name}")
 
 
 def validate_payload(output: Path, manifest: dict[str, object]) -> None:
@@ -94,8 +163,10 @@ def validate_payload(output: Path, manifest: dict[str, object]) -> None:
     require(set(tensors) == set(checkpoint.headers), "manifest tensor inventory differs from HF index")
     visual: set[str] = set()
     rounded: set[str] = set()
+    base_headers: dict[str, TensorHeader] = {}
     for key, header in checkpoint.headers.items():
         declared = object_map(tensors[key])
+        base_headers[key] = {"shape": header["shape"], "dtype": text(declared.get("base_dtype"))}
         require(declared.get("shape") == header["shape"] and declared.get("dtype") == header["dtype"]
                 and declared.get("shard") == checkpoint.weight_map[key], f"tensor metadata mismatch: {key}")
         operation = declared.get("operation")
@@ -115,13 +186,9 @@ def validate_payload(output: Path, manifest: dict[str, object]) -> None:
     require(set(object_map(manifest.get("rounding"))) == rounded, "incomplete rounding report")
     ids = valid_token_ids(manifest.get("token_ids"))
     validate_tokenizer(output, ids)
-    for source in ("base_files", "adapter_files"):
-        for name, raw in object_map(manifest.get(source)).items():
-            relative_name(name)
-            entry = object_map(raw)
-            digest = text(entry.get("sha256"))
-            require(integer(entry.get("bytes")) > 0 and len(digest) == 64
-                    and all(c in "0123456789abcdef" for c in digest), "invalid source identity")
+    require(manifest.get("vocab_size") == 248320 and manifest.get("tie_word_embeddings") is False,
+            "invalid vocabulary/tying report")
+    _validate_provenance(manifest, tensors, files, base_headers)
 
 
 def load_manifest(output: Path, *, expected_sha256: str | None = None) -> dict[str, object]:
